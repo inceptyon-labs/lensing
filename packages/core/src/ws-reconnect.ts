@@ -108,6 +108,7 @@ export function createReconnectManager(options: ReconnectOptions) {
 
     /** Signal that connection was lost (triggers reconnect) */
     connectionLost() {
+      cancelTimer(); // Cancel any existing pending reconnect timer
       setStatus('reconnecting');
       scheduleReconnect();
     },

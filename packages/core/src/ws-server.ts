@@ -47,10 +47,12 @@ export function createWsServer(options: WsServerOptions = {}): WsServerInstance 
   let wss: WebSocketServer;
   let heartbeatTimer: ReturnType<typeof setInterval> | null = null;
   let readyResolve: (() => void) | null = null;
+  let readyReject: ((err: Error) => void) | null = null;
   let listeningPort = 0;
 
-  const readyPromise = new Promise<void>((resolve) => {
+  const readyPromise = new Promise<void>((resolve, reject) => {
     readyResolve = resolve;
+    readyReject = reject;
   });
 
   // Create server
@@ -65,6 +67,11 @@ export function createWsServer(options: WsServerOptions = {}): WsServerInstance 
         listeningPort = addr.port;
       }
       readyResolve?.();
+    });
+
+    // Handle startup errors (e.g., port conflict)
+    wss.on('error', (err: Error) => {
+      readyReject?.(err);
     });
   }
 

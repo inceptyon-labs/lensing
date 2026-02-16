@@ -213,6 +213,29 @@ describe('ReconnectManager', () => {
     expect(manager.status).toBe('disconnected');
   });
 
+  it('should not queue duplicate timers on repeated connectionLost()', () => {
+    const onReconnect = vi.fn();
+    manager = createReconnectManager({
+      onStatusChange: (s) => statusChanges.push(s),
+      onReconnect,
+      baseDelay: 1000,
+      maxDelay: 30000,
+    });
+
+    manager.connect();
+
+    // Call connectionLost multiple times rapidly — should NOT create duplicate timers
+    manager.connectionLost();
+    manager.connectionLost();
+    manager.connectionLost();
+
+    // Advance past max backoff
+    vi.advanceTimersByTime(5000);
+
+    // Should only fire ONCE (not 3 times)
+    expect(onReconnect).toHaveBeenCalledTimes(1);
+  });
+
   it('should handle sleep/wake scenario (long disconnect)', () => {
     const onReconnect = vi.fn();
     manager = createReconnectManager({
