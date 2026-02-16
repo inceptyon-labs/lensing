@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type {
   PluginManifest,
-  PluginPermissions,
   ZoneName,
   NotificationPriority,
   SceneName,

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { PluginManifest, PluginInstance, PluginStatus } from '@lensing/core';
+import type { PluginManifest, PluginStatus } from '@lensing/core';
 
 describe('@lensing/core cross-package imports', () => {
   it('re-exports PluginManifest from @lensing/types', () => {
