@@ -44,34 +44,35 @@ export function createWsServer(options: WsServerOptions = {}): WsServerInstance 
 
   const clients = new Set<WebSocket>();
   const listeners: Record<string, Array<(...args: unknown[]) => void>> = {};
-  let wss: WebSocketServer;
   let heartbeatTimer: ReturnType<typeof setInterval> | null = null;
-  let readyResolve: (() => void) | null = null;
-  let readyReject: ((err: Error) => void) | null = null;
   let listeningPort = 0;
 
+  // Create server (synchronous - executor runs immediately)
+  let wss: WebSocketServer;
+  let onReady: () => void;
+  let onError: (err: Error) => void;
+
   const readyPromise = new Promise<void>((resolve, reject) => {
-    readyResolve = resolve;
-    readyReject = reject;
+    onReady = resolve;
+    onError = reject;
   });
 
-  // Create server
   if (server) {
     wss = new WebSocketServer({ server });
     listeningPort = port;
-    readyResolve?.();
+    onReady!();
   } else {
     wss = new WebSocketServer({ port }, () => {
       const addr = wss.address();
       if (typeof addr === 'object' && addr) {
         listeningPort = addr.port;
       }
-      readyResolve?.();
+      onReady!();
     });
 
     // Handle startup errors (e.g., port conflict)
     wss.on('error', (err: Error) => {
-      readyReject?.(err);
+      onError!(err);
     });
   }
 
