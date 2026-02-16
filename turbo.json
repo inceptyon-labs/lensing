@@ -1,34 +1,21 @@
 {
   "$schema": "https://turbo.build/json-schema.json",
-  "globalDependencies": [
-    "**/.env",
-    "**/.env.local"
-  ],
-  "globalEnv": [
-    "NODE_ENV"
-  ],
+  "globalDependencies": ["**/.env", "**/.env.local"],
+  "globalEnv": ["NODE_ENV"],
   "tasks": {
     "dev": {
       "cache": false,
       "persistent": true
     },
     "build": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        "dist/**",
-        ".svelte-kit/**",
-        "build/**"
-      ]
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", ".svelte-kit/**", "build/**"]
     },
     "lint": {
       "outputs": []
     },
     "test": {
-      "outputs": [
-        "coverage/**"
-      ]
+      "outputs": ["coverage/**"]
     }
   }
 }
