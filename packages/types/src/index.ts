@@ -29,12 +29,7 @@ export interface PluginPermissions {
 }
 
 /** Layout zone identifiers */
-export type ZoneName =
-  | 'top-bar'
-  | 'left-col'
-  | 'center'
-  | 'right-col'
-  | 'bottom-bar';
+export type ZoneName = 'top-bar' | 'left-col' | 'center' | 'right-col' | 'bottom-bar';
 
 /** Zone configuration for the layout grid */
 export interface ZoneConfig {
