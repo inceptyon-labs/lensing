@@ -18,6 +18,29 @@ importers:
         specifier: ^2.0.0
         version: 2.1.9
 
+  packages/cli:
+    dependencies:
+      '@lensing/core':
+        specifier: workspace:*
+        version: link:../core
+      '@lensing/types':
+        specifier: workspace:*
+        version: link:../types
+
+  packages/core:
+    dependencies:
+      '@lensing/types':
+        specifier: workspace:*
+        version: link:../types
+
+  packages/types: {}
+
+  packages/ui:
+    dependencies:
+      '@lensing/types':
+        specifier: workspace:*
+        version: link:../types
+
 packages:
 
   '@esbuild/aix-ppc64@0.21.5':

@@ -7,10 +7,10 @@
   "globalEnv": [
     "NODE_ENV"
   ],
-  "pipeline": {
+  "tasks": {
     "dev": {
       "cache": false,
-      "interactive": true
+      "persistent": true
     },
     "build": {
       "dependsOn": [
@@ -18,7 +18,7 @@
       ],
       "outputs": [
         "dist/**",
-        ".next/**",
+        ".svelte-kit/**",
         "build/**"
       ]
     },

@@ -1,0 +1,26 @@
+{
+  "name": "@lensing/core",
+  "version": "0.1.0",
+  "description": "Lensing host service: plugin loader, scheduler, cache, WebSocket push",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "dev": "tsc -p tsconfig.json --watch"
+  },
+  "dependencies": {
+    "@lensing/types": "workspace:*"
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "MIT"
+}
