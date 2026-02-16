@@ -26,6 +26,7 @@ Completed 3 tasks, closing Feature `lensing-fgdd` (Monorepo & Project Scaffoldin
 ## Next Task (by priority order)
 
 Per area priority (infra → backend → frontend):
+
 - No more infra tasks ready
 - **lensing-kh6c** — Add plugin permission enforcement (size:M, area:backend)
 - Part of Feature `lensing-q1cj` (Plugin Manifest & Loader)
