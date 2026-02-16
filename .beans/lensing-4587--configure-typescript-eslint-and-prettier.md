@@ -9,7 +9,7 @@ tags:
   - size:S
   - area:infra
 created_at: 2026-02-16T21:22:53Z
-updated_at: 2026-02-16T21:57:28Z
+updated_at: 2026-02-16T22:08:52Z
 parent: lensing-fgdd
 ---
 
@@ -17,11 +17,11 @@ Shared tooling configuration at the monorepo root.
 
 ## Acceptance Criteria
 
-- [ ] tsconfig.base.json with strict mode, path aliases
-- [ ] Per-package tsconfig.json extending base
-- [ ] ESLint config with TypeScript and Svelte support
-- [ ] Prettier config with consistent formatting rules
-- [ ] Lint and format scripts in root package.json
+- [x] tsconfig.base.json with strict mode, path aliases
+- [x] Per-package tsconfig.json extending base
+- [x] ESLint config with TypeScript and Svelte support
+- [x] Prettier config with consistent formatting rules
+- [x] Lint and format scripts in root package.json
 
 ---
 
