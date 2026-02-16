@@ -11,13 +11,24 @@
   "scripts": {
     "dev": "turbo run dev --no-cache --parallel",
     "build": "turbo run build",
-    "lint": "turbo run lint --no-cache",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "test": "turbo run test",
     "clean": "turbo clean && rm -rf node_modules **/node_modules .turbo"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.0.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-svelte": "^3.15.0",
+    "globals": "^17.3.0",
+    "prettier": "^3.8.1",
+    "prettier-plugin-svelte": "^3.4.1",
     "turbo": "^2.1.0",
     "typescript": "^5.5.0",
+    "typescript-eslint": "^8.56.0",
     "vitest": "^2.0.0"
   },
   "packageManager": "pnpm@9.1.0",

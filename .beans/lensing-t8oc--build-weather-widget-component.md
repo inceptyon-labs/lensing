@@ -5,9 +5,9 @@ status: todo
 type: task
 priority: high
 tags:
-    - pasiv
-    - size:M
-    - area:frontend
+  - pasiv
+  - size:M
+  - area:frontend
 created_at: 2026-02-16T21:24:16Z
 updated_at: 2026-02-16T21:24:16Z
 parent: lensing-fs0t
@@ -16,6 +16,7 @@ parent: lensing-fs0t
 Svelte weather widget: current conditions and forecast display.
 
 ## Acceptance Criteria
+
 - [ ] Current conditions: temperature, conditions icon, feels-like, humidity
 - [ ] Forecast: multi-day outlook with high/low and condition icons
 - [ ] Supports small, medium, and large widget sizes
@@ -24,4 +25,5 @@ Svelte weather widget: current conditions and forecast display.
 - [ ] Loading and error states
 
 ---
+
 **Size:** M

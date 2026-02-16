@@ -5,10 +5,10 @@ status: todo
 type: task
 priority: normal
 tags:
-    - pasiv
-    - size:M
-    - area:frontend
-    - area:backend
+  - pasiv
+  - size:M
+  - area:frontend
+  - area:backend
 created_at: 2026-02-16T21:25:18Z
 updated_at: 2026-02-16T21:25:18Z
 parent: lensing-944w
@@ -17,6 +17,7 @@ parent: lensing-944w
 Question/answer interface: admin UI input, agent processing, kiosk display.
 
 ## Acceptance Criteria
+
 - [ ] Text input in admin UI to type questions
 - [ ] Question routed to Agent Service via Gateway
 - [ ] Agent response rendered on kiosk display (card/overlay)
@@ -24,4 +25,5 @@ Question/answer interface: admin UI input, agent processing, kiosk display.
 - [ ] Loading state while agent processes
 
 ---
+
 **Size:** M

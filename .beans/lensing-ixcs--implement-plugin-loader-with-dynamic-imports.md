@@ -5,9 +5,9 @@ status: todo
 type: task
 priority: high
 tags:
-    - pasiv
-    - size:M
-    - area:backend
+  - pasiv
+  - size:M
+  - area:backend
 created_at: 2026-02-16T21:23:41Z
 updated_at: 2026-02-16T21:23:41Z
 parent: lensing-q1cj
@@ -16,6 +16,7 @@ parent: lensing-q1cj
 Dynamic plugin loader that discovers, validates, and imports plugins.
 
 ## Acceptance Criteria
+
 - [ ] Scan /plugins/<id>/ directories for plugin.json manifests
 - [ ] Validate manifest against schema before loading
 - [ ] Dynamic import of UI widget components (Svelte)
@@ -24,4 +25,5 @@ Dynamic plugin loader that discovers, validates, and imports plugins.
 - [ ] Graceful handling of missing or broken plugins
 
 ---
+
 **Size:** M

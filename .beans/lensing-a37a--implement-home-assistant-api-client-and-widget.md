@@ -5,10 +5,10 @@ status: todo
 type: task
 priority: normal
 tags:
-    - pasiv
-    - size:L
-    - area:backend
-    - area:frontend
+  - pasiv
+  - size:L
+  - area:backend
+  - area:frontend
 created_at: 2026-02-16T21:25:07Z
 updated_at: 2026-02-16T21:25:07Z
 parent: lensing-i1z4
@@ -17,6 +17,7 @@ parent: lensing-i1z4
 Home Assistant plugin: REST/WebSocket API client and device state widgets.
 
 ## Acceptance Criteria
+
 - [ ] Connect to HA via REST API and WebSocket API
 - [ ] Config: HA URL, long-lived access token, device/entity filters
 - [ ] Show device states: lights, locks, thermostat, sensors
@@ -24,4 +25,5 @@ Home Assistant plugin: REST/WebSocket API client and device state widgets.
 - [ ] Real-time state updates via HA WebSocket subscription
 
 ---
+
 **Size:** L
