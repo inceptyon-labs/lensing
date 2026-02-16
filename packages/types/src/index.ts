@@ -82,3 +82,16 @@ export interface PluginInstance {
   last_refresh?: string;
   error?: string;
 }
+
+/** WebSocket message types pushed from host to clients */
+export type WsMessageType = 'layout_change' | 'plugin_data' | 'scene_change' | 'ping' | 'pong';
+
+/** WebSocket message envelope */
+export interface WsMessage<T = unknown> {
+  type: WsMessageType;
+  payload: T;
+  timestamp: string;
+}
+
+/** Client connection status for UI indicator */
+export type ConnectionStatus = 'connected' | 'disconnecting' | 'disconnected' | 'reconnecting';

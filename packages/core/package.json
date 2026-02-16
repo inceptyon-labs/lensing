@@ -17,10 +17,14 @@
     "dev": "tsc -p tsconfig.json --watch"
   },
   "dependencies": {
-    "@lensing/types": "workspace:*"
+    "@lensing/types": "workspace:*",
+    "ws": "^8.19.0"
   },
   "files": [
     "dist"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@types/ws": "^8.18.1"
+  }
 }
