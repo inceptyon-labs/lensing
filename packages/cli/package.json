@@ -1,0 +1,30 @@
+{
+  "name": "@lensing/cli",
+  "version": "0.1.0",
+  "description": "Lensing CLI: dev server, plugin management, config, scene control",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "lensing": "./dist/index.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "dev": "tsc -p tsconfig.json --watch"
+  },
+  "dependencies": {
+    "@lensing/types": "workspace:*",
+    "@lensing/core": "workspace:*"
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "MIT"
+}

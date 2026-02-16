@@ -1,0 +1,26 @@
+{
+  "name": "@lensing/ui",
+  "version": "0.1.0",
+  "description": "Shared UI primitives for Lensing widgets (cards, charts, text blocks)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "dev": "tsc -p tsconfig.json --watch"
+  },
+  "dependencies": {
+    "@lensing/types": "workspace:*"
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "MIT"
+}
