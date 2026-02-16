@@ -1,7 +1,7 @@
 ---
 # lensing-ti22
 title: Create shared package stubs
-status: in-progress
+status: completed
 type: task
 priority: high
 tags:
@@ -9,7 +9,7 @@ tags:
     - size:M
     - area:infra
 created_at: 2026-02-16T21:22:49Z
-updated_at: 2026-02-16T21:50:40Z
+updated_at: 2026-02-16T21:50:57Z
 parent: lensing-fgdd
 ---
 
