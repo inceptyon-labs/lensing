@@ -1,15 +1,15 @@
 ---
 # lensing-4587
 title: Configure TypeScript, ESLint, and Prettier
-status: in-progress
+status: completed
 type: task
 priority: high
 tags:
-  - pasiv
-  - size:S
-  - area:infra
+    - pasiv
+    - size:S
+    - area:infra
 created_at: 2026-02-16T21:22:53Z
-updated_at: 2026-02-16T22:09:40Z
+updated_at: 2026-02-16T22:09:56Z
 parent: lensing-fgdd
 ---
 
