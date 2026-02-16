@@ -19,11 +19,12 @@ dist-turbo/
 *.code-workspace
 
 # Build outputs
-/dist
+dist/
 /build
 /.next
 .svelte-kit/
 .vercel/
+*.tsbuildinfo
 
 # Environment
 .env
