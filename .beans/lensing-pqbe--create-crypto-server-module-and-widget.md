@@ -5,10 +5,10 @@ status: todo
 type: task
 priority: normal
 tags:
-    - pasiv
-    - size:M
-    - area:backend
-    - area:frontend
+  - pasiv
+  - size:M
+  - area:backend
+  - area:frontend
 created_at: 2026-02-16T21:24:24Z
 updated_at: 2026-02-16T21:24:24Z
 parent: lensing-itei
@@ -17,6 +17,7 @@ parent: lensing-itei
 Crypto prices plugin: server polling and widget display.
 
 ## Acceptance Criteria
+
 - [ ] Server module polls crypto prices (CoinGecko or similar free API)
 - [ ] Config: watchlist of coins, alert thresholds, change windows (1h, 24h, 7d)
 - [ ] Publishes crypto.prices and crypto.alerts to data bus
@@ -24,4 +25,5 @@ Crypto prices plugin: server polling and widget display.
 - [ ] Diff updates to minimize DOM churn
 
 ---
+
 **Size:** M
