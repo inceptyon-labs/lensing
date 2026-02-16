@@ -1,0 +1,31 @@
+{
+  "name": "@lensing/monorepo",
+  "version": "0.1.0",
+  "description": "Lensing - A modern personal information dashboard built on SvelteKit",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "scripts": {
+    "dev": "turbo run dev --no-cache --parallel",
+    "build": "turbo run build",
+    "lint": "turbo run lint --no-cache",
+    "test": "turbo run test",
+    "clean": "turbo clean && rm -rf node_modules **/node_modules .turbo"
+  },
+  "devDependencies": {
+    "turbo": "^2.1.0"
+  },
+  "packageManager": "pnpm@9.1.0",
+  "keywords": [
+    "dashboard",
+    "home-assistant",
+    "raspberry-pi",
+    "sveltekit",
+    "plugin-system"
+  ],
+  "author": "",
+  "license": "MIT"
+}
