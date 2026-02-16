@@ -60,13 +60,19 @@ export function validateRefreshRate(
   permissions: PluginPermissions
 ): boolean {
   // If no rate limit, allow
-  if (!permissions.max_refresh_ms) {
+  if (!permissions.max_refresh_ms || permissions.max_refresh_ms <= 0) {
     return true;
   }
 
-  // First refresh always allowed
-  if (!lastRefreshMs) {
+  // First refresh always allowed (explicit undefined/null check)
+  if (lastRefreshMs === undefined || lastRefreshMs === null) {
     return true;
+  }
+
+  // Validate lastRefreshMs is a valid timestamp
+  if (!Number.isFinite(lastRefreshMs) || lastRefreshMs < 0) {
+    // Invalid timestamp - block as safety measure
+    return false;
   }
 
   const now = Date.now();
@@ -116,10 +122,28 @@ export function createPermissionEnforcer(manifest: PluginManifest, options?: Enf
      */
     createFetchProxy(originalFetch: typeof fetch = globalThis.fetch): typeof fetch {
       return async (url, init?) => {
-        const urlStr = typeof url === 'string' ? url : url.toString();
+        // Extract URL string from string, Request, or URL object
+        let urlStr: string;
+        if (typeof url === 'string') {
+          urlStr = url;
+        } else if (url instanceof Request) {
+          urlStr = url.url;
+        } else if (url instanceof URL) {
+          urlStr = url.href;
+        } else {
+          // Fallback for other types
+          urlStr = String(url);
+        }
 
+        // Validate domain before making request
         if (!validateNetworkDomain(urlStr, manifest.permissions || {})) {
-          recordViolation('network', `Request to ${new URL(urlStr).hostname} not allowed`);
+          try {
+            const hostname = new URL(urlStr).hostname;
+            recordViolation('network', `Request to ${hostname} not allowed`);
+          } catch {
+            // If URL parsing fails, still record violation with raw URL
+            recordViolation('network', `Invalid or disallowed URL: ${urlStr}`);
+          }
           throw new Error('Permission denied: domain not allowed');
         }
 

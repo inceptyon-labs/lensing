@@ -70,6 +70,20 @@ describe('Permission Validators', () => {
       };
       expect(validateRefreshRate(undefined, permissions)).toBe(true);
     });
+
+    it('should reject invalid timestamps (NaN, negative, infinity)', () => {
+      const permissions: PluginPermissions = {
+        max_refresh_ms: 5000,
+      };
+      expect(validateRefreshRate(NaN, permissions)).toBe(false);
+      expect(validateRefreshRate(-1000, permissions)).toBe(false);
+      expect(validateRefreshRate(Infinity, permissions)).toBe(false);
+    });
+
+    it('should allow refresh with zero or negative max_refresh_ms', () => {
+      expect(validateRefreshRate(Date.now(), { max_refresh_ms: 0 })).toBe(true);
+      expect(validateRefreshRate(Date.now(), { max_refresh_ms: -1 })).toBe(true);
+    });
   });
 
   describe('validateSecretAccess', () => {
@@ -151,6 +165,48 @@ describe('PermissionEnforcer', () => {
       expect(violations[0].type).toBe('network');
       expect(violations[0].plugin_id).toBe('test-plugin');
       expect(violations[0].details).toContain('evil.com');
+    });
+
+    it('should handle fetch with Request object', async () => {
+      mockFetch.mockResolvedValue(new Response('ok', { status: 200 }));
+
+      const enforcedFetch = enforcer.createFetchProxy(mockFetch);
+      const request = new Request('https://api.test.com/data');
+
+      const response = await enforcedFetch(request);
+      expect(response.status).toBe(200);
+      expect(violations.length).toBe(0);
+    });
+
+    it('should block fetch with Request object to unauthorized domain', async () => {
+      const enforcedFetch = enforcer.createFetchProxy(mockFetch);
+      const request = new Request('https://evil.com/data');
+
+      await expect(enforcedFetch(request)).rejects.toThrow('Permission denied: domain not allowed');
+      expect(violations.length).toBe(1);
+      expect(violations[0].type).toBe('network');
+    });
+
+    it('should handle fetch with URL object', async () => {
+      mockFetch.mockResolvedValue(new Response('ok', { status: 200 }));
+
+      const enforcedFetch = enforcer.createFetchProxy(mockFetch);
+      const url = new URL('https://api.test.com/data');
+
+      const response = await enforcedFetch(url);
+      expect(response.status).toBe(200);
+      expect(violations.length).toBe(0);
+    });
+
+    it('should block fetch with invalid URL', async () => {
+      const enforcedFetch = enforcer.createFetchProxy(mockFetch);
+
+      await expect(enforcedFetch('not a valid url')).rejects.toThrow(
+        'Permission denied: domain not allowed'
+      );
+      expect(violations.length).toBe(1);
+      expect(violations[0].type).toBe('network');
+      expect(violations[0].details).toContain('Invalid or disallowed URL');
     });
   });
 
@@ -246,10 +302,13 @@ describe('PermissionEnforcer', () => {
       }).toThrow();
     });
 
-    it('should provide isolated context for each plugin', () => {
+    it('should provide isolated context for each plugin', async () => {
       // Each enforcer has isolated rules - verify through their enforcement
       const violations1: PermissionViolation[] = [];
       const violations2: PermissionViolation[] = [];
+
+      // Mock fetch for allowed requests
+      const mockFetchAllowed = vi.fn().mockResolvedValue(new Response('ok', { status: 200 }));
 
       const enforcer1WithTracking = createPermissionEnforcer(
         {
@@ -271,12 +330,26 @@ describe('PermissionEnforcer', () => {
         { onViolation: (v) => violations2.push(v) }
       );
 
-      const fetch1 = enforcer1WithTracking.createFetchProxy(mockFetch);
-      const fetch2 = enforcer2WithTracking.createFetchProxy(mockFetch);
+      const fetch1 = enforcer1WithTracking.createFetchProxy(mockFetchAllowed);
+      const fetch2 = enforcer2WithTracking.createFetchProxy(mockFetchAllowed);
 
-      // They enforce different rules independently
-      expect(async () => fetch1('https://domain2.com/data')).toBeDefined();
-      expect(async () => fetch2('https://domain1.com/data')).toBeDefined();
+      // Plugin 1 can access domain1, but NOT domain2
+      await expect(fetch1('https://domain1.com/data')).resolves.toBeDefined();
+      await expect(fetch1('https://domain2.com/data')).rejects.toThrow(
+        'Permission denied: domain not allowed'
+      );
+
+      // Plugin 2 can access domain2, but NOT domain1
+      await expect(fetch2('https://domain2.com/data')).resolves.toBeDefined();
+      await expect(fetch2('https://domain1.com/data')).rejects.toThrow(
+        'Permission denied: domain not allowed'
+      );
+
+      // Violations are isolated per enforcer
+      expect(violations1.length).toBe(1); // Only plugin-1's domain2 violation
+      expect(violations1[0].plugin_id).toBe('plugin-1');
+      expect(violations2.length).toBe(1); // Only plugin-2's domain1 violation
+      expect(violations2[0].plugin_id).toBe('plugin-2');
     });
   });
 });
