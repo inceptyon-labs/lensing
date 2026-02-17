@@ -31,5 +31,12 @@ export type {
   RestServerHandlers,
   LogEntry,
 } from './rest-server';
+export { createPluginScheduler } from './plugin-scheduler';
+export type {
+  SchedulerOptions,
+  SchedulerEntry,
+  SchedulerStatus,
+  PluginSchedulerInstance,
+} from './plugin-scheduler';
 
-/** Placeholder: Host service exports (plugin loader, scheduler, data bus) */
+/** Placeholder: Host service exports (plugin loader, data bus) */
