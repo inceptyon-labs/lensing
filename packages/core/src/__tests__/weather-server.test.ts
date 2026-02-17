@@ -345,6 +345,45 @@ describe('WeatherServer', () => {
     });
   });
 
+  describe('payload validation', () => {
+    it('should report error on missing current field', async () => {
+      const fetchFn = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            // current is missing
+            daily: [],
+          }),
+      });
+      const server = createWeatherServer(validOptions({ fetchFn }));
+      const errorListener = vi.fn();
+      server.onError(errorListener);
+      await server.refresh();
+      expect(errorListener).toHaveBeenCalledWith(expect.stringContaining('missing'));
+    });
+
+    it('should report error on missing daily field', async () => {
+      const fetchFn = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            current: {
+              temp: 70,
+              feels_like: 68,
+              humidity: 50,
+              weather: [{ description: 'clear', icon: '01d' }],
+            },
+            // daily is missing
+          }),
+      });
+      const server = createWeatherServer(validOptions({ fetchFn }));
+      const errorListener = vi.fn();
+      server.onError(errorListener);
+      await server.refresh();
+      expect(errorListener).toHaveBeenCalledWith(expect.stringContaining('missing'));
+    });
+  });
+
   describe('exports', () => {
     it('should be exported from @lensing/core index', async () => {
       const core = await import('../index');

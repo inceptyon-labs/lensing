@@ -206,6 +206,11 @@ export function createWeatherServer(options: WeatherServerOptions): WeatherServe
       return;
     }
 
+    if (!raw.current || !Array.isArray(raw.daily)) {
+      notifyError('Weather response missing required fields: current or daily');
+      return;
+    }
+
     const data: WeatherData = {
       current: transformCurrent(raw.current),
       forecast: transformForecast(raw.daily),
