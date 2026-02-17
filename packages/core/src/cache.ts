@@ -11,8 +11,14 @@ export function createCacheStore(): CacheStore {
     if (!pattern.includes('*')) {
       return key === pattern;
     }
-    const regex = new RegExp(`^${pattern.replace('*', '.*')}$`);
-    return regex.test(key);
+    // Escape regex metacharacters and replace * with .*
+    const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*');
+    try {
+      const regex = new RegExp(`^${escaped}$`);
+      return regex.test(key);
+    } catch {
+      return false;
+    }
   }
 
   return {
@@ -45,10 +51,14 @@ export function createCacheStore(): CacheStore {
       if (key.includes('*')) {
         // Wildcard invalidation
         const keysToDelete = Array.from(entries.keys()).filter((k) => patternMatches(k, key));
-        keysToDelete.forEach((k) => entries.delete(k));
+        keysToDelete.forEach((k) => {
+          entries.delete(k);
+          inFlight.delete(k); // Clean up in-flight requests too
+        });
       } else {
         // Single key invalidation
         entries.delete(key);
+        inFlight.delete(key); // Clean up any in-flight request
       }
     },
 
@@ -57,10 +67,15 @@ export function createCacheStore(): CacheStore {
       fetcher: () => Promise<T>,
       policy: StalePolicy
     ): Promise<T> {
-      // Check cache first
+      // Check cache first, but only if not stale
       const cached = entries.get(key);
       if (cached) {
-        return cached.value as T;
+        const age = Date.now() - cached.createdAt;
+        if (age <= cached.max_stale_ms) {
+          return cached.value as T;
+        }
+        // Data is stale, remove it so fetch happens below
+        entries.delete(key);
       }
 
       // Check if fetch is already in progress
