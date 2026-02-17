@@ -95,3 +95,47 @@ export interface WsMessage<T = unknown> {
 
 /** Client connection status for UI indicator */
 export type ConnectionStatus = 'connected' | 'disconnecting' | 'disconnected' | 'reconnecting';
+
+/** Supported config field types for plugin settings forms */
+export type ConfigFieldType = 'string' | 'number' | 'boolean' | 'select';
+
+/** A single field in a plugin config schema */
+export interface ConfigField {
+  key: string;
+  type: ConfigFieldType;
+  label: string;
+  description?: string;
+  default?: string | number | boolean;
+  required?: boolean;
+  options?: Array<{ label: string; value: string | number }>; // for 'select' type
+  min?: number; // for 'number' type
+  max?: number; // for 'number' type
+}
+
+/** Plugin config schema declared in manifest */
+export interface PluginConfigSchema {
+  fields: ConfigField[];
+}
+
+/** Extended manifest with optional config schema */
+export interface PluginManifestWithConfig extends PluginManifest {
+  config_schema?: PluginConfigSchema;
+}
+
+/** Plugin admin state for the admin panel */
+export interface PluginAdminEntry {
+  plugin_id: string;
+  manifest: PluginManifestWithConfig;
+  status: PluginStatus;
+  enabled: boolean;
+  zone?: ZoneName;
+  config: Record<string, string | number | boolean>;
+  error?: string;
+}
+
+/** Zone assignment: which plugin is in which zone */
+export interface ZoneAssignment {
+  zone: ZoneName;
+  plugin_id: string;
+  position: number; // order within zone
+}

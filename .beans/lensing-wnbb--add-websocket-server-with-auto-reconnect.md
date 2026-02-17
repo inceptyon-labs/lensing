@@ -1,15 +1,15 @@
 ---
 # lensing-wnbb
 title: Add WebSocket server with auto-reconnect
-status: in-progress
+status: completed
 type: task
 priority: high
 tags:
-  - pasiv
-  - size:M
-  - area:backend
+    - pasiv
+    - size:M
+    - area:backend
 created_at: 2026-02-16T21:23:08Z
-updated_at: 2026-02-16T22:31:56Z
+updated_at: 2026-02-16T22:40:23Z
 parent: lensing-995t
 ---
 

@@ -1,15 +1,15 @@
 ---
 # lensing-r4oi
 title: Build admin panel plugin list and config UI
-status: todo
+status: in-progress
 type: task
 priority: high
 tags:
-  - pasiv
-  - size:L
-  - area:frontend
+    - pasiv
+    - size:L
+    - area:frontend
 created_at: 2026-02-16T21:24:10Z
-updated_at: 2026-02-16T21:24:10Z
+updated_at: 2026-02-17T00:18:05Z
 parent: lensing-zdg1
 ---
 
