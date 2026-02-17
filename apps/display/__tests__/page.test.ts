@@ -70,4 +70,12 @@ describe('Main Page Component', () => {
       expect(layoutContent).toContain('global');
     }
   });
+
+  it('should use svelte:fragment for slots (not div wrappers that bypass zone grid)', () => {
+    const content = fs.readFileSync(pagePath, 'utf-8');
+    // svelte:fragment slots pass children directly to Zone grid
+    // div slot wrappers collapse all children into one grid item
+    expect(content).toContain('svelte:fragment');
+    expect(content).not.toMatch(/<div slot=/);
+  });
 });

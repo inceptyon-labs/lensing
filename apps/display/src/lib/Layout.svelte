@@ -91,7 +91,6 @@
 
   .zone-center {
     grid-area: center;
-    flex: 1;
   }
 
   .zone-right-col {
