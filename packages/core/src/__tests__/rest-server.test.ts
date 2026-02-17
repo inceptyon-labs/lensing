@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
   createRestServer,
-  type RestServerOptions,
   type RestServerInstance,
   type RestServerHandlers,
 } from '../rest-server';
@@ -12,7 +11,7 @@ function request(
   port: number,
   method: string,
   path: string,
-  body?: unknown,
+  body?: unknown
 ): Promise<{ status: number; headers: http.IncomingHttpHeaders; body: string }> {
   return new Promise((resolve, reject) => {
     const data = body !== undefined ? JSON.stringify(body) : undefined;
@@ -39,7 +38,7 @@ function request(
             body: responseBody,
           });
         });
-      },
+      }
     );
     req.on('error', reject);
     if (data) req.write(data);

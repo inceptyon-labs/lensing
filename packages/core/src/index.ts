@@ -25,6 +25,11 @@ export type { ReconnectOptions, ReconnectManager, BackoffOptions } from './ws-re
 export { createCacheStore } from './cache';
 export type { CacheStore, CacheEntry, StalePolicy, StaleStatus } from './cache';
 export { createRestServer } from './rest-server';
-export type { RestServerOptions, RestServerInstance, RestServerHandlers, LogEntry } from './rest-server';
+export type {
+  RestServerOptions,
+  RestServerInstance,
+  RestServerHandlers,
+  LogEntry,
+} from './rest-server';
 
 /** Placeholder: Host service exports (plugin loader, scheduler, data bus) */

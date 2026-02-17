@@ -41,7 +41,7 @@ export interface RestServerInstance {
 type RouteHandler = (
   req: http.IncomingMessage,
   res: http.ServerResponse,
-  body: string,
+  body: string
 ) => Promise<void>;
 
 type RouteTable = Map<string, Map<string, RouteHandler>>;
@@ -71,15 +71,14 @@ function readBody(req: http.IncomingMessage): Promise<string> {
 /** Create a REST server with the factory pattern */
 export function createRestServer(
   handlers: RestServerHandlers,
-  options: RestServerOptions = {},
+  options: RestServerOptions = {}
 ): RestServerInstance {
   const { port = 0, corsOrigins, logger } = options;
   const startedAt = Date.now();
   let boundPort = 0;
   let closed = false;
 
-  const corsOrigin =
-    corsOrigins && corsOrigins.length > 0 ? corsOrigins[0] : '*';
+  const corsOrigin = corsOrigins && corsOrigins.length > 0 ? corsOrigins[0] : '*';
 
   const corsHeaders = {
     'Access-Control-Allow-Origin': corsOrigin,

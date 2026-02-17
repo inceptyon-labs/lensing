@@ -24,7 +24,9 @@ function toPascalCase(name: string): string {
 
 export function createPluginScaffold(name: string, targetDir: string): void {
   if (!validatePluginName(name)) {
-    throw new Error(`Invalid plugin name: "${name}". Must be 3-50 characters, start with a letter, and contain only letters, numbers, and hyphens.`);
+    throw new Error(
+      `Invalid plugin name: "${name}". Must be 3-50 characters, start with a letter, and contain only letters, numbers, and hyphens.`
+    );
   }
 
   const pluginId = generatePluginId(name);

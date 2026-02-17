@@ -5,9 +5,9 @@ status: completed
 type: task
 priority: high
 tags:
-    - pasiv
-    - size:M
-    - area:infra
+  - pasiv
+  - size:M
+  - area:infra
 created_at: 2026-02-16T21:23:59Z
 updated_at: 2026-02-17T02:53:43Z
 parent: lensing-lncc
@@ -25,7 +25,5 @@ CLI command to scaffold a new plugin from template.
 ---
 
 **Size:** M
-
-
 
 Completed and merged to main in commit 25176eb. All acceptance criteria met: plugin scaffold command generates proper directory structure with plugin.json manifest, Svelte component, server module, test file, and .gitignore.
