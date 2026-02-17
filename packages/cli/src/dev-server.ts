@@ -57,7 +57,12 @@ export function createDevServer(options: DevServerOptions): DevServer {
 
   function notifyReload() {
     for (const callback of reloadCallbacks) {
-      callback();
+      try {
+        callback();
+      } catch (err) {
+        // Log but don't crash on callback errors
+        console.error('Error in reload callback:', err);
+      }
     }
   }
 
@@ -78,7 +83,12 @@ export function createDevServer(options: DevServerOptions): DevServer {
     fixtures = await loadFixtures();
 
     watcher = watch(pluginDir, async (_event: string, _filename: string) => {
-      await reload();
+      try {
+        await reload();
+      } catch (err) {
+        // Log but don't crash on watcher reload errors
+        console.error('Error reloading on file change:', err);
+      }
     });
 
     running = true;

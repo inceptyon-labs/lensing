@@ -40,12 +40,16 @@ export function validateManifest(input: unknown): ValidationResult {
   if ('dependencies' in obj) {
     if (!Array.isArray(obj.dependencies)) {
       errors.push('Field "dependencies" must be an array of strings');
+    } else if (!obj.dependencies.every((dep) => typeof dep === 'string')) {
+      errors.push('Field "dependencies" must be an array of strings');
     }
   }
 
   if ('widget_sizes' in obj) {
     if (!Array.isArray(obj.widget_sizes)) {
       errors.push('Field "widget_sizes" must be an array');
+    } else if (!obj.widget_sizes.every((size) => typeof size === 'string')) {
+      errors.push('Field "widget_sizes" must be an array of strings');
     }
   }
 
@@ -56,13 +60,29 @@ export function validateManifest(input: unknown): ValidationResult {
     } else {
       const perms = obj.permissions as Record<string, unknown>;
 
-      if ('allowed_domains' in perms && !Array.isArray(perms.allowed_domains)) {
-        errors.push('permissions.allowed_domains must be an array of strings');
+      if ('allowed_domains' in perms) {
+        if (!Array.isArray(perms.allowed_domains)) {
+          errors.push('permissions.allowed_domains must be an array of strings');
+        } else if (!perms.allowed_domains.every((domain) => typeof domain === 'string')) {
+          errors.push('permissions.allowed_domains must be an array of strings');
+        }
       }
 
       if ('max_refresh_ms' in perms) {
-        if (typeof perms.max_refresh_ms !== 'number' || perms.max_refresh_ms < 0) {
+        if (
+          typeof perms.max_refresh_ms !== 'number' ||
+          !Number.isFinite(perms.max_refresh_ms) ||
+          perms.max_refresh_ms < 0
+        ) {
           errors.push('permissions.max_refresh_ms must be a positive number');
+        }
+      }
+
+      if ('secrets' in perms) {
+        if (!Array.isArray(perms.secrets)) {
+          errors.push('permissions.secrets must be an array of strings');
+        } else if (!perms.secrets.every((secret) => typeof secret === 'string')) {
+          errors.push('permissions.secrets must be an array of strings');
         }
       }
     }

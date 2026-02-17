@@ -164,6 +164,48 @@ describe('validateManifest', () => {
       expect(result.valid).toBe(false);
       expect(result.errors).toContain('Field "widget_sizes" must be an array');
     });
+
+    it('should reject non-string elements in dependencies', () => {
+      const result = validateManifest({ ...validManifest, dependencies: ['calendar', 123] });
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain('Field "dependencies" must be an array of strings');
+    });
+
+    it('should reject non-string elements in allowed_domains', () => {
+      const result = validateManifest({
+        ...validManifest,
+        permissions: { allowed_domains: ['api.example.com', 123] },
+      });
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain('permissions.allowed_domains must be an array of strings');
+    });
+
+    it('should reject non-string elements in secrets', () => {
+      const result = validateManifest({
+        ...validManifest,
+        permissions: { secrets: ['API_KEY', 123] },
+      });
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain('permissions.secrets must be an array of strings');
+    });
+
+    it('should reject NaN for max_refresh_ms', () => {
+      const result = validateManifest({
+        ...validManifest,
+        permissions: { max_refresh_ms: NaN },
+      });
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain('permissions.max_refresh_ms must be a positive number');
+    });
+
+    it('should reject Infinity for max_refresh_ms', () => {
+      const result = validateManifest({
+        ...validManifest,
+        permissions: { max_refresh_ms: Infinity },
+      });
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain('permissions.max_refresh_ms must be a positive number');
+    });
   });
 
   describe('return type', () => {

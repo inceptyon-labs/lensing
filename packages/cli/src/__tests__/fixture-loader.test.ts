@@ -80,6 +80,14 @@ describe('FixtureLoader', () => {
       });
       await expect(badLoader.load('weather.json')).rejects.toThrow();
     });
+
+    it('should reject path traversal attempts', async () => {
+      await expect(loader.load('../secret.json')).rejects.toThrow('Invalid fixture name');
+    });
+
+    it('should reject slashes in fixture name', async () => {
+      await expect(loader.load('subdir/file.json')).rejects.toThrow('Invalid fixture name');
+    });
   });
 
   describe('loadAll', () => {

@@ -23,6 +23,10 @@ export function createFixtureLoader(options: FixtureLoaderOptions): FixtureLoade
   }
 
   async function load(name: string): Promise<unknown> {
+    // Prevent path traversal attacks
+    if (name.includes('..') || name.includes('/')) {
+      throw new Error(`Invalid fixture name: ${name}`);
+    }
     const path = `${fixturesDir}/${name}`;
     const content = await readFile(path);
     return JSON.parse(content);
@@ -34,7 +38,7 @@ export function createFixtureLoader(options: FixtureLoaderOptions): FixtureLoade
 
     for (const file of files) {
       try {
-        const key = file.replace('.json', '');
+        const key = file.replace(/\.json$/, '');
         result[key] = await load(file);
       } catch {
         // Skip files that fail to parse
