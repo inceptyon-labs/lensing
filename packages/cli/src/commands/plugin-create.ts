@@ -6,8 +6,8 @@ export function validatePluginName(name: string): boolean {
     return false;
   }
 
-  // Only allow alphanumeric and hyphens
-  const validPattern = /^[a-zA-Z0-9-]+$/;
+  // Must start with a letter; only allow alphanumeric and hyphens
+  const validPattern = /^[a-zA-Z][a-zA-Z0-9-]*$/;
   return validPattern.test(name);
 }
 
@@ -23,6 +23,10 @@ function toPascalCase(name: string): string {
 }
 
 export function createPluginScaffold(name: string, targetDir: string): void {
+  if (!validatePluginName(name)) {
+    throw new Error(`Invalid plugin name: "${name}". Must be 3-50 characters, start with a letter, and contain only letters, numbers, and hyphens.`);
+  }
+
   const pluginId = generatePluginId(name);
   const componentName = toPascalCase(name);
   const pluginPath = path.join(targetDir, pluginId);

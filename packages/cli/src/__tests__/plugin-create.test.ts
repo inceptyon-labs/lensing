@@ -51,6 +51,15 @@ describe('Plugin Create Scaffolding', () => {
     it('should reject names longer than 50 characters', () => {
       expect(validatePluginName('a'.repeat(51))).toBe(false);
     });
+
+    it('should reject names starting with a digit', () => {
+      expect(validatePluginName('123-plugin')).toBe(false);
+      expect(validatePluginName('1abc')).toBe(false);
+    });
+
+    it('should reject names starting with a hyphen', () => {
+      expect(validatePluginName('-my-plugin')).toBe(false);
+    });
   });
 
   describe('generatePluginId', () => {
@@ -157,6 +166,12 @@ describe('Plugin Create Scaffolding', () => {
 
       createPluginScaffold(pluginName, testDir);
       expect(() => createPluginScaffold(pluginName, testDir)).toThrow();
+    });
+
+    it('should reject invalid plugin names', () => {
+      expect(() => createPluginScaffold('ab', testDir)).toThrow(/Invalid plugin name/);
+      expect(() => createPluginScaffold('123-plugin', testDir)).toThrow(/Invalid plugin name/);
+      expect(() => createPluginScaffold('../evil', testDir)).toThrow(/Invalid plugin name/);
     });
 
     it('should handle PascalCase plugin names correctly', () => {
