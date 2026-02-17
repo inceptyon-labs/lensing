@@ -1,7 +1,7 @@
 ---
 # lensing-t8oc
 title: Build weather widget component
-status: todo
+status: in-progress
 type: task
 priority: high
 tags:
@@ -9,7 +9,7 @@ tags:
   - size:M
   - area:frontend
 created_at: 2026-02-16T21:24:16Z
-updated_at: 2026-02-16T21:24:16Z
+updated_at: 2026-02-17T02:11:53Z
 parent: lensing-fs0t
 ---
 

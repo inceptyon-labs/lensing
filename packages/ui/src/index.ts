@@ -6,5 +6,14 @@ export { createCalendarStore } from './calendar-store';
 export type { CalendarStore, CalendarStoreOptions } from './calendar-store';
 export { createNotificationStore } from './notification-store';
 export type { NotificationStore, NotificationStoreOptions } from './notification-store';
+export { createWeatherStore } from './weather-store';
+export type {
+  WeatherStore,
+  WeatherStoreOptions,
+  WeatherData,
+  WeatherCurrent,
+  WeatherForecastDay,
+  WeatherStoreState,
+} from './weather-store';
 
 /** Placeholder: UI primitives will be exported here (cards, charts, text blocks, loading states) */
