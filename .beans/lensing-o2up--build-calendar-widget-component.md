@@ -5,9 +5,9 @@ status: completed
 type: task
 priority: high
 tags:
-    - pasiv
-    - size:M
-    - area:frontend
+  - pasiv
+  - size:M
+  - area:frontend
 created_at: 2026-02-16T21:24:37Z
 updated_at: 2026-02-17T01:10:18Z
 parent: lensing-ra5p
@@ -30,12 +30,14 @@ Svelte calendar widget: today's events and upcoming schedule.
 ## Completed
 
 **Files changed:**
+
 - packages/types/src/index.ts — Added CalendarWidgetSize, CalendarEvent types
 - packages/ui/src/calendar-store.ts — New: calendar widget state store
-- packages/ui/src/__tests__/calendar-store.test.ts — 24 tests
+- packages/ui/src/**tests**/calendar-store.test.ts — 24 tests
 - packages/ui/src/index.ts — Updated exports
 
 **Key decisions:**
+
 - Framework-agnostic store (no Svelte dependency) matching admin-store pattern
 - Overlap-based filtering for getTodayEvents/getUpcomingEvents (handles multi-day events)
 - Date-only strings (YYYY-MM-DD) parsed as local time to prevent timezone shift
@@ -43,6 +45,7 @@ Svelte calendar widget: today's events and upcoming schedule.
 - setEvents auto-clears error state
 
 **Notes for next task:**
+
 - Use createCalendarStore() for calendar widget state
 - getTodayEvents() returns events overlapping today, sorted by start time
 - getUpcomingEvents() returns events within configured range

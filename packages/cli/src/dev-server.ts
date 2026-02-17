@@ -7,7 +7,10 @@ export interface DevServerOptions {
   fixturesDir: string;
   readFile: (path: string) => Promise<string>;
   readDir: () => Promise<string[]>;
-  watch: (path: string, callback: (event: string, filename: string) => void) => { close: () => void };
+  watch: (
+    path: string,
+    callback: (event: string, filename: string) => void
+  ) => { close: () => void };
 }
 
 export interface DevServer {

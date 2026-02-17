@@ -52,7 +52,9 @@ describe('FixtureLoader', () => {
     it('should handle readDir failure gracefully', async () => {
       const failLoader = createFixtureLoader({
         fixturesDir: '/nonexistent',
-        readDir: async () => { throw new Error('ENOENT'); },
+        readDir: async () => {
+          throw new Error('ENOENT');
+        },
         readFile: mockReadFile,
       });
       const files = await failLoader.list();

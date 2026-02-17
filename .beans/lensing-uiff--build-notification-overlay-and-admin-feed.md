@@ -5,9 +5,9 @@ status: completed
 type: task
 priority: high
 tags:
-    - pasiv
-    - size:M
-    - area:frontend
+  - pasiv
+  - size:M
+  - area:frontend
 created_at: 2026-02-16T21:25:28Z
 updated_at: 2026-02-17T01:40:49Z
 parent: lensing-djl7
@@ -30,6 +30,7 @@ Notification rendering on kiosk display and admin UI feed.
 ## Summary
 
 Built notification store (createNotificationStore) with:
+
 - Priority-based routing: urgent → banners, info/warning → toasts
 - TTL-based toast expiry (configurable default)
 - Quiet hours suppression (non-urgent only)

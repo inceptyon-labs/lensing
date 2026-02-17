@@ -28,9 +28,7 @@ export interface NotificationStore {
   clear(): void;
 }
 
-export function createNotificationStore(
-  options: NotificationStoreOptions = {}
-): NotificationStore {
+export function createNotificationStore(options: NotificationStoreOptions = {}): NotificationStore {
   const { onChange, defaultToastTtl_ms = 5000 } = options;
   const notifications = new Map<string, NotificationEntry>();
   const pluginToggles = new Map<string, boolean>();
@@ -121,10 +119,7 @@ export function createNotificationStore(
     getAll() {
       const entries = Array.from(notifications.values());
       return entries
-        .sort(
-          (a, b) =>
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        )
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         .map((e) => ({ ...e }));
     },
 

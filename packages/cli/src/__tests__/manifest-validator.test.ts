@@ -49,22 +49,19 @@ describe('validateManifest', () => {
     });
 
     it('should reject missing id', () => {
-      const { id: _, ...noId } = validManifest;
-      const result = validateManifest(noId);
+      const result = validateManifest({ name: validManifest.name, version: validManifest.version });
       expect(result.valid).toBe(false);
       expect(result.errors).toContain('Missing required field: id');
     });
 
     it('should reject missing name', () => {
-      const { name: _, ...noName } = validManifest;
-      const result = validateManifest(noName);
+      const result = validateManifest({ id: validManifest.id, version: validManifest.version });
       expect(result.valid).toBe(false);
       expect(result.errors).toContain('Missing required field: name');
     });
 
     it('should reject missing version', () => {
-      const { version: _, ...noVersion } = validManifest;
-      const result = validateManifest(noVersion);
+      const result = validateManifest({ id: validManifest.id, name: validManifest.name });
       expect(result.valid).toBe(false);
       expect(result.errors).toContain('Missing required field: version');
     });

@@ -1,14 +1,8 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import {
-  createNotificationStore,
-  type NotificationStore,
-} from '../notification-store';
+import { createNotificationStore, type NotificationStore } from '../notification-store';
 import type { Notification } from '@lensing/types';
 
-function makeNotification(
-  id: string,
-  overrides?: Partial<Notification>
-): Notification {
+function makeNotification(id: string, overrides?: Partial<Notification>): Notification {
   return {
     id,
     source: 'weather',
@@ -137,15 +131,9 @@ describe('NotificationStore', () => {
 
   describe('filtering', () => {
     beforeEach(() => {
-      store.addNotification(
-        makeNotification('i1', { priority: 'info', source: 'weather' })
-      );
-      store.addNotification(
-        makeNotification('w1', { priority: 'warning', source: 'calendar' })
-      );
-      store.addNotification(
-        makeNotification('u1', { priority: 'urgent', source: 'weather' })
-      );
+      store.addNotification(makeNotification('i1', { priority: 'info', source: 'weather' }));
+      store.addNotification(makeNotification('w1', { priority: 'warning', source: 'calendar' }));
+      store.addNotification(makeNotification('u1', { priority: 'urgent', source: 'weather' }));
       store.markRead('i1');
     });
 
@@ -183,9 +171,7 @@ describe('NotificationStore', () => {
 
   describe('TTL-based toast expiry', () => {
     it('should expire toasts after their TTL', () => {
-      store.addNotification(
-        makeNotification('t1', { priority: 'info', ttl_ms: 5000 })
-      );
+      store.addNotification(makeNotification('t1', { priority: 'info', ttl_ms: 5000 }));
       expect(store.getActiveToasts().length).toBe(1);
 
       vi.advanceTimersByTime(6000);
@@ -202,9 +188,7 @@ describe('NotificationStore', () => {
     });
 
     it('should not auto-expire urgent banners', () => {
-      store.addNotification(
-        makeNotification('u1', { priority: 'urgent', ttl_ms: 5000 })
-      );
+      store.addNotification(makeNotification('u1', { priority: 'urgent', ttl_ms: 5000 }));
 
       vi.advanceTimersByTime(10000);
       // Banners stay until manually dismissed, ignoring TTL
@@ -212,9 +196,7 @@ describe('NotificationStore', () => {
     });
 
     it('should keep expired toasts in history', () => {
-      store.addNotification(
-        makeNotification('t1', { priority: 'info', ttl_ms: 5000 })
-      );
+      store.addNotification(makeNotification('t1', { priority: 'info', ttl_ms: 5000 }));
       vi.advanceTimersByTime(6000);
 
       // Not in active toasts but still in getAll
@@ -283,26 +265,20 @@ describe('NotificationStore', () => {
 
     it('should block notifications from disabled plugins', () => {
       store.setPluginEnabled('weather', false);
-      store.addNotification(
-        makeNotification('n1', { source: 'weather' })
-      );
+      store.addNotification(makeNotification('n1', { source: 'weather' }));
       expect(store.getAll().length).toBe(0);
     });
 
     it('should allow notifications from enabled plugins', () => {
       store.setPluginEnabled('weather', false);
       store.setPluginEnabled('weather', true);
-      store.addNotification(
-        makeNotification('n1', { source: 'weather' })
-      );
+      store.addNotification(makeNotification('n1', { source: 'weather' }));
       expect(store.getAll().length).toBe(1);
     });
 
     it('should not affect other plugins when disabling one', () => {
       store.setPluginEnabled('weather', false);
-      store.addNotification(
-        makeNotification('n1', { source: 'calendar' })
-      );
+      store.addNotification(makeNotification('n1', { source: 'calendar' }));
       expect(store.getAll().length).toBe(1);
     });
   });
@@ -388,9 +364,7 @@ describe('NotificationStore', () => {
 
   describe('TTL = 0 behavior', () => {
     it('should expire toasts with ttl_ms = 0 immediately', () => {
-      store.addNotification(
-        makeNotification('t1', { priority: 'info', ttl_ms: 0 })
-      );
+      store.addNotification(makeNotification('t1', { priority: 'info', ttl_ms: 0 }));
       expect(store.getActiveToasts().length).toBe(0);
     });
 
@@ -412,9 +386,7 @@ describe('NotificationStore', () => {
     });
 
     it('should show toasts again when quiet hours are cleared', () => {
-      store.addNotification(
-        makeNotification('i1', { priority: 'info', ttl_ms: 999999 })
-      );
+      store.addNotification(makeNotification('i1', { priority: 'info', ttl_ms: 999999 }));
       expect(store.getActiveToasts().length).toBe(1);
 
       vi.setSystemTime(new Date(2026, 0, 15, 23, 30));
@@ -426,9 +398,7 @@ describe('NotificationStore', () => {
     });
 
     it('should hide toasts when plugin is disabled', () => {
-      store.addNotification(
-        makeNotification('i1', { priority: 'info', source: 'weather' })
-      );
+      store.addNotification(makeNotification('i1', { priority: 'info', source: 'weather' }));
       expect(store.getActiveToasts().length).toBe(1);
 
       store.setPluginEnabled('weather', false);
@@ -436,9 +406,7 @@ describe('NotificationStore', () => {
     });
 
     it('should show toasts again when plugin is re-enabled', () => {
-      store.addNotification(
-        makeNotification('i1', { priority: 'info', source: 'weather' })
-      );
+      store.addNotification(makeNotification('i1', { priority: 'info', source: 'weather' }));
       store.setPluginEnabled('weather', false);
       expect(store.getActiveToasts().length).toBe(0);
 
@@ -463,27 +431,21 @@ describe('NotificationStore', () => {
     });
 
     it('should not allow mutation of getActiveBanners() results', () => {
-      store.addNotification(
-        makeNotification('u1', { priority: 'urgent' })
-      );
+      store.addNotification(makeNotification('u1', { priority: 'urgent' }));
       const entry = store.getActiveBanners()[0];
       entry.dismissed = true;
       expect(store.getActiveBanners()[0].dismissed).toBe(false);
     });
 
     it('should not allow mutation of getActiveToasts() results', () => {
-      store.addNotification(
-        makeNotification('i1', { priority: 'info' })
-      );
+      store.addNotification(makeNotification('i1', { priority: 'info' }));
       const entry = store.getActiveToasts()[0];
       entry.read = true;
       expect(store.getActiveToasts()[0].read).toBe(false);
     });
 
     it('should not allow mutation of filter() results', () => {
-      store.addNotification(
-        makeNotification('i1', { priority: 'info' })
-      );
+      store.addNotification(makeNotification('i1', { priority: 'info' }));
       const entry = store.filter({ priority: 'info' })[0];
       entry.read = true;
       expect(store.filter({ priority: 'info' })[0].read).toBe(false);
