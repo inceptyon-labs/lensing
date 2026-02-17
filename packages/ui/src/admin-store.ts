@@ -1,8 +1,4 @@
-import type {
-  PluginManifestWithConfig,
-  PluginAdminEntry,
-  ZoneName,
-} from '@lensing/types';
+import type { PluginManifestWithConfig, PluginAdminEntry, ZoneName } from '@lensing/types';
 
 /** Options for creating admin store */
 export interface AdminStoreOptions {

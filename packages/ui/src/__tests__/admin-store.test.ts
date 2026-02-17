@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { createAdminStore, type AdminStore } from '../admin-store';
-import type { PluginManifestWithConfig, ZoneName } from '@lensing/types';
+import type { PluginManifestWithConfig } from '@lensing/types';
 
 function createMockManifest(
   id: string,

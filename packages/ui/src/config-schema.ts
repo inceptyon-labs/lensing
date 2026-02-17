@@ -4,10 +4,7 @@ import type { ConfigField, PluginConfigSchema } from '@lensing/types';
  * Validates a config value against a field schema.
  * Returns true if the value matches the field type and constraints.
  */
-export function validateConfigValue(
-  value: string | number | boolean,
-  field: ConfigField
-): boolean {
+export function validateConfigValue(value: string | number | boolean, field: ConfigField): boolean {
   // Type validation
   if (field.type === 'string' && typeof value !== 'string') {
     return false;
