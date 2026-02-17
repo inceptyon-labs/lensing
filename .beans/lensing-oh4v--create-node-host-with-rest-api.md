@@ -1,7 +1,7 @@
 ---
 # lensing-oh4v
 title: Create Node host with REST API
-status: in-progress
+status: completed
 type: task
 priority: high
 tags:
@@ -9,7 +9,7 @@ tags:
     - size:M
     - area:backend
 created_at: 2026-02-16T21:23:04Z
-updated_at: 2026-02-17T03:12:12Z
+updated_at: 2026-02-17T03:12:34Z
 parent: lensing-995t
 ---
 
