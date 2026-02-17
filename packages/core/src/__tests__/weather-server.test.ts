@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { createWeatherServer } from '../weather-server';
-import type { WeatherServerOptions, WeatherServerInstance } from '../weather-server';
+import type { WeatherServerOptions } from '../weather-server';
 
 // Minimal valid options for tests
 function validOptions(overrides: Partial<WeatherServerOptions> = {}): WeatherServerOptions {
