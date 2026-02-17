@@ -1,15 +1,15 @@
 ---
 # lensing-1kxh
 title: Build plugin dev server for isolated development
-status: todo
+status: in-progress
 type: task
 priority: high
 tags:
-  - pasiv
-  - size:M
-  - area:infra
+    - pasiv
+    - size:M
+    - area:infra
 created_at: 2026-02-16T21:24:07Z
-updated_at: 2026-02-16T21:24:07Z
+updated_at: 2026-02-17T01:54:47Z
 parent: lensing-lncc
 ---
 
