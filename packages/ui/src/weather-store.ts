@@ -49,19 +49,79 @@ export function createWeatherStore(options: WeatherStoreOptions = {}): WeatherSt
   let error: string | null = null;
   const callbacks: Array<() => void> = [];
 
+  let notifying = false;
+
   function notifyChange() {
-    for (const callback of callbacks) {
-      callback();
+    // Guard against re-entrant updates
+    if (notifying) return;
+    notifying = true;
+
+    try {
+      for (const callback of callbacks) {
+        try {
+          callback();
+        } catch (err) {
+          // Isolate callback errors to prevent one bad listener from breaking others
+          console.error('Error in weather store listener:', err);
+        }
+      }
+    } finally {
+      notifying = false;
     }
   }
 
   return {
     getState() {
-      return { data, isLoading, error };
+      if (!data) {
+        return {
+          data: null,
+          isLoading,
+          error,
+        };
+      }
+
+      return {
+        data: {
+          current: {
+            temp: data.current.temp,
+            feelsLike: data.current.feelsLike,
+            conditions: data.current.conditions,
+            humidity: data.current.humidity,
+            icon: data.current.icon,
+          },
+          forecast: data.forecast.map((day) => ({
+            date: day.date,
+            high: day.high,
+            low: day.low,
+            conditions: day.conditions,
+            icon: day.icon,
+          })),
+          lastUpdated: data.lastUpdated,
+        },
+        isLoading,
+        error,
+      };
     },
 
     setWeatherData(newData) {
-      data = newData;
+      // Create explicit copies to prevent external mutations
+      data = {
+        current: {
+          temp: newData.current.temp,
+          feelsLike: newData.current.feelsLike,
+          conditions: newData.current.conditions,
+          humidity: newData.current.humidity,
+          icon: newData.current.icon,
+        },
+        forecast: newData.forecast.map((day) => ({
+          date: day.date,
+          high: day.high,
+          low: day.low,
+          conditions: day.conditions,
+          icon: day.icon,
+        })),
+        lastUpdated: newData.lastUpdated,
+      };
       error = null;
       isLoading = false;
       notifyChange();
@@ -81,20 +141,38 @@ export function createWeatherStore(options: WeatherStoreOptions = {}): WeatherSt
 
     isStale() {
       if (!data) return false;
+      // Validate lastUpdated is a finite number
+      if (!Number.isFinite(data.lastUpdated)) return true;
       const age = Date.now() - data.lastUpdated;
       return age > maxStale_ms;
     },
 
     getCurrentConditions() {
-      return data?.current ?? null;
+      if (!data?.current) return null;
+      return {
+        temp: data.current.temp,
+        feelsLike: data.current.feelsLike,
+        conditions: data.current.conditions,
+        humidity: data.current.humidity,
+        icon: data.current.icon,
+      };
     },
 
     getForecast(limit) {
       if (!data) return [];
+      const forecast = data.forecast.map((day) => ({
+        date: day.date,
+        high: day.high,
+        low: day.low,
+        conditions: day.conditions,
+        icon: day.icon,
+      }));
       if (limit !== undefined) {
-        return data.forecast.slice(0, limit);
+        // Normalize limit to non-negative integer
+        const normalizedLimit = Math.max(0, Math.floor(limit));
+        return forecast.slice(0, normalizedLimit);
       }
-      return data.forecast;
+      return forecast;
     },
 
     onChange(callback) {
