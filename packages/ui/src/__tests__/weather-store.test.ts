@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { createWeatherStore } from '../weather-store';
+import { createWeatherStore, type WeatherData } from '../weather-store';
 
 describe('WeatherStore', () => {
-  let mockWeatherData: any;
+  let mockWeatherData: WeatherData;
   let store: ReturnType<typeof createWeatherStore>;
 
   beforeEach(() => {
