@@ -11,7 +11,7 @@ export interface AdminStore {
   getPlugins(): PluginAdminEntry[];
   getPlugin(pluginId: string): PluginAdminEntry | undefined;
   setEnabled(pluginId: string, enabled: boolean): void;
-  updateConfig(pluginId: string, config: Record<string, unknown>): void;
+  updateConfig(pluginId: string, config: Record<string, string | number | boolean>): void;
   assignZone(pluginId: string, zone: ZoneName | undefined): void;
   getPluginsByZone(zone: ZoneName): PluginAdminEntry[];
   removePlugin(pluginId: string): void;

@@ -249,11 +249,7 @@ describe('AdminStore', () => {
       store.setError('weather', 'API down');
       store.clearError('weather');
 
-      expect(changes).toEqual([
-        'weather:registered',
-        'weather:error',
-        'weather:error_cleared',
-      ]);
+      expect(changes).toEqual(['weather:registered', 'weather:error', 'weather:error_cleared']);
     });
   });
 });
