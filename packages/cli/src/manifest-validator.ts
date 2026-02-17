@@ -72,5 +72,5 @@ export function validateManifest(input: unknown): ValidationResult {
     return { valid: false, errors };
   }
 
-  return { valid: true, errors: [], manifest: obj as PluginManifest };
+  return { valid: true, errors: [], manifest: obj as unknown as PluginManifest };
 }
