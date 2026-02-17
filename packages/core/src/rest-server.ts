@@ -56,14 +56,31 @@ function writeJson(res: http.ServerResponse, status: number, data: unknown): voi
   res.end(payload);
 }
 
-/** Read the full request body as a string */
-function readBody(req: http.IncomingMessage): Promise<string> {
+/** Read the full request body as a string with size limit */
+function readBody(req: http.IncomingMessage, maxBytes: number = 1024 * 100): Promise<string> {
   return new Promise((resolve, reject) => {
-    let data = '';
+    let totalBytes = 0;
+    const chunks: Buffer[] = [];
+
     req.on('data', (chunk: Buffer) => {
-      data += chunk.toString();
+      totalBytes += chunk.length;
+      if (totalBytes > maxBytes) {
+        req.pause();
+        reject(new Error('Payload too large'));
+        return;
+      }
+      chunks.push(chunk);
     });
-    req.on('end', () => resolve(data));
+
+    req.on('end', () => {
+      try {
+        const data = Buffer.concat(chunks).toString('utf8');
+        resolve(data);
+      } catch (err) {
+        reject(err);
+      }
+    });
+
     req.on('error', reject);
   });
 }
@@ -135,7 +152,7 @@ export function createRestServer(
     writeJson(res, 200, { ok: true });
   });
 
-  const server = http.createServer(async (req, res) => {
+  const server = http.createServer((req, res) => {
     const method = (req.method ?? 'GET').toUpperCase();
     const path = req.url ?? '/';
     const start = Date.now();
@@ -149,29 +166,69 @@ export function createRestServer(
     if (method === 'OPTIONS') {
       res.writeHead(204);
       res.end();
-      logger?.({ method, path, status: 204, duration_ms: Date.now() - start });
+      try {
+        logger?.({ method, path, status: 204, duration_ms: Date.now() - start });
+      } catch {
+        // Ignore logger errors
+      }
       return;
     }
 
-    const pathRoutes = routes.get(path);
-    if (!pathRoutes) {
-      writeJson(res, 404, { error: 'Not Found' });
-      logger?.({ method, path, status: 404, duration_ms: Date.now() - start });
-      return;
-    }
+    // Wrap handler in error handling
+    (async () => {
+      try {
+        // Strip query string from path for route matching
+        const cleanPath = path.split('?')[0];
+        const pathRoutes = routes.get(cleanPath);
+        if (!pathRoutes) {
+          writeJson(res, 404, { error: 'Not Found' });
+          try {
+            logger?.({ method, path, status: 404, duration_ms: Date.now() - start });
+          } catch {
+            // Ignore logger errors
+          }
+          return;
+        }
 
-    const handler = pathRoutes.get(method);
-    if (!handler) {
-      writeJson(res, 405, { error: 'Method Not Allowed' });
-      logger?.({ method, path, status: 405, duration_ms: Date.now() - start });
-      return;
-    }
+        const handler = pathRoutes.get(method);
+        if (!handler) {
+          writeJson(res, 405, { error: 'Method Not Allowed' });
+          try {
+            logger?.({ method, path, status: 405, duration_ms: Date.now() - start });
+          } catch {
+            // Ignore logger errors
+          }
+          return;
+        }
 
-    const body = await readBody(req);
-    await handler(req, res, body);
+        const body = await readBody(req);
+        await handler(req, res, body);
 
-    const status = res.statusCode;
-    logger?.({ method, path, status, duration_ms: Date.now() - start });
+        const status = res.statusCode;
+        try {
+          logger?.({ method, path, status, duration_ms: Date.now() - start });
+        } catch {
+          // Ignore logger errors
+        }
+      } catch (err) {
+        // If response already sent, can't write error
+        if (!res.headersSent) {
+          const status = err instanceof Error && err.message === 'Payload too large' ? 413 : 500;
+          const errorMsg = status === 413 ? 'Payload Too Large' : 'Internal Server Error';
+          writeJson(res, status, { error: errorMsg });
+        }
+        try {
+          logger?.({
+            method,
+            path,
+            status: res.statusCode ?? 500,
+            duration_ms: Date.now() - start,
+          });
+        } catch {
+          // Ignore logger errors
+        }
+      }
+    })();
   });
 
   // Promise resolver pattern (avoids TS2454)
