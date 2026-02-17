@@ -12,15 +12,13 @@ export function validatePluginName(name: string): boolean {
 }
 
 export function generatePluginId(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/\s+/g, '-');
+  return name.toLowerCase().replace(/\s+/g, '-');
 }
 
 function toPascalCase(name: string): string {
   return name
     .split(/[-\s]+/)
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join('');
 }
 
@@ -46,10 +44,7 @@ export function createPluginScaffold(name: string, targetDir: string): void {
     allowed_domains: [],
     dependencies: [],
   };
-  fs.writeFileSync(
-    path.join(pluginPath, 'plugin.json'),
-    JSON.stringify(manifest, null, 2)
-  );
+  fs.writeFileSync(path.join(pluginPath, 'plugin.json'), JSON.stringify(manifest, null, 2));
 
   // Create Svelte component
   const componentContent = `<script>
@@ -67,10 +62,7 @@ export function createPluginScaffold(name: string, targetDir: string): void {
   }
 </style>
 `;
-  fs.writeFileSync(
-    path.join(pluginPath, `${componentName}.svelte`),
-    componentContent
-  );
+  fs.writeFileSync(path.join(pluginPath, `${componentName}.svelte`), componentContent);
 
   // Create server module
   const serverContent = `export interface ${componentName}Data {
@@ -82,10 +74,7 @@ export async function fetchData(): Promise<${componentName}Data> {
   return {};
 }
 `;
-  fs.writeFileSync(
-    path.join(pluginPath, 'server.ts'),
-    serverContent
-  );
+  fs.writeFileSync(path.join(pluginPath, 'server.ts'), serverContent);
 
   // Create test file
   const testContent = `import { describe, it, expect } from 'vitest';
@@ -98,10 +87,7 @@ describe('${componentName}', () => {
   });
 });
 `;
-  fs.writeFileSync(
-    path.join(pluginPath, `${componentName}.test.ts`),
-    testContent
-  );
+  fs.writeFileSync(path.join(pluginPath, `${componentName}.test.ts`), testContent);
 
   // Create .gitignore
   const gitignoreContent = `node_modules/
@@ -109,8 +95,5 @@ dist/
 .DS_Store
 *.log
 `;
-  fs.writeFileSync(
-    path.join(pluginPath, '.gitignore'),
-    gitignoreContent
-  );
+  fs.writeFileSync(path.join(pluginPath, '.gitignore'), gitignoreContent);
 }

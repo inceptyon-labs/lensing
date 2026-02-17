@@ -1,8 +1,12 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import { createPluginScaffold, validatePluginName, generatePluginId } from '../commands/plugin-create';
+import {
+  createPluginScaffold,
+  validatePluginName,
+  generatePluginId,
+} from '../commands/plugin-create';
 import * as cliExports from '../index';
 
 describe('Plugin Create Scaffolding', () => {
@@ -150,7 +154,6 @@ describe('Plugin Create Scaffolding', () => {
 
     it('should throw error if plugin already exists', () => {
       const pluginName = 'test-plugin';
-      const pluginPath = path.join(testDir, pluginName);
 
       createPluginScaffold(pluginName, testDir);
       expect(() => createPluginScaffold(pluginName, testDir)).toThrow();

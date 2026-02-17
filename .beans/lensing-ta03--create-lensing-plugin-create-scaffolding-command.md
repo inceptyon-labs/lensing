@@ -1,7 +1,7 @@
 ---
 # lensing-ta03
 title: Create lensing plugin create scaffolding command
-status: todo
+status: in-progress
 type: task
 priority: high
 tags:
@@ -9,7 +9,7 @@ tags:
   - size:M
   - area:infra
 created_at: 2026-02-16T21:23:59Z
-updated_at: 2026-02-16T21:23:59Z
+updated_at: 2026-02-17T02:31:38Z
 parent: lensing-lncc
 ---
 
