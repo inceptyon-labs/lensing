@@ -261,4 +261,72 @@ describe('WeatherServer', () => {
       expect(listener).not.toHaveBeenCalled();
     });
   });
+
+  describe('cache integration', () => {
+    it('should use cache: skip fetch on second call within maxStale window', async () => {
+      const fetchFn = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            current: { temp: 70, feels_like: 68, humidity: 50, weather: [{ description: 'clear', icon: '01d' }] },
+            daily: [],
+          }),
+      });
+      const server = createWeatherServer(
+        validOptions({ fetchFn, maxStale_ms: 60000 })
+      );
+      await server.refresh();
+      await server.refresh(); // within staleness window — should use cache
+      expect(fetchFn).toHaveBeenCalledTimes(1);
+    });
+
+    it('should re-fetch after cache expires', async () => {
+      const fetchFn = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            current: { temp: 70, feels_like: 68, humidity: 50, weather: [{ description: 'clear', icon: '01d' }] },
+            daily: [],
+          }),
+      });
+      const server = createWeatherServer(
+        validOptions({ fetchFn, maxStale_ms: 0 }) // stale immediately
+      );
+      await server.refresh();
+      await server.refresh(); // stale — should re-fetch
+      expect(fetchFn).toHaveBeenCalledTimes(2);
+    });
+
+    it('should return stale data gracefully on API failure after first success', async () => {
+      const fetchFn = vi
+        .fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              current: { temp: 70, feels_like: 68, humidity: 50, weather: [{ description: 'clear', icon: '01d' }] },
+              daily: [],
+            }),
+        })
+        .mockResolvedValueOnce({ ok: false, status: 503, statusText: 'Service Unavailable' });
+
+      const server = createWeatherServer(validOptions({ fetchFn, maxStale_ms: 0 }));
+      await server.refresh(); // first: success
+
+      const staleData = server.getWeatherData();
+      const errorListener = vi.fn();
+      server.onError(errorListener);
+      await server.refresh(); // second: failure — should keep stale data
+
+      expect(errorListener).toHaveBeenCalled();
+      expect(server.getWeatherData()).toEqual(staleData); // stale data preserved
+    });
+  });
+
+  describe('exports', () => {
+    it('should be exported from @lensing/core index', async () => {
+      const core = await import('../index');
+      expect(typeof core.createWeatherServer).toBe('function');
+    });
+  });
 });

@@ -145,7 +145,10 @@ export function createWeatherServer(options: WeatherServerOptions): WeatherServe
     throw new Error('WeatherServer: location is required');
   }
 
+  const maxStale_ms = options.maxStale_ms ?? 3600000;
+
   let lastData: WeatherData | null = null;
+  let lastFetchedAt: number | null = null;
   const updateListeners: Array<(data: WeatherData) => void> = [];
   const errorListeners: Array<(error: string) => void> = [];
   let closed = false;
@@ -178,6 +181,11 @@ export function createWeatherServer(options: WeatherServerOptions): WeatherServe
   async function refresh(): Promise<void> {
     if (closed) return;
 
+    // Return cached data if still fresh
+    if (lastFetchedAt !== null && maxStale_ms > 0 && Date.now() - lastFetchedAt < maxStale_ms) {
+      return;
+    }
+
     let response: Awaited<ReturnType<FetchFn>>;
     try {
       response = await fetchFn(buildUrl());
@@ -208,6 +216,7 @@ export function createWeatherServer(options: WeatherServerOptions): WeatherServe
     };
 
     lastData = data;
+    lastFetchedAt = Date.now();
     notifyUpdate(data);
   }
 

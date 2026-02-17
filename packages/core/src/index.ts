@@ -39,4 +39,15 @@ export type {
   PluginSchedulerInstance,
 } from './plugin-scheduler';
 
+export { createWeatherServer } from './weather-server';
+export type {
+  WeatherServerOptions,
+  WeatherServerInstance,
+  WeatherData,
+  WeatherCurrent,
+  WeatherForecastDay,
+  WeatherLocation,
+  FetchFn,
+} from './weather-server';
+
 /** Placeholder: Host service exports (plugin loader, data bus) */
