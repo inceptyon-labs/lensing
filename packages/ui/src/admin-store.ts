@@ -113,14 +113,16 @@ export function createAdminStore(options: AdminStoreOptions = {}): AdminStore {
 
       plugin.status = 'error';
       plugin.error = error;
+      notify(pluginId, 'error');
     },
 
     clearError(pluginId) {
       const plugin = plugins.get(pluginId);
       if (!plugin) return;
 
-      plugin.status = 'active';
+      plugin.status = plugin.enabled ? 'active' : 'disabled';
       plugin.error = undefined;
+      notify(pluginId, 'error_cleared');
     },
   };
 }

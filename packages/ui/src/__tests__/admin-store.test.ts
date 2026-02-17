@@ -204,6 +204,17 @@ describe('AdminStore', () => {
       expect(plugin?.status).toBe('active');
       expect(plugin?.error).toBeUndefined();
     });
+
+    it('should restore disabled status when clearing error on disabled plugin', () => {
+      store.registerPlugin(createMockManifest('weather'));
+      store.setEnabled('weather', false);
+      store.setError('weather', 'Network timeout');
+      store.clearError('weather');
+
+      const plugin = store.getPlugin('weather');
+      expect(plugin?.status).toBe('disabled');
+      expect(plugin?.error).toBeUndefined();
+    });
   });
 
   describe('change notifications', () => {
@@ -225,6 +236,23 @@ describe('AdminStore', () => {
         'weather:config_updated',
         'weather:zone_assigned',
         'weather:removed',
+      ]);
+    });
+
+    it('should notify on error state changes', () => {
+      const changes: string[] = [];
+      store = createAdminStore({
+        onChange: (pluginId, action) => changes.push(`${pluginId}:${action}`),
+      });
+
+      store.registerPlugin(createMockManifest('weather'));
+      store.setError('weather', 'API down');
+      store.clearError('weather');
+
+      expect(changes).toEqual([
+        'weather:registered',
+        'weather:error',
+        'weather:error_cleared',
       ]);
     });
   });

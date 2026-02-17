@@ -5,35 +5,28 @@ import type { ConfigField, PluginConfigSchema } from '@lensing/types';
  * Returns true if the value matches the field type and constraints.
  */
 export function validateConfigValue(value: string | number | boolean, field: ConfigField): boolean {
-  // Type validation
-  if (field.type === 'string' && typeof value !== 'string') {
-    return false;
-  }
-  if (field.type === 'number' && typeof value !== 'number') {
-    return false;
-  }
-  if (field.type === 'boolean' && typeof value !== 'boolean') {
-    return false;
-  }
+  switch (field.type) {
+    case 'string':
+      return typeof value === 'string';
 
-  // Select field validation
-  if (field.type === 'select') {
-    if (!field.options) return false;
-    const validValues = field.options.map((opt) => opt.value);
-    return validValues.includes(value);
-  }
+    case 'boolean':
+      return typeof value === 'boolean';
 
-  // Number constraints
-  if (field.type === 'number' && typeof value === 'number') {
-    if (field.min !== undefined && value < field.min) {
-      return false;
+    case 'number': {
+      if (typeof value !== 'number') return false;
+      if (field.min !== undefined && value < field.min) return false;
+      if (field.max !== undefined && value > field.max) return false;
+      return true;
     }
-    if (field.max !== undefined && value > field.max) {
-      return false;
-    }
-  }
 
-  return true;
+    case 'select': {
+      if (!field.options) return false;
+      return field.options.some((opt) => opt.value === value);
+    }
+
+    default:
+      return false;
+  }
 }
 
 /**

@@ -100,6 +100,18 @@ describe('Config Schema', () => {
       expect(validateConfigValue(0, field)).toBe(false);
       expect(validateConfigValue(101, field)).toBe(false);
     });
+
+    it('should reject unknown field types', () => {
+      const field = {
+        key: 'unknown',
+        type: 'custom' as ConfigField['type'],
+        label: 'Unknown',
+      };
+
+      expect(validateConfigValue('anything', field)).toBe(false);
+      expect(validateConfigValue(42, field)).toBe(false);
+      expect(validateConfigValue(true, field)).toBe(false);
+    });
   });
 
   describe('buildDefaultConfig', () => {
