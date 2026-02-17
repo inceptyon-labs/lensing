@@ -135,8 +135,16 @@ describe('CSS Tokens', () => {
 
     it('should define font size tokens', () => {
       const content = getTokens();
-      const sizes = ['--text-xs', '--text-sm', '--text-base', '--text-lg', '--text-xl', '--text-2xl', '--text-3xl'];
-      sizes.forEach(size => {
+      const sizes = [
+        '--text-xs',
+        '--text-sm',
+        '--text-base',
+        '--text-lg',
+        '--text-xl',
+        '--text-2xl',
+        '--text-3xl',
+      ];
+      sizes.forEach((size) => {
         expect(content).toMatch(new RegExp(`${size}\\s*:`));
       });
     });
@@ -177,7 +185,7 @@ describe('CSS Tokens', () => {
     it('should define all radius scale', () => {
       const content = getTokens();
       const radii = ['--radius-sm', '--radius-md', '--radius-lg', '--radius-xl'];
-      radii.forEach(radius => {
+      radii.forEach((radius) => {
         expect(content).toMatch(new RegExp(`${radius}\\s*:`));
       });
     });

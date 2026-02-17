@@ -5,9 +5,9 @@ status: in-progress
 type: task
 priority: high
 tags:
-    - pasiv
-    - size:S
-    - area:frontend
+  - pasiv
+  - size:S
+  - area:frontend
 created_at: 2026-02-16T21:23:20Z
 updated_at: 2026-02-17T22:51:03Z
 parent: lensing-pamo

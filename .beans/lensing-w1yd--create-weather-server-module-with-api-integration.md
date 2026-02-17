@@ -5,9 +5,9 @@ status: completed
 type: task
 priority: high
 tags:
-    - pasiv
-    - size:M
-    - area:backend
+  - pasiv
+  - size:M
+  - area:backend
 created_at: 2026-02-16T21:24:14Z
 updated_at: 2026-02-17T22:47:54Z
 parent: lensing-fs0t

@@ -10,44 +10,44 @@
 :root {
   /* ── Surfaces ──────────────────────────────────────────────────────────── */
 
-  --void: hsl(240, 8%, 4%);            /* true deep — page background */
-  --event-horizon: hsl(240, 6%, 7%);   /* primary surface — cards, panels */
-  --accretion: hsl(240, 5%, 10%);      /* elevated surface — dropdowns, modals */
-  --singularity: hsl(240, 4%, 13%);    /* highest elevation — tooltips, popovers */
+  --void: hsl(240, 8%, 4%); /* true deep — page background */
+  --event-horizon: hsl(240, 6%, 7%); /* primary surface — cards, panels */
+  --accretion: hsl(240, 5%, 10%); /* elevated surface — dropdowns, modals */
+  --singularity: hsl(240, 4%, 13%); /* highest elevation — tooltips, popovers */
 
   /* ── Text ──────────────────────────────────────────────────────────────── */
 
-  --starlight: hsl(220, 15%, 90%);     /* primary text — cool white, not pure */
-  --dim-light: hsl(220, 10%, 62%);     /* secondary text — labels, metadata */
-  --faint-light: hsl(220, 8%, 42%);    /* tertiary — timestamps, captions */
-  --ghost-light: hsl(220, 6%, 28%);    /* muted — disabled, placeholder */
+  --starlight: hsl(220, 15%, 90%); /* primary text — cool white, not pure */
+  --dim-light: hsl(220, 10%, 62%); /* secondary text — labels, metadata */
+  --faint-light: hsl(220, 8%, 42%); /* tertiary — timestamps, captions */
+  --ghost-light: hsl(220, 6%, 28%); /* muted — disabled, placeholder */
 
   /* ── Accent ────────────────────────────────────────────────────────────── */
 
-  --ember: hsl(28, 85%, 55%);                   /* primary accent — warm gold-orange */
-  --ember-dim: hsl(28, 70%, 40%);               /* accent hover/pressed */
-  --ember-glow: hsla(28, 85%, 55%, 0.12);       /* accent background tint */
-  --ember-trace: hsla(28, 85%, 55%, 0.06);      /* subtle accent hint */
+  --ember: hsl(28, 85%, 55%); /* primary accent — warm gold-orange */
+  --ember-dim: hsl(28, 70%, 40%); /* accent hover/pressed */
+  --ember-glow: hsla(28, 85%, 55%, 0.12); /* accent background tint */
+  --ember-trace: hsla(28, 85%, 55%, 0.06); /* subtle accent hint */
 
   /* ── Borders ───────────────────────────────────────────────────────────── */
 
-  --edge: hsla(220, 10%, 50%, 0.12);            /* standard separation */
-  --edge-soft: hsla(220, 10%, 50%, 0.07);       /* subtle separation */
-  --edge-bright: hsla(220, 10%, 50%, 0.2);      /* emphasis — active panels */
-  --edge-focus: hsla(28, 85%, 55%, 0.4);        /* focus rings — ember-tinted */
+  --edge: hsla(220, 10%, 50%, 0.12); /* standard separation */
+  --edge-soft: hsla(220, 10%, 50%, 0.07); /* subtle separation */
+  --edge-bright: hsla(220, 10%, 50%, 0.2); /* emphasis — active panels */
+  --edge-focus: hsla(28, 85%, 55%, 0.4); /* focus rings — ember-tinted */
 
   /* ── Semantic ──────────────────────────────────────────────────────────── */
 
-  --alert-urgent: hsl(0, 60%, 55%);    /* desaturated red — never screaming */
-  --alert-warning: hsl(38, 65%, 50%);  /* warm amber — close to ember family */
+  --alert-urgent: hsl(0, 60%, 55%); /* desaturated red — never screaming */
+  --alert-warning: hsl(38, 65%, 50%); /* warm amber — close to ember family */
   --alert-success: hsl(160, 45%, 45%); /* muted teal-green */
-  --alert-info: hsl(210, 50%, 55%);    /* soft blue */
+  --alert-info: hsl(210, 50%, 55%); /* soft blue */
 
   /* ── Controls ──────────────────────────────────────────────────────────── */
 
-  --control-bg: hsl(240, 6%, 9%);               /* input backgrounds — slightly darker than surface */
-  --control-border: hsla(220, 10%, 50%, 0.15);  /* input borders */
-  --control-focus: hsla(28, 85%, 55%, 0.25);    /* input focus border */
+  --control-bg: hsl(240, 6%, 9%); /* input backgrounds — slightly darker than surface */
+  --control-border: hsla(220, 10%, 50%, 0.15); /* input borders */
+  --control-focus: hsla(28, 85%, 55%, 0.25); /* input focus border */
 
   /* ── Typography: Fonts ─────────────────────────────────────────────────── */
 
@@ -56,60 +56,60 @@
 
   /* ── Typography: Size Scale ────────────────────────────────────────────── */
 
-  --text-xs: 0.75rem;    /* 12px — timestamps, badges */
-  --text-sm: 0.875rem;   /* 14px — metadata, labels */
-  --text-base: 1rem;     /* 16px — body, descriptions */
-  --text-lg: 1.25rem;    /* 20px — card titles */
-  --text-xl: 1.5rem;     /* 24px — section headers */
-  --text-2xl: 2rem;      /* 32px — hero metrics */
-  --text-3xl: 3rem;      /* 48px — clock, primary display */
+  --text-xs: 0.75rem; /* 12px — timestamps, badges */
+  --text-sm: 0.875rem; /* 14px — metadata, labels */
+  --text-base: 1rem; /* 16px — body, descriptions */
+  --text-lg: 1.25rem; /* 20px — card titles */
+  --text-xl: 1.5rem; /* 24px — section headers */
+  --text-2xl: 2rem; /* 32px — hero metrics */
+  --text-3xl: 3rem; /* 48px — clock, primary display */
 
   /* ── Typography: Weight ────────────────────────────────────────────────── */
 
   --weight-normal: 400;
-  --weight-medium: 500;  /* labels, nav items */
-  --weight-semi: 600;    /* card titles, emphasis */
-  --weight-bold: 700;    /* hero numbers, primary metrics */
+  --weight-medium: 500; /* labels, nav items */
+  --weight-semi: 600; /* card titles, emphasis */
+  --weight-bold: 700; /* hero numbers, primary metrics */
 
   /* ── Typography: Tracking ──────────────────────────────────────────────── */
 
-  --tracking-tight: -0.02em;  /* headlines, large numbers */
-  --tracking-normal: 0;       /* body text */
-  --tracking-wide: 0.04em;    /* uppercase labels, small caps */
+  --tracking-tight: -0.02em; /* headlines, large numbers */
+  --tracking-normal: 0; /* body text */
+  --tracking-wide: 0.04em; /* uppercase labels, small caps */
 
   /* ── Typography: Leading ───────────────────────────────────────────────── */
 
-  --leading-tight: 1.2;   /* headlines, metrics */
-  --leading-normal: 1.5;  /* body text */
-  --leading-loose: 1.7;   /* long-form, descriptions */
+  --leading-tight: 1.2; /* headlines, metrics */
+  --leading-normal: 1.5; /* body text */
+  --leading-loose: 1.7; /* long-form, descriptions */
 
   /* ── Spacing (4px base unit) ───────────────────────────────────────────── */
 
-  --space-1: 4px;   /* micro — icon gaps, inline spacing */
-  --space-2: 8px;   /* tight — between related elements */
-  --space-3: 12px;  /* compact — input padding, small gaps */
-  --space-4: 16px;  /* standard — card padding, list gaps */
-  --space-5: 24px;  /* comfortable — section gaps within cards */
-  --space-6: 32px;  /* generous — between card groups */
-  --space-7: 48px;  /* major — zone separation */
-  --space-8: 64px;  /* dramatic — page-level separation */
+  --space-1: 4px; /* micro — icon gaps, inline spacing */
+  --space-2: 8px; /* tight — between related elements */
+  --space-3: 12px; /* compact — input padding, small gaps */
+  --space-4: 16px; /* standard — card padding, list gaps */
+  --space-5: 24px; /* comfortable — section gaps within cards */
+  --space-6: 32px; /* generous — between card groups */
+  --space-7: 48px; /* major — zone separation */
+  --space-8: 64px; /* dramatic — page-level separation */
 
   /* ── Border Radius ─────────────────────────────────────────────────────── */
 
-  --radius-sm: 4px;   /* inputs, buttons, badges */
-  --radius-md: 8px;   /* cards, panels */
-  --radius-lg: 12px;  /* modals, large containers */
-  --radius-xl: 16px;  /* hero elements, ambient tiles */
+  --radius-sm: 4px; /* inputs, buttons, badges */
+  --radius-md: 8px; /* cards, panels */
+  --radius-lg: 12px; /* modals, large containers */
+  --radius-xl: 16px; /* hero elements, ambient tiles */
 
   /* ── Animation: Duration ───────────────────────────────────────────────── */
 
-  --duration-fast: 100ms;     /* micro-interactions, hover */
-  --duration-normal: 200ms;   /* transitions, state changes */
-  --duration-slow: 400ms;     /* page transitions, reveals */
-  --duration-ambient: 4s;     /* ambient pulse, glow cycle */
+  --duration-fast: 100ms; /* micro-interactions, hover */
+  --duration-normal: 200ms; /* transitions, state changes */
+  --duration-slow: 400ms; /* page transitions, reveals */
+  --duration-ambient: 4s; /* ambient pulse, glow cycle */
 
   /* ── Animation: Easing ─────────────────────────────────────────────────── */
 
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);       /* deceleration */
-  --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);   /* symmetric */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1); /* deceleration */
+  --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1); /* symmetric */
 }

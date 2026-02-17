@@ -5,10 +5,10 @@ status: completed
 type: feature
 priority: high
 tags:
-    - pasiv
-    - priority:high
-    - area:backend
-    - area:frontend
+  - pasiv
+  - priority:high
+  - area:backend
+  - area:frontend
 created_at: 2026-02-16T21:20:48Z
 updated_at: 2026-02-17T22:48:06Z
 parent: lensing-mrxz
@@ -31,7 +31,8 @@ Weather plugin with configurable provider, location, and units. Publishes to dat
 ## Summary
 
 ✓ All sub-tasks completed:
-  - lensing-t8oc: Weather widget component
-  - lensing-w1yd: Weather server module (API integration)
+
+- lensing-t8oc: Weather widget component
+- lensing-w1yd: Weather server module (API integration)
 
 Feature ready for integration into display app.
