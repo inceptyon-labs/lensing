@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { createPluginScaffold, validatePluginName, generatePluginId } from '../commands/plugin-create';
+import * as cliExports from '../index';
 
 describe('Plugin Create Scaffolding', () => {
   let testDir: string;
@@ -184,6 +185,20 @@ describe('Plugin Create Scaffolding', () => {
 
       const test = fs.readFileSync(path.join(pluginPath, 'TestPlugin.test.ts'), 'utf-8');
       expect(test.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('CLI exports', () => {
+    it('should export createPluginScaffold from index', () => {
+      expect(cliExports.createPluginScaffold).toBe(createPluginScaffold);
+    });
+
+    it('should export validatePluginName from index', () => {
+      expect(cliExports.validatePluginName).toBe(validatePluginName);
+    });
+
+    it('should export generatePluginId from index', () => {
+      expect(cliExports.generatePluginId).toBe(generatePluginId);
     });
   });
 });
