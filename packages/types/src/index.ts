@@ -169,3 +169,18 @@ export interface CacheStore {
   invalidate(key: string): void;
   readOrFetch<T = unknown>(key: string, fetcher: () => Promise<T>, policy: StalePolicy): Promise<T>;
 }
+
+/** Widget size for calendar display */
+export type CalendarWidgetSize = 'small' | 'large';
+
+/** A single calendar event */
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  start: string; // ISO 8601
+  end: string; // ISO 8601
+  location?: string;
+  calendar: string; // calendar source name for color-coding
+  color?: string; // optional hex color for calendar
+  allDay?: boolean;
+}

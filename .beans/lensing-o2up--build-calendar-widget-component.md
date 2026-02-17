@@ -1,7 +1,7 @@
 ---
 # lensing-o2up
 title: Build calendar widget component
-status: todo
+status: in-progress
 type: task
 priority: high
 tags:
@@ -9,7 +9,7 @@ tags:
   - size:M
   - area:frontend
 created_at: 2026-02-16T21:24:37Z
-updated_at: 2026-02-16T21:24:37Z
+updated_at: 2026-02-17T01:00:22Z
 parent: lensing-ra5p
 ---
 
