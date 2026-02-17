@@ -141,4 +141,124 @@ describe('WeatherServer', () => {
       expect(listener).not.toHaveBeenCalled();
     });
   });
+
+  describe('fetch and transform', () => {
+    function owmForecastDay(dt: number, max: number, min: number, desc: string, icon: string) {
+      return { dt, temp: { max, min }, weather: [{ description: desc, icon }] };
+    }
+
+    it('should map current conditions correctly', async () => {
+      const fetchFn = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            current: {
+              temp: 68.5,
+              feels_like: 65.1,
+              humidity: 72,
+              weather: [{ description: 'scattered clouds', icon: '03d' }],
+            },
+            daily: [],
+          }),
+      });
+      const server = createWeatherServer(validOptions({ fetchFn }));
+      await server.refresh();
+      const data = server.getWeatherData();
+      expect(data).not.toBeNull();
+      expect(data!.current.temp).toBe(68.5);
+      expect(data!.current.feelsLike).toBe(65.1);
+      expect(data!.current.humidity).toBe(72);
+      expect(data!.current.conditions).toBe('scattered clouds');
+      expect(data!.current.icon).toBe('03d');
+    });
+
+    it('should map forecast days correctly', async () => {
+      const day1dt = Math.floor(new Date('2026-02-20').getTime() / 1000);
+      const fetchFn = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            current: {
+              temp: 60,
+              feels_like: 58,
+              humidity: 50,
+              weather: [{ description: 'clear', icon: '01d' }],
+            },
+            daily: [owmForecastDay(day1dt, 65, 45, 'sunny', '01d')],
+          }),
+      });
+      const server = createWeatherServer(validOptions({ fetchFn }));
+      await server.refresh();
+      const data = server.getWeatherData();
+      expect(data!.forecast).toHaveLength(1);
+      expect(data!.forecast[0].high).toBe(65);
+      expect(data!.forecast[0].low).toBe(45);
+      expect(data!.forecast[0].conditions).toBe('sunny');
+      expect(data!.forecast[0].icon).toBe('01d');
+      expect(data!.forecast[0].date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    });
+
+    it('should set lastUpdated as a recent timestamp', async () => {
+      const before = Date.now();
+      const server = createWeatherServer(validOptions());
+      await server.refresh();
+      const after = Date.now();
+      const data = server.getWeatherData();
+      expect(data!.lastUpdated).toBeGreaterThanOrEqual(before);
+      expect(data!.lastUpdated).toBeLessThanOrEqual(after);
+    });
+
+    it('should report error on network failure', async () => {
+      const fetchFn = vi.fn().mockRejectedValue(new Error('network down'));
+      const server = createWeatherServer(validOptions({ fetchFn }));
+      const errorListener = vi.fn();
+      server.onError(errorListener);
+      await server.refresh();
+      expect(errorListener).toHaveBeenCalledWith(expect.stringContaining('network down'));
+    });
+
+    it('should report error on JSON parse failure', async () => {
+      const fetchFn = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.reject(new Error('invalid json')),
+      });
+      const server = createWeatherServer(validOptions({ fetchFn }));
+      const errorListener = vi.fn();
+      server.onError(errorListener);
+      await server.refresh();
+      expect(errorListener).toHaveBeenCalledWith(expect.stringContaining('invalid json'));
+    });
+
+    it('should include lat/lon/apiKey in URL', () => {
+      const fetchFn = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            current: { temp: 70, feels_like: 68, humidity: 50, weather: [{ description: 'clear', icon: '01d' }] },
+            daily: [],
+          }),
+      });
+      const server = createWeatherServer(
+        validOptions({ fetchFn, location: { lat: 51.5074, lon: -0.1278 } })
+      );
+      server.refresh();
+      expect(fetchFn).toHaveBeenCalledWith(expect.stringContaining('lat=51.5074'));
+      expect(fetchFn).toHaveBeenCalledWith(expect.stringContaining('lon=-0.1278'));
+      expect(fetchFn).toHaveBeenCalledWith(expect.stringContaining('appid=test-api-key'));
+    });
+
+    it('should return null from getWeatherData before first refresh', () => {
+      const server = createWeatherServer(validOptions());
+      expect(server.getWeatherData()).toBeNull();
+    });
+
+    it('should not call onUpdate after close', async () => {
+      const server = createWeatherServer(validOptions());
+      const listener = vi.fn();
+      server.onUpdate(listener);
+      server.close();
+      await server.refresh();
+      expect(listener).not.toHaveBeenCalled();
+    });
+  });
 });
