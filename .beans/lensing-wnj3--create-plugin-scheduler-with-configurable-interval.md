@@ -5,9 +5,9 @@ status: in-progress
 type: task
 priority: high
 tags:
-    - pasiv
-    - size:M
-    - area:backend
+  - pasiv
+  - size:M
+  - area:backend
 created_at: 2026-02-16T21:23:49Z
 updated_at: 2026-02-17T20:26:14Z
 parent: lensing-q2h4

@@ -2,16 +2,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   createPluginScheduler,
   type PluginSchedulerInstance,
-  type SchedulerOptions,
-  type SchedulerEntry,
 } from '../plugin-scheduler';
 import type { PluginManifest } from '@lensing/types';
 
 /** Create a basic test manifest */
-function createManifest(
-  id: string,
-  overrides: Partial<PluginManifest> = {},
-): PluginManifest {
+function createManifest(id: string, overrides: Partial<PluginManifest> = {}): PluginManifest {
   return {
     id,
     name: id,
@@ -195,12 +190,20 @@ describe('PluginScheduler', () => {
       scheduler = createPluginScheduler();
       const handler1 = vi.fn().mockResolvedValue(undefined);
       const handler2 = vi.fn().mockResolvedValue(undefined);
-      scheduler.register('clock', createManifest('clock', {
-        permissions: { max_refresh_ms: 1000 },
-      }), handler1);
-      scheduler.register('weather', createManifest('weather', {
-        permissions: { max_refresh_ms: 2000 },
-      }), handler2);
+      scheduler.register(
+        'clock',
+        createManifest('clock', {
+          permissions: { max_refresh_ms: 1000 },
+        }),
+        handler1
+      );
+      scheduler.register(
+        'weather',
+        createManifest('weather', {
+          permissions: { max_refresh_ms: 2000 },
+        }),
+        handler2
+      );
 
       scheduler.startAll();
 
@@ -213,12 +216,20 @@ describe('PluginScheduler', () => {
       scheduler = createPluginScheduler();
       const handler1 = vi.fn().mockResolvedValue(undefined);
       const handler2 = vi.fn().mockResolvedValue(undefined);
-      scheduler.register('clock', createManifest('clock', {
-        permissions: { max_refresh_ms: 1000 },
-      }), handler1);
-      scheduler.register('weather', createManifest('weather', {
-        permissions: { max_refresh_ms: 1000 },
-      }), handler2);
+      scheduler.register(
+        'clock',
+        createManifest('clock', {
+          permissions: { max_refresh_ms: 1000 },
+        }),
+        handler1
+      );
+      scheduler.register(
+        'weather',
+        createManifest('weather', {
+          permissions: { max_refresh_ms: 1000 },
+        }),
+        handler2
+      );
 
       scheduler.startAll();
       await vi.advanceTimersByTimeAsync(1000);
@@ -318,12 +329,20 @@ describe('PluginScheduler', () => {
       scheduler = createPluginScheduler();
       const badHandler = vi.fn().mockRejectedValue(new Error('Crash'));
       const goodHandler = vi.fn().mockResolvedValue(undefined);
-      scheduler.register('bad', createManifest('bad', {
-        permissions: { max_refresh_ms: 1000 },
-      }), badHandler);
-      scheduler.register('good', createManifest('good', {
-        permissions: { max_refresh_ms: 1000 },
-      }), goodHandler);
+      scheduler.register(
+        'bad',
+        createManifest('bad', {
+          permissions: { max_refresh_ms: 1000 },
+        }),
+        badHandler
+      );
+      scheduler.register(
+        'good',
+        createManifest('good', {
+          permissions: { max_refresh_ms: 1000 },
+        }),
+        goodHandler
+      );
 
       scheduler.startAll();
       await vi.advanceTimersByTimeAsync(1000);
@@ -356,7 +375,11 @@ describe('PluginScheduler', () => {
     it('should return state for all plugins', () => {
       scheduler = createPluginScheduler();
       scheduler.register('clock', createManifest('clock'), vi.fn().mockResolvedValue(undefined));
-      scheduler.register('weather', createManifest('weather'), vi.fn().mockResolvedValue(undefined));
+      scheduler.register(
+        'weather',
+        createManifest('weather'),
+        vi.fn().mockResolvedValue(undefined)
+      );
 
       const state = scheduler.getState();
       expect(state.size).toBe(2);
@@ -367,9 +390,13 @@ describe('PluginScheduler', () => {
     it('should track lastRun timestamp after execution', async () => {
       scheduler = createPluginScheduler();
       const handler = vi.fn().mockResolvedValue(undefined);
-      scheduler.register('clock', createManifest('clock', {
-        permissions: { max_refresh_ms: 1000 },
-      }), handler);
+      scheduler.register(
+        'clock',
+        createManifest('clock', {
+          permissions: { max_refresh_ms: 1000 },
+        }),
+        handler
+      );
       scheduler.start('clock');
 
       const beforeRun = Date.now();
@@ -382,9 +409,13 @@ describe('PluginScheduler', () => {
     it('should track runCount', async () => {
       scheduler = createPluginScheduler();
       const handler = vi.fn().mockResolvedValue(undefined);
-      scheduler.register('clock', createManifest('clock', {
-        permissions: { max_refresh_ms: 1000 },
-      }), handler);
+      scheduler.register(
+        'clock',
+        createManifest('clock', {
+          permissions: { max_refresh_ms: 1000 },
+        }),
+        handler
+      );
       scheduler.start('clock');
 
       await vi.advanceTimersByTimeAsync(3000);
@@ -398,9 +429,13 @@ describe('PluginScheduler', () => {
     it('should stop all plugins and prevent further scheduling', async () => {
       scheduler = createPluginScheduler();
       const handler = vi.fn().mockResolvedValue(undefined);
-      scheduler.register('clock', createManifest('clock', {
-        permissions: { max_refresh_ms: 1000 },
-      }), handler);
+      scheduler.register(
+        'clock',
+        createManifest('clock', {
+          permissions: { max_refresh_ms: 1000 },
+        }),
+        handler
+      );
       scheduler.start('clock');
 
       scheduler.close();

@@ -1,9 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import {
-  createRestServer,
-  type RestServerInstance,
-  type RestServerHandlers,
-} from '../rest-server';
+import { createRestServer, type RestServerInstance, type RestServerHandlers } from '../rest-server';
 import http from 'node:http';
 
 /** Helper to make HTTP requests to the test server */

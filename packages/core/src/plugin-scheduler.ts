@@ -26,7 +26,7 @@ export interface PluginSchedulerInstance {
     pluginId: string,
     manifest: PluginManifest,
     handler: () => Promise<void>,
-    overrideInterval?: number,
+    overrideInterval?: number
   ): void;
   unregister(pluginId: string): void;
   start(pluginId: string): void;
@@ -53,9 +53,7 @@ const DEFAULT_INTERVAL = 60_000;
 const BURST_WINDOW_MS = 60_000; // 1 minute sliding window for burst tracking
 
 /** Create a centralized plugin scheduler */
-export function createPluginScheduler(
-  options: SchedulerOptions = {},
-): PluginSchedulerInstance {
+export function createPluginScheduler(options: SchedulerOptions = {}): PluginSchedulerInstance {
   const { defaultInterval = DEFAULT_INTERVAL } = options;
   const plugins = new Map<string, PluginRecord>();
   let closed = false;
@@ -81,9 +79,7 @@ export function createPluginScheduler(
       if (maxBurst !== undefined && maxBurst > 0) {
         const now = Date.now();
         // Evict timestamps outside the sliding window
-        record.burstWindow = record.burstWindow.filter(
-          (t) => now - t < BURST_WINDOW_MS,
-        );
+        record.burstWindow = record.burstWindow.filter((t) => now - t < BURST_WINDOW_MS);
 
         if (record.burstWindow.length >= maxBurst) {
           // Burst exceeded — skip this tick, reschedule
@@ -104,8 +100,7 @@ export function createPluginScheduler(
         }
       } catch (err) {
         record.entry.status = 'error';
-        record.entry.error =
-          err instanceof Error ? err.message : String(err);
+        record.entry.error = err instanceof Error ? err.message : String(err);
         record.entry.lastRun = Date.now();
         record.entry.runCount++;
       }
