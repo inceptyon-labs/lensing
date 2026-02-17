@@ -139,3 +139,33 @@ export interface ZoneAssignment {
   plugin_id: string;
   position: number; // order within zone
 }
+
+/** Cache staleness policy */
+export interface StalePolicy {
+  max_stale_ms: number;
+  source?: string;
+}
+
+/** Cache entry with value and metadata */
+export interface CacheEntry<T = unknown> {
+  value: T;
+  createdAt: number;
+  max_stale_ms: number;
+  source?: string;
+}
+
+/** Staleness status of a cached entry */
+export interface StaleStatus {
+  stale: boolean;
+  found: boolean;
+  age_ms?: number;
+}
+
+/** Cache store interface */
+export interface CacheStore {
+  read<T = unknown>(key: string): CacheEntry<T> | undefined;
+  write<T = unknown>(key: string, value: T, policy: StalePolicy): void;
+  getStaleStatus(key: string): StaleStatus;
+  invalidate(key: string): void;
+  readOrFetch<T = unknown>(key: string, fetcher: () => Promise<T>, policy: StalePolicy): Promise<T>;
+}

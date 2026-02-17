@@ -1,7 +1,7 @@
 ---
 # lensing-gtnp
 title: Build caching helpers with staleness tracking
-status: todo
+status: in-progress
 type: task
 priority: high
 tags:
@@ -9,7 +9,7 @@ tags:
   - size:M
   - area:backend
 created_at: 2026-02-16T21:23:51Z
-updated_at: 2026-02-16T21:23:51Z
+updated_at: 2026-02-17T00:36:53Z
 parent: lensing-q2h4
 ---
 

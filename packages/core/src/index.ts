@@ -22,5 +22,7 @@ export { createWsServer } from './ws-server';
 export type { WsServerOptions, WsServerInstance } from './ws-server';
 export { createReconnectManager, calculateBackoff } from './ws-reconnect';
 export type { ReconnectOptions, ReconnectManager, BackoffOptions } from './ws-reconnect';
+export { createCacheStore } from './cache';
+export type { CacheStore, CacheEntry, StalePolicy, StaleStatus } from './cache';
 
-/** Placeholder: Host service exports (plugin loader, scheduler, cache, data bus) */
+/** Placeholder: Host service exports (plugin loader, scheduler, data bus) */
