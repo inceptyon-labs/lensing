@@ -385,4 +385,108 @@ describe('NotificationStore', () => {
       expect(all[1].id).toBe('old');
     });
   });
+
+  describe('TTL = 0 behavior', () => {
+    it('should expire toasts with ttl_ms = 0 immediately', () => {
+      store.addNotification(
+        makeNotification('t1', { priority: 'info', ttl_ms: 0 })
+      );
+      expect(store.getActiveToasts().length).toBe(0);
+    });
+
+    it('should expire toasts with defaultToastTtl_ms = 0', () => {
+      store = createNotificationStore({ defaultToastTtl_ms: 0 });
+      store.addNotification(makeNotification('t1', { priority: 'info' }));
+      expect(store.getActiveToasts().length).toBe(0);
+    });
+  });
+
+  describe('retroactive quiet hours/plugin control', () => {
+    it('should hide toasts when quiet hours are enabled', () => {
+      store.addNotification(makeNotification('i1', { priority: 'info' }));
+      expect(store.getActiveToasts().length).toBe(1);
+
+      vi.setSystemTime(new Date(2026, 0, 15, 23, 30));
+      store.setQuietHours(22, 7);
+      expect(store.getActiveToasts().length).toBe(0);
+    });
+
+    it('should show toasts again when quiet hours are cleared', () => {
+      store.addNotification(
+        makeNotification('i1', { priority: 'info', ttl_ms: 999999 })
+      );
+      expect(store.getActiveToasts().length).toBe(1);
+
+      vi.setSystemTime(new Date(2026, 0, 15, 23, 30));
+      store.setQuietHours(22, 7);
+      expect(store.getActiveToasts().length).toBe(0);
+
+      store.clearQuietHours();
+      expect(store.getActiveToasts().length).toBe(1);
+    });
+
+    it('should hide toasts when plugin is disabled', () => {
+      store.addNotification(
+        makeNotification('i1', { priority: 'info', source: 'weather' })
+      );
+      expect(store.getActiveToasts().length).toBe(1);
+
+      store.setPluginEnabled('weather', false);
+      expect(store.getActiveToasts().length).toBe(0);
+    });
+
+    it('should show toasts again when plugin is re-enabled', () => {
+      store.addNotification(
+        makeNotification('i1', { priority: 'info', source: 'weather' })
+      );
+      store.setPluginEnabled('weather', false);
+      expect(store.getActiveToasts().length).toBe(0);
+
+      store.setPluginEnabled('weather', true);
+      expect(store.getActiveToasts().length).toBe(1);
+    });
+  });
+
+  describe('immutability of returned entries', () => {
+    it('should not allow mutation of getAll() results to affect store', () => {
+      store.addNotification(makeNotification('n1'));
+      const entry = store.getAll()[0];
+      entry.read = true;
+      expect(store.getAll()[0].read).toBe(false);
+    });
+
+    it('should not allow mutation of getUnread() results', () => {
+      store.addNotification(makeNotification('n1'));
+      const entry = store.getUnread()[0];
+      entry.read = true;
+      expect(store.getUnread()[0].read).toBe(false);
+    });
+
+    it('should not allow mutation of getActiveBanners() results', () => {
+      store.addNotification(
+        makeNotification('u1', { priority: 'urgent' })
+      );
+      const entry = store.getActiveBanners()[0];
+      entry.dismissed = true;
+      expect(store.getActiveBanners()[0].dismissed).toBe(false);
+    });
+
+    it('should not allow mutation of getActiveToasts() results', () => {
+      store.addNotification(
+        makeNotification('i1', { priority: 'info' })
+      );
+      const entry = store.getActiveToasts()[0];
+      entry.read = true;
+      expect(store.getActiveToasts()[0].read).toBe(false);
+    });
+
+    it('should not allow mutation of filter() results', () => {
+      store.addNotification(
+        makeNotification('i1', { priority: 'info' })
+      );
+      const entry = store.filter({ priority: 'info' })[0];
+      entry.read = true;
+      expect(store.filter({ priority: 'info' })[0].read).toBe(false);
+    });
+  });
 });

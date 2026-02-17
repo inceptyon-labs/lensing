@@ -71,7 +71,8 @@ export function createNotificationStore(
 
   function isExpired(entry: NotificationEntry): boolean {
     if (entry.priority === 'urgent') return false;
-    if (!entry.ttl_ms) return false;
+    if (entry.ttl_ms === undefined) return false;
+    if (entry.ttl_ms === 0) return true; // Expire immediately
 
     const created = new Date(entry.created_at).getTime();
     const now = Date.now();
@@ -119,29 +120,37 @@ export function createNotificationStore(
 
     getAll() {
       const entries = Array.from(notifications.values());
-      return entries.sort(
-        (a, b) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
+      return entries
+        .sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
+        .map((e) => ({ ...e }));
     },
 
     getUnread() {
-      return Array.from(notifications.values()).filter((e) => !e.read);
+      return Array.from(notifications.values())
+        .filter((e) => !e.read)
+        .map((e) => ({ ...e }));
     },
 
     getActiveBanners() {
-      return Array.from(notifications.values()).filter(
-        (e) => e.priority === 'urgent' && !e.dismissed
-      );
+      return Array.from(notifications.values())
+        .filter((e) => e.priority === 'urgent' && !e.dismissed)
+        .map((e) => ({ ...e }));
     },
 
     getActiveToasts() {
-      return Array.from(notifications.values()).filter(
-        (e) =>
-          (e.priority === 'info' || e.priority === 'warning') &&
-          !e.dismissed &&
-          !isExpired(e)
-      );
+      return Array.from(notifications.values())
+        .filter(
+          (e) =>
+            (e.priority === 'info' || e.priority === 'warning') &&
+            !e.dismissed &&
+            !isExpired(e) &&
+            isPluginEnabled(e.source) &&
+            !(isQuietTime() && e.priority !== 'urgent')
+        )
+        .map((e) => ({ ...e }));
     },
 
     filter(criteria) {
@@ -159,7 +168,7 @@ export function createNotificationStore(
         results = results.filter((e) => e.read === criteria.read);
       }
 
-      return results;
+      return results.map((e) => ({ ...e }));
     },
 
     setPluginEnabled(source, enabled) {
