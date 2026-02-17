@@ -37,9 +37,7 @@ describe('WeatherServer', () => {
     });
 
     it('should throw if apiKey is missing', () => {
-      expect(() =>
-        createWeatherServer(validOptions({ apiKey: '' }))
-      ).toThrow(/apiKey/i);
+      expect(() => createWeatherServer(validOptions({ apiKey: '' }))).toThrow(/apiKey/i);
     });
 
     it('should throw if location is missing', () => {
@@ -55,15 +53,18 @@ describe('WeatherServer', () => {
         ok: true,
         json: () =>
           Promise.resolve({
-            current: { temp: 72, feels_like: 70, humidity: 55, weather: [{ description: 'clear', icon: '01d' }] },
+            current: {
+              temp: 72,
+              feels_like: 70,
+              humidity: 55,
+              weather: [{ description: 'clear', icon: '01d' }],
+            },
             daily: [],
           }),
       });
       const server = createWeatherServer(validOptions({ fetchFn }));
       server.refresh();
-      expect(fetchFn).toHaveBeenCalledWith(
-        expect.stringContaining('units=imperial')
-      );
+      expect(fetchFn).toHaveBeenCalledWith(expect.stringContaining('units=imperial'));
     });
 
     it('should accept metric units', () => {
@@ -71,15 +72,18 @@ describe('WeatherServer', () => {
         ok: true,
         json: () =>
           Promise.resolve({
-            current: { temp: 22, feels_like: 21, humidity: 55, weather: [{ description: 'clear', icon: '01d' }] },
+            current: {
+              temp: 22,
+              feels_like: 21,
+              humidity: 55,
+              weather: [{ description: 'clear', icon: '01d' }],
+            },
             daily: [],
           }),
       });
       const server = createWeatherServer(validOptions({ units: 'metric', fetchFn }));
       server.refresh();
-      expect(fetchFn).toHaveBeenCalledWith(
-        expect.stringContaining('units=metric')
-      );
+      expect(fetchFn).toHaveBeenCalledWith(expect.stringContaining('units=metric'));
     });
 
     it('should default maxStale_ms to 1 hour', () => {
@@ -234,7 +238,12 @@ describe('WeatherServer', () => {
         ok: true,
         json: () =>
           Promise.resolve({
-            current: { temp: 70, feels_like: 68, humidity: 50, weather: [{ description: 'clear', icon: '01d' }] },
+            current: {
+              temp: 70,
+              feels_like: 68,
+              humidity: 50,
+              weather: [{ description: 'clear', icon: '01d' }],
+            },
             daily: [],
           }),
       });
@@ -268,13 +277,16 @@ describe('WeatherServer', () => {
         ok: true,
         json: () =>
           Promise.resolve({
-            current: { temp: 70, feels_like: 68, humidity: 50, weather: [{ description: 'clear', icon: '01d' }] },
+            current: {
+              temp: 70,
+              feels_like: 68,
+              humidity: 50,
+              weather: [{ description: 'clear', icon: '01d' }],
+            },
             daily: [],
           }),
       });
-      const server = createWeatherServer(
-        validOptions({ fetchFn, maxStale_ms: 60000 })
-      );
+      const server = createWeatherServer(validOptions({ fetchFn, maxStale_ms: 60000 }));
       await server.refresh();
       await server.refresh(); // within staleness window — should use cache
       expect(fetchFn).toHaveBeenCalledTimes(1);
@@ -285,7 +297,12 @@ describe('WeatherServer', () => {
         ok: true,
         json: () =>
           Promise.resolve({
-            current: { temp: 70, feels_like: 68, humidity: 50, weather: [{ description: 'clear', icon: '01d' }] },
+            current: {
+              temp: 70,
+              feels_like: 68,
+              humidity: 50,
+              weather: [{ description: 'clear', icon: '01d' }],
+            },
             daily: [],
           }),
       });
@@ -304,7 +321,12 @@ describe('WeatherServer', () => {
           ok: true,
           json: () =>
             Promise.resolve({
-              current: { temp: 70, feels_like: 68, humidity: 50, weather: [{ description: 'clear', icon: '01d' }] },
+              current: {
+                temp: 70,
+                feels_like: 68,
+                humidity: 50,
+                weather: [{ description: 'clear', icon: '01d' }],
+              },
               daily: [],
             }),
         })
