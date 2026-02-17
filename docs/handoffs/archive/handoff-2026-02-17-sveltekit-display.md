@@ -1,10 +1,12 @@
 # Session Handoff: Create SvelteKit app with zone-based layout
+
 Date: 2026-02-17 16:47 UTC
 Issue: lensing-2fvm - Create SvelteKit app with zone-based layout
 
 ## What Was Done
 
 ### Completed
+
 - ✓ Step 1: SvelteKit app scaffold
   - Package.json with @lensing/display, SvelteKit 2.0, Vite 6.0, Svelte 5.0
   - tsconfig.json with strict: true, moduleResolution: bundler
@@ -22,6 +24,7 @@ Issue: lensing-2fvm - Create SvelteKit app with zone-based layout
   - Commit: 4315fcb
 
 ### In Progress
+
 - Step 3: Layout component architecture (RED tests written, ready for implementation)
   - Zone.svelte — individual zone container with CSS grid config
   - Layout.svelte — orchestrates all 5 zones (top-bar, left-col, center, right-col, bottom-bar)
@@ -29,6 +32,7 @@ Issue: lensing-2fvm - Create SvelteKit app with zone-based layout
   - 16 failing tests written (zone rendering, positioning, grid templates)
 
 ### Pending
+
 - Step 4: Placeholder widgets (tests to be written)
 - Step 5: Main page integration (tests to be written)
 - Code Review: SC (Sonnet → Codex)
@@ -37,6 +41,7 @@ Issue: lensing-2fvm - Create SvelteKit app with zone-based layout
 ## Files Changed This Session
 
 **Created:**
+
 - apps/display/ (complete app directory)
 - apps/display/package.json
 - apps/display/tsconfig.json
@@ -47,8 +52,8 @@ Issue: lensing-2fvm - Create SvelteKit app with zone-based layout
 - apps/display/README.md
 - apps/display/src/lib/styles/tokens.css (70+ CSS variables)
 - apps/display/src/lib/styles/global.css (base styling)
-- apps/display/__tests__/scaffold.test.ts (8 tests)
-- apps/display/__tests__/design-system.test.ts (12 tests)
+- apps/display/**tests**/scaffold.test.ts (8 tests)
+- apps/display/**tests**/design-system.test.ts (12 tests)
 
 ## Current Branch & Status
 

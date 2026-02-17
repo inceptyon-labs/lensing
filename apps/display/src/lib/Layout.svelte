@@ -5,11 +5,31 @@
 
   export let config: LayoutConfig = DEFAULT_LAYOUT;
 
-  $: topBar = config.zones.find((z) => z.name === 'top-bar') ?? { name: 'top-bar', rows: 1, columns: 4 };
-  $: leftCol = config.zones.find((z) => z.name === 'left-col') ?? { name: 'left-col', rows: 3, columns: 1 };
-  $: center = config.zones.find((z) => z.name === 'center') ?? { name: 'center', rows: 3, columns: 2 };
-  $: rightCol = config.zones.find((z) => z.name === 'right-col') ?? { name: 'right-col', rows: 3, columns: 1 };
-  $: bottomBar = config.zones.find((z) => z.name === 'bottom-bar') ?? { name: 'bottom-bar', rows: 1, columns: 4 };
+  $: topBar = config.zones.find((z) => z.name === 'top-bar') ?? {
+    name: 'top-bar',
+    rows: 1,
+    columns: 4,
+  };
+  $: leftCol = config.zones.find((z) => z.name === 'left-col') ?? {
+    name: 'left-col',
+    rows: 3,
+    columns: 1,
+  };
+  $: center = config.zones.find((z) => z.name === 'center') ?? {
+    name: 'center',
+    rows: 3,
+    columns: 2,
+  };
+  $: rightCol = config.zones.find((z) => z.name === 'right-col') ?? {
+    name: 'right-col',
+    rows: 3,
+    columns: 1,
+  };
+  $: bottomBar = config.zones.find((z) => z.name === 'bottom-bar') ?? {
+    name: 'bottom-bar',
+    rows: 1,
+    columns: 4,
+  };
 </script>
 
 <div class="layout">
@@ -52,9 +72,9 @@
     overflow: hidden;
     background-color: var(--void);
     grid-template-areas:
-      "top-bar    top-bar  top-bar   top-bar"
-      "left-col   center   center    right-col"
-      "bottom-bar bottom-bar bottom-bar bottom-bar";
+      'top-bar    top-bar  top-bar   top-bar'
+      'left-col   center   center    right-col'
+      'bottom-bar bottom-bar bottom-bar bottom-bar';
     grid-template-rows: auto 1fr auto;
     grid-template-columns: 200px 1fr 1fr 200px;
   }

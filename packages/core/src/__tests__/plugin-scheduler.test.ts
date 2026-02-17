@@ -1,8 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import {
-  createPluginScheduler,
-  type PluginSchedulerInstance,
-} from '../plugin-scheduler';
+import { createPluginScheduler, type PluginSchedulerInstance } from '../plugin-scheduler';
 import type { PluginManifest } from '@lensing/types';
 
 /** Create a basic test manifest */

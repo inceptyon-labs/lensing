@@ -37,7 +37,6 @@ export default tseslint.config(
     languageOptions: {
       parserOptions: {
         parser: tseslint.parser,
-        project: './tsconfig.base.json',
       },
     },
   },

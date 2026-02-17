@@ -5,28 +5,28 @@
 
 :root {
   /* ── Surfaces ─────────────────────────────────────────────── */
-  --void: hsl(240, 8%, 4%);                /* page background */
-  --event-horizon: hsl(240, 6%, 7%);      /* primary surface — cards, panels */
-  --accretion: hsl(240, 5%, 10%);         /* elevated surface — dropdowns, modals */
-  --singularity: hsl(240, 4%, 13%);       /* highest elevation — tooltips, popovers */
+  --void: hsl(240, 8%, 4%); /* page background */
+  --event-horizon: hsl(240, 6%, 7%); /* primary surface — cards, panels */
+  --accretion: hsl(240, 5%, 10%); /* elevated surface — dropdowns, modals */
+  --singularity: hsl(240, 4%, 13%); /* highest elevation — tooltips, popovers */
 
   /* ── Text ─────────────────────────────────────────────────── */
-  --starlight: hsl(220, 15%, 90%);        /* primary text */
-  --dim-light: hsl(220, 10%, 62%);        /* secondary — labels, metadata */
-  --faint-light: hsl(220, 8%, 42%);       /* tertiary — timestamps, captions */
-  --ghost-light: hsl(220, 6%, 28%);       /* muted — disabled, placeholder */
+  --starlight: hsl(220, 15%, 90%); /* primary text */
+  --dim-light: hsl(220, 10%, 62%); /* secondary — labels, metadata */
+  --faint-light: hsl(220, 8%, 42%); /* tertiary — timestamps, captions */
+  --ghost-light: hsl(220, 6%, 28%); /* muted — disabled, placeholder */
 
   /* ── Accent ───────────────────────────────────────────────── */
-  --ember: hsl(28, 85%, 55%);                        /* primary accent */
-  --ember-dim: hsl(28, 70%, 40%);                    /* accent hover/pressed */
-  --ember-glow: hsla(28, 85%, 55%, 0.12);            /* accent background tint */
-  --ember-trace: hsla(28, 85%, 55%, 0.06);           /* subtle accent hint */
+  --ember: hsl(28, 85%, 55%); /* primary accent */
+  --ember-dim: hsl(28, 70%, 40%); /* accent hover/pressed */
+  --ember-glow: hsla(28, 85%, 55%, 0.12); /* accent background tint */
+  --ember-trace: hsla(28, 85%, 55%, 0.06); /* subtle accent hint */
 
   /* ── Borders ──────────────────────────────────────────────── */
-  --edge: hsla(220, 10%, 50%, 0.12);               /* standard separation */
-  --edge-soft: hsla(220, 10%, 50%, 0.07);          /* subtle separation */
-  --edge-bright: hsla(220, 10%, 50%, 0.2);         /* emphasis — active panels */
-  --edge-focus: hsla(28, 85%, 55%, 0.4);           /* focus rings — ember-tinted */
+  --edge: hsla(220, 10%, 50%, 0.12); /* standard separation */
+  --edge-soft: hsla(220, 10%, 50%, 0.07); /* subtle separation */
+  --edge-bright: hsla(220, 10%, 50%, 0.2); /* emphasis — active panels */
+  --edge-focus: hsla(28, 85%, 55%, 0.4); /* focus rings — ember-tinted */
 
   /* ── Semantic ─────────────────────────────────────────────── */
   --alert-urgent: hsl(0, 60%, 55%);
@@ -54,29 +54,29 @@
   --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
 
   /* Text scale */
-  --text-xs:   0.75rem;   /* 12px */
-  --text-sm:   0.875rem;  /* 14px */
-  --text-base: 1rem;      /* 16px */
-  --text-lg:   1.25rem;   /* 20px */
-  --text-xl:   1.5rem;    /* 24px */
-  --text-2xl:  2rem;      /* 32px */
-  --text-3xl:  3rem;      /* 48px */
+  --text-xs: 0.75rem; /* 12px */
+  --text-sm: 0.875rem; /* 14px */
+  --text-base: 1rem; /* 16px */
+  --text-lg: 1.25rem; /* 20px */
+  --text-xl: 1.5rem; /* 24px */
+  --text-2xl: 2rem; /* 32px */
+  --text-3xl: 3rem; /* 48px */
 
   /* Weights */
   --weight-normal: 400;
   --weight-medium: 500;
-  --weight-semi:   600;
-  --weight-bold:   700;
+  --weight-semi: 600;
+  --weight-bold: 700;
 
   /* Tracking */
-  --tracking-tight:  -0.02em;
-  --tracking-normal:  0;
-  --tracking-wide:    0.04em;
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.04em;
 
   /* Leading */
-  --leading-tight:  1.2;
+  --leading-tight: 1.2;
   --leading-normal: 1.5;
-  --leading-loose:  1.7;
+  --leading-loose: 1.7;
 
   /* ── Border Radius ────────────────────────────────────────── */
   --radius-sm: 4px;
@@ -85,11 +85,11 @@
   --radius-xl: 16px;
 
   /* ── Animation ────────────────────────────────────────────── */
-  --duration-fast:    100ms;
-  --duration-normal:  200ms;
-  --duration-slow:    400ms;
+  --duration-fast: 100ms;
+  --duration-normal: 200ms;
+  --duration-slow: 400ms;
   --duration-ambient: 4s;
 
-  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
 }

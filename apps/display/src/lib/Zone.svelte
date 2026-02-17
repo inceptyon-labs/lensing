@@ -10,12 +10,7 @@
   $: gridStyle = createZoneStyle(config);
 </script>
 
-<section
-  class="zone"
-  data-zone={name}
-  style="display: grid; {gridStyle}"
-  aria-label="Zone: {name}"
->
+<section class="zone" data-zone={name} style="display: grid; {gridStyle}" aria-label="Zone: {name}">
   <slot />
 </section>
 

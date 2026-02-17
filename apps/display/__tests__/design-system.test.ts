@@ -126,7 +126,7 @@ describe('Design System Tokens', () => {
       /rgba\s*\(/,
     ];
 
-    hardcodedPatterns.forEach(pattern => {
+    hardcodedPatterns.forEach((pattern) => {
       const matches = content.match(pattern);
       // Allow limited matches (like in comments), but not for actual styling
       if (matches) {

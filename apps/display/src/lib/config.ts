@@ -1,11 +1,5 @@
 /** Names of the five display zones */
-export const ZONE_NAMES = [
-  'top-bar',
-  'left-col',
-  'center',
-  'right-col',
-  'bottom-bar',
-] as const;
+export const ZONE_NAMES = ['top-bar', 'left-col', 'center', 'right-col', 'bottom-bar'] as const;
 
 export type ZoneName = (typeof ZONE_NAMES)[number];
 
