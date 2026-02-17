@@ -116,7 +116,9 @@ export function createPluginScheduler(options: SchedulerOptions = {}): PluginSch
         if (record.generation !== capturedGeneration || closed) return;
         record.entry.lastRun = Date.now();
         record.entry.runCount++;
-        if (record.entry.status !== 'stopped') {
+        // Status could have changed to 'stopped' during handler execution
+        // Type assertion needed because TS control flow narrowing doesn't account for mutations during await
+        if ((record.entry as SchedulerEntry).status !== 'stopped') {
           record.entry.status = 'running';
           record.entry.error = undefined;
         }
