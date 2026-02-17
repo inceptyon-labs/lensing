@@ -148,7 +148,7 @@ export function createNotificationStore(
             !e.dismissed &&
             !isExpired(e) &&
             isPluginEnabled(e.source) &&
-            !(isQuietTime() && e.priority !== 'urgent')
+            !isQuietTime()
         )
         .map((e) => ({ ...e }));
     },
