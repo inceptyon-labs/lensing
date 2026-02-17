@@ -1,15 +1,15 @@
 ---
 # lensing-uiff
 title: Build notification overlay and admin feed
-status: todo
+status: in-progress
 type: task
 priority: high
 tags:
-  - pasiv
-  - size:M
-  - area:frontend
+    - pasiv
+    - size:M
+    - area:frontend
 created_at: 2026-02-16T21:25:28Z
-updated_at: 2026-02-16T21:25:28Z
+updated_at: 2026-02-17T01:26:53Z
 parent: lensing-djl7
 ---
 

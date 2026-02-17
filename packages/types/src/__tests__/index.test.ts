@@ -7,6 +7,9 @@ import type {
   DataBusMessage,
   PluginInstance,
   WidgetSize,
+  NotificationEntry,
+  QuietHours,
+  NotificationFilter,
 } from '@lensing/types';
 
 describe('@lensing/types', () => {
@@ -80,5 +83,31 @@ describe('@lensing/types', () => {
   it('exports WidgetSize type', () => {
     const sizes: WidgetSize[] = ['small', 'medium', 'large'];
     expect(sizes).toHaveLength(3);
+  });
+
+  it('exports NotificationEntry with read/dismissed tracking', () => {
+    const entry: NotificationEntry = {
+      id: 'n1',
+      source: 'weather',
+      priority: 'info',
+      title: 'Rain expected',
+      created_at: new Date().toISOString(),
+      read: false,
+      dismissed: false,
+    };
+    expect(entry.read).toBe(false);
+    expect(entry.dismissed).toBe(false);
+  });
+
+  it('exports QuietHours with start/end hours', () => {
+    const hours: QuietHours = { start: 22, end: 7 };
+    expect(hours.start).toBe(22);
+    expect(hours.end).toBe(7);
+  });
+
+  it('exports NotificationFilter with optional criteria', () => {
+    const filter: NotificationFilter = { priority: 'urgent', read: false };
+    expect(filter.priority).toBe('urgent');
+    expect(filter.source).toBeUndefined();
   });
 });

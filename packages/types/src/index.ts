@@ -184,3 +184,22 @@ export interface CalendarEvent {
   color?: string; // optional hex color for calendar
   allDay?: boolean;
 }
+
+/** A notification with read/dismissed tracking for the store */
+export interface NotificationEntry extends Notification {
+  read: boolean;
+  dismissed: boolean;
+}
+
+/** Quiet hours window (hours 0-23) */
+export interface QuietHours {
+  start: number; // 0-23
+  end: number; // 0-23, if start > end spans midnight
+}
+
+/** Filter criteria for querying notifications */
+export interface NotificationFilter {
+  priority?: NotificationPriority;
+  source?: string;
+  read?: boolean;
+}
