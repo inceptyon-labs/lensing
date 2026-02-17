@@ -101,6 +101,43 @@ describe('CalendarStore', () => {
 
       expect(today.map((e) => e.id)).toEqual(['morning', 'noon', 'evening']);
     });
+
+    it('should include multi-day events that span today', () => {
+      const now = new Date();
+      const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 10);
+      const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 10);
+      const spanning: CalendarEvent = {
+        id: 'spanning',
+        title: 'Multi-day',
+        start: yesterday.toISOString(),
+        end: tomorrow.toISOString(),
+        calendar: 'work',
+      };
+
+      store.setEvents([spanning]);
+      const today = store.getTodayEvents();
+      expect(today.map((e) => e.id)).toContain('spanning');
+    });
+
+    it('should handle date-only strings as local dates', () => {
+      const now = new Date();
+      const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      const tomorrowDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      const tomorrowStr = `${tomorrowDate.getFullYear()}-${String(tomorrowDate.getMonth() + 1).padStart(2, '0')}-${String(tomorrowDate.getDate()).padStart(2, '0')}`;
+
+      const allDay: CalendarEvent = {
+        id: 'allday',
+        title: 'All Day',
+        start: todayStr,
+        end: tomorrowStr,
+        calendar: 'personal',
+        allDay: true,
+      };
+
+      store.setEvents([allDay]);
+      const today = store.getTodayEvents();
+      expect(today.map((e) => e.id)).toContain('allday');
+    });
   });
 
   describe('upcoming range filtering', () => {

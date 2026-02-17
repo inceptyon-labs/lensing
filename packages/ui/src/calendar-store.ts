@@ -31,18 +31,24 @@ export function createCalendarStore(options: CalendarStoreOptions = {}): Calenda
   let loading = false;
   let error: string | undefined;
 
-  function isSameDay(date1: Date, date2: Date): boolean {
-    return (
-      date1.getFullYear() === date2.getFullYear() &&
-      date1.getMonth() === date2.getMonth() &&
-      date1.getDate() === date2.getDate()
-    );
+  /** Parse date string, treating date-only strings (YYYY-MM-DD) as local time */
+  function parseDate(dateStr: string): Date {
+    // Date-only strings (no 'T') are parsed as UTC by spec, causing timezone issues
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      const [y, m, d] = dateStr.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    }
+    return new Date(dateStr);
+  }
+
+  function startOfDay(date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
   }
 
   function filterAndSort(predicate: (event: CalendarEvent) => boolean): CalendarEvent[] {
     return events
       .filter(predicate)
-      .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+      .sort((a, b) => parseDate(a.start).getTime() - parseDate(b.start).getTime());
   }
 
   return {
@@ -57,16 +63,28 @@ export function createCalendarStore(options: CalendarStoreOptions = {}): Calenda
     },
 
     getTodayEvents() {
-      const today = new Date();
-      return filterAndSort((event) => isSameDay(new Date(event.start), today));
+      const todayStart = startOfDay(new Date());
+      const tomorrowStart = new Date(
+        todayStart.getFullYear(),
+        todayStart.getMonth(),
+        todayStart.getDate() + 1
+      );
+      // Event overlaps today if it starts before tomorrow AND ends after today starts
+      return filterAndSort((event) => {
+        const eventStart = parseDate(event.start);
+        const eventEnd = parseDate(event.end);
+        return eventStart < tomorrowStart && eventEnd > todayStart;
+      });
     },
 
     getUpcomingEvents() {
       const now = new Date();
       const maxDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + rangeDays + 1);
+      // Event overlaps range if it starts before maxDate AND ends after now
       return filterAndSort((event) => {
-        const eventStart = new Date(event.start);
-        return eventStart >= now && eventStart < maxDate;
+        const eventStart = parseDate(event.start);
+        const eventEnd = parseDate(event.end);
+        return eventStart < maxDate && eventEnd > now;
       });
     },
 
