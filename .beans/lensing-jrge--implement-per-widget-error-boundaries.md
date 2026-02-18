@@ -9,7 +9,7 @@ tags:
   - size:S
   - area:frontend
 created_at: 2026-02-16T21:23:01Z
-updated_at: 2026-02-18T02:00:12Z
+updated_at: 2026-02-18T02:05:30Z
 parent: lensing-f2jb
 ---
 
@@ -17,10 +17,10 @@ Svelte error boundaries per widget slot so a crashing plugin never takes down th
 
 ## Acceptance Criteria
 
-- [ ] ErrorBoundary component wraps each widget slot
-- [ ] Crashing widget shows graceful error tile with plugin name and retry option
-- [ ] Error state is contained — other widgets continue rendering
-- [ ] Error is logged and reported to host for admin panel visibility
+- [x] ErrorBoundary component wraps each widget slot
+- [x] Crashing widget shows graceful error tile with plugin name and retry option
+- [x] Error state is contained — other widgets continue rendering
+- [x] Error is logged and reported to host for admin panel visibility
 
 ---
 
