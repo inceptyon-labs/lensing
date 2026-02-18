@@ -59,4 +59,11 @@ export type {
   CalDAVResponse,
 } from './caldav-client';
 
+export { createNotificationQueue } from './notification-queue';
+export type {
+  NotificationQueueOptions,
+  NotificationQueueInstance,
+  EmitOptions,
+} from './notification-queue';
+
 /** Placeholder: Host service exports (plugin loader, data bus) */
