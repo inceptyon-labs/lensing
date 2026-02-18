@@ -2,16 +2,12 @@
   /** The plugin/widget name to display in the error tile */
   export let name: string = 'Widget';
 
-  let errorState: { message: string; error: unknown } | null = null;
-
   function handleError(error: unknown, reset: () => void) {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[ErrorBoundary] "${name}" crashed:`, error);
-    errorState = { message, error };
   }
 
   function retry(reset: () => void) {
-    errorState = null;
     reset();
   }
 </script>
