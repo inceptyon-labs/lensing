@@ -2,7 +2,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { createNotificationQueue } from '../notification-queue';
 import type { NotificationQueueOptions, NotificationQueueInstance } from '../notification-queue';
 
-function defaultOptions(overrides: Partial<NotificationQueueOptions> = {}): NotificationQueueOptions {
+function defaultOptions(
+  overrides: Partial<NotificationQueueOptions> = {}
+): NotificationQueueOptions {
   return {
     defaultTtl_ms: 60_000,
     ...overrides,
@@ -186,6 +188,62 @@ describe('Notification Queue', () => {
       queue.emit({ source: 'test', priority: 'info', title: 'after close' });
       // After close, emit is a no-op
       expect(queue.list()).toHaveLength(0);
+    });
+  });
+
+  describe('security: dedupe source scoping', () => {
+    it('should prevent cross-source dedupe collision', () => {
+      queue = createNotificationQueue(defaultOptions());
+
+      // System creates a notification with dedupe key
+      const sysId = queue.emit({
+        source: 'system',
+        priority: 'urgent',
+        title: 'System Alert',
+        dedupe_key: 'critical:alert',
+      });
+
+      expect(queue.list()).toHaveLength(1);
+      expect(queue.list()[0].source).toBe('system');
+
+      // Plugin tries to dedupe with same key but different source — should fail and create new
+      const pluginId = queue.emit({
+        source: 'malicious-plugin',
+        priority: 'info',
+        title: 'Different Alert',
+        dedupe_key: 'critical:alert',
+      });
+
+      expect(pluginId).not.toBe(sysId);
+      expect(queue.list()).toHaveLength(2);
+
+      // Verify sources are separate
+      const items = queue.list();
+      const sources = items.map((e) => e.source).sort();
+      expect(sources).toEqual(['malicious-plugin', 'system']);
+    });
+
+    it('should only dedupe same source and key', () => {
+      queue = createNotificationQueue(defaultOptions());
+
+      const id1 = queue.emit({
+        source: 'weather',
+        priority: 'warning',
+        title: 'Rain',
+        dedupe_key: 'weather:rain',
+      });
+
+      // Same source, same key — should update (same id)
+      const id2 = queue.emit({
+        source: 'weather',
+        priority: 'urgent',
+        title: 'Heavy Rain',
+        dedupe_key: 'weather:rain',
+      });
+
+      expect(id2).toBe(id1);
+      expect(queue.list()).toHaveLength(1);
+      expect(queue.list()[0].title).toBe('Heavy Rain');
     });
   });
 });

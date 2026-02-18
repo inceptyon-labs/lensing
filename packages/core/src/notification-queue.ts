@@ -70,7 +70,10 @@ export function createNotificationQueue(
   const sweepInterval_ms = options.sweepInterval_ms ?? DEFAULT_SWEEP_INTERVAL_MS;
   const dedupeWindow_ms = options.dedupeWindow_ms ?? DEFAULT_DEDUPE_WINDOW_MS;
 
-  const notifications = new Map<string, NotificationEntry & { ttl_ms: number; dedupe_key?: string }>();
+  const notifications = new Map<
+    string,
+    NotificationEntry & { ttl_ms: number; dedupe_key?: string }
+  >();
   const listeners: Array<(entry: NotificationEntry) => void> = [];
   let closed = false;
   let sweepTimer: ReturnType<typeof setInterval> | null = null;
@@ -102,12 +105,13 @@ export function createNotificationQueue(
     const ttl = opts.ttl_ms ?? defaultTtl_ms;
     const now = new Date().toISOString();
 
-    // Deduplication: if same dedupe_key exists within window, update it
+    // Deduplication: if same dedupe_key exists within window (same source, not expired), update it
     if (opts.dedupe_key) {
       for (const [id, existing] of notifications) {
-        if (existing.dedupe_key === opts.dedupe_key) {
+        if (existing.dedupe_key === opts.dedupe_key && existing.source === opts.source) {
           const age = Date.now() - new Date(existing.created_at).getTime();
-          if (age <= dedupeWindow_ms) {
+          // Only dedupe if not expired
+          if (age <= dedupeWindow_ms && age <= existing.ttl_ms) {
             // Update existing entry
             const updated = {
               ...existing,
@@ -150,7 +154,13 @@ export function createNotificationQueue(
     },
 
     list(filter?: NotificationFilter): NotificationEntry[] {
-      let entries = Array.from(notifications.values());
+      const now = Date.now();
+      let entries = Array.from(notifications.values())
+        // Filter out expired entries
+        .filter((e) => {
+          const age = now - new Date(e.created_at).getTime();
+          return age <= e.ttl_ms;
+        });
 
       if (filter) {
         if (filter.priority !== undefined) {
