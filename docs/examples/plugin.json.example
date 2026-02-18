@@ -1,0 +1,44 @@
+{
+  "id": "weather-widget",
+  "name": "Weather Widget",
+  "version": "1.0.0",
+  "ui_entry": "./dist/widget.js",
+  "server_entry": "./dist/server.js",
+  "permissions": {
+    "allowed_domains": ["api.openweathermap.org", "api.weather.gov"],
+    "max_refresh_ms": 600000,
+    "max_request_burst": 10,
+    "secrets": ["OPENWEATHER_API_KEY", "WEATHER_GOV_KEY"]
+  },
+  "widget_sizes": ["small", "medium", "large"],
+  "dependencies": ["calendar", "location"],
+  "config_schema": {
+    "fields": [
+      {
+        "key": "location",
+        "type": "string",
+        "label": "Location",
+        "description": "City or coordinates for weather display",
+        "required": true
+      },
+      {
+        "key": "units",
+        "type": "select",
+        "label": "Temperature Units",
+        "default": "fahrenheit",
+        "options": [
+          { "label": "Fahrenheit", "value": "fahrenheit" },
+          { "label": "Celsius", "value": "celsius" }
+        ]
+      },
+      {
+        "key": "refresh_interval",
+        "type": "number",
+        "label": "Refresh Interval (seconds)",
+        "default": 300,
+        "min": 60,
+        "max": 3600
+      }
+    ]
+  }
+}

@@ -50,4 +50,13 @@ export type {
   FetchFn,
 } from './weather-server';
 
+export { createCalendarServer } from './caldav-client';
+export type {
+  CalendarServerOptions,
+  CalendarServerInstance,
+  CalDAVFetchFn,
+  CalDAVRequestOptions,
+  CalDAVResponse,
+} from './caldav-client';
+
 /** Placeholder: Host service exports (plugin loader, data bus) */
