@@ -1,15 +1,15 @@
 ---
 # lensing-apmj
 title: Define CSS custom property design tokens
-status: in-progress
+status: completed
 type: task
 priority: high
 tags:
-    - pasiv
-    - size:S
-    - area:frontend
+  - pasiv
+  - size:S
+  - area:frontend
 created_at: 2026-02-16T21:23:20Z
-updated_at: 2026-02-17T23:14:47Z
+updated_at: 2026-02-17T23:15:30Z
 parent: lensing-pamo
 ---
 
@@ -27,3 +27,14 @@ CSS custom property token system for consistent visual language.
 ---
 
 **Size:** S
+
+## Summary of Changes
+
+Created CSS custom property design token system in packages/ui/src/tokens.css:
+
+- 10 token categories: surfaces, text, accent, borders, semantic, controls, typography, spacing, radius, animation
+- All values from .interface-design/system.md gravitational lensing theme
+- 34 tests validating all token categories and values
+- Single importable CSS file for all packages
+
+Commit: dc44af3 (merged to main)

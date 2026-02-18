@@ -5,9 +5,9 @@ status: completed
 type: feature
 priority: high
 tags:
-    - pasiv
-    - priority:high
-    - area:frontend
+  - pasiv
+  - priority:high
+  - area:frontend
 created_at: 2026-02-16T21:20:08Z
 updated_at: 2026-02-18T01:33:08Z
 parent: lensing-u2k6

@@ -5,9 +5,9 @@ status: completed
 type: task
 priority: high
 tags:
-    - pasiv
-    - size:L
-    - area:backend
+  - pasiv
+  - size:L
+  - area:backend
 created_at: 2026-02-16T21:24:34Z
 updated_at: 2026-02-18T00:20:04Z
 parent: lensing-ra5p
@@ -31,18 +31,21 @@ CalDAV client for Apple Calendar with app-specific password authentication.
 ## Summary of Changes
 
 **Files created:**
+
 - packages/core/src/caldav-client.ts (337 lines) - CalDAV client factory, VEVENT parsing, auth, retry logic, listeners
-- packages/core/src/__tests__/caldav-client.test.ts (437 lines) - 37 comprehensive tests
+- packages/core/src/**tests**/caldav-client.test.ts (437 lines) - 37 comprehensive tests
 
 **Files modified:**
+
 - packages/core/src/index.ts - Added exports for CalendarServer types and factory
 
 **Key features:**
+
 - Factory pattern: createCalendarServer(options) returns CalendarServerInstance
 - HTTPS-only connections with validation
 - Basic auth header generation
 - CalDAV REPORT query building with XML
-- VEVENT parsing with all-day and datetime support  
+- VEVENT parsing with all-day and datetime support
 - Event staleness cache (configurable maxStale_ms, default 1 hour)
 - Exponential backoff retry (2 retries, 50ms base, 2x growth)
 - Concurrent request deduplication (in-flight tracking)
@@ -51,6 +54,7 @@ CalDAV client for Apple Calendar with app-specific password authentication.
 - Resource cleanup on close()
 
 **Security & reliability:**
+
 - HTTPS validation prevents credential leakage
 - Auth errors (401/403) not retried
 - Rate limit detection (429)

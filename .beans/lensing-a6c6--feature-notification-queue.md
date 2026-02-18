@@ -1,7 +1,7 @@
 ---
 # lensing-a6c6
 title: 'Feature: Notification Queue'
-status: todo
+status: in-progress
 type: feature
 priority: high
 tags:
@@ -10,7 +10,7 @@ tags:
   - area:backend
   - area:db
 created_at: 2026-02-16T21:21:50Z
-updated_at: 2026-02-16T21:21:50Z
+updated_at: 2026-02-18T01:34:17Z
 parent: lensing-oeoo
 ---
 
