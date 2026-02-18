@@ -1,7 +1,7 @@
 ---
 # lensing-jrge
 title: Implement per-widget error boundaries
-status: todo
+status: in-progress
 type: task
 priority: high
 tags:
@@ -9,7 +9,7 @@ tags:
   - size:S
   - area:frontend
 created_at: 2026-02-16T21:23:01Z
-updated_at: 2026-02-16T21:23:01Z
+updated_at: 2026-02-18T02:00:12Z
 parent: lensing-f2jb
 ---
 

@@ -69,9 +69,9 @@ describe('CalendarServer', () => {
     });
 
     it('should throw if serverUrl does not use HTTPS', () => {
-      expect(() => createCalendarServer(validOptions({ serverUrl: 'http://caldav.icloud.com' }))).toThrow(
-        /https/i
-      );
+      expect(() =>
+        createCalendarServer(validOptions({ serverUrl: 'http://caldav.icloud.com' }))
+      ).toThrow(/https/i);
     });
 
     it('should default rangeDays to 7', () => {

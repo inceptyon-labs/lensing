@@ -72,6 +72,6 @@ describe('ErrorBoundary Integration', () => {
   it('should import ErrorBoundary in +page.svelte', () => {
     const pagePath = path.join(__dirname, '..', 'src', 'routes', '+page.svelte');
     const content = fs.readFileSync(pagePath, 'utf-8');
-    expect(content).toContain("import ErrorBoundary from");
+    expect(content).toContain('import ErrorBoundary from');
   });
 });

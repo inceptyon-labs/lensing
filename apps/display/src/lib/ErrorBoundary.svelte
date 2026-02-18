@@ -23,10 +23,10 @@
     <div class="error-tile" role="alert" aria-label="Error in {name}">
       <div class="error-icon" aria-hidden="true">⚠</div>
       <div class="error-name">{name}</div>
-      <div class="error-message">{error instanceof Error ? error.message : 'An error occurred'}</div>
-      <button class="retry-btn" onclick={() => retry(reset)}>
-        Retry
-      </button>
+      <div class="error-message">
+        {error instanceof Error ? error.message : 'An error occurred'}
+      </div>
+      <button class="retry-btn" onclick={() => retry(reset)}> Retry </button>
     </div>
   {/snippet}
 </svelte:boundary>

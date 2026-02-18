@@ -206,6 +206,50 @@ describe('validateManifest', () => {
       expect(result.valid).toBe(false);
       expect(result.errors).toContain('permissions.max_refresh_ms must be a positive number');
     });
+
+    it('should accept valid max_request_burst', () => {
+      const result = validateManifest({
+        ...validManifest,
+        permissions: { max_request_burst: 10 },
+      });
+      expect(result.valid).toBe(true);
+    });
+
+    it('should reject non-number max_request_burst', () => {
+      const result = validateManifest({
+        ...validManifest,
+        permissions: { max_request_burst: '10' },
+      });
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain('permissions.max_request_burst must be a positive number');
+    });
+
+    it('should reject negative max_request_burst', () => {
+      const result = validateManifest({
+        ...validManifest,
+        permissions: { max_request_burst: -5 },
+      });
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain('permissions.max_request_burst must be a positive number');
+    });
+
+    it('should reject NaN for max_request_burst', () => {
+      const result = validateManifest({
+        ...validManifest,
+        permissions: { max_request_burst: NaN },
+      });
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain('permissions.max_request_burst must be a positive number');
+    });
+
+    it('should reject Infinity for max_request_burst', () => {
+      const result = validateManifest({
+        ...validManifest,
+        permissions: { max_request_burst: Infinity },
+      });
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain('permissions.max_request_burst must be a positive number');
+    });
   });
 
   describe('return type', () => {

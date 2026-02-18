@@ -78,6 +78,16 @@ export function validateManifest(input: unknown): ValidationResult {
         }
       }
 
+      if ('max_request_burst' in perms) {
+        if (
+          typeof perms.max_request_burst !== 'number' ||
+          !Number.isFinite(perms.max_request_burst) ||
+          perms.max_request_burst < 0
+        ) {
+          errors.push('permissions.max_request_burst must be a positive number');
+        }
+      }
+
       if ('secrets' in perms) {
         if (!Array.isArray(perms.secrets)) {
           errors.push('permissions.secrets must be an array of strings');

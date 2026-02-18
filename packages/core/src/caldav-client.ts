@@ -176,8 +176,8 @@ export function createCalendarServer(options: CalendarServerOptions): CalendarSe
   if (!password) throw new Error('CalendarServer: password is required');
   if (!serverUrl) throw new Error('CalendarServer: serverUrl is required');
   if (!calendarPath) throw new Error('CalendarServer: calendarPath is required');
-  if (!serverUrl.startsWith('https://')) throw new Error('CalendarServer: serverUrl must use HTTPS');
-
+  if (!serverUrl.startsWith('https://'))
+    throw new Error('CalendarServer: serverUrl must use HTTPS');
 
   const rangeDays = options.rangeDays ?? DEFAULT_RANGE_DAYS;
   const maxStale_ms = options.maxStale_ms ?? DEFAULT_MAX_STALE_MS;

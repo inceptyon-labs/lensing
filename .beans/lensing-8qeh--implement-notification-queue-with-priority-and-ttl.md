@@ -5,10 +5,10 @@ status: completed
 type: task
 priority: high
 tags:
-    - pasiv
-    - size:M
-    - area:backend
-    - area:db
+  - pasiv
+  - size:M
+  - area:backend
+  - area:db
 created_at: 2026-02-16T21:25:23Z
 updated_at: 2026-02-18T01:47:07Z
 parent: lensing-a6c6
@@ -32,13 +32,16 @@ SQLite-backed notification queue with priority levels, TTL expiry, and deduplica
 ## Summary of Changes
 
 **Files created:**
+
 - packages/core/src/notification-queue.ts (350+ lines) - Full factory implementation
-- packages/core/src/__tests__/notification-queue.test.ts (200+ lines) - 20 comprehensive tests
+- packages/core/src/**tests**/notification-queue.test.ts (200+ lines) - 20 comprehensive tests
 
 **Files modified:**
+
 - packages/core/src/index.ts - Added exports for queue factory and types
 
 **Implementation features:**
+
 - Factory: createNotificationQueue() with configurable TTL, sweep interval, dedupe window
 - Schema: id, source, priority, title, body, ttl_ms, created_at, read, dismissed, dedupe_key
 - Priority levels: urgent (0) > warning (1) > info (2)
@@ -49,11 +52,13 @@ SQLite-backed notification queue with priority levels, TTL expiry, and deduplica
 - Lifecycle: close() clears state and cancels sweep timer
 
 **Security fixes (Codex review):**
+
 - TTL enforcement: list() filters out expired notifications before returning
 - Dedupe source scoping: Prevents cross-source collision (e.g., plugin can't override system notifications with same dedupe_key)
 - Isolated error handling: Listener exceptions don't crash queue
 
 **Tests:** 20 passing (189 total project tests)
+
 - Factory creation and options
 - emit() with unique IDs and optional fields
 - list() filtering by priority, source, read status
@@ -64,10 +69,12 @@ SQLite-backed notification queue with priority levels, TTL expiry, and deduplica
 - Exported for use across @lensing packages
 
 **Code review:** SC tier (Sonnet → Codex)
+
 - Sonnet: No bugs, error handling present, tests comprehensive
 - Codex: Found and fixed TTL and dedupe security issues
 
 **Verification:**
+
 - ✓ 189/189 tests passing
 - ✓ Build successful
 - ✓ All acceptance criteria met
