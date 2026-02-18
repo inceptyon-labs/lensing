@@ -1,7 +1,7 @@
 ---
 # lensing-8qeh
 title: Implement notification queue with priority and TTL
-status: in-progress
+status: completed
 type: task
 priority: high
 tags:
@@ -10,7 +10,7 @@ tags:
     - area:backend
     - area:db
 created_at: 2026-02-16T21:25:23Z
-updated_at: 2026-02-18T01:46:58Z
+updated_at: 2026-02-18T01:47:07Z
 parent: lensing-a6c6
 ---
 
