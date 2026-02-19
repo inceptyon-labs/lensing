@@ -68,3 +68,5 @@ export type {
 
 export { createPluginLoader } from './plugin-loader';
 export type { PluginLoaderOptions } from './plugin-loader';
+
+export { createDataBus } from './data-bus';

@@ -71,6 +71,33 @@ export interface DataBusMessage<T = unknown> {
   plugin_id: string;
 }
 
+/** Callback for data bus subscriptions */
+export type DataBusSubscriber<T = unknown> = (message: DataBusMessage<T>) => void;
+
+/** Data bus instance for inter-plugin communication */
+export interface DataBusInstance {
+  /** Publish data to a named channel */
+  publish<T = unknown>(channel: string, pluginId: string, data: T): void;
+
+  /** Subscribe to a named channel; returns an unsubscribe function */
+  subscribe<T = unknown>(channel: string, callback: DataBusSubscriber<T>): () => void;
+
+  /** Get the latest message on a channel, or undefined */
+  getLatest<T = unknown>(channel: string): DataBusMessage<T> | undefined;
+
+  /** List all channels that have had at least one publish */
+  getChannels(): string[];
+
+  /** Register a global listener called on every publish (for WS forwarding) */
+  onMessage(callback: DataBusSubscriber): () => void;
+
+  /** Clear all channel data and subscriptions */
+  clear(): void;
+
+  /** Close the bus, remove all subscriptions */
+  close(): void;
+}
+
 /** Plugin runtime state */
 export type PluginStatus = 'loading' | 'active' | 'error' | 'disabled';
 

@@ -1,15 +1,15 @@
 ---
 # lensing-h1kz
 title: Implement pub/sub data bus
-status: todo
+status: in-progress
 type: task
 priority: high
 tags:
-  - pasiv
-  - size:M
-  - area:backend
+    - pasiv
+    - size:M
+    - area:backend
 created_at: 2026-02-16T21:23:56Z
-updated_at: 2026-02-16T21:23:56Z
+updated_at: 2026-02-19T15:15:42Z
 parent: lensing-0rn7
 ---
 
