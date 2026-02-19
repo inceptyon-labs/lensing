@@ -1,5 +1,10 @@
 import Database from 'better-sqlite3';
-import type { DatabaseInstance, DatabaseOptions, SchemaMigration, ZoneConfig } from '@lensing/types';
+import type {
+  DatabaseInstance,
+  DatabaseOptions,
+  SchemaMigration,
+  ZoneConfig,
+} from '@lensing/types';
 
 const DEFAULT_PATH = 'data/lensing.db';
 
@@ -69,11 +74,13 @@ export function createDatabase(options: DatabaseOptions = {}): DatabaseInstance 
     },
 
     setSetting(key: string, value: string): void {
-      db.prepare(`
+      db.prepare(
+        `
         INSERT INTO settings (key, value, updated_at)
         VALUES (?, ?, datetime('now'))
         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at
-      `).run(key, value);
+      `
+      ).run(key, value);
     },
 
     getAllSettings(): Record<string, string> {
@@ -104,11 +111,13 @@ export function createDatabase(options: DatabaseOptions = {}): DatabaseInstance 
     },
 
     setLayout(name: string, zones: ZoneConfig[]): void {
-      db.prepare(`
+      db.prepare(
+        `
         INSERT INTO layouts (name, config, updated_at)
         VALUES (?, ?, datetime('now'))
         ON CONFLICT(name) DO UPDATE SET config = excluded.config, updated_at = excluded.updated_at
-      `).run(name, JSON.stringify(zones));
+      `
+      ).run(name, JSON.stringify(zones));
     },
 
     getAllLayouts(): Record<string, ZoneConfig[]> {
@@ -139,11 +148,13 @@ export function createDatabase(options: DatabaseOptions = {}): DatabaseInstance 
     },
 
     setPluginState<T = unknown>(pluginId: string, state: T): void {
-      db.prepare(`
+      db.prepare(
+        `
         INSERT INTO plugin_state (plugin_id, state, updated_at)
         VALUES (?, ?, datetime('now'))
         ON CONFLICT(plugin_id) DO UPDATE SET state = excluded.state, updated_at = excluded.updated_at
-      `).run(pluginId, JSON.stringify(state));
+      `
+      ).run(pluginId, JSON.stringify(state));
     },
 
     getAllPluginStates(): Record<string, unknown> {

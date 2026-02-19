@@ -100,12 +100,8 @@ describe('Database', () => {
     });
 
     it('should get all layouts', () => {
-      const layoutA: ZoneConfig[] = [
-        { zone: 'center', columns: 2, rows: 2, plugins: ['clock'] },
-      ];
-      const layoutB: ZoneConfig[] = [
-        { zone: 'top-bar', columns: 4, rows: 1, plugins: ['status'] },
-      ];
+      const layoutA: ZoneConfig[] = [{ zone: 'center', columns: 2, rows: 2, plugins: ['clock'] }];
+      const layoutB: ZoneConfig[] = [{ zone: 'top-bar', columns: 4, rows: 1, plugins: ['status'] }];
 
       db.setLayout('a', layoutA);
       db.setLayout('b', layoutB);
