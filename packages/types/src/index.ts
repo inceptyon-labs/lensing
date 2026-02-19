@@ -83,6 +83,48 @@ export interface PluginInstance {
   error?: string;
 }
 
+/** Loaded plugin with manifest and optional runtime modules */
+export type PluginLoadStatus = 'loading' | 'loaded' | 'error';
+
+export interface LoadedPlugin {
+  manifest: PluginManifest;
+  status: PluginLoadStatus;
+  ui_module?: Record<string, unknown>;
+  server_module?: Record<string, unknown>;
+  error?: string;
+}
+
+/** Discovery result before loading */
+export interface DiscoveredPlugin {
+  id: string;
+  manifest: PluginManifest;
+  manifestPath: string;
+}
+
+/** Plugin loader interface */
+export interface PluginLoader {
+  /** Discover all plugin.json manifests without loading modules */
+  discover(): Promise<DiscoveredPlugin[]>;
+
+  /** Load all discovered plugins with validation and dynamic imports */
+  load(): Promise<LoadedPlugin[]>;
+
+  /** Reload all plugins (clean up and load again) */
+  reload(): Promise<LoadedPlugin[]>;
+
+  /** Get a loaded plugin by ID */
+  getPlugin(id: string): LoadedPlugin | undefined;
+
+  /** Get all loaded plugins */
+  getAllPlugins(): LoadedPlugin[];
+
+  /** Unload a plugin by ID */
+  unload(id: string): Promise<void>;
+
+  /** Get error map: plugin ID → error messages */
+  getErrors(): Promise<Map<string, string>>;
+}
+
 /** WebSocket message types pushed from host to clients */
 export type WsMessageType = 'layout_change' | 'plugin_data' | 'scene_change' | 'ping' | 'pong';
 

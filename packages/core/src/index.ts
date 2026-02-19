@@ -66,4 +66,5 @@ export type {
   EmitOptions,
 } from './notification-queue';
 
-/** Placeholder: Host service exports (plugin loader, data bus) */
+export { createPluginLoader } from './plugin-loader';
+export type { PluginLoaderOptions } from './plugin-loader';

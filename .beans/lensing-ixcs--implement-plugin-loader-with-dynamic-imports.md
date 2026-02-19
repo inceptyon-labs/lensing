@@ -1,15 +1,15 @@
 ---
 # lensing-ixcs
 title: Implement plugin loader with dynamic imports
-status: todo
+status: in-progress
 type: task
 priority: high
 tags:
-  - pasiv
-  - size:M
-  - area:backend
+    - pasiv
+    - size:M
+    - area:backend
 created_at: 2026-02-16T21:23:41Z
-updated_at: 2026-02-16T21:23:41Z
+updated_at: 2026-02-19T15:02:38Z
 parent: lensing-q1cj
 ---
 
