@@ -43,11 +43,29 @@ export function createDatabase(options: DatabaseOptions = {}): DatabaseInstance 
   // Schema version tracking via user_version pragma
   const currentVersion = (db.pragma('user_version', { simple: true }) as number) ?? 0;
 
-  // Apply pending migrations
+  // Forward-compatibility check: fail if schema version is higher than known
+  const maxKnownVersion = MIGRATIONS[MIGRATIONS.length - 1]?.version ?? 0;
+  if (currentVersion > maxKnownVersion) {
+    db.close();
+    throw new Error(
+      `Database schema version ${currentVersion} is higher than known version ${maxKnownVersion}. ` +
+        `This binary is too old to open this database.`
+    );
+  }
+
+  // Apply pending migrations atomically
   for (const migration of MIGRATIONS) {
     if (migration.version > currentVersion) {
-      db.exec(migration.sql);
-      db.pragma(`user_version = ${migration.version}`);
+      try {
+        db.exec('BEGIN TRANSACTION');
+        db.exec(migration.sql);
+        db.pragma(`user_version = ${migration.version}`);
+        db.exec('COMMIT');
+      } catch (error) {
+        db.exec('ROLLBACK');
+        db.close();
+        throw error;
+      }
     }
   }
 
@@ -88,7 +106,7 @@ export function createDatabase(options: DatabaseOptions = {}): DatabaseInstance 
         key: string;
         value: string;
       }>;
-      const result: Record<string, string> = {};
+      const result = Object.create(null) as Record<string, string>;
       for (const row of rows) {
         result[row.key] = row.value;
       }
@@ -125,7 +143,7 @@ export function createDatabase(options: DatabaseOptions = {}): DatabaseInstance 
         name: string;
         config: string;
       }>;
-      const result: Record<string, ZoneConfig[]> = {};
+      const result = Object.create(null) as Record<string, ZoneConfig[]>;
       for (const row of rows) {
         result[row.name] = JSON.parse(row.config) as ZoneConfig[];
       }
@@ -162,7 +180,7 @@ export function createDatabase(options: DatabaseOptions = {}): DatabaseInstance 
         plugin_id: string;
         state: string;
       }>;
-      const result: Record<string, unknown> = {};
+      const result = Object.create(null) as Record<string, unknown>;
       for (const row of rows) {
         result[row.plugin_id] = JSON.parse(row.state);
       }
