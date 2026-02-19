@@ -320,3 +320,69 @@ export interface NotificationFilter {
   source?: string;
   read?: boolean;
 }
+
+/** Database configuration options */
+export interface DatabaseOptions {
+  /** Path to the SQLite database file, or ':memory:' for in-memory */
+  path?: string;
+}
+
+/** Schema migration definition */
+export interface SchemaMigration {
+  version: number;
+  description: string;
+}
+
+/** Database instance for SQLite persistence */
+export interface DatabaseInstance {
+  /** Get the current schema version */
+  getSchemaVersion(): number;
+
+  /** Get all applied migrations */
+  getMigrations(): SchemaMigration[];
+
+  // --- Settings (key-value) ---
+
+  /** Get a setting by key */
+  getSetting(key: string): string | undefined;
+
+  /** Set a setting value */
+  setSetting(key: string, value: string): void;
+
+  /** Get all settings as a record */
+  getAllSettings(): Record<string, string>;
+
+  /** Delete a setting by key */
+  deleteSetting(key: string): boolean;
+
+  // --- Layouts (named zone configs) ---
+
+  /** Get a layout by name */
+  getLayout(name: string): ZoneConfig[] | undefined;
+
+  /** Set a layout (stores as JSON) */
+  setLayout(name: string, zones: ZoneConfig[]): void;
+
+  /** Get all layouts as a record */
+  getAllLayouts(): Record<string, ZoneConfig[]>;
+
+  /** Delete a layout by name */
+  deleteLayout(name: string): boolean;
+
+  // --- Plugin state (per-plugin JSON cache) ---
+
+  /** Get plugin state by ID */
+  getPluginState<T = unknown>(pluginId: string): T | undefined;
+
+  /** Set plugin state (stores as JSON) */
+  setPluginState<T = unknown>(pluginId: string, state: T): void;
+
+  /** Get all plugin states */
+  getAllPluginStates(): Record<string, unknown>;
+
+  /** Delete plugin state by ID */
+  deletePluginState(pluginId: string): boolean;
+
+  /** Close the database connection */
+  close(): void;
+}

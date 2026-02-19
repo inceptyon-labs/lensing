@@ -73,3 +73,6 @@ export { createDataBus } from './data-bus';
 
 export { createSceneManager, DEFAULT_SCENES } from './scene-manager';
 export type { SceneManagerOptions } from './scene-manager';
+
+export { createDatabase } from './database';
+export type { DatabaseOptions } from '@lensing/types';

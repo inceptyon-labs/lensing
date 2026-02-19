@@ -1,15 +1,15 @@
 ---
 # lensing-g30n
 title: Integrate SQLite for settings and layout persistence
-status: todo
+status: in-progress
 type: task
 priority: high
 tags:
-  - pasiv
-  - size:M
-  - area:db
+    - pasiv
+    - size:M
+    - area:db
 created_at: 2026-02-16T21:23:16Z
-updated_at: 2026-02-16T21:23:16Z
+updated_at: 2026-02-19T16:58:18Z
 parent: lensing-995t
 ---
 

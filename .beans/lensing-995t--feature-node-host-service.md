@@ -1,15 +1,15 @@
 ---
 # lensing-995t
 title: 'Feature: Node Host Service'
-status: todo
+status: in-progress
 type: feature
 priority: high
 tags:
-  - pasiv
-  - priority:high
-  - area:backend
+    - pasiv
+    - priority:high
+    - area:backend
 created_at: 2026-02-16T21:20:03Z
-updated_at: 2026-02-16T21:20:03Z
+updated_at: 2026-02-19T16:58:31Z
 parent: lensing-u2k6
 ---
 
