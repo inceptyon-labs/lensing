@@ -5,9 +5,9 @@ status: completed
 type: task
 priority: high
 tags:
-    - pasiv
-    - size:M
-    - area:db
+  - pasiv
+  - size:M
+  - area:db
 created_at: 2026-02-16T21:23:16Z
 updated_at: 2026-02-19T17:30:26Z
 parent: lensing-995t
@@ -32,15 +32,18 @@ SQLite database for persisting settings, layout configuration, and plugin state.
 Implemented typed SQLite data access layer with schema migrations, atomic transaction support, and forward-compatibility checks.
 
 **Files created:**
+
 - packages/core/src/database.ts (201 lines) — Factory createDatabase() with WAL mode, v1 schema (settings, layouts, plugin_state tables), CRUD operations
-- packages/core/src/__tests__/database.test.ts (222 lines) — 27 tests covering CRUD, schema versioning, security (prototype pollution protection), edge cases
+- packages/core/src/**tests**/database.test.ts (222 lines) — 27 tests covering CRUD, schema versioning, security (prototype pollution protection), edge cases
 
 **Files modified:**
+
 - packages/types/src/index.ts — Added DatabaseInstance, DatabaseOptions, SchemaMigration types
 - packages/core/src/index.ts — Exported createDatabase
 - packages/core/package.json — Added better-sqlite3, @types/better-sqlite3 dependencies
 
 **Key decisions:**
+
 - Used better-sqlite3 for synchronous API (simpler for Raspberry Pi deployment)
 - WAL journaling for reliability on Pi SD card writes
 - Atomic migrations via PRAGMA user_version + explicit TRANSACTION/ROLLBACK for durability
@@ -51,12 +54,14 @@ Implemented typed SQLite data access layer with schema migrations, atomic transa
 - Plugin state: plugin_id → JSON (generic type-safe storage)
 
 **Verification:**
+
 - 284 tests passing (27 database-specific)
 - Build clean
 - Security review: Fixed atomicity, forward-compat, prototype pollution
 - Merged at e372d15
 
 **Notes for next task:**
+
 - DatabaseInstance exported from @lensing/core
 - Can be instantiated with path option or defaults to data/lensing.db
 - All CRUD methods are synchronous (better-sqlite3 is not promise-based)

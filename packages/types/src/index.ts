@@ -505,4 +505,3 @@ export interface AgentServiceInstance {
   /** Close the agent service */
   close(): void;
 }
-

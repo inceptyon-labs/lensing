@@ -5,9 +5,9 @@ status: in-progress
 type: task
 priority: normal
 tags:
-    - pasiv
-    - size:L
-    - area:backend
+  - pasiv
+  - size:L
+  - area:backend
 created_at: 2026-02-16T21:25:15Z
 updated_at: 2026-02-19T19:19:44Z
 parent: lensing-ja7t

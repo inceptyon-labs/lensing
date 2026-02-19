@@ -5,9 +5,9 @@ status: in-progress
 type: feature
 priority: normal
 tags:
-    - pasiv
-    - priority:medium
-    - area:backend
+  - pasiv
+  - priority:medium
+  - area:backend
 created_at: 2026-02-16T21:21:43Z
 updated_at: 2026-02-19T19:19:44Z
 parent: lensing-5abn

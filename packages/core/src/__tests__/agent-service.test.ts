@@ -75,9 +75,7 @@ describe('AgentService', () => {
     dataBus = createMockDataBus();
     sceneManager = createMockSceneManager();
     notificationQueue = createMockNotificationQueue();
-    llm = createMockLlm([
-      { content: 'Hello', stop_reason: 'end_turn' },
-    ]);
+    llm = createMockLlm([{ content: 'Hello', stop_reason: 'end_turn' }]);
 
     agent = createAgentService({
       dataBus,
@@ -253,9 +251,7 @@ describe('AgentService', () => {
         {
           content: '',
           stop_reason: 'tool_use',
-          tool_calls: [
-            { id: 'tc1', name: 'list_channels', input: {} },
-          ],
+          tool_calls: [{ id: 'tc1', name: 'list_channels', input: {} }],
         },
         {
           content: 'Available channels: weather',
@@ -282,16 +278,12 @@ describe('AgentService', () => {
         {
           content: '',
           stop_reason: 'tool_use',
-          tool_calls: [
-            { id: 'tc1', name: 'list_channels', input: {} },
-          ],
+          tool_calls: [{ id: 'tc1', name: 'list_channels', input: {} }],
         },
         {
           content: '',
           stop_reason: 'tool_use',
-          tool_calls: [
-            { id: 'tc2', name: 'query_data_bus', input: { channel: 'weather' } },
-          ],
+          tool_calls: [{ id: 'tc2', name: 'query_data_bus', input: { channel: 'weather' } }],
         },
         {
           content: 'The weather is 72°F',
@@ -413,9 +405,7 @@ describe('AgentService', () => {
 
     it('should record morning brief generation in audit log', async () => {
       (dataBus.getChannels as ReturnType<typeof vi.fn>).mockReturnValue([]);
-      llm = createMockLlm([
-        { content: 'Brief', stop_reason: 'end_turn' },
-      ]);
+      llm = createMockLlm([{ content: 'Brief', stop_reason: 'end_turn' }]);
 
       agent = createAgentService({ dataBus, notificationQueue, sceneManager, llmProvider: llm });
       await agent.generateMorningBrief();
@@ -428,8 +418,10 @@ describe('AgentService', () => {
   describe('condition evaluation', () => {
     it('should detect matching conditions and return alerts', () => {
       (dataBus.getLatest as ReturnType<typeof vi.fn>).mockImplementation((ch: string) => {
-        if (ch === 'weather') return { data: { pollen: 'high' }, channel: ch, timestamp: '', plugin_id: '' };
-        if (ch === 'calendar') return { data: { nextEvent: 'outdoor run' }, channel: ch, timestamp: '', plugin_id: '' };
+        if (ch === 'weather')
+          return { data: { pollen: 'high' }, channel: ch, timestamp: '', plugin_id: '' };
+        if (ch === 'calendar')
+          return { data: { nextEvent: 'outdoor run' }, channel: ch, timestamp: '', plugin_id: '' };
         return undefined;
       });
 
