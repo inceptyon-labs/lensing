@@ -15,5 +15,7 @@ export type {
   WeatherForecastDay,
   WeatherStoreState,
 } from './weather-store';
+export { createAskStore } from './ask-store';
+export type { AskStore, AskStoreOptions } from './ask-store';
 
 /** Placeholder: UI primitives will be exported here (cards, charts, text blocks, loading states) */
