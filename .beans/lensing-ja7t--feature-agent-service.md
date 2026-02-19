@@ -5,9 +5,9 @@ status: completed
 type: feature
 priority: normal
 tags:
-    - pasiv
-    - priority:medium
-    - area:backend
+  - pasiv
+  - priority:medium
+  - area:backend
 created_at: 2026-02-16T21:21:43Z
 updated_at: 2026-02-19T19:36:14Z
 parent: lensing-5abn
@@ -27,8 +27,6 @@ Remote agent orchestration service with tool calling and data bus integration.
 
 **In Scope:** Orchestration, Morning Brief, cross-plugin alerts, scene control, audit log
 **Out of Scope:** Voice transcription, HA automation triggers
-
-
 
 ## Completed
 

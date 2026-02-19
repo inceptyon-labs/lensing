@@ -1,9 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import {
-  createRestServer,
-  type RestServerInstance,
-  type RestServerHandlers,
-} from '../rest-server';
+import { createRestServer, type RestServerInstance, type RestServerHandlers } from '../rest-server';
 import http from 'node:http';
 import type { AgentTaskResult } from '@lensing/types';
 

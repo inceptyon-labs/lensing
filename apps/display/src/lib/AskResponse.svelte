@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { ConversationEntry } from '@lensing/types';
-  import { onMount } from 'svelte';
 
   interface Props {
     entry: ConversationEntry | null;
@@ -13,15 +12,6 @@
   let visible = $state(entry !== null);
   let dismissTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  onMount(() => {
-    if (entry && autoDismissMs) {
-      clearTimeout(dismissTimeout);
-      dismissTimeout = setTimeout(() => {
-        visible = false;
-      }, autoDismissMs);
-    }
-  });
-
   $effect(() => {
     if (entry) {
       visible = true;
@@ -32,6 +22,11 @@
         }, autoDismissMs);
       }
     }
+    return () => {
+      if (dismissTimeout) {
+        clearTimeout(dismissTimeout);
+      }
+    };
   });
 </script>
 
