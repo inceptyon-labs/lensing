@@ -386,3 +386,123 @@ export interface DatabaseInstance {
   /** Close the database connection */
   close(): void;
 }
+
+// --- Agent Service Types ---
+
+/** LLM message role */
+export type LlmRole = 'user' | 'assistant' | 'tool_result';
+
+/** LLM message in conversation */
+export interface LlmMessage {
+  role: LlmRole;
+  content: string;
+  tool_use_id?: string;
+}
+
+/** LLM tool definition for the model */
+export interface LlmToolDef {
+  name: string;
+  description: string;
+  input_schema: Record<string, unknown>;
+}
+
+/** LLM tool call request from the model */
+export interface LlmToolCall {
+  id: string;
+  name: string;
+  input: Record<string, unknown>;
+}
+
+/** LLM response from the provider */
+export interface LlmResponse {
+  content: string;
+  tool_calls?: LlmToolCall[];
+  stop_reason: 'end_turn' | 'tool_use';
+}
+
+/** Abstract LLM provider (for testability) */
+export interface LlmProvider {
+  chat(messages: LlmMessage[], tools?: LlmToolDef[]): Promise<LlmResponse>;
+}
+
+/** Agent tool definition */
+export interface AgentTool {
+  name: string;
+  description: string;
+  input_schema: Record<string, unknown>;
+  execute(params: Record<string, unknown>): Promise<unknown>;
+}
+
+/** Audit log entry */
+export interface AuditEntry {
+  timestamp: string;
+  action: string;
+  tool?: string;
+  params?: Record<string, unknown>;
+  result?: unknown;
+  error?: string;
+}
+
+/** Agent alert from condition evaluation */
+export interface AgentAlert {
+  condition: string;
+  message: string;
+  action?: string;
+}
+
+/** Condition rule for cross-plugin reasoning */
+export interface ConditionRule {
+  name: string;
+  channels: string[];
+  evaluate(data: Record<string, unknown>): AgentAlert | null;
+}
+
+/** Result from agent task execution */
+export interface AgentTaskResult {
+  response: string;
+  tool_calls_made: number;
+  audit_entries: AuditEntry[];
+}
+
+/** Agent service options — notificationQueue typed loosely to avoid circular dep */
+export interface AgentServiceOptions {
+  dataBus: DataBusInstance;
+  notificationQueue: {
+    emit(options: {
+      source: string;
+      priority: NotificationPriority;
+      title: string;
+      body?: string;
+    }): string;
+  };
+  sceneManager: SceneManagerInstance;
+  llmProvider: LlmProvider;
+}
+
+/** Agent service instance */
+export interface AgentServiceInstance {
+  /** Execute a task with LLM tool calling */
+  executeTask(prompt: string): Promise<AgentTaskResult>;
+
+  /** Generate Morning Brief from data bus channels */
+  generateMorningBrief(): Promise<string>;
+
+  /** Evaluate condition rules against current data */
+  evaluateConditions(rules: ConditionRule[]): AgentAlert[];
+
+  /** Get the full audit log */
+  getAuditLog(): AuditEntry[];
+
+  /** Clear the audit log */
+  clearAuditLog(): void;
+
+  /** Get all registered tools */
+  getTools(): AgentTool[];
+
+  /** Register a custom tool */
+  registerTool(tool: AgentTool): void;
+
+  /** Close the agent service */
+  close(): void;
+}
+

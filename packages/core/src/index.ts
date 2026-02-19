@@ -76,3 +76,5 @@ export type { SceneManagerOptions } from './scene-manager';
 
 export { createDatabase } from './database';
 export type { DatabaseOptions } from '@lensing/types';
+
+export { createAgentService } from './agent-service';
