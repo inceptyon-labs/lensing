@@ -520,3 +520,53 @@ export interface AgentServiceInstance {
   /** Close the agent service */
   close(): void;
 }
+
+/** Health status of a single plugin */
+export interface PluginHealthReport {
+  pluginId: string;
+  status: PluginStatus;
+  lastRefreshAt: string;
+  nextRefreshAt: string;
+  errorCount: number;
+  errors: string[];
+  refreshCount: number;
+  resourceUsage: {
+    cpuMs: number;
+    memoryBytes: number;
+  };
+}
+
+/** System-wide health metrics */
+export interface SystemHealthSnapshot {
+  cpuPercent: number;
+  memoryUsedBytes: number;
+  memoryTotalBytes: number;
+  diskUsedBytes: number;
+  diskTotalBytes: number;
+  chromiumMemoryBytes: number;
+  timestamp: string;
+}
+
+/** Network connectivity status */
+export interface ConnectivityStatus {
+  online: boolean;
+  latencyMs: number;
+  lastCheckAt: string;
+}
+
+/** Resource budget violation record */
+export interface ResourceBudgetViolation {
+  pluginId: string;
+  violationType: string;
+  limit: number;
+  actual: number;
+  timestamp: string;
+}
+
+/** Aggregate health store state */
+export interface HealthStoreState {
+  plugins: Map<string, PluginHealthReport>;
+  system: SystemHealthSnapshot;
+  connectivity: ConnectivityStatus;
+  violations: ResourceBudgetViolation[];
+}

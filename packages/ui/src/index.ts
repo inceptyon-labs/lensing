@@ -17,5 +17,7 @@ export type {
 } from './weather-store';
 export { createAskStore } from './ask-store';
 export type { AskStore, AskStoreOptions } from './ask-store';
+export { createHealthStore } from './health-store';
+export type { HealthStore, HealthStoreOptions } from './health-store';
 
 /** Placeholder: UI primitives will be exported here (cards, charts, text blocks, loading states) */
