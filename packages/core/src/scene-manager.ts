@@ -159,6 +159,9 @@ export function createSceneManager(options: SceneManagerOptions = {}): SceneMana
         }
         if (scenes.has(data.activeScene)) {
           activeSceneName = data.activeScene;
+        } else if (scenes.size > 0) {
+          // Fallback: first loaded scene to avoid invalid activeSceneName
+          activeSceneName = scenes.keys().next().value!;
         }
       }
       return manager;
