@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { createAskStore } from '../ask-store';
-import type { AskStore } from '@lensing/types';
+import { createAskStore, type AskStore } from '../ask-store';
 
 describe('AskStore', () => {
   let store: AskStore;

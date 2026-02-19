@@ -49,6 +49,13 @@ function createStubHandlers(): RestServerHandlers {
     putSettings: async () => {},
     getLayout: async () => [{ zone: 'center', columns: 2, rows: 1, plugins: ['clock'] }],
     putLayout: async () => {},
+    postAsk: async (question: string) => ({
+      id: 'conv-stub',
+      question,
+      response: 'Stub response',
+      timestamp: new Date().toISOString(),
+      tool_calls_made: 0,
+    }),
   };
 }
 
