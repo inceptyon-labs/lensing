@@ -49,8 +49,8 @@ export interface HealthStore {
   /** Get complete health store state */
   getState(): HealthStoreState;
 
-  /** Register a callback for state changes */
-  onChange(callback: (action: string) => void): void;
+  /** Register a callback for state changes. Returns a function to unsubscribe. */
+  onChange(callback: (action: string) => void): () => void;
 }
 
 /** Create a health store with the factory pattern */
@@ -66,21 +66,44 @@ export function createHealthStore(options: HealthStoreOptions = {}): HealthStore
   }
 
   function notify(action: string): void {
-    listeners.forEach((fn) => fn(action));
+    listeners.forEach((fn) => {
+      try {
+        fn(action);
+      } catch (error) {
+        // Isolate listener failures to prevent cascading
+        console.error(`Health store listener failed for action "${action}":`, error);
+      }
+    });
   }
 
   return {
     updatePluginHealth(pluginId: string, report: PluginHealthReport): void {
-      plugins.set(pluginId, report);
+      // Defensive copy to prevent external mutation
+      plugins.set(pluginId, {
+        ...report,
+        errors: [...report.errors],
+        resourceUsage: { ...report.resourceUsage },
+      });
       notify('plugin_health_updated');
     },
 
     getPluginHealth(pluginId: string): PluginHealthReport | undefined {
-      return plugins.get(pluginId);
+      const report = plugins.get(pluginId);
+      if (!report) return undefined;
+      // Defensive copy on read to prevent external mutation
+      return {
+        ...report,
+        errors: [...report.errors],
+        resourceUsage: { ...report.resourceUsage },
+      };
     },
 
     getAllPluginHealth(): PluginHealthReport[] {
-      return Array.from(plugins.values());
+      return Array.from(plugins.values()).map((report) => ({
+        ...report,
+        errors: [...report.errors],
+        resourceUsage: { ...report.resourceUsage },
+      }));
     },
 
     updateSystemHealth(snapshot: SystemHealthSnapshot): void {
@@ -140,8 +163,9 @@ export function createHealthStore(options: HealthStoreOptions = {}): HealthStore
       };
     },
 
-    onChange(callback: (action: string) => void): void {
+    onChange(callback: (action: string) => void): () => void {
       listeners.add(callback);
+      return () => listeners.delete(callback);
     },
   };
 }

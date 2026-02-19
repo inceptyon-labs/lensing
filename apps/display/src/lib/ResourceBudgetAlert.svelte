@@ -8,7 +8,9 @@
   const { violations = [] }: Props = $props();
 
   function getViolationSeverity(violation: ResourceBudgetViolation): string {
+    if (violation.limit <= 0) return 'info';
     const ratio = violation.actual / violation.limit;
+    if (!Number.isFinite(ratio)) return 'info';
     if (ratio >= 1.5) return 'critical';
     if (ratio >= 1.2) return 'warning';
     return 'info';
@@ -33,6 +35,7 @@
   }
 
   function formatValue(value: number): string {
+    if (!Number.isFinite(value) || value < 0) return '0';
     if (value < 1000) return value.toFixed(0);
     if (value < 1000000) return (value / 1000).toFixed(1) + 'K';
     if (value < 1000000000) return (value / 1000000).toFixed(1) + 'M';
@@ -41,6 +44,7 @@
 
   function formatTime(isoString: string): string {
     const date = new Date(isoString);
+    if (!Number.isFinite(date.getTime())) return '--:--';
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
@@ -51,7 +55,7 @@
   <div
     class="resource-budget-alerts fixed bottom-24 right-6 max-h-48 max-w-sm space-y-2 overflow-y-auto"
   >
-    {#each violations as violation (violation.pluginId + violation.violationType + violation.timestamp)}
+    {#each violations as violation (`${violation.pluginId}|${violation.violationType}|${violation.timestamp}`)}
       {@const severity = getViolationSeverity(violation)}
       <div
         class="alert-card bg-event-horizon border-l-2 rounded-md p-3"

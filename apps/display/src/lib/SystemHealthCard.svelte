@@ -14,6 +14,7 @@
   }
 
   function formatBytes(bytes: number): string {
+    if (!Number.isFinite(bytes) || bytes < 0) return '0 KB';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
     if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
     if (bytes < 1024 * 1024 * 1024 * 1024) return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
@@ -22,6 +23,7 @@
 
   function formatTime(isoString: string): string {
     const date = new Date(isoString);
+    if (!Number.isFinite(date.getTime())) return '--:--:--';
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     const seconds = String(date.getSeconds()).padStart(2, '0');
@@ -29,9 +31,15 @@
   }
 
   const memoryPercent = $derived(
-    health ? (health.memoryUsedBytes / health.memoryTotalBytes) * 100 : 0
+    health && health.memoryTotalBytes > 0
+      ? Math.min((health.memoryUsedBytes / health.memoryTotalBytes) * 100, 100)
+      : 0
   );
-  const diskPercent = $derived(health ? (health.diskUsedBytes / health.diskTotalBytes) * 100 : 0);
+  const diskPercent = $derived(
+    health && health.diskTotalBytes > 0
+      ? Math.min((health.diskUsedBytes / health.diskTotalBytes) * 100, 100)
+      : 0
+  );
 </script>
 
 {#if health}

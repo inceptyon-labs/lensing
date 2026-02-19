@@ -10,6 +10,11 @@ import type {
   NotificationEntry,
   QuietHours,
   NotificationFilter,
+  PluginHealthReport,
+  SystemHealthSnapshot,
+  ConnectivityStatus,
+  ResourceBudgetViolation,
+  HealthStoreState,
 } from '@lensing/types';
 
 describe('@lensing/types', () => {
