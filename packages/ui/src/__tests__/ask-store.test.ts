@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { createAskStore, type AskStore } from '../ask-store';
+import type { ConversationEntry } from '@lensing/types';
 
 describe('AskStore', () => {
   let store: AskStore;
@@ -111,7 +112,7 @@ describe('AskStore', () => {
 
     it('should be loading while submitting', async () => {
       let statusWhileLoading = '';
-      const slowFetch = vi.fn(
+      const slowFetch = vi.fn<(question: string) => Promise<ConversationEntry>>(
         async () =>
           new Promise((resolve) => {
             statusWhileLoading = store.getStatus();
