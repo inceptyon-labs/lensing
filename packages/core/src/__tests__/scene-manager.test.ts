@@ -17,7 +17,9 @@ describe('SceneManager', () => {
 
     it('should include morning, evening, ambient, focus, and alert scenes', () => {
       const names = manager.getScenes().map((s) => s.name);
-      expect(names).toEqual(expect.arrayContaining(['morning', 'evening', 'ambient', 'focus', 'alert']));
+      expect(names).toEqual(
+        expect.arrayContaining(['morning', 'evening', 'ambient', 'focus', 'alert'])
+      );
     });
 
     it('should set ambient as the default active scene', () => {

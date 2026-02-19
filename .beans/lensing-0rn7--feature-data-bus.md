@@ -5,9 +5,9 @@ status: in-progress
 type: feature
 priority: high
 tags:
-    - pasiv
-    - priority:high
-    - area:backend
+  - pasiv
+  - priority:high
+  - area:backend
 created_at: 2026-02-16T21:20:30Z
 updated_at: 2026-02-19T15:15:42Z
 parent: lensing-oo03

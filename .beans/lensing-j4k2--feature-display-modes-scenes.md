@@ -5,10 +5,10 @@ status: in-progress
 type: feature
 priority: high
 tags:
-    - pasiv
-    - priority:high
-    - area:backend
-    - area:frontend
+  - pasiv
+  - priority:high
+  - area:backend
+  - area:frontend
 created_at: 2026-02-16T21:21:14Z
 updated_at: 2026-02-19T15:25:21Z
 parent: lensing-342l

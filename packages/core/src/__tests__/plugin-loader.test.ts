@@ -32,11 +32,14 @@ describe('Plugin Loader', () => {
       fs.mkdirSync(testPluginDir, { recursive: true });
 
       const manifestPath = path.join(testPluginDir, 'plugin.json');
-      fs.writeFileSync(manifestPath, JSON.stringify({
-        id: 'test-widget',
-        name: 'Test Widget',
-        version: '1.0.0',
-      }));
+      fs.writeFileSync(
+        manifestPath,
+        JSON.stringify({
+          id: 'test-widget',
+          name: 'Test Widget',
+          version: '1.0.0',
+        })
+      );
 
       loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR });
       const plugins = await loader.discover();
@@ -52,18 +55,23 @@ describe('Plugin Loader', () => {
       for (const id of ids) {
         const pluginDir = path.join(TEMP_PLUGINS_DIR, id);
         fs.mkdirSync(pluginDir, { recursive: true });
-        fs.writeFileSync(path.join(pluginDir, 'plugin.json'), JSON.stringify({
-          id,
-          name: `${id} widget`,
-          version: '1.0.0',
-        }));
+        fs.writeFileSync(
+          path.join(pluginDir, 'plugin.json'),
+          JSON.stringify({
+            id,
+            name: `${id} widget`,
+            version: '1.0.0',
+          })
+        );
       }
 
       loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR });
       const plugins = await loader.discover();
 
       expect(plugins).toHaveLength(3);
-      expect(plugins.map(p => p.id)).toEqual(expect.arrayContaining(['weather', 'calendar', 'clock']));
+      expect(plugins.map((p) => p.id)).toEqual(
+        expect.arrayContaining(['weather', 'calendar', 'clock'])
+      );
     });
 
     it('should skip directories without plugin.json', async () => {
@@ -84,10 +92,13 @@ describe('Plugin Loader', () => {
       fs.mkdirSync(testPluginDir, { recursive: true });
 
       // Invalid: missing required 'id' field
-      fs.writeFileSync(path.join(testPluginDir, 'plugin.json'), JSON.stringify({
-        name: 'Invalid Plugin',
-        version: '1.0.0',
-      }));
+      fs.writeFileSync(
+        path.join(testPluginDir, 'plugin.json'),
+        JSON.stringify({
+          name: 'Invalid Plugin',
+          version: '1.0.0',
+        })
+      );
 
       loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR });
       const discovered = await loader.discover();
@@ -102,11 +113,14 @@ describe('Plugin Loader', () => {
       const testPluginDir = path.join(TEMP_PLUGINS_DIR, 'bad');
       fs.mkdirSync(testPluginDir, { recursive: true });
 
-      fs.writeFileSync(path.join(testPluginDir, 'plugin.json'), JSON.stringify({
-        id: 'bad-plugin',
-        name: 123, // Should be string
-        version: '1.0.0',
-      }));
+      fs.writeFileSync(
+        path.join(testPluginDir, 'plugin.json'),
+        JSON.stringify({
+          id: 'bad-plugin',
+          name: 123, // Should be string
+          version: '1.0.0',
+        })
+      );
 
       loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR });
       const errors = await loader.getErrors();
@@ -126,12 +140,15 @@ describe('Plugin Loader', () => {
       const widgetCode = `export const Widget = { name: 'TestWidget' };`;
       fs.writeFileSync(path.join(testPluginDir, 'dist', 'widget.js'), widgetCode);
 
-      fs.writeFileSync(path.join(testPluginDir, 'plugin.json'), JSON.stringify({
-        id: 'ui-test',
-        name: 'UI Test',
-        version: '1.0.0',
-        ui_entry: './dist/widget.js',
-      }));
+      fs.writeFileSync(
+        path.join(testPluginDir, 'plugin.json'),
+        JSON.stringify({
+          id: 'ui-test',
+          name: 'UI Test',
+          version: '1.0.0',
+          ui_entry: './dist/widget.js',
+        })
+      );
 
       loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR });
       const plugins = await loader.load();
@@ -148,12 +165,15 @@ describe('Plugin Loader', () => {
       const serverCode = `export const handler = async () => ({ status: 'ok' });`;
       fs.writeFileSync(path.join(testPluginDir, 'dist', 'server.js'), serverCode);
 
-      fs.writeFileSync(path.join(testPluginDir, 'plugin.json'), JSON.stringify({
-        id: 'server-test',
-        name: 'Server Test',
-        version: '1.0.0',
-        server_entry: './dist/server.js',
-      }));
+      fs.writeFileSync(
+        path.join(testPluginDir, 'plugin.json'),
+        JSON.stringify({
+          id: 'server-test',
+          name: 'Server Test',
+          version: '1.0.0',
+          server_entry: './dist/server.js',
+        })
+      );
 
       loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR });
       const plugins = await loader.load();
@@ -167,12 +187,15 @@ describe('Plugin Loader', () => {
       const testPluginDir = path.join(TEMP_PLUGINS_DIR, 'missing-ui');
       fs.mkdirSync(testPluginDir, { recursive: true });
 
-      fs.writeFileSync(path.join(testPluginDir, 'plugin.json'), JSON.stringify({
-        id: 'missing-ui',
-        name: 'Missing UI',
-        version: '1.0.0',
-        ui_entry: './dist/widget.js', // File doesn't exist
-      }));
+      fs.writeFileSync(
+        path.join(testPluginDir, 'plugin.json'),
+        JSON.stringify({
+          id: 'missing-ui',
+          name: 'Missing UI',
+          version: '1.0.0',
+          ui_entry: './dist/widget.js', // File doesn't exist
+        })
+      );
 
       loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR });
       const plugins = await loader.load();
@@ -191,12 +214,15 @@ describe('Plugin Loader', () => {
       // Invalid JavaScript
       fs.writeFileSync(path.join(testPluginDir, 'dist', 'server.js'), 'export const handler = ][');
 
-      fs.writeFileSync(path.join(testPluginDir, 'plugin.json'), JSON.stringify({
-        id: 'broken-server',
-        name: 'Broken Server',
-        version: '1.0.0',
-        server_entry: './dist/server.js',
-      }));
+      fs.writeFileSync(
+        path.join(testPluginDir, 'plugin.json'),
+        JSON.stringify({
+          id: 'broken-server',
+          name: 'Broken Server',
+          version: '1.0.0',
+          server_entry: './dist/server.js',
+        })
+      );
 
       loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR });
       const plugins = await loader.load();
@@ -213,15 +239,18 @@ describe('Plugin Loader', () => {
       const testPluginDir = path.join(TEMP_PLUGINS_DIR, 'tracked');
       fs.mkdirSync(testPluginDir, { recursive: true });
 
-      fs.writeFileSync(path.join(testPluginDir, 'plugin.json'), JSON.stringify({
-        id: 'tracked',
-        name: 'Tracked Plugin',
-        version: '1.0.0',
-        permissions: {
-          allowed_domains: ['example.com'],
-          max_refresh_ms: 60000,
-        },
-      }));
+      fs.writeFileSync(
+        path.join(testPluginDir, 'plugin.json'),
+        JSON.stringify({
+          id: 'tracked',
+          name: 'Tracked Plugin',
+          version: '1.0.0',
+          permissions: {
+            allowed_domains: ['example.com'],
+            max_refresh_ms: 60000,
+          },
+        })
+      );
 
       loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR });
       const plugins = await loader.load();
@@ -237,11 +266,14 @@ describe('Plugin Loader', () => {
       const testPluginDir = path.join(TEMP_PLUGINS_DIR, 'lookup');
       fs.mkdirSync(testPluginDir, { recursive: true });
 
-      fs.writeFileSync(path.join(testPluginDir, 'plugin.json'), JSON.stringify({
-        id: 'lookup',
-        name: 'Lookup Plugin',
-        version: '1.0.0',
-      }));
+      fs.writeFileSync(
+        path.join(testPluginDir, 'plugin.json'),
+        JSON.stringify({
+          id: 'lookup',
+          name: 'Lookup Plugin',
+          version: '1.0.0',
+        })
+      );
 
       loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR });
       await loader.load();
@@ -265,11 +297,14 @@ describe('Plugin Loader', () => {
       for (const id of ids) {
         const pluginDir = path.join(TEMP_PLUGINS_DIR, id);
         fs.mkdirSync(pluginDir, { recursive: true });
-        fs.writeFileSync(path.join(pluginDir, 'plugin.json'), JSON.stringify({
-          id,
-          name: `${id} Name`,
-          version: '1.0.0',
-        }));
+        fs.writeFileSync(
+          path.join(pluginDir, 'plugin.json'),
+          JSON.stringify({
+            id,
+            name: `${id} Name`,
+            version: '1.0.0',
+          })
+        );
       }
 
       loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR });
@@ -277,18 +312,21 @@ describe('Plugin Loader', () => {
 
       const all = loader.getAllPlugins();
       expect(all).toHaveLength(3);
-      expect(all.map(p => p.manifest.id)).toEqual(expect.arrayContaining(ids));
+      expect(all.map((p) => p.manifest.id)).toEqual(expect.arrayContaining(ids));
     });
 
     it('should track plugin status (loading, loaded, error)', async () => {
       const testPluginDir = path.join(TEMP_PLUGINS_DIR, 'status-test');
       fs.mkdirSync(testPluginDir, { recursive: true });
 
-      fs.writeFileSync(path.join(testPluginDir, 'plugin.json'), JSON.stringify({
-        id: 'status-test',
-        name: 'Status Test',
-        version: '1.0.0',
-      }));
+      fs.writeFileSync(
+        path.join(testPluginDir, 'plugin.json'),
+        JSON.stringify({
+          id: 'status-test',
+          name: 'Status Test',
+          version: '1.0.0',
+        })
+      );
 
       loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR });
       const plugins = await loader.load();
@@ -306,40 +344,49 @@ describe('Plugin Loader', () => {
       for (const id of ids) {
         const pluginDir = path.join(TEMP_PLUGINS_DIR, id);
         fs.mkdirSync(pluginDir, { recursive: true });
-        fs.writeFileSync(path.join(pluginDir, 'plugin.json'), JSON.stringify({
-          id,
-          name: `Widget ${id}`,
-          version: '1.0.0',
-          permissions: {
-            max_refresh_ms: 1000 * Math.random(),
-          },
-        }));
+        fs.writeFileSync(
+          path.join(pluginDir, 'plugin.json'),
+          JSON.stringify({
+            id,
+            name: `Widget ${id}`,
+            version: '1.0.0',
+            permissions: {
+              max_refresh_ms: 1000 * Math.random(),
+            },
+          })
+        );
       }
 
       loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR });
       const plugins = await loader.load();
 
       expect(plugins).toHaveLength(3);
-      expect(plugins.map(p => p.manifest.id).sort()).toEqual(ids.sort());
+      expect(plugins.map((p) => p.manifest.id).sort()).toEqual(ids.sort());
     });
 
     it('should prevent errors in one plugin from affecting others', async () => {
       // Good plugin
       const goodDir = path.join(TEMP_PLUGINS_DIR, 'good-plugin');
       fs.mkdirSync(goodDir, { recursive: true });
-      fs.writeFileSync(path.join(goodDir, 'plugin.json'), JSON.stringify({
-        id: 'good-plugin',
-        name: 'Good Plugin',
-        version: '1.0.0',
-      }));
+      fs.writeFileSync(
+        path.join(goodDir, 'plugin.json'),
+        JSON.stringify({
+          id: 'good-plugin',
+          name: 'Good Plugin',
+          version: '1.0.0',
+        })
+      );
 
       // Bad plugin (invalid manifest)
       const badDir = path.join(TEMP_PLUGINS_DIR, 'bad-plugin');
       fs.mkdirSync(badDir, { recursive: true });
-      fs.writeFileSync(path.join(badDir, 'plugin.json'), JSON.stringify({
-        name: 'Bad Plugin', // Missing 'id'
-        version: '1.0.0',
-      }));
+      fs.writeFileSync(
+        path.join(badDir, 'plugin.json'),
+        JSON.stringify({
+          name: 'Bad Plugin', // Missing 'id'
+          version: '1.0.0',
+        })
+      );
 
       loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR });
       const plugins = await loader.load();
@@ -359,11 +406,14 @@ describe('Plugin Loader', () => {
       const testPluginDir = path.join(TEMP_PLUGINS_DIR, 'unload-test');
       fs.mkdirSync(testPluginDir, { recursive: true });
 
-      fs.writeFileSync(path.join(testPluginDir, 'plugin.json'), JSON.stringify({
-        id: 'unload-test',
-        name: 'Unload Test',
-        version: '1.0.0',
-      }));
+      fs.writeFileSync(
+        path.join(testPluginDir, 'plugin.json'),
+        JSON.stringify({
+          id: 'unload-test',
+          name: 'Unload Test',
+          version: '1.0.0',
+        })
+      );
 
       loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR });
       await loader.load();
@@ -389,11 +439,14 @@ describe('Plugin Loader', () => {
       const testPluginDir = path.join(TEMP_PLUGINS_DIR, 'reload-test');
       fs.mkdirSync(testPluginDir, { recursive: true });
 
-      fs.writeFileSync(path.join(testPluginDir, 'plugin.json'), JSON.stringify({
-        id: 'reload-test',
-        name: 'Reload Test v1',
-        version: '1.0.0',
-      }));
+      fs.writeFileSync(
+        path.join(testPluginDir, 'plugin.json'),
+        JSON.stringify({
+          id: 'reload-test',
+          name: 'Reload Test v1',
+          version: '1.0.0',
+        })
+      );
 
       loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR });
       let plugins = await loader.load();
@@ -401,11 +454,14 @@ describe('Plugin Loader', () => {
       expect(plugins[0].manifest.name).toBe('Reload Test v1');
 
       // Update manifest
-      fs.writeFileSync(path.join(testPluginDir, 'plugin.json'), JSON.stringify({
-        id: 'reload-test',
-        name: 'Reload Test v2',
-        version: '2.0.0',
-      }));
+      fs.writeFileSync(
+        path.join(testPluginDir, 'plugin.json'),
+        JSON.stringify({
+          id: 'reload-test',
+          name: 'Reload Test v2',
+          version: '2.0.0',
+        })
+      );
 
       // Reload
       plugins = await loader.reload();

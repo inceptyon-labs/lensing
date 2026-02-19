@@ -107,10 +107,7 @@ interface ScannedEntry {
   pluginDir: string;
 }
 
-function scanDirectory(
-  pluginsDir: string,
-  errors: Map<string, string>
-): ScannedEntry[] {
+function scanDirectory(pluginsDir: string, errors: Map<string, string>): ScannedEntry[] {
   const valid: ScannedEntry[] = [];
 
   if (!fs.existsSync(pluginsDir)) return valid;
@@ -168,16 +165,18 @@ export function createPluginLoader(options: PluginLoaderOptions): PluginLoader {
       try {
         if (manifest.ui_entry) {
           const uiPath = path.resolve(pluginDir, manifest.ui_entry);
-          loadedPlugin.ui_module = (await import(
-            pathToFileURL(uiPath).href
-          )) as Record<string, unknown>;
+          loadedPlugin.ui_module = (await import(pathToFileURL(uiPath).href)) as Record<
+            string,
+            unknown
+          >;
         }
 
         if (manifest.server_entry) {
           const serverPath = path.resolve(pluginDir, manifest.server_entry);
-          loadedPlugin.server_module = (await import(
-            pathToFileURL(serverPath).href
-          )) as Record<string, unknown>;
+          loadedPlugin.server_module = (await import(pathToFileURL(serverPath).href)) as Record<
+            string,
+            unknown
+          >;
         }
 
         loadedPlugin.status = 'loaded';
