@@ -172,9 +172,7 @@ describe('Database', () => {
 
   describe('security and edge cases', () => {
     it('should protect against prototype pollution via __proto__ in layouts', () => {
-      const layout: ZoneConfig[] = [
-        { zone: 'center', columns: 2, rows: 2, plugins: ['test'] },
-      ];
+      const layout: ZoneConfig[] = [{ zone: 'center', columns: 2, rows: 2, plugins: ['test'] }];
       db.setLayout('__proto__', layout);
       db.setLayout('normal', layout);
 
@@ -212,7 +210,9 @@ describe('Database', () => {
           config TEXT NOT NULL
         );
       `);
-      rawDb.prepare('INSERT INTO layouts (name, config) VALUES (?, ?)').run('bad', '{invalid json}');
+      rawDb
+        .prepare('INSERT INTO layouts (name, config) VALUES (?, ?)')
+        .run('bad', '{invalid json}');
       rawDb.close();
 
       // This is a documentation test showing the risk; in production,
