@@ -1,16 +1,16 @@
 ---
 # lensing-jiuc
 title: Implement scene data model and switcher
-status: todo
+status: in-progress
 type: task
 priority: high
 tags:
-  - pasiv
-  - size:M
-  - area:backend
-  - area:frontend
+    - pasiv
+    - size:M
+    - area:backend
+    - area:frontend
 created_at: 2026-02-16T21:24:45Z
-updated_at: 2026-02-16T21:24:45Z
+updated_at: 2026-02-19T15:25:21Z
 parent: lensing-j4k2
 ---
 

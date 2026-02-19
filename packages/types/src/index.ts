@@ -56,11 +56,59 @@ export interface Notification {
 /** Scene display mode names */
 export type SceneName = 'morning' | 'evening' | 'ambient' | 'focus' | 'alert';
 
+/** Visual settings for a scene */
+export type ColorTemp = 'warm' | 'neutral' | 'cool';
+
+export interface SceneVisuals {
+  opacity: number; // 0-1
+  color_temp: ColorTemp;
+}
+
 /** Scene configuration */
 export interface SceneConfig {
   name: SceneName | string;
   layout: ZoneConfig[];
   active_plugins: string[];
+  visuals?: SceneVisuals;
+}
+
+/** Scene manager persistence callbacks */
+export interface ScenePersistence {
+  save: (scenes: SceneConfig[], activeScene: string) => Promise<void>;
+  load: () => Promise<{ scenes: SceneConfig[]; activeScene: string } | null>;
+}
+
+/** Scene manager instance */
+export interface SceneManagerInstance {
+  /** Get all scenes */
+  getScenes(): SceneConfig[];
+
+  /** Get a scene by name */
+  getScene(name: string): SceneConfig | undefined;
+
+  /** Get the currently active scene */
+  getActiveScene(): SceneConfig;
+
+  /** Get the active scene name */
+  getActiveSceneName(): string;
+
+  /** Switch to a named scene; returns the new active scene */
+  switchTo(name: string): SceneConfig;
+
+  /** Add a new scene */
+  addScene(scene: SceneConfig): void;
+
+  /** Update an existing scene */
+  updateScene(name: string, updates: Partial<Omit<SceneConfig, 'name'>>): SceneConfig;
+
+  /** Remove a scene by name (cannot remove the active scene) */
+  removeScene(name: string): void;
+
+  /** Register a listener called when the active scene changes */
+  onSceneChange(callback: (scene: SceneConfig) => void): () => void;
+
+  /** Close the manager, remove all listeners */
+  close(): void;
 }
 
 /** Data bus channel message */

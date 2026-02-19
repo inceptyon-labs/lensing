@@ -70,3 +70,6 @@ export { createPluginLoader } from './plugin-loader';
 export type { PluginLoaderOptions } from './plugin-loader';
 
 export { createDataBus } from './data-bus';
+
+export { createSceneManager, DEFAULT_SCENES } from './scene-manager';
+export type { SceneManagerOptions } from './scene-manager';
