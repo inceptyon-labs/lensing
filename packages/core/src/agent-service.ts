@@ -176,8 +176,11 @@ export function createAgentService(options: AgentServiceOptions): AgentServiceIn
       iterations++;
     }
 
-    // Hit max iterations — return empty response
-    return { response: '', toolCallsMade };
+    // Hit max iterations — return informative message
+    return {
+      response: `Agent exceeded maximum iterations (${MAX_TOOL_ITERATIONS}). No conclusion reached.`,
+      toolCallsMade,
+    };
   }
 
   // --- Public interface ---
