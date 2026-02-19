@@ -201,7 +201,22 @@ export interface PluginLoader {
 }
 
 /** WebSocket message types pushed from host to clients */
-export type WsMessageType = 'layout_change' | 'plugin_data' | 'scene_change' | 'ping' | 'pong';
+export type WsMessageType =
+  | 'layout_change'
+  | 'plugin_data'
+  | 'scene_change'
+  | 'ping'
+  | 'pong'
+  | 'ask_response';
+
+/** A single conversation entry from the Ask Lensing interface */
+export interface ConversationEntry {
+  id: string;
+  question: string;
+  response: string;
+  timestamp: string;
+  tool_calls_made: number;
+}
 
 /** WebSocket message envelope */
 export interface WsMessage<T = unknown> {

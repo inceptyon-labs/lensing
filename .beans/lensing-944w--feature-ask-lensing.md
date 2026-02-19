@@ -1,16 +1,16 @@
 ---
 # lensing-944w
 title: 'Feature: Ask Lensing'
-status: todo
+status: in-progress
 type: feature
 priority: normal
 tags:
-  - pasiv
-  - priority:medium
-  - area:frontend
-  - area:backend
+    - pasiv
+    - priority:medium
+    - area:frontend
+    - area:backend
 created_at: 2026-02-16T21:21:45Z
-updated_at: 2026-02-16T21:21:45Z
+updated_at: 2026-02-19T19:47:31Z
 parent: lensing-5abn
 ---
 

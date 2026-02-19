@@ -1,5 +1,5 @@
 import http from 'node:http';
-import type { ZoneConfig } from '@lensing/types';
+import type { ZoneConfig, ConversationEntry } from '@lensing/types';
 
 /** Log entry emitted after each request */
 export interface LogEntry {
@@ -15,6 +15,7 @@ export interface RestServerHandlers {
   putSettings: (settings: Record<string, unknown>) => Promise<void>;
   getLayout: () => Promise<ZoneConfig[]>;
   putLayout: (layout: ZoneConfig[]) => Promise<void>;
+  postAsk: (question: string) => Promise<ConversationEntry>;
 }
 
 /** Configuration options for the REST server */
@@ -99,7 +100,7 @@ export function createRestServer(
 
   const corsHeaders = {
     'Access-Control-Allow-Origin': corsOrigin,
-    'Access-Control-Allow-Methods': 'GET, PUT, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, PUT, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
   };
 
@@ -150,6 +151,23 @@ export function createRestServer(
     }
     await handlers.putLayout(layout);
     writeJson(res, 200, { ok: true });
+  });
+
+  addRoute('/ask', 'POST', async (_req, res, body) => {
+    let parsed: Record<string, unknown>;
+    try {
+      parsed = JSON.parse(body) as Record<string, unknown>;
+    } catch {
+      writeJson(res, 400, { error: 'Invalid JSON' });
+      return;
+    }
+    const question = parsed['question'];
+    if (typeof question !== 'string' || question.trim() === '') {
+      writeJson(res, 400, { error: 'question is required' });
+      return;
+    }
+    const entry = await handlers.postAsk(question);
+    writeJson(res, 200, entry);
   });
 
   const server = http.createServer((req, res) => {
