@@ -509,5 +509,120 @@ describe('AgentService', () => {
       expect(agent.getTools()).toHaveLength(0);
       expect(agent.getAuditLog()).toHaveLength(0);
     });
+
+    it('should prevent executeTask after close', async () => {
+      agent.close();
+      const result = await agent.executeTask('test');
+      expect(result.response).toBe('');
+      expect(result.tool_calls_made).toBe(0);
+    });
+
+    it('should prevent generateMorningBrief after close', async () => {
+      agent.close();
+      const result = await agent.generateMorningBrief();
+      expect(result).toBe('');
+    });
+
+    it('should prevent evaluateConditions after close', () => {
+      agent.close();
+      const result = agent.evaluateConditions([]);
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('edge cases', () => {
+    it('should handle tool returning undefined', async () => {
+      llm = createMockLlm([
+        {
+          content: '',
+          stop_reason: 'tool_use',
+          tool_calls: [{ id: 'tc1', name: 'returns_undefined', input: {} }],
+        },
+        { content: 'Done', stop_reason: 'end_turn' },
+      ]);
+
+      agent = createAgentService({ dataBus, notificationQueue, sceneManager, llmProvider: llm });
+      agent.registerTool({
+        name: 'returns_undefined',
+        description: 'Returns undefined',
+        input_schema: {},
+        execute: async () => undefined,
+      });
+
+      const result = await agent.executeTask('test');
+      expect(result.response).toBe('Done');
+      expect(result.tool_calls_made).toBe(1);
+    });
+
+    it('should reject invalid priority in emit_notification', async () => {
+      const tool = agent.getTools().find((t) => t.name === 'emit_notification')!;
+      await expect(
+        tool.execute({
+          source: 'test',
+          priority: 'invalid',
+          title: 'test',
+        })
+      ).rejects.toThrow('Invalid priority');
+    });
+
+    it('should isolate rule evaluation exceptions', () => {
+      const rule1: ConditionRule = {
+        name: 'rule1',
+        channels: [],
+        evaluate: () => {
+          throw new Error('Rule error');
+        },
+      };
+
+      const rule2: ConditionRule = {
+        name: 'rule2',
+        channels: [],
+        evaluate: () => ({ condition: 'rule2', message: 'Alert from rule2' }),
+      };
+
+      const alerts = agent.evaluateConditions([rule1, rule2]);
+      expect(alerts).toHaveLength(1);
+      expect(alerts[0].message).toBe('Alert from rule2');
+    });
+
+    it('should isolate notification emission exceptions', () => {
+      (notificationQueue.emit as ReturnType<typeof vi.fn>).mockImplementation(() => {
+        throw new Error('Notification error');
+      });
+
+      const rule: ConditionRule = {
+        name: 'test',
+        channels: [],
+        evaluate: () => ({
+          condition: 'test',
+          message: 'Test alert',
+          action: 'notify',
+        }),
+      };
+
+      const alerts = agent.evaluateConditions([rule]);
+      expect(alerts).toHaveLength(1);
+      expect(alerts[0].message).toBe('Test alert');
+    });
+
+    it('should handle multiple tool calls in single turn', async () => {
+      llm = createMockLlm([
+        {
+          content: '',
+          stop_reason: 'tool_use',
+          tool_calls: [
+            { id: 'tc1', name: 'list_channels', input: {} },
+            { id: 'tc2', name: 'get_active_scene', input: {} },
+          ],
+        },
+        { content: 'Got both', stop_reason: 'end_turn' },
+      ]);
+
+      agent = createAgentService({ dataBus, notificationQueue, sceneManager, llmProvider: llm });
+      const result = await agent.executeTask('test');
+
+      expect(result.tool_calls_made).toBe(2);
+      expect(result.response).toBe('Got both');
+    });
   });
 });

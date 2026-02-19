@@ -15,6 +15,10 @@ function nowIso(): string {
   return new Date().toISOString();
 }
 
+function isValidPriority(val: unknown): val is 'info' | 'warning' | 'urgent' {
+  return val === 'info' || val === 'warning' || val === 'urgent';
+}
+
 export function createAgentService(options: AgentServiceOptions): AgentServiceInstance {
   const { dataBus, notificationQueue, sceneManager, llmProvider } = options;
 
@@ -85,9 +89,13 @@ export function createAgentService(options: AgentServiceOptions): AgentServiceIn
           required: ['source', 'priority', 'title'],
         },
         async execute(params) {
+          const priority = params['priority'];
+          if (!isValidPriority(priority)) {
+            throw new Error(`Invalid priority: ${priority}`);
+          }
           return notificationQueue.emit({
             source: params['source'] as string,
-            priority: params['priority'] as 'info' | 'warning' | 'urgent',
+            priority,
             title: params['title'] as string,
             body: params['body'] as string | undefined,
           });
@@ -156,14 +164,16 @@ export function createAgentService(options: AgentServiceOptions): AgentServiceIn
         if (tool) {
           try {
             const result = await tool.execute(tc.input);
-            resultContent = JSON.stringify(result);
+            resultContent = JSON.stringify(result ?? null);
             toolCallsMade++;
           } catch (err) {
-            resultContent = `Error: ${err instanceof Error ? err.message : String(err)}`;
+            resultContent = JSON.stringify({
+              error: err instanceof Error ? err.message : String(err),
+            });
             toolCallsMade++;
           }
         } else {
-          resultContent = `Error: unknown tool "${tc.name}"`;
+          resultContent = JSON.stringify({ error: `unknown tool "${tc.name}"` });
         }
 
         messages.push({
@@ -196,6 +206,7 @@ export function createAgentService(options: AgentServiceOptions): AgentServiceIn
     },
 
     async executeTask(prompt: string): Promise<AgentTaskResult> {
+      if (closed) return { response: '', tool_calls_made: 0, audit_entries: [] };
       addAudit({ action: 'execute_task', params: { prompt } });
 
       const messages: LlmMessage[] = [{ role: 'user', content: prompt }];
@@ -209,6 +220,7 @@ export function createAgentService(options: AgentServiceOptions): AgentServiceIn
     },
 
     async generateMorningBrief(): Promise<string> {
+      if (closed) return '';
       addAudit({ action: 'morning_brief' });
 
       const channels = dataBus.getChannels();
@@ -236,29 +248,38 @@ export function createAgentService(options: AgentServiceOptions): AgentServiceIn
     },
 
     evaluateConditions(rules: ConditionRule[]): AgentAlert[] {
+      if (closed) return [];
       addAudit({ action: 'evaluate_conditions', params: { ruleCount: rules.length } });
 
       const alerts: AgentAlert[] = [];
 
       for (const rule of rules) {
-        const data: Record<string, unknown> = Object.create(null);
+        try {
+          const data: Record<string, unknown> = Object.create(null);
 
-        for (const ch of rule.channels) {
-          const latest = dataBus.getLatest(ch);
-          data[ch] = latest?.data;
-        }
-
-        const alert = rule.evaluate(data);
-        if (alert) {
-          alerts.push(alert);
-
-          if (alert.action === 'notify') {
-            notificationQueue.emit({
-              source: 'agent',
-              priority: 'info',
-              title: alert.message,
-            });
+          for (const ch of rule.channels) {
+            const latest = dataBus.getLatest(ch);
+            data[ch] = latest?.data;
           }
+
+          const alert = rule.evaluate(data);
+          if (alert) {
+            alerts.push(alert);
+
+            if (alert.action === 'notify') {
+              try {
+                notificationQueue.emit({
+                  source: 'agent',
+                  priority: 'info',
+                  title: alert.message,
+                });
+              } catch {
+                // Continue evaluation if notification fails
+              }
+            }
+          }
+        } catch {
+          // Continue evaluation if rule evaluation fails
         }
       }
 
