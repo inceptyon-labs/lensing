@@ -10,7 +10,7 @@ tags:
   - area:backend
   - area:frontend
 created_at: 2026-02-16T21:24:20Z
-updated_at: 2026-02-20T02:31:18Z
+updated_at: 2026-02-20T02:59:10Z
 parent: lensing-l9s9
 ---
 
@@ -18,11 +18,11 @@ Allergies plugin: server fetch and widget display.
 
 ## Acceptance Criteria
 
-- [ ] Server module fetches allergy/pollen data from API
-- [ ] Config: location(s), alert thresholds, refresh interval
-- [ ] Publishes allergies.current to data bus
-- [ ] Widget shows pollen levels with color-coded severity
-- [ ] Alert notification emitted when threshold exceeded
+- [x] Server module fetches allergy/pollen data from API
+- [x] Config: location(s), alert thresholds, refresh interval
+- [x] Publishes allergies.current to data bus
+- [x] Widget shows pollen levels with color-coded severity
+- [x] Alert notification emitted when threshold exceeded
 
 ---
 
