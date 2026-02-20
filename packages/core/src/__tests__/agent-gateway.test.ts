@@ -125,15 +125,14 @@ describe('Agent Gateway', () => {
     vi.useRealTimers();
   });
 
-  function createGateway(
-    overrides: Partial<AgentGatewayOptions> = {}
-  ): AgentGatewayInstance {
+  function createGateway(overrides: Partial<AgentGatewayOptions> = {}): AgentGatewayInstance {
     gateway = createAgentGateway({
       url: 'ws://agent-host:8080',
       dataBus,
       onResponse,
       onStatusChange,
-      createWebSocket: getMockWebSocketFactory() as unknown as AgentGatewayOptions['createWebSocket'],
+      createWebSocket:
+        getMockWebSocketFactory() as unknown as AgentGatewayOptions['createWebSocket'],
       ...overrides,
     });
     return gateway;
@@ -326,12 +325,8 @@ describe('Agent Gateway', () => {
         plugin_id: 'weather-plugin',
       };
 
-      (dataBus.getChannels as ReturnType<typeof vi.fn>).mockReturnValue([
-        'weather',
-      ]);
-      (dataBus.getLatest as ReturnType<typeof vi.fn>).mockReturnValue(
-        mockSnapshot
-      );
+      (dataBus.getChannels as ReturnType<typeof vi.fn>).mockReturnValue(['weather']);
+      (dataBus.getLatest as ReturnType<typeof vi.fn>).mockReturnValue(mockSnapshot);
 
       createGateway();
       gateway.connect();

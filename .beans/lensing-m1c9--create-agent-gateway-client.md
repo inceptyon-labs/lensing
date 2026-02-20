@@ -5,9 +5,9 @@ status: in-progress
 type: task
 priority: normal
 tags:
-    - pasiv
-    - size:M
-    - area:backend
+  - pasiv
+  - size:M
+  - area:backend
 created_at: 2026-02-16T21:25:11Z
 updated_at: 2026-02-20T01:50:28Z
 parent: lensing-r418

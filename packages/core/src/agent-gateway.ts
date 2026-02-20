@@ -51,8 +51,7 @@ export function createAgentGateway(options: AgentGatewayOptions): AgentGatewayIn
     if (closed) return;
 
     const wsFactory =
-      createWebSocket ??
-      ((u: string) => new WebSocket(u) as unknown as AgentWebSocket);
+      createWebSocket ?? ((u: string) => new WebSocket(u) as unknown as AgentWebSocket);
 
     const socket = wsFactory(url);
     ws = socket;
