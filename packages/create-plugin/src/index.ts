@@ -31,9 +31,3 @@ export { initialize, handleRequest, onActivate, onDeactivate } from './server.js
 // ── Type exports ───────────────────────────────────────────────────────────
 
 export type { ServerConfig, RequestPayload, RequestResult, PluginManifest } from './server.js';
-
-// ── Manifest export ────────────────────────────────────────────────────────
-
-// The manifest object for programmatic access (e.g., in tests or tooling)
-import manifest from './plugin.json' assert { type: 'json' };
-export { manifest };

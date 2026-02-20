@@ -1,5 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import type { PluginManifest } from '@lensing/types';
+import {
+  initialize,
+  handleRequest,
+  onActivate,
+  onDeactivate,
+} from '../server.js';
+import type { ServerConfig, RequestPayload, RequestResult } from '../server.js';
 
 /**
  * Plugin Template Package Tests
@@ -75,80 +82,86 @@ describe('Plugin Template - Manifest', () => {
 
 describe('Plugin Template - Server Module', () => {
   it('should export initialization function', async () => {
-    // Will be created: export const initialize = async (config) => { ... }
-    const mockInit = async (config: { apiKey: string }) => {
-      if (!config.apiKey) throw new Error('API key required');
-      return { ready: true };
+    // Test the real initialize function from server.ts
+    const config: ServerConfig = {
+      apiKey: 'test-key',
+      endpoint: 'https://api.example.com',
     };
 
-    const result = await mockInit({ apiKey: 'test-key' });
+    const result = await initialize(config);
     expect(result.ready).toBe(true);
   });
 
-  it('should export request handler', async () => {
-    // Will be created: export const handleRequest = async (payload) => { ... }
-    const mockHandler = async (payload: { action: string; data: unknown }) => {
-      if (!payload.action) throw new Error('Action required');
-      return { success: true, action: payload.action };
-    };
-
-    const result = await mockHandler({ action: 'fetch-data', data: { id: 123 } });
-    expect(result.success).toBe(true);
-    expect(result.action).toBe('fetch-data');
-  });
-
-  it('should handle lifecycle events', async () => {
-    // Will be created: export const onActivate and onDeactivate
-    const mockLifecycle = {
-      onActivate: async () => ({ status: 'active' }),
-      onDeactivate: async () => ({ status: 'inactive' }),
-    };
-
-    const activated = await mockLifecycle.onActivate();
-    expect(activated.status).toBe('active');
-
-    const deactivated = await mockLifecycle.onDeactivate();
-    expect(deactivated.status).toBe('inactive');
-  });
-
-  it('should handle request errors gracefully', async () => {
-    const mockHandler = async (payload: { action: string }) => {
-      if (payload.action === 'error') {
-        throw new Error('Request failed');
-      }
-      return { success: true };
-    };
-
+  it('should throw on missing required config', async () => {
     try {
-      await mockHandler({ action: 'error' });
+      const badConfig = {
+        apiKey: '',
+        endpoint: 'https://api.example.com',
+      } as ServerConfig;
+      await initialize(badConfig);
       expect.fail('Should have thrown');
     } catch (e) {
-      expect((e as Error).message).toBe('Request failed');
+      expect((e as Error).message).toContain('API key required');
     }
   });
 
-  it('should accept config with secrets', async () => {
-    type ServerConfig = {
-      apiKey: string;
-      apiSecret?: string;
-      endpoint: string;
-    };
-
-    const mockInit = async (config: ServerConfig) => {
-      if (!config.apiKey || !config.endpoint) {
-        throw new Error('Missing required config');
-      }
-      return { configured: true, hasSecret: !!config.apiSecret };
-    };
-
-    const result = await mockInit({
-      apiKey: 'key',
-      apiSecret: 'secret',
+  it('should export request handler', async () => {
+    // Initialize first
+    const config: ServerConfig = {
+      apiKey: 'test-key',
       endpoint: 'https://api.example.com',
-    });
+    };
+    await initialize(config);
 
-    expect(result.configured).toBe(true);
-    expect(result.hasSecret).toBe(true);
+    // Test the real handleRequest function
+    const payload: RequestPayload = {
+      action: 'fetch-data',
+      data: { id: 123 },
+    };
+
+    const result = await handleRequest(payload);
+    expect(result.success).toBe(true);
+    expect(result.data).toBeDefined();
+  });
+
+  it('should handle invalid payloads gracefully', async () => {
+    // Test that invalid payload returns error instead of throwing
+    const result = await handleRequest({} as RequestPayload);
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('Action required');
+  });
+
+  it('should handle unknown actions gracefully', async () => {
+    const config: ServerConfig = {
+      apiKey: 'test-key',
+      endpoint: 'https://api.example.com',
+    };
+    await initialize(config);
+
+    const result = await handleRequest({ action: 'unknown-action' });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('Unknown action');
+  });
+
+  it('should handle lifecycle events', async () => {
+    // Test the real lifecycle functions
+    const activated = await onActivate();
+    expect(activated.status).toBe('active');
+
+    const deactivated = await onDeactivate();
+    expect(deactivated.status).toBe('inactive');
+  });
+
+  it('should handle refresh action', async () => {
+    const config: ServerConfig = {
+      apiKey: 'test-key',
+      endpoint: 'https://api.example.com',
+    };
+    await initialize(config);
+
+    const result = await handleRequest({ action: 'refresh' });
+    expect(result.success).toBe(true);
+    expect(result.data).toHaveProperty('refreshed');
   });
 });
 

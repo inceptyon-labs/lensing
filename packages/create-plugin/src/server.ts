@@ -138,8 +138,19 @@ export async function initialize(config: ServerConfig): Promise<{ ready: boolean
  *   { action: 'refresh' }
  */
 export async function handleRequest(payload: RequestPayload): Promise<RequestResult> {
+  // Validate payload shape before processing — return error instead of throwing
+  if (!payload || typeof payload !== 'object') {
+    return {
+      success: false,
+      error: 'Invalid request payload — must be an object',
+    };
+  }
+
   if (!payload.action) {
-    throw new Error('Action required');
+    return {
+      success: false,
+      error: 'Action required',
+    };
   }
 
   // Route to the appropriate handler based on action name

@@ -57,7 +57,7 @@
    *
    * SDK Convention:
    *   1. Set isLoading = true immediately (optimistic UI)
-   *   2. Call onUpdate to trigger server-side refresh
+   *   2. Await onUpdate to trigger server-side refresh and wait for completion
    *   3. The runtime will re-render with new data props when ready
    *
    * You can also call sdk.request() directly for fine-grained control:
@@ -67,7 +67,11 @@
     isLoading = true;
     error = null;
     try {
-      onUpdate();
+      // Await the update callback to ensure async operations complete
+      const result = await Promise.resolve(onUpdate());
+      if (result instanceof Error) {
+        error = result.message;
+      }
     } catch (e) {
       error = e instanceof Error ? e.message : 'Unknown error';
     } finally {
