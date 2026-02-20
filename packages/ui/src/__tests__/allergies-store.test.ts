@@ -201,7 +201,9 @@ describe('Allergies Store', () => {
     it('should notify on setData', () => {
       const store = createAllergiesStore();
       const onChange = { called: false };
-      store.onChange(() => { onChange.called = true; });
+      store.onChange(() => {
+        onChange.called = true;
+      });
 
       store.setData(createAllergyData());
 
@@ -211,7 +213,9 @@ describe('Allergies Store', () => {
     it('should notify on setError', () => {
       const store = createAllergiesStore();
       const onChange = { called: false };
-      store.onChange(() => { onChange.called = true; });
+      store.onChange(() => {
+        onChange.called = true;
+      });
 
       store.setError('error');
 

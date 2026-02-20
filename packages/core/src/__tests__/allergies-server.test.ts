@@ -75,9 +75,7 @@ describe('Allergies Server', () => {
     vi.useRealTimers();
   });
 
-  function createServer(
-    overrides: Partial<AllergiesServerOptions> = {}
-  ): AllergiesServerInstance {
+  function createServer(overrides: Partial<AllergiesServerOptions> = {}): AllergiesServerInstance {
     server = createAllergiesServer({
       apiKey: 'test-key',
       location,
@@ -147,9 +145,7 @@ describe('Allergies Server', () => {
     });
 
     it('should handle fetch errors gracefully', async () => {
-      const fetchFn = vi
-        .fn()
-        .mockRejectedValue(new Error('Network error'));
+      const fetchFn = vi.fn().mockRejectedValue(new Error('Network error'));
       const onError = vi.fn();
       const server = createServer({ fetchFn });
       server.onError(onError);

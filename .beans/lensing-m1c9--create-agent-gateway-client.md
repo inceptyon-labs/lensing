@@ -5,9 +5,9 @@ status: completed
 type: task
 priority: normal
 tags:
-    - pasiv
-    - size:M
-    - area:backend
+  - pasiv
+  - size:M
+  - area:backend
 created_at: 2026-02-16T21:25:11Z
 updated_at: 2026-02-20T02:30:19Z
 parent: lensing-r418
@@ -32,10 +32,12 @@ Lightweight agent gateway running on the Pi, communicating with remote Agent Ser
 Implemented lightweight WebSocket gateway client for agent communication:
 
 **Files created:**
+
 - packages/core/src/agent-gateway.ts (201 LOC) - Factory function, connection management, message handling, auto-reconnect
-- packages/core/src/__tests__/agent-gateway.test.ts (641 LOC) - 35 comprehensive tests covering all scenarios
+- packages/core/src/**tests**/agent-gateway.test.ts (641 LOC) - 35 comprehensive tests covering all scenarios
 
 **Files modified:**
+
 - packages/core/src/index.ts - Export createAgentGateway
 - packages/types/src/index.ts - Added AgentGatewayOptions, AgentGatewayInstance, WebSocket message types
 
@@ -50,6 +52,7 @@ Implemented lightweight WebSocket gateway client for agent communication:
 ✓ Comprehensive error handling and state management
 
 **Review process:**
+
 - SC (Sonnet → Codex) cascading review completed
 - Codex found and we fixed 2 edge cases:
   1. Stale socket race condition (multiple simultaneous connects)
@@ -57,6 +60,7 @@ Implemented lightweight WebSocket gateway client for agent communication:
 - All 360 tests pass, build succeeds
 
 **Verification:**
+
 - Tests: 360 passed
 - Build: Success
 - All acceptance criteria met

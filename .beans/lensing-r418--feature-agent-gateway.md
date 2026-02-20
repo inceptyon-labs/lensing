@@ -5,9 +5,9 @@ status: completed
 type: feature
 priority: normal
 tags:
-    - pasiv
-    - priority:medium
-    - area:backend
+  - pasiv
+  - priority:medium
+  - area:backend
 created_at: 2026-02-16T21:21:38Z
 updated_at: 2026-02-20T02:30:30Z
 parent: lensing-5abn
@@ -30,6 +30,7 @@ Lightweight agent gateway client running on the Pi.
 ## Completed
 
 All sub-tasks for Agent Gateway feature completed:
+
 - lensing-m1c9: Create agent gateway client ✓
 
 The lightweight agent gateway is now fully implemented with comprehensive test coverage and production-ready reliability.

@@ -21,10 +21,6 @@ export { createHealthStore } from './health-store';
 export type { HealthStore, HealthStoreOptions } from './health-store';
 
 export { createAllergiesStore } from './allergies-store';
-export type {
-  AllergiesStore,
-  AllergiesStoreOptions,
-  AllergiesStoreState,
-} from './allergies-store';
+export type { AllergiesStore, AllergiesStoreOptions, AllergiesStoreState } from './allergies-store';
 
 /** Placeholder: UI primitives will be exported here (cards, charts, text blocks, loading states) */
