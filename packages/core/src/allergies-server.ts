@@ -31,11 +31,13 @@ interface ApiResponse {
 // ── Transform ──────────────────────────────────────────────────────────────
 
 function clampLevel(n: number): 0 | 1 | 2 | 3 | 4 | 5 {
+  if (!Number.isFinite(n)) return 0;
   const clamped = Math.max(0, Math.min(5, Math.round(n)));
   return clamped as 0 | 1 | 2 | 3 | 4 | 5;
 }
 
-function normalizeCategory(cat: string): AllergenLevel['category'] {
+function normalizeCategory(cat: unknown): AllergenLevel['category'] {
+  if (typeof cat !== 'string') return 'other';
   const lower = cat.toLowerCase();
   if (lower === 'mold') return 'mold';
   if (lower === 'dust') return 'dust';
@@ -160,7 +162,12 @@ export function createAllergiesServer(options: AllergiesServerOptions): Allergie
     }
 
     const data = transformResponse(raw);
-    lastData = data;
+    // Keep a private defensive copy; publish/notify share the original
+    lastData = {
+      index: data.index,
+      allergens: data.allergens.map((a) => ({ ...a })),
+      lastUpdated: data.lastUpdated,
+    };
     lastFetchedAt = Date.now();
 
     (dataBus as DataBusInstance).publish(DATA_BUS_CHANNEL, PLUGIN_ID, data);

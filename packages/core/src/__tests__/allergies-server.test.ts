@@ -351,4 +351,71 @@ describe('Allergies Server', () => {
       expect(fetchFn).not.toHaveBeenCalled();
     });
   });
+
+  describe('Malformed API payloads', () => {
+    it('should handle non-finite idx without throwing', async () => {
+      const fetchFn = createMockFetch({
+        current: { idx: NaN, allergens: [] },
+      });
+      const server = createServer({ fetchFn });
+
+      await expect(server.refresh()).resolves.toBeUndefined();
+      expect(server.getAllergyData()?.index).toBe(0);
+    });
+
+    it('should handle null category without throwing', async () => {
+      const fetchFn = createMockFetch({
+        current: {
+          idx: 2,
+          allergens: [{ name: 'Pollen', level: 2, category: null }],
+        },
+      });
+      const server = createServer({ fetchFn });
+
+      await expect(server.refresh()).resolves.toBeUndefined();
+      expect(server.getAllergyData()?.allergens[0].category).toBe('other');
+    });
+
+    it('should handle non-array allergens without throwing', async () => {
+      const fetchFn = createMockFetch({
+        current: { idx: 2, allergens: null },
+      });
+      const server = createServer({ fetchFn });
+      const onError = vi.fn();
+      server.onError(onError);
+
+      await expect(server.refresh()).resolves.toBeUndefined();
+    });
+  });
+
+  describe('Data isolation', () => {
+    it('should not corrupt internal cache when published data is mutated', async () => {
+      let publishedData: any;
+      const mockDataBus = createMockDataBus();
+      (mockDataBus.publish as any).mockImplementation(
+        (_channel: string, _source: string, data: any) => {
+          publishedData = data;
+        }
+      );
+
+      const server = createAllergiesServer({
+        apiKey: 'test-key',
+        location,
+        dataBus: mockDataBus,
+        notifications,
+        fetchFn: createMockFetch(createMockAllergyResponse()),
+      });
+
+      await server.refresh();
+
+      // Mutate published data
+      publishedData.index = 99;
+      publishedData.allergens[0].name = 'MUTATED';
+
+      // Internal cache should be unaffected
+      const cached = server.getAllergyData();
+      expect(cached?.index).toBe(2);
+      expect(cached?.allergens[0].name).toBe('Grass Pollen');
+    });
+  });
 });

@@ -102,6 +102,13 @@ describe('Allergies Store', () => {
       store.setError('error');
       expect(store.getState().data).toBeNull();
     });
+
+    it('should clear isLoading on error', () => {
+      const store = createAllergiesStore();
+      store.setLoading(true);
+      store.setError('error');
+      expect(store.getState().isLoading).toBe(false);
+    });
   });
 
   describe('getSeverityColor', () => {
