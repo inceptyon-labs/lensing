@@ -207,7 +207,11 @@ export type WsMessageType =
   | 'scene_change'
   | 'ping'
   | 'pong'
-  | 'ask_response';
+  | 'ask_response'
+  | 'agent_request'
+  | 'agent_response'
+  | 'data_snapshot_request'
+  | 'data_snapshot_response';
 
 /** A single conversation entry from the Ask Lensing interface */
 export interface ConversationEntry {
@@ -569,4 +573,59 @@ export interface HealthStoreState {
   system: SystemHealthSnapshot;
   connectivity: ConnectivityStatus;
   violations: ResourceBudgetViolation[];
+}
+
+// --- Agent Gateway Types ---
+
+/** Payload for agent_request messages sent to remote Agent Service */
+export interface AgentRequestPayload {
+  requestId: string;
+  prompt: string;
+}
+
+/** Payload for agent_response messages received from remote Agent Service */
+export interface AgentResponsePayload {
+  requestId: string;
+  result: AgentTaskResult;
+}
+
+/** Payload for data_snapshot_response messages */
+export interface DataSnapshotPayload {
+  requestId: string;
+  channels: string[];
+  snapshots: Record<string, DataBusMessage>;
+}
+
+/** Agent gateway configuration */
+export interface AgentGatewayOptions {
+  /** WebSocket URL of the remote Agent Service (e.g. ws://agent-host:8080) */
+  url: string;
+  /** Data bus instance for snapshot forwarding */
+  dataBus: DataBusInstance;
+  /** Callback invoked when an agent response is received */
+  onResponse: (result: AgentTaskResult) => void;
+  /** Optional callback for connection status changes */
+  onStatusChange?: (status: ConnectionStatus) => void;
+  /** Base delay for reconnect backoff in ms (default: 1000) */
+  baseDelay?: number;
+  /** Max delay for reconnect backoff in ms (default: 30000) */
+  maxDelay?: number;
+  /** Max reconnect retries (default: Infinity) */
+  maxRetries?: number;
+}
+
+/** Agent gateway client instance */
+export interface AgentGatewayInstance {
+  /** Current connection status */
+  readonly status: ConnectionStatus;
+  /** Number of reconnect attempts since last successful connection */
+  readonly reconnectAttempts: number;
+  /** Connect to the remote Agent Service */
+  connect(): void;
+  /** Send a user prompt to the remote Agent Service; returns the request ID */
+  sendRequest(prompt: string): string;
+  /** Disconnect from the remote Agent Service */
+  disconnect(): void;
+  /** Close and clean up all resources */
+  close(): void;
 }
