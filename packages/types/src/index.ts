@@ -642,3 +642,67 @@ export interface AgentGatewayInstance {
   /** Close and clean up all resources */
   close(): void;
 }
+
+// ── Allergies/Pollen Server ────────────────────────────────────────────────
+
+/** Fetch function signature (matches global `fetch`) */
+export type FetchFn = (url: string) => Promise<{
+  ok: boolean;
+  status?: number;
+  statusText?: string;
+  json: () => Promise<unknown>;
+}>;
+
+/** A single allergen with its level */
+export interface AllergenLevel {
+  name: string; // e.g., "Pollen", "Ragweed", "Grass"
+  level: 0 | 1 | 2 | 3 | 4 | 5; // 0=none, 5=very high
+  category: 'pollen' | 'mold' | 'dust' | 'other';
+}
+
+/** Full allergy/pollen data payload */
+export interface AllergyData {
+  index: number; // 0-5 overall index
+  allergens: AllergenLevel[];
+  lastUpdated: number; // Unix timestamp in ms
+}
+
+/** Location for allergy queries */
+export interface AllergyLocation {
+  lat: number;
+  lon: number;
+}
+
+/** Configuration for createAllergiesServer */
+export interface AllergiesServerOptions {
+  /** API key for pollen data service */
+  apiKey: string;
+  /** Geographic location to query */
+  location: AllergyLocation;
+  /** Alert threshold (0-5) — emit notification when index >= this (default: 3) */
+  alertThreshold?: number;
+  /** Refresh interval in ms (default: 600000 = 10 min) */
+  refreshInterval_ms?: number;
+  /** Max staleness in ms before cache considered stale (default: 3600000 = 1 hour) */
+  maxStale_ms?: number;
+  /** Data bus instance for publishing allergen data */
+  dataBus: DataBusInstance;
+  /** Notification queue for emitting alerts (from @lensing/core) */
+  notifications: unknown; // NotificationQueueInstance from core
+  /** Injectable fetch function (defaults to global fetch) */
+  fetchFn?: FetchFn;
+}
+
+/** Instance returned by createAllergiesServer */
+export interface AllergiesServerInstance {
+  /** Manually trigger an allergy data refresh */
+  refresh(): Promise<void>;
+  /** Get the last fetched allergy data (null if not yet fetched) */
+  getAllergyData(): AllergyData | null;
+  /** Register a listener called when new data arrives; returns unsubscribe */
+  onUpdate(callback: (data: AllergyData) => void): () => void;
+  /** Register a listener called when an error occurs */
+  onError(callback: (error: string) => void): void;
+  /** Stop background refresh and release resources */
+  close(): void;
+}
