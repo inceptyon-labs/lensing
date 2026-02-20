@@ -87,9 +87,7 @@ describe('Crypto Server', () => {
     vi.useRealTimers();
   });
 
-  function createServer(
-    overrides: Partial<CryptoServerOptions> = {},
-  ): CryptoServerInstance {
+  function createServer(overrides: Partial<CryptoServerOptions> = {}): CryptoServerInstance {
     server = createCryptoServer({
       watchlist: ['bitcoin', 'ethereum'],
       dataBus,
@@ -118,9 +116,7 @@ describe('Crypto Server', () => {
 
     it('should accept alertConfigs option', () => {
       const server = createServer({
-        alertConfigs: [
-          { coinId: 'bitcoin', threshold_pct: 5, window: '24h' },
-        ],
+        alertConfigs: [{ coinId: 'bitcoin', threshold_pct: 5, window: '24h' }],
       });
       expect(server).toBeDefined();
     });
@@ -271,7 +267,7 @@ describe('Crypto Server', () => {
       (mockDataBus.publish as any).mockImplementation(
         (_channel: string, _source: string, data: any) => {
           publishedData = data;
-        },
+        }
       );
 
       const server = createCryptoServer({
@@ -308,9 +304,7 @@ describe('Crypto Server', () => {
       const server = createServer({
         watchlist: ['bitcoin'],
         fetchFn,
-        alertConfigs: [
-          { coinId: 'bitcoin', threshold_pct: 5, window: '24h' },
-        ],
+        alertConfigs: [{ coinId: 'bitcoin', threshold_pct: 5, window: '24h' }],
       });
 
       await server.refresh();
@@ -333,9 +327,7 @@ describe('Crypto Server', () => {
       const server = createServer({
         watchlist: ['bitcoin'],
         fetchFn,
-        alertConfigs: [
-          { coinId: 'bitcoin', threshold_pct: 5, window: '24h' },
-        ],
+        alertConfigs: [{ coinId: 'bitcoin', threshold_pct: 5, window: '24h' }],
       });
 
       await server.refresh();
@@ -358,9 +350,7 @@ describe('Crypto Server', () => {
       const server = createServer({
         watchlist: ['bitcoin'],
         fetchFn,
-        alertConfigs: [
-          { coinId: 'bitcoin', threshold_pct: 5, window: '24h' },
-        ],
+        alertConfigs: [{ coinId: 'bitcoin', threshold_pct: 5, window: '24h' }],
       });
 
       await server.refresh();
@@ -383,15 +373,13 @@ describe('Crypto Server', () => {
       const server = createServer({
         watchlist: ['bitcoin'],
         fetchFn,
-        alertConfigs: [
-          { coinId: 'bitcoin', threshold_pct: 5, window: '24h' },
-        ],
+        alertConfigs: [{ coinId: 'bitcoin', threshold_pct: 5, window: '24h' }],
       });
 
       await server.refresh();
 
       const alertPublish = (dataBus.publish as any).mock.calls.find(
-        (c: any[]) => c[0] === 'crypto.alerts',
+        (c: any[]) => c[0] === 'crypto.alerts'
       );
       expect(alertPublish).toBeDefined();
     });
