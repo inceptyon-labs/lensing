@@ -1,0 +1,15 @@
+{
+  "id": "starter-plugin",
+  "name": "Starter Plugin",
+  "version": "1.0.0",
+  "ui_entry": "widget.svelte",
+  "server_entry": "server.ts",
+  "permissions": {
+    "allowed_domains": ["api.example.com"],
+    "max_refresh_ms": 5000,
+    "max_request_burst": 10,
+    "secrets": ["API_KEY"]
+  },
+  "widget_sizes": ["small", "medium"],
+  "dependencies": ["@lensing/types"]
+}
