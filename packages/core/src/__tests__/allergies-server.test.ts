@@ -110,6 +110,18 @@ describe('Allergies Server', () => {
       }).toThrow('location is required');
     });
 
+    it('should accept lat=0 (equator) as valid location', () => {
+      expect(() => {
+        createAllergiesServer({
+          apiKey: 'test',
+          location: { lat: 0, lon: -122.4194 },
+          dataBus,
+          notifications,
+          fetchFn: createMockFetch(createMockAllergyResponse()),
+        });
+      }).not.toThrow();
+    });
+
     it('should accept alertThreshold option', () => {
       const server = createServer({ alertThreshold: 4 });
       expect(server).toBeDefined();

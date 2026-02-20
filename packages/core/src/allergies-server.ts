@@ -11,7 +11,6 @@ import type { NotificationQueueInstance, EmitOptions } from './notification-queu
 const PLUGIN_ID = 'allergies-server';
 const DATA_BUS_CHANNEL = 'allergies.current';
 const DEFAULT_ALERT_THRESHOLD = 3;
-const DEFAULT_REFRESH_INTERVAL_MS = 600_000; // 10 min
 const DEFAULT_MAX_STALE_MS = 3_600_000; // 1 hour
 
 // ── API response types ─────────────────────────────────────────────────────
@@ -74,7 +73,7 @@ export function createAllergiesServer(options: AllergiesServerOptions): Allergie
   if (!apiKey) {
     throw new Error('AllergiesServer: apiKey is required');
   }
-  if (!location?.lat || !location?.lon) {
+  if (!Number.isFinite(location?.lat) || !Number.isFinite(location?.lon)) {
     throw new Error('AllergiesServer: location is required');
   }
 
@@ -173,7 +172,12 @@ export function createAllergiesServer(options: AllergiesServerOptions): Allergie
     refresh,
 
     getAllergyData(): AllergyData | null {
-      return lastData;
+      if (!lastData) return null;
+      return {
+        index: lastData.index,
+        allergens: lastData.allergens.map((a) => ({ ...a })),
+        lastUpdated: lastData.lastUpdated,
+      };
     },
 
     onUpdate(callback: (data: AllergyData) => void): () => void {
