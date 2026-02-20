@@ -88,5 +88,4 @@ export type {
   AllergyData,
   AllergenLevel,
   AllergyLocation,
-  FetchFn,
 } from '@lensing/types';
