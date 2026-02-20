@@ -58,6 +58,7 @@ create-plugin/
 **Required fields**: `id`, `name`, `version`
 
 **Permissions**:
+
 - `allowed_domains` — External domains the server module may call
 - `max_refresh_ms` — Minimum milliseconds between data refreshes
 - `max_request_burst` — Maximum concurrent requests allowed
@@ -73,16 +74,16 @@ with it via `sdk.request()`.
 
 ```ts
 // Called once when the plugin loads
-export async function initialize(config: ServerConfig): Promise<{ ready: boolean }>
+export async function initialize(config: ServerConfig): Promise<{ ready: boolean }>;
 
 // Called for each widget request
-export async function handleRequest(payload: RequestPayload): Promise<RequestResult>
+export async function handleRequest(payload: RequestPayload): Promise<RequestResult>;
 
 // Called when widget becomes visible
-export async function onActivate(): Promise<{ status: string }>
+export async function onActivate(): Promise<{ status: string }>;
 
 // Called when widget is hidden
-export async function onDeactivate(): Promise<{ status: string }>
+export async function onDeactivate(): Promise<{ status: string }>;
 ```
 
 ### Example server module
@@ -116,9 +117,13 @@ It receives data as props and calls back to the server module via `onUpdate`.
 ### Props
 
 ```ts
-let { id, data, onUpdate }: {
-  id: string;                          // Unique widget instance ID
-  data: Record<string, unknown>;       // Data from server module
+let {
+  id,
+  data,
+  onUpdate,
+}: {
+  id: string; // Unique widget instance ID
+  data: Record<string, unknown>; // Data from server module
   onUpdate: (newData?: unknown) => void; // Trigger server refresh
 } = $props();
 ```
@@ -139,6 +144,7 @@ let { id, data, onUpdate }: {
 ## Testing
 
 The test harness (`__tests__/plugin.test.ts`) covers:
+
 - Plugin manifest schema validation
 - Server lifecycle functions
 - Widget props interface
@@ -155,8 +161,13 @@ pnpm --filter @lensing/create-plugin test  # Run from monorepo root
 ```ts
 // Weather
 const weatherData = {
-  temperature: 68, humidity: 65, condition: 'Cloudy',
-  forecast: [{ time: '12pm', temp: 70 }, { time: '3pm', temp: 72 }],
+  temperature: 68,
+  humidity: 65,
+  condition: 'Cloudy',
+  forecast: [
+    { time: '12pm', temp: 70 },
+    { time: '3pm', temp: 72 },
+  ],
 };
 
 // Calendar

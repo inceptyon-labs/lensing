@@ -26,21 +26,11 @@
 
 // ── Server module exports ──────────────────────────────────────────────────
 
-export {
-  initialize,
-  handleRequest,
-  onActivate,
-  onDeactivate,
-} from './server.js';
+export { initialize, handleRequest, onActivate, onDeactivate } from './server.js';
 
 // ── Type exports ───────────────────────────────────────────────────────────
 
-export type {
-  ServerConfig,
-  RequestPayload,
-  RequestResult,
-  PluginManifest,
-} from './server.js';
+export type { ServerConfig, RequestPayload, RequestResult, PluginManifest } from './server.js';
 
 // ── Manifest export ────────────────────────────────────────────────────────
 

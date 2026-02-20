@@ -5,9 +5,9 @@ status: in-progress
 type: task
 priority: normal
 tags:
-    - pasiv
-    - size:M
-    - area:infra
+  - pasiv
+  - size:M
+  - area:infra
 created_at: 2026-02-16T21:25:56Z
 updated_at: 2026-02-20T01:07:21Z
 parent: lensing-7dtq

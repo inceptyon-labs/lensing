@@ -26,7 +26,11 @@
    * id: The unique identifier for this widget instance.
    * Used for accessibility attributes and event tracking.
    */
-  let { id, data, onUpdate }: {
+  let {
+    id,
+    data,
+    onUpdate,
+  }: {
     id: string;
     data: Record<string, unknown>;
     onUpdate: (newData?: unknown) => void;
@@ -79,7 +83,6 @@
   The Lensing layout system constrains width/height via CSS variables --widget-width / --widget-height.
 -->
 <div class="plugin-widget" aria-label="Starter Plugin" role="region">
-
   <!-- Loading state: shown while awaiting server data -->
   {#if isLoading}
     <div class="state-loading" aria-live="polite">
@@ -87,16 +90,14 @@
       <span class="sr-only">Loading...</span>
     </div>
 
-  <!-- Error state: shown when server request fails -->
+    <!-- Error state: shown when server request fails -->
   {:else if error}
     <div class="state-error" role="alert">
       <p class="error-message">{error}</p>
-      <button class="btn-retry" onclick={handleRefresh}>
-        Retry
-      </button>
+      <button class="btn-retry" onclick={handleRefresh}> Retry </button>
     </div>
 
-  <!-- Content state: shown with data from server module -->
+    <!-- Content state: shown with data from server module -->
   {:else}
     <div class="content">
       <!--
@@ -128,9 +129,7 @@
           - Match the ambient dark aesthetic of the Lensing dashboard
           - Keep it readable at both small and medium widget sizes
         -->
-        <p class="placeholder">
-          ✦ Your widget content goes here
-        </p>
+        <p class="placeholder">✦ Your widget content goes here</p>
 
         {#if data.value !== undefined}
           <div class="data-value">
@@ -190,7 +189,9 @@
   }
 
   @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+      transform: rotate(360deg);
+    }
   }
 
   /* Screen-reader only */
@@ -274,7 +275,9 @@
     cursor: pointer;
     padding: 2px 8px;
     font-size: 0.8rem;
-    transition: color 0.15s, border-color 0.15s;
+    transition:
+      color 0.15s,
+      border-color 0.15s;
   }
 
   .btn-refresh:hover,
