@@ -346,6 +346,28 @@ export interface DatabaseOptions {
   path?: string;
 }
 
+/** Options for emitting a notification */
+export interface EmitOptions {
+  source: string;
+  priority: NotificationPriority;
+  title: string;
+  body?: string;
+  ttl_ms?: number;
+  dedupe_key?: string;
+}
+
+/** Notification queue instance (minimal interface for cross-package use) */
+export interface NotificationQueueInstance {
+  emit(options: EmitOptions): string;
+  list(filter?: NotificationFilter): NotificationEntry[];
+  markRead(id: string): void;
+  dismiss(id: string): void;
+  clear(): void;
+  emitSystemEvent(event: 'plugin_error' | 'connectivity_loss', detail: string): string;
+  onNotification(callback: (entry: NotificationEntry) => void): () => void;
+  close(): void;
+}
+
 /** Schema migration definition */
 export interface SchemaMigration {
   version: number;
@@ -687,8 +709,8 @@ export interface AllergiesServerOptions {
   maxStale_ms?: number;
   /** Data bus instance for publishing allergen data */
   dataBus: DataBusInstance;
-  /** Notification queue for emitting alerts (from @lensing/core) */
-  notifications: unknown; // NotificationQueueInstance from core
+  /** Notification queue for emitting alerts */
+  notifications: NotificationQueueInstance;
   /** Injectable fetch function (defaults to global fetch) */
   fetchFn?: FetchFn;
 }

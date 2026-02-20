@@ -1,16 +1,16 @@
 ---
 # lensing-vq0w
 title: Create allergies server module and widget
-status: todo
+status: in-progress
 type: task
 priority: normal
 tags:
-  - pasiv
-  - size:M
-  - area:backend
-  - area:frontend
+    - pasiv
+    - size:M
+    - area:backend
+    - area:frontend
 created_at: 2026-02-16T21:24:20Z
-updated_at: 2026-02-16T21:24:20Z
+updated_at: 2026-02-20T02:31:18Z
 parent: lensing-l9s9
 ---
 

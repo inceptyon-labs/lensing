@@ -80,3 +80,6 @@ export type { DatabaseOptions } from '@lensing/types';
 export { createAgentService } from './agent-service';
 
 export { createAgentGateway } from './agent-gateway';
+
+export { createAllergiesServer } from './allergies-server';
+export type { AllergiesServerOptions, AllergiesServerInstance, AllergyData, AllergenLevel, AllergyLocation, FetchFn } from '@lensing/types';

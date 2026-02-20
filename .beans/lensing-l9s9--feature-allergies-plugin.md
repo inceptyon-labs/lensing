@@ -1,16 +1,16 @@
 ---
 # lensing-l9s9
 title: 'Feature: Allergies Plugin'
-status: todo
+status: in-progress
 type: feature
 priority: normal
 tags:
-  - pasiv
-  - priority:medium
-  - area:backend
-  - area:frontend
+    - pasiv
+    - priority:medium
+    - area:backend
+    - area:frontend
 created_at: 2026-02-16T21:20:52Z
-updated_at: 2026-02-16T21:20:52Z
+updated_at: 2026-02-20T02:31:31Z
 parent: lensing-mrxz
 ---
 
