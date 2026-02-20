@@ -596,6 +596,17 @@ export interface DataSnapshotPayload {
   snapshots: Record<string, DataBusMessage>;
 }
 
+/** Minimal WebSocket-compatible interface for dependency injection */
+export interface AgentWebSocket {
+  readonly readyState: number;
+  send(data: string): void;
+  close(code?: number, reason?: string): void;
+  onopen: (() => void) | null;
+  onclose: ((event: { code: number; reason: string }) => void) | null;
+  onmessage: ((event: { data: string }) => void) | null;
+  onerror: ((event: unknown) => void) | null;
+}
+
 /** Agent gateway configuration */
 export interface AgentGatewayOptions {
   /** WebSocket URL of the remote Agent Service (e.g. ws://agent-host:8080) */
@@ -612,6 +623,8 @@ export interface AgentGatewayOptions {
   maxDelay?: number;
   /** Max reconnect retries (default: Infinity) */
   maxRetries?: number;
+  /** Optional WebSocket factory for testing (uses native WebSocket by default) */
+  createWebSocket?: (url: string) => AgentWebSocket;
 }
 
 /** Agent gateway client instance */

@@ -78,3 +78,5 @@ export { createDatabase } from './database';
 export type { DatabaseOptions } from '@lensing/types';
 
 export { createAgentService } from './agent-service';
+
+export { createAgentGateway } from './agent-gateway';
