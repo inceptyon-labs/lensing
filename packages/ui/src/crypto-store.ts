@@ -119,7 +119,7 @@ export function createCryptoStore(options: CryptoStoreOptions = {}): CryptoStore
 
     isStale(): boolean {
       if (!data) return false;
-      if (!Number.isFinite(data.lastUpdated)) return false;
+      if (!Number.isFinite(data.lastUpdated)) return true;
       return Date.now() - data.lastUpdated > maxStale_ms;
     },
 

@@ -214,6 +214,15 @@ describe('Crypto Store', () => {
       });
       expect(store.isStale()).toBe(true);
     });
+
+    it('should return true for non-finite lastUpdated (corrupt data)', () => {
+      const store = createCryptoStore({ maxStale_ms: 300000 });
+      store.setData({
+        coins: [],
+        lastUpdated: NaN,
+      });
+      expect(store.isStale()).toBe(true);
+    });
   });
 
   describe('onChange', () => {

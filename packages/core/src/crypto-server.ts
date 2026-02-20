@@ -68,6 +68,7 @@ export function createCryptoServer(options: CryptoServerOptions): CryptoServerIn
   let lastData: CryptoData | null = null;
   let lastFetchedAt: number | null = null;
   let closed = false;
+  let refreshing = false;
   const updateListeners: Array<(data: CryptoData) => void> = [];
   const errorListeners: Array<(error: string) => void> = [];
   const notificationQueue = notifications as NotificationQueueInstance;
@@ -137,57 +138,67 @@ export function createCryptoServer(options: CryptoServerOptions): CryptoServerIn
 
   async function refresh(): Promise<void> {
     if (closed) return;
+    if (refreshing) return;
 
     if (lastFetchedAt !== null && maxStale_ms > 0 && Date.now() - lastFetchedAt < maxStale_ms) {
       return;
     }
 
-    let response: Awaited<ReturnType<FetchFn>>;
+    refreshing = true;
+
     try {
-      response = await fetchFn(buildUrl());
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      notifyError(`Crypto fetch failed: ${message}`);
-      return;
+      let response: Awaited<ReturnType<FetchFn>>;
+      try {
+        response = await fetchFn(buildUrl());
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        notifyError(`Crypto fetch failed: ${message}`);
+        return;
+      }
+
+      if (!response.ok) {
+        notifyError(
+          `Crypto API error ${response.status ?? ''}: ${response.statusText ?? 'unknown'}`,
+        );
+        return;
+      }
+
+      let raw: unknown;
+      try {
+        raw = await response.json();
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        notifyError(`Crypto response parse error: ${message}`);
+        return;
+      }
+
+      if (!Array.isArray(raw)) {
+        notifyError('Crypto response is not an array');
+        return;
+      }
+
+      const coins = (raw as ApiCoin[]).map(transformCoin);
+      const now = Date.now();
+
+      // Store private defensive copy
+      lastData = {
+        coins: coins.map(copyCoin),
+        lastUpdated: now,
+      };
+      lastFetchedAt = now;
+
+      // Publish a copy to the data bus
+      const publishData: CryptoData = {
+        coins: coins.map(copyCoin),
+        lastUpdated: now,
+      };
+      (dataBus as DataBusInstance).publish(DATA_BUS_PRICES_CHANNEL, PLUGIN_ID, publishData);
+
+      checkAndEmitAlerts(coins);
+      notifyUpdate(publishData);
+    } finally {
+      refreshing = false;
     }
-
-    if (!response.ok) {
-      notifyError(`Crypto API error ${response.status ?? ''}: ${response.statusText ?? 'unknown'}`);
-      return;
-    }
-
-    let raw: unknown;
-    try {
-      raw = await response.json();
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      notifyError(`Crypto response parse error: ${message}`);
-      return;
-    }
-
-    if (!Array.isArray(raw)) {
-      notifyError('Crypto response is not an array');
-      return;
-    }
-
-    const coins = (raw as ApiCoin[]).map(transformCoin);
-
-    // Store private defensive copy
-    lastData = {
-      coins: coins.map(copyCoin),
-      lastUpdated: Date.now(),
-    };
-    lastFetchedAt = Date.now();
-
-    // Publish a copy to the data bus
-    const publishData: CryptoData = {
-      coins: coins.map(copyCoin),
-      lastUpdated: lastData.lastUpdated,
-    };
-    (dataBus as DataBusInstance).publish(DATA_BUS_PRICES_CHANNEL, PLUGIN_ID, publishData);
-
-    checkAndEmitAlerts(coins);
-    notifyUpdate(publishData);
   }
 
   return {

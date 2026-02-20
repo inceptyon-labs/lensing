@@ -466,4 +466,35 @@ describe('Crypto Server', () => {
       expect(fetchFn).not.toHaveBeenCalled();
     });
   });
+
+  describe('Concurrency', () => {
+    it('should not make concurrent fetch calls when refresh is already in flight', async () => {
+      let resolveFetch!: (val: any) => void;
+      const fetchFn = vi.fn().mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            resolveFetch = resolve;
+          }),
+      );
+
+      const server = createServer({ fetchFn, maxStale_ms: 0 });
+
+      // Start first refresh (in-flight, not awaited)
+      const p1 = server.refresh();
+
+      // Second refresh should detect in-flight and skip
+      const p2 = server.refresh();
+
+      // Resolve the pending fetch
+      resolveFetch({
+        ok: true,
+        status: 200,
+        json: async () => createMockCoinGeckoResponse(),
+      });
+
+      await Promise.all([p1, p2]);
+
+      expect(fetchFn).toHaveBeenCalledTimes(1);
+    });
+  });
 });
