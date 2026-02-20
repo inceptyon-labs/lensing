@@ -728,3 +728,59 @@ export interface AllergiesServerInstance {
   /** Stop background refresh and release resources */
   close(): void;
 }
+
+// ── Crypto Prices Server ───────────────────────────────────────────────────
+
+/** Price data for a single cryptocurrency */
+export interface CoinPrice {
+  id: string; // e.g., "bitcoin"
+  symbol: string; // e.g., "btc"
+  name: string; // e.g., "Bitcoin"
+  price: number; // USD price
+  change_1h: number; // percent change in 1 hour
+  change_24h: number; // percent change in 24 hours
+  change_7d: number; // percent change in 7 days
+}
+
+/** Full crypto prices payload */
+export interface CryptoData {
+  coins: CoinPrice[];
+  lastUpdated: number; // Unix timestamp in ms
+}
+
+/** Alert configuration for a specific coin and change window */
+export interface CryptoAlertConfig {
+  coinId: string; // e.g., "bitcoin"
+  threshold_pct: number; // absolute percent change threshold (e.g., 5 = ±5%)
+  window: '1h' | '24h' | '7d'; // which change window to watch
+}
+
+/** Configuration for createCryptoServer */
+export interface CryptoServerOptions {
+  /** List of coin IDs to watch (CoinGecko IDs, e.g., ["bitcoin", "ethereum"]) */
+  watchlist: string[];
+  /** Alert configurations (optional) */
+  alertConfigs?: CryptoAlertConfig[];
+  /** Max staleness in ms before cache is stale (default: 300000 = 5 min) */
+  maxStale_ms?: number;
+  /** Data bus instance for publishing price data */
+  dataBus: DataBusInstance;
+  /** Notification queue for emitting alerts */
+  notifications: NotificationQueueInstance;
+  /** Injectable fetch function (defaults to global fetch) */
+  fetchFn?: FetchFn;
+}
+
+/** Instance returned by createCryptoServer */
+export interface CryptoServerInstance {
+  /** Manually trigger a price refresh */
+  refresh(): Promise<void>;
+  /** Get the last fetched price data (null if not yet fetched) */
+  getPrices(): CryptoData | null;
+  /** Register a listener called when new data arrives; returns unsubscribe */
+  onUpdate(callback: (data: CryptoData) => void): () => void;
+  /** Register a listener called when an error occurs */
+  onError(callback: (error: string) => void): void;
+  /** Stop and release resources */
+  close(): void;
+}
