@@ -158,7 +158,7 @@ export function createCryptoServer(options: CryptoServerOptions): CryptoServerIn
 
       if (!response.ok) {
         notifyError(
-          `Crypto API error ${response.status ?? ''}: ${response.statusText ?? 'unknown'}`,
+          `Crypto API error ${response.status ?? ''}: ${response.statusText ?? 'unknown'}`
         );
         return;
       }

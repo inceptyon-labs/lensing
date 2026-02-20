@@ -474,7 +474,7 @@ describe('Crypto Server', () => {
         () =>
           new Promise((resolve) => {
             resolveFetch = resolve;
-          }),
+          })
       );
 
       const server = createServer({ fetchFn, maxStale_ms: 0 });
