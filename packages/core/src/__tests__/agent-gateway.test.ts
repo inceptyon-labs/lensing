@@ -18,7 +18,9 @@ function createMockDataBus(): DataBusInstance {
   return {
     publish: vi.fn(),
     subscribe: vi.fn(() => () => {}),
-    getLatest: vi.fn((channel: string) => channels.get(channel)),
+    getLatest: vi.fn(
+      (channel: string) => channels.get(channel)
+    ) as unknown as DataBusInstance['getLatest'],
     getChannels: vi.fn(() => [...channels.keys()]),
     onMessage: vi.fn(() => () => {}),
     clear: vi.fn(),
