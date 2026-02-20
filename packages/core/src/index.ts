@@ -89,3 +89,12 @@ export type {
   AllergenLevel,
   AllergyLocation,
 } from '@lensing/types';
+
+export { createCryptoServer } from './crypto-server';
+export type {
+  CryptoServerOptions,
+  CryptoServerInstance,
+  CryptoData,
+  CoinPrice,
+  CryptoAlertConfig,
+} from '@lensing/types';
