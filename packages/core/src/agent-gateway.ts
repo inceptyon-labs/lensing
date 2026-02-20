@@ -32,6 +32,7 @@ export function createAgentGateway(options: AgentGatewayOptions): AgentGatewayIn
   let ws: AgentWebSocket | null = null;
   let intentionalDisconnect = false;
   let reconnectAttemptCount = 0;
+  let currentSocketId = 0;
   const pendingRequests = new Set<string>();
 
   const reconnectManager = createReconnectManager({
@@ -54,6 +55,7 @@ export function createAgentGateway(options: AgentGatewayOptions): AgentGatewayIn
       createWebSocket ?? ((u: string) => new WebSocket(u) as unknown as AgentWebSocket);
 
     const socket = wsFactory(url);
+    const socketId = ++currentSocketId;
     ws = socket;
 
     socket.onopen = () => {
@@ -61,17 +63,20 @@ export function createAgentGateway(options: AgentGatewayOptions): AgentGatewayIn
         socket.close(1000, 'Gateway closed during connect');
         return;
       }
+      if (socketId !== currentSocketId) return; // ignore stale socket
       reconnectAttemptCount = 0;
       reconnectManager.connect();
     };
 
     socket.onclose = (_event) => {
+      if (socketId !== currentSocketId) return; // ignore stale socket
       ws = null;
       if (closed || intentionalDisconnect) return;
       reconnectManager.connectionLost();
     };
 
     socket.onmessage = (event) => {
+      if (socketId !== currentSocketId) return; // ignore stale socket
       if (closed) return;
       handleMessage(event.data);
     };
@@ -144,6 +149,13 @@ export function createAgentGateway(options: AgentGatewayOptions): AgentGatewayIn
     }
   }
 
+  function sendRawStrict(msg: WsMessage): void {
+    if (ws === null || ws.readyState !== WS_OPEN) {
+      throw new Error('WebSocket is not open');
+    }
+    ws.send(JSON.stringify(msg));
+  }
+
   return {
     get status(): ConnectionStatus {
       if (closed) return 'disconnected';
@@ -170,11 +182,16 @@ export function createAgentGateway(options: AgentGatewayOptions): AgentGatewayIn
       }
       const requestId = generateId();
       pendingRequests.add(requestId);
-      sendRaw({
-        type: 'agent_request',
-        payload: { requestId, prompt },
-        timestamp: new Date().toISOString(),
-      });
+      try {
+        sendRawStrict({
+          type: 'agent_request',
+          payload: { requestId, prompt },
+          timestamp: new Date().toISOString(),
+        });
+      } catch (error) {
+        pendingRequests.delete(requestId);
+        throw error;
+      }
       return requestId;
     },
 

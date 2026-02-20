@@ -548,6 +548,76 @@ describe('Agent Gateway', () => {
     });
   });
 
+  describe('Stale Socket Handling', () => {
+    it('should ignore old socket onclose when new socket is already open', () => {
+      createGateway({ baseDelay: 100, maxDelay: 1000 });
+      gateway.connect();
+      const firstWs = getLatestMockWs();
+
+      // Create second socket before first opens
+      gateway.connect();
+      const secondWs = getLatestMockWs();
+
+      expect(mockInstances).toHaveLength(2);
+
+      // Second socket opens successfully
+      secondWs.simulateOpen();
+      expect(gateway.status).toBe('connected');
+
+      // Clear status change mocks to see if reconnect is triggered
+      onStatusChange.mockClear();
+
+      // First socket closes (stale) — should NOT trigger reconnect
+      firstWs.simulateClose(1006);
+
+      // Status should stay connected (not transition to reconnecting)
+      expect(gateway.status).toBe('connected');
+      expect(onStatusChange).not.toHaveBeenCalled();
+    });
+
+    it('should not receive messages from stale socket', () => {
+      createGateway();
+      gateway.connect();
+      const firstWs = getLatestMockWs();
+      firstWs.simulateOpen();
+
+      gateway.connect();
+      const secondWs = getLatestMockWs();
+      secondWs.simulateOpen();
+
+      onResponse.mockClear();
+
+      // Send message from stale socket after new one is active
+      const requestId = gateway.sendRequest('test');
+      firstWs.simulateMessage({
+        type: 'agent_response',
+        payload: { requestId, result: createMockResult('wrong response') },
+        timestamp: new Date().toISOString(),
+      });
+
+      // Stale message should be ignored (callback not invoked from old socket)
+      expect(onResponse).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Send Reliability', () => {
+    it('should verify sendRequest actually sends before returning requestId', () => {
+      createGateway();
+      gateway.connect();
+      const ws = getLatestMockWs();
+      ws.simulateOpen();
+
+      // Mock send to fail
+      const originalSend = ws.send.bind(ws);
+      ws.send = vi.fn(() => {
+        throw new Error('WebSocket is not open');
+      });
+
+      // sendRequest should fail if actual send fails
+      expect(() => gateway.sendRequest('test')).toThrow('WebSocket is not open');
+    });
+  });
+
   describe('Ping/Pong', () => {
     it('should respond to ping with pong', () => {
       createGateway();
