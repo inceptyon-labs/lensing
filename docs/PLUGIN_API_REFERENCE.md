@@ -26,13 +26,13 @@ Every plugin declares a `plugin.json` manifest in its root directory. The host v
 
 ### Optional Fields
 
-| Field           | Type                         | Default     | Description                      |
-| --------------- | ---------------------------- | ----------- | -------------------------------- |
-| `ui_entry`      | `string`                     | `undefined` | Path to UI component (Svelte)    |
-| `server_entry`  | `string`                     | `undefined` | Path to server module (Node.js)  |
-| `permissions`   | `PluginPermissions`          | `undefined` | Network and resource constraints |
-| `widget_sizes`  | `WidgetSize[]` or `GridSpan` | `undefined` | Supported display sizes          |
-| `dependencies`  | `string[]`                   | `undefined` | IDs of plugins this depends on   |
+| Field           | Type                         | Default     | Description                                                     |
+| --------------- | ---------------------------- | ----------- | --------------------------------------------------------------- |
+| `ui_entry`      | `string`                     | `undefined` | Path to UI component (Svelte)                                   |
+| `server_entry`  | `string`                     | `undefined` | Path to server module (Node.js)                                 |
+| `permissions`   | `PluginPermissions`          | `undefined` | Network and resource constraints                                |
+| `widget_sizes`  | `WidgetSize[]` or `GridSpan` | `undefined` | Supported display sizes                                         |
+| `dependencies`  | `string[]`                   | `undefined` | IDs of plugins this depends on                                  |
 | `config_schema` | `PluginConfigSchema`         | `undefined` | Admin settings form definition (via `PluginManifestWithConfig`) |
 
 ### Widget Sizes
