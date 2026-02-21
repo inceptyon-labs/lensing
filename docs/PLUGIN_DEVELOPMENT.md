@@ -68,6 +68,7 @@ The manifest declares your plugin's identity, capabilities, and permissions:
 ```
 
 **Key fields:**
+
 - **id**: Unique plugin identifier (kebab-case, 3-50 characters)
 - **name**: Display name
 - **version**: Semantic version string
@@ -163,7 +164,7 @@ export async function createMyAwesomePlugin(options: {
         description: json.description,
       };
 
-      listeners.forEach(cb => cb(data));
+      listeners.forEach((cb) => cb(data));
       dataBus.publish('my-awesome-plugin', 'my-awesome-plugin', data);
     } catch (error) {
       console.error('Refresh failed:', error);
@@ -197,6 +198,7 @@ lensing dev --plugin ./my-awesome-plugin --fixtures ./fixtures
 ```
 
 The dev server exposes:
+
 - **Manifest loading**: Validates `plugin.json` against the schema
 - **File watching**: Auto-reload on changes
 - **Fixture loading**: Injects mock data for testing
@@ -348,6 +350,7 @@ npm test -- --coverage
 ### Test Harness
 
 The test harness (Vitest) provides:
+
 - **Setup/teardown**: `beforeEach`, `afterEach` hooks
 - **Mocking**: Create mock objects matching `@lensing/types` interfaces
 - **Assertions**: Full range of expect() matchers
@@ -392,6 +395,7 @@ Example progression: `0.1.0` → `0.2.0` (new feature) → `0.2.1` (bug fix) →
 ### Naming Conventions
 
 **Plugin ID format:**
+
 - Kebab-case: `my-awesome-plugin`
 - 3-50 characters
 - Only alphanumeric and hyphens
@@ -484,15 +488,15 @@ Before publishing your plugin, verify:
 
 ```yaml
 id: my-awesome-plugin
-name: "My Awesome Plugin"
-version: "1.0.0"
-author: "Your Name"
-description: "A brief description of what the plugin does"
-repository: "https://github.com/yourusername/my-awesome-plugin"
-license: "MIT"
+name: 'My Awesome Plugin'
+version: '1.0.0'
+author: 'Your Name'
+description: 'A brief description of what the plugin does'
+repository: 'https://github.com/yourusername/my-awesome-plugin'
+license: 'MIT'
 permissions:
-  - "network:api.example.com"
-  - "secrets:API_KEY"
+  - 'network:api.example.com'
+  - 'secrets:API_KEY'
 changelog: |
   ## 1.0.0
   - Initial stable release
@@ -511,6 +515,7 @@ changelog: |
 **Error:** `Invalid plugin name: "my plugin". Must be 3-50 characters...`
 
 **Solution:** Use kebab-case without spaces:
+
 ```bash
 lensing plugin create my-plugin  # ✓ correct
 lensing plugin create my plugin  # ✗ wrong (space)
@@ -522,11 +527,13 @@ lensing plugin create MyPlugin   # ✓ works (converted to my-plugin)
 **Error:** `Invalid plugin manifest: Manifest must be a non-null object`
 
 **Causes:**
+
 - `plugin.json` doesn't exist
 - `plugin.json` has invalid JSON syntax
 - Wrong file encoding (must be UTF-8)
 
 **Solution:** Verify the manifest:
+
 ```bash
 # Check the file exists
 ls -la my-awesome-plugin/plugin.json
@@ -545,11 +552,12 @@ file my-awesome-plugin/plugin.json  # should be "JSON text"
 **Cause:** The field value is the wrong type (e.g., number instead of string).
 
 **Solution:** Ensure all required fields are strings in `plugin.json`:
+
 ```json
 {
   "id": "my-awesome-plugin",
   "name": "my-awesome-plugin",
-  "version": "0.1.0"  // ← must be a string, not 0.1
+  "version": "0.1.0" // ← must be a string, not 0.1
 }
 ```
 
@@ -560,6 +568,7 @@ file my-awesome-plugin/plugin.json  # should be "JSON text"
 **Cause:** Dependencies not installed or TypeScript can't resolve them.
 
 **Solution:**
+
 ```bash
 # Install dependencies in the plugin directory
 npm install
@@ -580,6 +589,7 @@ cat tsconfig.json
 **Cause:** File watcher may have missed changes or fixtures weren't reloaded.
 
 **Solution:**
+
 ```bash
 # Kill the dev server
 Ctrl+C
@@ -598,6 +608,7 @@ lensing dev --plugin ./my-awesome-plugin --fixtures ./fixtures
 **Cause:** File permissions or file locking (file is open in editor).
 
 **Solution:**
+
 - Save and close the file in your editor
 - Check file permissions: `chmod 644 plugin.json`
 - Restart the dev server
@@ -609,6 +620,7 @@ lensing dev --plugin ./my-awesome-plugin --fixtures ./fixtures
 **Cause:** Domain is not in `allowed_domains` in `plugin.json`.
 
 **Solution:** Add the domain to permissions:
+
 ```json
 {
   "permissions": {
@@ -624,6 +636,7 @@ lensing dev --plugin ./my-awesome-plugin --fixtures ./fixtures
 **Cause:** Secret environment variable not set or not declared in manifest.
 
 **Solution:**
+
 1. Declare in manifest:
    ```json
    {
@@ -645,11 +658,12 @@ lensing dev --plugin ./my-awesome-plugin --fixtures ./fixtures
 **Cause:** Exceeding `max_refresh_ms` or `max_request_burst` limits.
 
 **Solution:** Adjust permissions in `plugin.json`:
+
 ```json
 {
   "permissions": {
-    "max_refresh_ms": 60000,      // Minimum 1 minute between refreshes
-    "max_request_burst": 10       // Allow up to 10 concurrent requests
+    "max_refresh_ms": 60000, // Minimum 1 minute between refreshes
+    "max_request_burst": 10 // Allow up to 10 concurrent requests
   }
 }
 ```

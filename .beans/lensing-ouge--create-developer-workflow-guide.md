@@ -1,7 +1,7 @@
 ---
 # lensing-ouge
 title: Create developer workflow guide
-status: todo
+status: in-progress
 type: task
 priority: normal
 tags:
@@ -9,7 +9,7 @@ tags:
   - size:S
   - area:infra
 created_at: 2026-02-16T21:25:46Z
-updated_at: 2026-02-16T21:25:46Z
+updated_at: 2026-02-21T16:09:39Z
 parent: lensing-vrze
 ---
 

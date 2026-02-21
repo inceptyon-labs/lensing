@@ -1,7 +1,7 @@
 ---
 # lensing-itei
 title: 'Feature: Crypto Prices Plugin'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 tags:
@@ -10,7 +10,7 @@ tags:
   - area:backend
   - area:frontend
 created_at: 2026-02-16T21:20:55Z
-updated_at: 2026-02-20T03:30:47Z
+updated_at: 2026-02-20T03:52:13Z
 parent: lensing-mrxz
 ---
 
