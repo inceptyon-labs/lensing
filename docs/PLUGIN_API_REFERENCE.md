@@ -32,8 +32,8 @@ Every plugin declares a `plugin.json` manifest in its root directory. The host v
 | `server_entry`  | `string`                     | `undefined` | Path to server module (Node.js)  |
 | `permissions`   | `PluginPermissions`          | `undefined` | Network and resource constraints |
 | `widget_sizes`  | `WidgetSize[]` or `GridSpan` | `undefined` | Supported display sizes          |
-| `dependencies`  | `string[]`                   | `[]`        | IDs of plugins this depends on   |
-| `config_schema` | `PluginConfigSchema`         | `undefined` | Admin settings form definition   |
+| `dependencies`  | `string[]`                   | `undefined` | IDs of plugins this depends on   |
+| `config_schema` | `PluginConfigSchema`         | `undefined` | Admin settings form definition (via `PluginManifestWithConfig`) |
 
 ### Widget Sizes
 
@@ -62,6 +62,8 @@ Valid presets: `"small"`, `"medium"`, `"large"`
 ```
 
 Each tuple is `[columns, rows]`.
+
+> **Note:** The type system allows `GridSpan` but the manifest validator currently only accepts `WidgetSize[]` (array of strings). `GridSpan` support is planned for a future release.
 
 ### Config Schema
 
@@ -132,8 +134,8 @@ Plugins can declare a configuration schema for admin settings forms:
 | Field               | Type       | Default     | Description                                                                                  |
 | ------------------- | ---------- | ----------- | -------------------------------------------------------------------------------------------- |
 | `allowed_domains`   | `string[]` | `undefined` | Domains the plugin can make HTTP requests to. Subdomains of listed domains are also allowed. |
-| `max_refresh_ms`    | `number`   | `undefined` | Minimum milliseconds between data refreshes. Must be a positive finite number.               |
-| `max_request_burst` | `number`   | `undefined` | Maximum number of HTTP requests within a 60-second sliding window.                           |
+| `max_refresh_ms`    | `number`   | `undefined` | Minimum milliseconds between data refreshes. Must be a non-negative finite number.           |
+| `max_request_burst` | `number`   | `undefined` | Maximum number of scheduler executions within a 60-second sliding window.                    |
 | `secrets`           | `string[]` | `undefined` | Environment variable names the plugin is allowed to read.                                    |
 
 ### Complete Example
@@ -176,10 +178,10 @@ The manifest validator enforces:
 - `widget_sizes` must be an array of strings if present (preset mode)
 - `permissions` must be an object if present, with:
   - `allowed_domains`: array of strings
-  - `max_refresh_ms`: positive finite number
-  - `max_request_burst`: positive finite number (enforced at runtime)
+  - `max_refresh_ms`: non-negative finite number
+  - `max_request_burst`: non-negative finite number (enforced at runtime by the scheduler)
   - `secrets`: array of strings
-- `config_schema.fields` must be an array of valid field definitions
+- `config_schema` is not currently validated by the manifest loader (it is passed through as-is)
 
 ---
 
@@ -449,9 +451,6 @@ The plugin loader scans the plugins directory for subdirectories containing `plu
 ```typescript
 const loader: PluginLoader = createPluginLoader({
   pluginsDir: '/path/to/plugins',
-  readDir,
-  readFile,
-  importModule,
 });
 
 const discovered: DiscoveredPlugin[] = await loader.discover();
@@ -484,26 +483,27 @@ const loaded: LoadedPlugin[] = await loader.load();
 
 **What happens:**
 
-1. Calls `discover()` internally
+1. Scans the plugins directory for subdirectories with `plugin.json`
 2. For each discovered plugin:
    - If `ui_entry` defined: dynamically imports the UI module
    - If `server_entry` defined: dynamically imports the server module
-3. Sets `status` to `'loaded'` on success or `'error'` on failure
-4. Errors are collected but do not block other plugins from loading
+3. Successfully loaded plugins are added to the internal registry
+4. Failed plugins are recorded in the error map (not in the loaded results)
+5. Errors do not block other plugins from loading
 
 **State transitions:**
 
 ```
-'loading' → 'loaded'   (success)
-'loading' → 'error'    (import failure, invalid module)
+'loading' → 'loaded'   (success — included in getAllPlugins())
+'loading' → 'error'    (import failure — only in getErrors())
 ```
 
 **Query loaded plugins:**
 
 ```typescript
-const plugin = loader.getPlugin('crypto-prices'); // Single plugin
-const all = loader.getAllPlugins(); // All plugins
-const errors = await loader.getErrors(); // Map<id, errorMessage>
+const plugin = loader.getPlugin('crypto-prices'); // Single plugin (loaded only)
+const all = loader.getAllPlugins(); // All successfully loaded plugins
+const errors = await loader.getErrors(); // Map<id, errorMessage> for failures
 ```
 
 ### Phase 3: Scheduling
@@ -557,7 +557,7 @@ interface SchedulerEntry {
   status: SchedulerStatus;
   lastRun?: number; // Timestamp of last execution
   nextRun?: number; // Timestamp of next scheduled run
-  runCount: number; // Total successful executions
+  runCount: number; // Total executions (success and error)
   error?: string; // Last error message
 }
 ```
@@ -670,7 +670,7 @@ dataBus.publish<CryptoData>('crypto.prices', 'crypto-prices', {
 **Behavior:**
 
 - Creates a `DataBusMessage` with the payload, plugin ID, and ISO 8601 timestamp
-- **Freezes** the message with `Object.freeze()` to prevent mutation
+- **Freezes** the message with `Object.freeze()` to prevent mutation (shallow freeze — nested objects are not deep-frozen)
 - Stores as the latest message for the channel
 - Notifies all channel-specific subscribers
 - Notifies all global listeners
