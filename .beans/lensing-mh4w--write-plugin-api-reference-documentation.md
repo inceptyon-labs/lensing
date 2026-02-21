@@ -1,7 +1,7 @@
 ---
 # lensing-mh4w
 title: Write plugin API reference documentation
-status: todo
+status: in-progress
 type: task
 priority: normal
 tags:
@@ -9,7 +9,7 @@ tags:
   - size:M
   - area:infra
 created_at: 2026-02-16T21:25:44Z
-updated_at: 2026-02-16T21:25:44Z
+updated_at: 2026-02-21T22:26:32Z
 parent: lensing-vrze
 ---
 

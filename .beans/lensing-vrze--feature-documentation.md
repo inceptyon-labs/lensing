@@ -1,7 +1,7 @@
 ---
 # lensing-vrze
 title: 'Feature: Documentation'
-status: todo
+status: in-progress
 type: feature
 priority: normal
 tags:
@@ -9,7 +9,7 @@ tags:
   - priority:medium
   - area:infra
 created_at: 2026-02-16T21:22:10Z
-updated_at: 2026-02-16T21:22:10Z
+updated_at: 2026-02-21T22:26:32Z
 parent: lensing-46q9
 ---
 

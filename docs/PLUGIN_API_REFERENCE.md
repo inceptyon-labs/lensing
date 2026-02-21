@@ -18,22 +18,22 @@ Every plugin declares a `plugin.json` manifest in its root directory. The host v
 
 ### Required Fields
 
-| Field     | Type     | Constraints                                    | Description                |
-| --------- | -------- | ---------------------------------------------- | -------------------------- |
-| `id`      | `string` | Non-empty                                      | Unique plugin identifier   |
-| `name`    | `string` | Non-empty                                      | Display name               |
-| `version` | `string` | Non-empty, semantic version recommended        | Plugin version             |
+| Field     | Type     | Constraints                             | Description              |
+| --------- | -------- | --------------------------------------- | ------------------------ |
+| `id`      | `string` | Non-empty                               | Unique plugin identifier |
+| `name`    | `string` | Non-empty                               | Display name             |
+| `version` | `string` | Non-empty, semantic version recommended | Plugin version           |
 
 ### Optional Fields
 
-| Field           | Type                             | Default     | Description                            |
-| --------------- | -------------------------------- | ----------- | -------------------------------------- |
-| `ui_entry`      | `string`                         | `undefined` | Path to UI component (Svelte)          |
-| `server_entry`  | `string`                         | `undefined` | Path to server module (Node.js)        |
-| `permissions`   | `PluginPermissions`              | `undefined` | Network and resource constraints       |
-| `widget_sizes`  | `WidgetSize[]` or `GridSpan`     | `undefined` | Supported display sizes                |
-| `dependencies`  | `string[]`                       | `[]`        | IDs of plugins this depends on         |
-| `config_schema` | `PluginConfigSchema`             | `undefined` | Admin settings form definition         |
+| Field           | Type                         | Default     | Description                      |
+| --------------- | ---------------------------- | ----------- | -------------------------------- |
+| `ui_entry`      | `string`                     | `undefined` | Path to UI component (Svelte)    |
+| `server_entry`  | `string`                     | `undefined` | Path to server module (Node.js)  |
+| `permissions`   | `PluginPermissions`          | `undefined` | Network and resource constraints |
+| `widget_sizes`  | `WidgetSize[]` or `GridSpan` | `undefined` | Supported display sizes          |
+| `dependencies`  | `string[]`                   | `[]`        | IDs of plugins this depends on   |
+| `config_schema` | `PluginConfigSchema`         | `undefined` | Admin settings form definition   |
 
 ### Widget Sizes
 
@@ -109,12 +109,12 @@ Plugins can declare a configuration schema for admin settings forms:
 
 **Field types:**
 
-| Type      | Rendered As    | Extra Properties            |
-| --------- | -------------- | --------------------------- |
-| `string`  | Text input     | —                           |
-| `number`  | Number input   | `min`, `max`                |
-| `boolean` | Toggle/checkbox| —                           |
-| `select`  | Dropdown       | `options` (required)        |
+| Type      | Rendered As     | Extra Properties     |
+| --------- | --------------- | -------------------- |
+| `string`  | Text input      | —                    |
+| `number`  | Number input    | `min`, `max`         |
+| `boolean` | Toggle/checkbox | —                    |
+| `select`  | Dropdown        | `options` (required) |
 
 ### Permissions Object
 
@@ -129,12 +129,12 @@ Plugins can declare a configuration schema for admin settings forms:
 }
 ```
 
-| Field               | Type       | Default     | Description                                |
-| ------------------- | ---------- | ----------- | ------------------------------------------ |
+| Field               | Type       | Default     | Description                                                                                  |
+| ------------------- | ---------- | ----------- | -------------------------------------------------------------------------------------------- |
 | `allowed_domains`   | `string[]` | `undefined` | Domains the plugin can make HTTP requests to. Subdomains of listed domains are also allowed. |
-| `max_refresh_ms`    | `number`   | `undefined` | Minimum milliseconds between data refreshes. Must be a positive finite number. |
-| `max_request_burst` | `number`   | `undefined` | Maximum number of HTTP requests within a 60-second sliding window. |
-| `secrets`           | `string[]` | `undefined` | Environment variable names the plugin is allowed to read. |
+| `max_refresh_ms`    | `number`   | `undefined` | Minimum milliseconds between data refreshes. Must be a positive finite number.               |
+| `max_request_burst` | `number`   | `undefined` | Maximum number of HTTP requests within a 60-second sliding window.                           |
+| `secrets`           | `string[]` | `undefined` | Environment variable names the plugin is allowed to read.                                    |
 
 ### Complete Example
 
@@ -257,10 +257,10 @@ interface LoadedPlugin {
 
 ```typescript
 interface DataBusMessage<T = unknown> {
-  channel: string;     // Channel name (e.g., "crypto.prices")
-  data: T;             // Frozen payload
-  timestamp: string;   // ISO 8601
-  plugin_id: string;   // Publishing plugin ID
+  channel: string; // Channel name (e.g., "crypto.prices")
+  data: T; // Frozen payload
+  timestamp: string; // ISO 8601
+  plugin_id: string; // Publishing plugin ID
 }
 ```
 
@@ -302,8 +302,8 @@ interface CacheStore {
 
 ```typescript
 interface StalePolicy {
-  max_stale_ms: number;  // Maximum age before entry is considered stale
-  source?: string;       // Optional source identifier
+  max_stale_ms: number; // Maximum age before entry is considered stale
+  source?: string; // Optional source identifier
 }
 ```
 
@@ -350,7 +350,7 @@ interface NotificationQueueInstance {
 ```typescript
 interface EmitOptions {
   source: string;
-  priority: NotificationPriority;  // 'info' | 'warning' | 'urgent'
+  priority: NotificationPriority; // 'info' | 'warning' | 'urgent'
   title: string;
   body?: string;
   ttl_ms?: number;
@@ -392,7 +392,7 @@ type SceneName = 'morning' | 'evening' | 'ambient' | 'focus' | 'alert';
 type ColorTemp = 'warm' | 'neutral' | 'cool';
 
 interface SceneVisuals {
-  opacity: number;       // 0-1
+  opacity: number; // 0-1
   color_temp: ColorTemp;
 }
 
@@ -449,7 +449,9 @@ The plugin loader scans the plugins directory for subdirectories containing `plu
 ```typescript
 const loader: PluginLoader = createPluginLoader({
   pluginsDir: '/path/to/plugins',
-  readDir, readFile, importModule
+  readDir,
+  readFile,
+  importModule,
 });
 
 const discovered: DiscoveredPlugin[] = await loader.discover();
@@ -499,9 +501,9 @@ const loaded: LoadedPlugin[] = await loader.load();
 **Query loaded plugins:**
 
 ```typescript
-const plugin = loader.getPlugin('crypto-prices');    // Single plugin
-const all = loader.getAllPlugins();                   // All plugins
-const errors = await loader.getErrors();             // Map<id, errorMessage>
+const plugin = loader.getPlugin('crypto-prices'); // Single plugin
+const all = loader.getAllPlugins(); // All plugins
+const errors = await loader.getErrors(); // Map<id, errorMessage>
 ```
 
 ### Phase 3: Scheduling
@@ -512,7 +514,7 @@ The plugin scheduler manages periodic refresh intervals for server modules.
 import { createPluginScheduler } from '@lensing/core';
 
 const scheduler = createPluginScheduler({
-  defaultInterval: 60000   // 1 minute default
+  defaultInterval: 60000, // 1 minute default
 });
 ```
 
@@ -520,12 +522,13 @@ const scheduler = createPluginScheduler({
 
 ```typescript
 scheduler.register(
-  'crypto-prices',          // Plugin ID
-  manifest,                 // PluginManifest (for permission limits)
-  async () => {             // Handler: called on each tick
+  'crypto-prices', // Plugin ID
+  manifest, // PluginManifest (for permission limits)
+  async () => {
+    // Handler: called on each tick
     await fetchAndPublish();
   },
-  300000                    // Optional: override interval (ms)
+  300000 // Optional: override interval (ms)
 );
 ```
 
@@ -539,8 +542,8 @@ scheduler.register(
 **Start execution:**
 
 ```typescript
-scheduler.start('crypto-prices');   // Start single plugin
-scheduler.startAll();               // Start all registered plugins
+scheduler.start('crypto-prices'); // Start single plugin
+scheduler.startAll(); // Start all registered plugins
 ```
 
 **Scheduler entry state:**
@@ -550,19 +553,19 @@ type SchedulerStatus = 'stopped' | 'running' | 'error';
 
 interface SchedulerEntry {
   pluginId: string;
-  interval: number;       // Effective interval in ms
+  interval: number; // Effective interval in ms
   status: SchedulerStatus;
-  lastRun?: number;       // Timestamp of last execution
-  nextRun?: number;       // Timestamp of next scheduled run
-  runCount: number;       // Total successful executions
-  error?: string;         // Last error message
+  lastRun?: number; // Timestamp of last execution
+  nextRun?: number; // Timestamp of next scheduled run
+  runCount: number; // Total successful executions
+  error?: string; // Last error message
 }
 ```
 
 **Query state:**
 
 ```typescript
-const state = scheduler.getState();                  // Map<id, SchedulerEntry>
+const state = scheduler.getState(); // Map<id, SchedulerEntry>
 const entry = scheduler.getPluginState('crypto-prices');
 ```
 
@@ -620,7 +623,7 @@ This resets internal state and calls `load()` again. Used during development.
 For the scheduler, use `restart()`:
 
 ```typescript
-scheduler.restart('crypto-prices');  // Clears burst window, resets, restarts
+scheduler.restart('crypto-prices'); // Clears burst window, resets, restarts
 ```
 
 ---
@@ -641,18 +644,28 @@ const dataBus: DataBusInstance = createDataBus();
 
 ```typescript
 dataBus.publish<CryptoData>('crypto.prices', 'crypto-prices', {
-  coins: [{ id: 'bitcoin', symbol: 'btc', name: 'Bitcoin', price: 45000, change_1h: 0.5, change_24h: 2.3, change_7d: -1.1 }],
-  lastUpdated: Date.now()
+  coins: [
+    {
+      id: 'bitcoin',
+      symbol: 'btc',
+      name: 'Bitcoin',
+      price: 45000,
+      change_1h: 0.5,
+      change_24h: 2.3,
+      change_7d: -1.1,
+    },
+  ],
+  lastUpdated: Date.now(),
 });
 ```
 
 **Parameters:**
 
-| Parameter  | Type     | Description                      |
-| ---------- | -------- | -------------------------------- |
+| Parameter  | Type     | Description                            |
+| ---------- | -------- | -------------------------------------- |
 | `channel`  | `string` | Channel name (e.g., `"crypto.prices"`) |
-| `pluginId` | `string` | ID of the publishing plugin      |
-| `data`     | `T`      | Payload (will be frozen)         |
+| `pluginId` | `string` | ID of the publishing plugin            |
+| `data`     | `T`      | Payload (will be frozen)               |
 
 **Behavior:**
 
@@ -706,12 +719,12 @@ const channels: string[] = dataBus.getChannels();
 
 Use dot-separated namespaces:
 
-| Pattern                | Example                | Description              |
-| ---------------------- | ---------------------- | ------------------------ |
-| `{plugin}.{data}`      | `crypto.prices`        | Plugin-specific data     |
-| `{plugin}.{data}`      | `weather.current`      | Current weather data     |
-| `{plugin}.{data}`      | `calendar.events`      | Calendar events          |
-| `{domain}.{resource}`  | `allergies.levels`     | Allergy/pollen levels    |
+| Pattern               | Example            | Description           |
+| --------------------- | ------------------ | --------------------- |
+| `{plugin}.{data}`     | `crypto.prices`    | Plugin-specific data  |
+| `{plugin}.{data}`     | `weather.current`  | Current weather data  |
+| `{plugin}.{data}`     | `calendar.events`  | Calendar events       |
+| `{domain}.{resource}` | `allergies.levels` | Allergy/pollen levels |
 
 ### Error Isolation
 
@@ -732,8 +745,8 @@ dataBus.subscribe('crypto.prices', (msg) => {
 ### Lifecycle
 
 ```typescript
-dataBus.clear();   // Remove all channels, subscriptions, and cached messages
-dataBus.close();   // Fully close the bus (prevents future publishes)
+dataBus.clear(); // Remove all channels, subscriptions, and cached messages
+dataBus.close(); // Fully close the bus (prevents future publishes)
 ```
 
 ---
@@ -752,7 +765,7 @@ import { createPermissionEnforcer } from '@lensing/core';
 const enforcer = createPermissionEnforcer(manifest, {
   onViolation: (violation) => {
     console.warn(`Permission violation: ${violation.type}`, violation.details);
-  }
+  },
 });
 ```
 
@@ -777,13 +790,13 @@ Controls which domains a plugin can make HTTP requests to.
 const safeFetch = enforcer.createFetchProxy(globalThis.fetch);
 
 // Allowed: domain is in the whitelist
-await safeFetch('https://api.coingecko.com/api/v3/coins');  // ✓
+await safeFetch('https://api.coingecko.com/api/v3/coins'); // ✓
 
 // Allowed: subdomain of a whitelisted domain
-await safeFetch('https://sub.example.com/data');  // ✓
+await safeFetch('https://sub.example.com/data'); // ✓
 
 // Blocked: domain not in whitelist → throws Error
-await safeFetch('https://evil.com/steal');  // ✗ Error thrown
+await safeFetch('https://evil.com/steal'); // ✗ Error thrown
 ```
 
 **Matching rules:**
@@ -891,7 +904,7 @@ Controls which environment variables a plugin can read.
 const authorized = enforcer.getAuthorizedSecrets({
   API_KEY: 'abc123',
   API_SECRET: 'xyz789',
-  DATABASE_URL: 'postgres://...',  // Not declared → filtered out
+  DATABASE_URL: 'postgres://...', // Not declared → filtered out
 });
 // → { API_KEY: 'abc123', API_SECRET: 'xyz789' }
 ```
@@ -901,8 +914,8 @@ const authorized = enforcer.getAuthorizedSecrets({
 ```typescript
 import { validateSecretAccess } from '@lensing/core';
 
-validateSecretAccess('API_KEY', permissions);      // → true
-validateSecretAccess('DATABASE_URL', permissions);  // → false
+validateSecretAccess('API_KEY', permissions); // → true
+validateSecretAccess('DATABASE_URL', permissions); // → false
 ```
 
 **Rules:**
@@ -919,7 +932,7 @@ All permission violations are recorded for audit:
 interface PermissionViolation {
   plugin_id: string;
   type: 'network' | 'refresh_rate' | 'secret_access';
-  timestamp: string;   // ISO 8601
+  timestamp: string; // ISO 8601
   details: string;
 }
 ```
@@ -940,9 +953,9 @@ const enforcer = createPermissionEnforcer(manifest, {
       source: 'system',
       priority: 'warning',
       title: `Permission violation: ${violation.type}`,
-      body: violation.details
+      body: violation.details,
     });
-  }
+  },
 });
 ```
 
@@ -961,7 +974,7 @@ function initializePlugin(
 ) {
   // 1. Create permission enforcer
   const enforcer = createPermissionEnforcer(manifest, {
-    onViolation: (v) => console.warn(`[${manifest.id}] ${v.type}: ${v.details}`)
+    onViolation: (v) => console.warn(`[${manifest.id}] ${v.type}: ${v.details}`),
   });
 
   // 2. Get authorized secrets only
@@ -978,7 +991,7 @@ function initializePlugin(
     if (!check.allowed) return;
 
     const response = await safeFetch('https://api.example.com/data', {
-      headers: { Authorization: `Bearer ${secrets.API_KEY}` }
+      headers: { Authorization: `Bearer ${secrets.API_KEY}` },
     });
     const data = await response.json();
 
