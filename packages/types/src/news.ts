@@ -19,7 +19,7 @@ export interface NewsData {
 
 /** Configuration for createNewsServer */
 export interface NewsServerOptions {
-  /** List of RSS feed URLs to poll */
+  /** List of RSS feed URLs to poll (must come from trusted admin config, not user input) */
   feedUrls: string[];
   /** Optional category overrides keyed by feed URL */
   categories?: Record<string, string>;

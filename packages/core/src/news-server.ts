@@ -132,6 +132,10 @@ export function createNewsServer(options: NewsServerOptions): NewsServerInstance
     throw new Error('NewsServer: feedUrls is required and must not be empty');
   }
 
+  if (!Number.isFinite(maxItems) || maxItems < 1) {
+    throw new Error(`NewsServer: maxItems must be a positive number, got ${maxItems}`);
+  }
+
   const effectiveFetch = (fetchFn ?? fetch) as unknown as RssFetchFn;
   const _notificationQueue = _notifications as NotificationQueueInstance;
 
@@ -177,7 +181,15 @@ export function createNewsServer(options: NewsServerOptions): NewsServerInstance
       return null;
     }
 
-    const xml = await response.text();
+    let xml: string;
+    try {
+      xml = await response.text();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      notifyError(`News body read failed: ${message}`);
+      return null;
+    }
+
     const category = categories[url] ?? 'general';
     const { articles } = parseRss(xml, url, category);
     return articles;

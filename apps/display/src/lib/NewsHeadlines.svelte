@@ -19,7 +19,7 @@
   });
 
   function formatAge(published: number): string {
-    const ageMs = Date.now() - published;
+    const ageMs = Math.max(0, Date.now() - published);
     const ageMin = Math.floor(ageMs / 60_000);
     if (ageMin < 60) return `${ageMin}m ago`;
     const ageHr = Math.floor(ageMin / 60);
