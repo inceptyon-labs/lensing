@@ -13,7 +13,7 @@ describe('Config Transfer Integration', () => {
 
   it('should export ConfigTransferInstance type (type-only check)', () => {
     const instance: ConfigTransferInstance = {
-      exportConfig: async () => ({} as ConfigExportV1),
+      exportConfig: async () => ({}) as ConfigExportV1,
       importConfig: async () => ({ success: true, migrationsApplied: 0 }),
       resetConfig: async () => {},
     };

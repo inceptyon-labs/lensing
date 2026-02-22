@@ -171,7 +171,10 @@ export function createSportsServer(options: SportsServerOptions): SportsServerIn
       response = await Promise.race([
         effectiveFetch(url),
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error(`timeout after ${FETCH_TIMEOUT_MS}ms`)), FETCH_TIMEOUT_MS)
+          setTimeout(
+            () => reject(new Error(`timeout after ${FETCH_TIMEOUT_MS}ms`)),
+            FETCH_TIMEOUT_MS
+          )
         ),
       ]);
     } catch (err) {

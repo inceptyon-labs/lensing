@@ -1,7 +1,7 @@
 ---
 # lensing-s32t
 title: 'Feature: Sports Scores Plugin'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 tags:
@@ -10,7 +10,7 @@ tags:
   - area:backend
   - area:frontend
 created_at: 2026-02-16T21:21:06Z
-updated_at: 2026-02-22T02:54:04Z
+updated_at: 2026-02-22T03:19:15Z
 parent: lensing-mrxz
 ---
 

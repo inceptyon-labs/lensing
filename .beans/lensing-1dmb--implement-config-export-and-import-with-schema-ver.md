@@ -1,7 +1,7 @@
 ---
 # lensing-1dmb
 title: Implement config export and import with schema versioning
-status: todo
+status: in-progress
 type: task
 priority: normal
 tags:
@@ -9,7 +9,7 @@ tags:
   - size:M
   - area:backend
 created_at: 2026-02-16T21:25:40Z
-updated_at: 2026-02-16T21:25:40Z
+updated_at: 2026-02-22T03:42:11Z
 parent: lensing-kd62
 ---
 

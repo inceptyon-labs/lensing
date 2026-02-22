@@ -6,9 +6,7 @@ import type { ConfigTransferInstance } from '@lensing/types';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const TEST_LAYOUT: ZoneConfig[] = [
-  { zone: 'center', columns: 2, rows: 2, plugins: ['weather'] },
-];
+const TEST_LAYOUT: ZoneConfig[] = [{ zone: 'center', columns: 2, rows: 2, plugins: ['weather'] }];
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
