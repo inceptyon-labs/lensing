@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Must run as root to write to /etc/systemd/system/
+if [[ "$EUID" -ne 0 ]]; then
+  echo "Error: This script must be run as root." >&2
+  echo "Try: sudo $0" >&2
+  exit 1
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "Installing Lensing systemd service units..."

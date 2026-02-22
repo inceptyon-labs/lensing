@@ -141,6 +141,11 @@ describe('install.sh', () => {
     expect(content.startsWith('#!/')).toBe(true);
   });
 
+  it('should check for root/sudo access', () => {
+    content = fs.readFileSync(path.join(DEPLOY_DIR, 'install.sh'), 'utf-8');
+    expect(content).toContain('EUID');
+  });
+
   it('should copy service files to systemd directory', () => {
     content = fs.readFileSync(path.join(DEPLOY_DIR, 'install.sh'), 'utf-8');
     expect(content).toContain('/etc/systemd/system/');
