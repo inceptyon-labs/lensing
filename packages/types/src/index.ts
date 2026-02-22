@@ -807,3 +807,14 @@ export type {
   SportsServerInstance,
 } from './sports';
 export { DEFAULT_SPORTS_MAX_STALE_MS, DEFAULT_SPORTS_LEAGUES } from './sports';
+
+// ── Config Transfer ─────────────────────────────────────────────────────────
+export type {
+  ConfigExportV1,
+  ConfigExport,
+  ImportResult,
+  ConfigMigration,
+  ConfigTransferOptions,
+  ConfigTransferInstance,
+} from './config-transfer';
+export { CURRENT_CONFIG_VERSION } from './config-transfer';
