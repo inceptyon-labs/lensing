@@ -111,3 +111,13 @@ export {
   DEFAULT_CYCLE_INTERVAL_MS,
   SUPPORTED_IMAGE_EXTENSIONS,
 } from '@lensing/types';
+
+// ── News ───────────────────────────────────────────────────────────────────
+export { createNewsServer } from './news-server';
+export type {
+  NewsServerOptions,
+  NewsServerInstance,
+  NewsData,
+  NewsArticle,
+} from '@lensing/types';
+export { DEFAULT_NEWS_MAX_ITEMS, DEFAULT_NEWS_MAX_STALE_MS } from '@lensing/types';

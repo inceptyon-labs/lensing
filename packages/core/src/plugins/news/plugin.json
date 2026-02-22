@@ -1,0 +1,13 @@
+{
+  "id": "news-server",
+  "name": "News Headlines",
+  "version": "1.0.0",
+  "description": "RSS news feed aggregator — parses configurable feeds and publishes headlines",
+  "ui_entry": "./NewsHeadlines.svelte",
+  "permissions": {
+    "allowed_domains": [],
+    "max_refresh_ms": 600000
+  },
+  "widget_sizes": ["medium", "large"],
+  "dependencies": []
+}

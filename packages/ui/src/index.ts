@@ -26,4 +26,7 @@ export type { AllergiesStore, AllergiesStoreOptions, AllergiesStoreState } from 
 export { createCryptoStore } from './crypto-store';
 export type { CryptoStore, CryptoStoreOptions, CryptoStoreState } from './crypto-store';
 
+export { createNewsStore } from './news-store';
+export type { NewsStore, NewsStoreOptions, NewsStoreState } from './news-store';
+
 /** Placeholder: UI primitives will be exported here (cards, charts, text blocks, loading states) */
