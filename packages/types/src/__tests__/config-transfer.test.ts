@@ -35,7 +35,7 @@ describe('Config Transfer Types', () => {
       schemaVersion: 1,
       settings: {},
       layouts: {
-        default: [{ zone: 'center' as const, plugins: ['weather'] }],
+        default: [{ zone: 'center' as const, columns: 2, rows: 2, plugins: ['weather'] }],
       },
       pluginState: {},
     };
