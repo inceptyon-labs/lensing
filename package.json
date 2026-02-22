@@ -19,8 +19,8 @@
     "clean": "turbo clean && rm -rf node_modules **/node_modules .turbo"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
-    "eslint": "^10.0.0",
+    "@eslint/js": "^9.39.3",
+    "eslint": "^9.39.3",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-svelte": "^3.15.0",
     "globals": "^17.3.0",
