@@ -470,10 +470,7 @@ describe('News Server', () => {
   it('should fetch from multiple feed URLs', async () => {
     const fetchFn = createMockFetch(SAMPLE_RSS);
     const server = createNewsServer({
-      feedUrls: [
-        'https://example.com/feed1.xml',
-        'https://example.com/feed2.xml',
-      ],
+      feedUrls: ['https://example.com/feed1.xml', 'https://example.com/feed2.xml'],
       dataBus,
       notifications,
       fetchFn,

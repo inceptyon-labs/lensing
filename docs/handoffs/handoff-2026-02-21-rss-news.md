@@ -1,4 +1,5 @@
 # Session Handoff: Create RSS news server module and widget
+
 Date: 2026-02-21
 Issue: lensing-off8 - Create RSS news server module and widget
 Branch: feature/lensing-off8
@@ -6,6 +7,7 @@ Branch: feature/lensing-off8
 ## What Was Done
 
 ### Step 1: Types & Data Structures (COMPLETE)
+
 - Created `packages/types/src/news.ts` with:
   - `NewsArticle` interface: id, title, summary, link, published (unix ms), source, category
   - `NewsData` interface: articles array, lastUpdated
@@ -17,11 +19,13 @@ Branch: feature/lensing-off8
 - All 28 types tests passing (6 new news tests + existing)
 
 ## Files Created
+
 - `packages/types/src/news.ts` (types, constants)
 - `packages/types/src/__tests__/news.test.ts` (6 tests)
 - `packages/types/src/index.ts` (exports added)
 
 ## Next Steps (ordered)
+
 1. **Step 2: News Server Module** — Create `packages/core/src/news-server.ts`
    - Factory pattern: `createNewsServer(options: NewsServerOptions): NewsServerInstance`
    - Lightweight RSS XML parsing (regex-based, no deps)
@@ -71,6 +75,7 @@ Branch: feature/lensing-off8
 ## Key Implementation Patterns
 
 ### From codebase:
+
 - Server module: `packages/core/src/crypto-server.ts` as template
   - `PLUGIN_ID = 'news-server'`
   - `DATA_BUS_HEADLINES_CHANNEL = 'news.headlines'`
@@ -90,18 +95,21 @@ Branch: feature/lensing-off8
   - Design system tokens referenced via CSS vars
 
 ### RSS Parsing:
+
 - Lightweight regex-based parsing (no external XML library)
 - Handle malformed feeds gracefully
 - Extract: title, description, link, pubDate from `<item>`
 - Strip HTML tags from descriptions
 
 ### Constants & Naming:
+
 - `DEFAULT_NEWS_MAX_ITEMS = 20`
 - `DEFAULT_NEWS_MAX_STALE_MS = 600_000` (10 minutes)
 - Channel: `news.headlines`
 - Plugin ID: `news-server`
 
 ## Files to Load Next Session
+
 - `packages/types/src/news.ts` (complete types)
 - `packages/core/src/crypto-server.ts` (server pattern)
 - `packages/ui/src/crypto-store.ts` (store pattern)
@@ -109,7 +117,9 @@ Branch: feature/lensing-off8
 - `.interface-design/system.md` (design tokens)
 
 ## Review Tier
+
 SC (Sonnet → Codex) — moderate complexity, no security patterns
 
 ## Baseline Tests
+
 938 tests passing across all packages before starting

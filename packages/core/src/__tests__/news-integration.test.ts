@@ -15,10 +15,7 @@ describe('News Plugin Integration', () => {
   });
 
   it('should have plugin.json for news plugin', () => {
-    const manifestPath = join(
-      __dirname,
-      '../../src/plugins/news/plugin.json'
-    );
+    const manifestPath = join(__dirname, '../../src/plugins/news/plugin.json');
     const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
     expect(manifest.id).toBe('news-server');
     expect(manifest.version).toBeTruthy();
@@ -26,10 +23,7 @@ describe('News Plugin Integration', () => {
   });
 
   it('should have news plugin.json with allowed_domains permissions', () => {
-    const manifestPath = join(
-      __dirname,
-      '../../src/plugins/news/plugin.json'
-    );
+    const manifestPath = join(__dirname, '../../src/plugins/news/plugin.json');
     const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
     expect(manifest.permissions).toBeDefined();
     expect(Array.isArray(manifest.permissions.allowed_domains)).toBe(true);

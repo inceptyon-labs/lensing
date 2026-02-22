@@ -75,8 +75,7 @@ function parseItems(xml: string, feedUrl: string, category: string, source: stri
     const rawDesc = extractCdata(extractTag(itemXml, 'description'));
     const summary = stripHtml(decodeEntities(rawDesc)).trim();
     const link =
-      extractCdata(extractTag(itemXml, 'link')).trim() ||
-      extractTag(itemXml, 'guid').trim();
+      extractCdata(extractTag(itemXml, 'link')).trim() || extractTag(itemXml, 'guid').trim();
     const pubDate = extractCdata(extractTag(itemXml, 'pubDate'));
 
     items.push({
@@ -174,9 +173,7 @@ export function createNewsServer(options: NewsServerOptions): NewsServerInstance
     }
 
     if (!response.ok) {
-      notifyError(
-        `News feed error ${response.status ?? ''}: ${response.statusText ?? 'unknown'}`
-      );
+      notifyError(`News feed error ${response.status ?? ''}: ${response.statusText ?? 'unknown'}`);
       return null;
     }
 
@@ -190,11 +187,7 @@ export function createNewsServer(options: NewsServerOptions): NewsServerInstance
     if (closed) return;
     if (refreshing) return;
 
-    if (
-      lastFetchedAt !== null &&
-      maxStale_ms > 0 &&
-      Date.now() - lastFetchedAt < maxStale_ms
-    ) {
+    if (lastFetchedAt !== null && maxStale_ms > 0 && Date.now() - lastFetchedAt < maxStale_ms) {
       return;
     }
 

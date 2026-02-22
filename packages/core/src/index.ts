@@ -114,10 +114,5 @@ export {
 
 // ── News ───────────────────────────────────────────────────────────────────
 export { createNewsServer } from './news-server';
-export type {
-  NewsServerOptions,
-  NewsServerInstance,
-  NewsData,
-  NewsArticle,
-} from '@lensing/types';
+export type { NewsServerOptions, NewsServerInstance, NewsData, NewsArticle } from '@lensing/types';
 export { DEFAULT_NEWS_MAX_ITEMS, DEFAULT_NEWS_MAX_STALE_MS } from '@lensing/types';
