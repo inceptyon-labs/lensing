@@ -29,4 +29,7 @@ export type { CryptoStore, CryptoStoreOptions, CryptoStoreState } from './crypto
 export { createNewsStore } from './news-store';
 export type { NewsStore, NewsStoreOptions, NewsStoreState } from './news-store';
 
+export { createSportsStore } from './sports-store';
+export type { SportsStore, SportsStoreOptions, SportsStoreState } from './sports-store';
+
 /** Placeholder: UI primitives will be exported here (cards, charts, text blocks, loading states) */
