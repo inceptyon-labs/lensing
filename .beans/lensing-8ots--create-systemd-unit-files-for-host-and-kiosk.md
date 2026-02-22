@@ -1,7 +1,7 @@
 ---
 # lensing-8ots
 title: Create systemd unit files for host and kiosk
-status: in-progress
+status: completed
 type: task
 priority: normal
 tags:
@@ -9,7 +9,7 @@ tags:
     - size:S
     - area:infra
 created_at: 2026-02-16T21:23:29Z
-updated_at: 2026-02-22T01:16:51Z
+updated_at: 2026-02-22T01:17:09Z
 parent: lensing-pee5
 ---
 

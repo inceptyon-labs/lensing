@@ -784,3 +784,15 @@ export interface CryptoServerInstance {
   /** Stop and release resources */
   close(): void;
 }
+
+// ── Photo Slideshow ────────────────────────────────────────────────────────
+export type {
+  PhotoSlideshow,
+  KenBurnsConfig,
+  PhotoSlideshowManifest,
+} from './photo-slideshow';
+export {
+  DEFAULT_KEN_BURNS_CONFIG,
+  DEFAULT_CYCLE_INTERVAL_MS,
+  SUPPORTED_IMAGE_EXTENSIONS,
+} from './photo-slideshow';

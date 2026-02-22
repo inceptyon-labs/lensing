@@ -1,15 +1,15 @@
 ---
 # lensing-pee5
 title: 'Feature: Pi Kiosk & Deployment'
-status: todo
+status: completed
 type: feature
 priority: normal
 tags:
-  - pasiv
-  - priority:medium
-  - area:infra
+    - pasiv
+    - priority:medium
+    - area:infra
 created_at: 2026-02-16T21:20:12Z
-updated_at: 2026-02-16T21:20:12Z
+updated_at: 2026-02-22T01:17:09Z
 parent: lensing-u2k6
 ---
 
