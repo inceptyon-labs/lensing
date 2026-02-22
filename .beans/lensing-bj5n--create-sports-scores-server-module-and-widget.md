@@ -1,16 +1,16 @@
 ---
 # lensing-bj5n
 title: Create sports scores server module and widget
-status: todo
+status: in-progress
 type: task
 priority: normal
 tags:
-  - pasiv
-  - size:M
-  - area:backend
-  - area:frontend
+    - pasiv
+    - size:M
+    - area:backend
+    - area:frontend
 created_at: 2026-02-16T21:24:41Z
-updated_at: 2026-02-16T21:24:41Z
+updated_at: 2026-02-22T02:53:57Z
 parent: lensing-s32t
 ---
 

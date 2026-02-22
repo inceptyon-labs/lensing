@@ -796,3 +796,14 @@ export {
 // ── News ───────────────────────────────────────────────────────────────────
 export type { NewsArticle, NewsData, NewsServerOptions, NewsServerInstance } from './news';
 export { DEFAULT_NEWS_MAX_ITEMS, DEFAULT_NEWS_MAX_STALE_MS } from './news';
+
+// ── Sports Scores ───────────────────────────────────────────────────────────
+export type {
+  SportsGame,
+  GameStatus,
+  LeagueConfig,
+  SportsData,
+  SportsServerOptions,
+  SportsServerInstance,
+} from './sports';
+export { DEFAULT_SPORTS_MAX_STALE_MS, DEFAULT_SPORTS_LEAGUES } from './sports';
