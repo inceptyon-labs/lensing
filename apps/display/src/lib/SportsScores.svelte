@@ -48,7 +48,9 @@
             <span class="sports-scores__live-badge">LIVE</span>
           {/if}
           <span class="sports-scores__compact-matchup">
-            {game.awayTeam} {game.awayScore} – {game.homeScore} {game.homeTeam}
+            {game.awayTeam}
+            {game.awayScore} – {game.homeScore}
+            {game.homeTeam}
           </span>
           <span class="sports-scores__compact-status">{formatStatus(game)}</span>
         </li>
@@ -57,7 +59,10 @@
   {:else}
     <ul class="sports-scores__list">
       {#each displayedGames as game (game.id)}
-        <li class="sports-scores__item" class:sports-scores__item--live={game.status === 'in_progress'}>
+        <li
+          class="sports-scores__item"
+          class:sports-scores__item--live={game.status === 'in_progress'}
+        >
           <div class="sports-scores__header">
             <span class="sports-scores__league-badge">{game.league.toUpperCase()}</span>
             {#if game.status === 'in_progress'}

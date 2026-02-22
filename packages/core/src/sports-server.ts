@@ -154,10 +154,7 @@ export function createSportsServer(options: SportsServerOptions): SportsServerIn
     }
   }
 
-  async function fetchLeague(
-    sport: string,
-    league: string
-  ): Promise<SportsGame[] | null> {
+  async function fetchLeague(sport: string, league: string): Promise<SportsGame[] | null> {
     const url = buildEspnUrl(sport, league);
     let response: Awaited<ReturnType<FetchFn>>;
 

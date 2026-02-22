@@ -5,10 +5,10 @@ status: in-progress
 type: feature
 priority: normal
 tags:
-    - pasiv
-    - priority:medium
-    - area:backend
-    - area:frontend
+  - pasiv
+  - priority:medium
+  - area:backend
+  - area:frontend
 created_at: 2026-02-16T21:21:06Z
 updated_at: 2026-02-22T02:54:04Z
 parent: lensing-mrxz
