@@ -52,10 +52,11 @@ function buildEspnUrl(sport: string, league: string): string {
 
 // ── Transform helpers ──────────────────────────────────────────────────────
 
+const FETCH_TIMEOUT_MS = 10_000;
+
 function mapStatus(state: string, completed: boolean): GameStatus {
-  if (completed || state === 'post') return 'final';
+  if (completed) return 'final';
   if (state === 'in') return 'in_progress';
-  if (state === 'pre') return 'scheduled';
   return 'scheduled';
 }
 
@@ -93,7 +94,15 @@ function transformEvent(event: EspnEvent, league: string): SportsGame {
 
 function transformScoreboard(data: EspnScoreboard, league: string): SportsGame[] {
   if (!Array.isArray(data.events)) return [];
-  return data.events.map((event) => transformEvent(event, league));
+  const games: SportsGame[] = [];
+  for (const event of data.events) {
+    try {
+      games.push(transformEvent(event, league));
+    } catch {
+      // skip malformed events
+    }
+  }
+  return games;
 }
 
 // ── Defensive copies ───────────────────────────────────────────────────────
@@ -159,7 +168,12 @@ export function createSportsServer(options: SportsServerOptions): SportsServerIn
     let response: Awaited<ReturnType<FetchFn>>;
 
     try {
-      response = await effectiveFetch(url);
+      response = await Promise.race([
+        effectiveFetch(url),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(`timeout after ${FETCH_TIMEOUT_MS}ms`)), FETCH_TIMEOUT_MS)
+        ),
+      ]);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       notifyError(`Sports fetch failed [${league}]: ${message}`);

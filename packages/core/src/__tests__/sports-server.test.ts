@@ -511,4 +511,75 @@ describe('Sports Server', () => {
 
     expect(fetchFn).not.toHaveBeenCalled();
   });
+
+  // ── Error Fixes (Codex review) ───────────────────────────────────────────
+
+  it('should not map post+incomplete games as final (postponed scenario)', async () => {
+    // ESPN marks postponed games with state='post', completed=false
+    const postponedGame = makeEspnGame({
+      id: 'postponed-1',
+      status: { type: { state: 'post', completed: false, description: 'Postponed' } },
+    });
+
+    const server = createSportsServer({
+      leagues: [{ sport: 'football', league: 'nfl' }],
+      dataBus,
+      notifications,
+      fetchFn: createMockFetch(makeEspnResponse([postponedGame])),
+    });
+
+    await server.refresh();
+    const data = server.getScores();
+
+    expect(data!.games[0].status).not.toBe('final');
+
+    server.close();
+  });
+
+  it('should skip malformed events without crashing refresh', async () => {
+    const goodGame = makeEspnGame({ id: 'good-1' });
+    const malformedGame = { id: 'bad-1' }; // missing status and competitions
+
+    const server = createSportsServer({
+      leagues: [{ sport: 'football', league: 'nfl' }],
+      dataBus,
+      notifications,
+      fetchFn: createMockFetch(makeEspnResponse([malformedGame, goodGame])),
+    });
+
+    await server.refresh();
+    const data = server.getScores();
+
+    // Should have 1 game (the good one) and not crash
+    expect(data).not.toBeNull();
+    expect(data!.games).toHaveLength(1);
+    expect(data!.games[0].id).toBe('good-1');
+
+    server.close();
+  });
+
+  it('should release refreshing lock after fetch timeout', async () => {
+    const hangingFetch: FetchFn = vi.fn().mockReturnValue(
+      new Promise(() => {}) // never resolves
+    ) as unknown as FetchFn;
+
+    const server = createSportsServer({
+      leagues: [{ sport: 'football', league: 'nfl' }],
+      dataBus,
+      notifications,
+      fetchFn: hangingFetch,
+    });
+
+    const onError = vi.fn();
+    server.onError(onError);
+
+    const refreshPromise = server.refresh(); // starts, won't complete without timeout
+    await vi.advanceTimersByTimeAsync(10_001); // advance past FETCH_TIMEOUT_MS (10_000)
+    await refreshPromise; // should resolve now (timeout fired, refreshing lock released)
+
+    expect(onError).toHaveBeenCalledTimes(1);
+    expect(onError.mock.calls[0][0]).toContain('timeout');
+
+    server.close();
+  });
 });
