@@ -792,3 +792,7 @@ export {
   DEFAULT_CYCLE_INTERVAL_MS,
   SUPPORTED_IMAGE_EXTENSIONS,
 } from './photo-slideshow';
+
+// ── News ───────────────────────────────────────────────────────────────────
+export type { NewsArticle, NewsData, NewsServerOptions, NewsServerInstance } from './news';
+export { DEFAULT_NEWS_MAX_ITEMS, DEFAULT_NEWS_MAX_STALE_MS } from './news';

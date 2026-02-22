@@ -1,16 +1,16 @@
 ---
 # lensing-off8
 title: Create RSS news server module and widget
-status: todo
+status: in-progress
 type: task
 priority: normal
 tags:
-  - pasiv
-  - size:M
-  - area:backend
-  - area:frontend
+    - pasiv
+    - size:M
+    - area:backend
+    - area:frontend
 created_at: 2026-02-16T21:24:26Z
-updated_at: 2026-02-16T21:24:26Z
+updated_at: 2026-02-22T01:44:51Z
 parent: lensing-9ew2
 ---
 
