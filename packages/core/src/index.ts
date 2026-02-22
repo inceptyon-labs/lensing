@@ -98,3 +98,20 @@ export type {
   CoinPrice,
   CryptoAlertConfig,
 } from '@lensing/types';
+
+// ── Photo Slideshow ────────────────────────────────────────────────────────
+export {
+  discoverPhotos,
+  calculateKenBurnsTransform,
+  getNextPhotoIndex,
+} from './plugins/photo-slideshow/index';
+export type {
+  PhotoSlideshow,
+  KenBurnsConfig,
+  PhotoSlideshowManifest,
+} from '@lensing/types';
+export {
+  DEFAULT_KEN_BURNS_CONFIG,
+  DEFAULT_CYCLE_INTERVAL_MS,
+  SUPPORTED_IMAGE_EXTENSIONS,
+} from '@lensing/types';

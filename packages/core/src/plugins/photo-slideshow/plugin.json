@@ -1,0 +1,13 @@
+{
+  "id": "photo-slideshow",
+  "name": "Photo Slideshow",
+  "version": "1.0.0",
+  "description": "Ambient photo slideshow with Ken Burns CSS effect",
+  "ui_entry": "./PhotoSlideshow.svelte",
+  "permissions": {
+    "allowed_domains": [],
+    "max_refresh_ms": 8000
+  },
+  "widget_sizes": ["large"],
+  "dependencies": []
+}
