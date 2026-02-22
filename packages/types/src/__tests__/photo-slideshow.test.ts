@@ -1,9 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type {
-  PhotoSlideshow,
-  KenBurnsConfig,
-  PhotoSlideshowManifest,
-} from '../photo-slideshow';
+import type { PhotoSlideshow, KenBurnsConfig, PhotoSlideshowManifest } from '../photo-slideshow';
 import {
   DEFAULT_KEN_BURNS_CONFIG,
   DEFAULT_CYCLE_INTERVAL_MS,

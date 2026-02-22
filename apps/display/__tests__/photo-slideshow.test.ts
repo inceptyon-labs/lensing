@@ -2,13 +2,7 @@ import { describe, it, expect } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const WIDGET_PATH = path.join(
-  __dirname,
-  '..',
-  'src',
-  'lib',
-  'PhotoSlideshow.svelte'
-);
+const WIDGET_PATH = path.join(__dirname, '..', 'src', 'lib', 'PhotoSlideshow.svelte');
 
 describe('PhotoSlideshow Widget', () => {
   let content: string;

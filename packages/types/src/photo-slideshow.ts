@@ -35,10 +35,4 @@ export const DEFAULT_KEN_BURNS_CONFIG: KenBurnsConfig = {
 export const DEFAULT_CYCLE_INTERVAL_MS = 8000;
 
 /** Supported photo file extensions */
-export const SUPPORTED_IMAGE_EXTENSIONS: string[] = [
-  '.jpg',
-  '.jpeg',
-  '.png',
-  '.webp',
-  '.gif',
-];
+export const SUPPORTED_IMAGE_EXTENSIONS: string[] = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];

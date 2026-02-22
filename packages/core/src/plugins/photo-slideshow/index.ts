@@ -11,9 +11,7 @@ export function discoverPhotos(dir: string): string[] {
   if (!fs.existsSync(dir)) return [];
   const files = fs.readdirSync(dir);
   return files
-    .filter((f) =>
-      SUPPORTED_IMAGE_EXTENSIONS.includes(path.extname(f).toLowerCase())
-    )
+    .filter((f) => SUPPORTED_IMAGE_EXTENSIONS.includes(path.extname(f).toLowerCase()))
     .map((f) => path.join(dir, f));
 }
 
@@ -21,10 +19,7 @@ export function discoverPhotos(dir: string): string[] {
  * Calculate a CSS transform string for a Ken Burns animation frame.
  * Uses the given config and a variation index.
  */
-export function calculateKenBurnsTransform(
-  config: KenBurnsConfig,
-  variationIndex: number
-): string {
+export function calculateKenBurnsTransform(config: KenBurnsConfig, variationIndex: number): string {
   const [scaleStart] = config.scale;
   const [panXMin, panXMax] = config.panX;
   const [panYMin, panYMax] = config.panY;

@@ -59,7 +59,7 @@
 
 @keyframes ken-burns {
   0% {
-    transform: scale(1.0) translate(0%, 0%);
+    transform: scale(1) translate(0%, 0%);
   }
   100% {
     transform: scale(1.12) translate(2%, 2%);
@@ -68,7 +68,7 @@
 
 @keyframes ken-burns-1 {
   0% {
-    transform: scale(1.0) translate(0%, 0%);
+    transform: scale(1) translate(0%, 0%);
   }
   100% {
     transform: scale(1.12) translate(-3%, -2%);
@@ -80,13 +80,13 @@
     transform: scale(1.08) translate(2%, -2%);
   }
   100% {
-    transform: scale(1.0) translate(-2%, 3%);
+    transform: scale(1) translate(-2%, 3%);
   }
 }
 
 @keyframes ken-burns-3 {
   0% {
-    transform: scale(1.0) translate(-3%, 2%);
+    transform: scale(1) translate(-3%, 2%);
   }
   100% {
     transform: scale(1.1) translate(3%, -3%);

@@ -1,23 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'fs';
 import path from 'path';
-import {
-  discoverPhotos,
-  calculateKenBurnsTransform,
-  getNextPhotoIndex,
-} from '@lensing/core';
+import { discoverPhotos, calculateKenBurnsTransform, getNextPhotoIndex } from '@lensing/core';
 import {
   DEFAULT_KEN_BURNS_CONFIG,
   DEFAULT_CYCLE_INTERVAL_MS,
   SUPPORTED_IMAGE_EXTENSIONS,
 } from '@lensing/core';
 
-const PLUGIN_DIR = path.join(
-  __dirname,
-  '..',
-  'plugins',
-  'photo-slideshow'
-);
+const PLUGIN_DIR = path.join(__dirname, '..', 'plugins', 'photo-slideshow');
 
 describe('Photo Slideshow Plugin Integration', () => {
   it('should export discoverPhotos from @lensing/core', () => {
@@ -63,6 +54,8 @@ describe('Photo Slideshow Plugin Integration', () => {
     const manifestPath = path.join(PLUGIN_DIR, 'plugin.json');
     const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
     expect(manifest.widget_sizes).toBeDefined();
-    expect(Array.isArray(manifest.widget_sizes) || typeof manifest.widget_sizes === 'object').toBe(true);
+    expect(Array.isArray(manifest.widget_sizes) || typeof manifest.widget_sizes === 'object').toBe(
+      true
+    );
   });
 });

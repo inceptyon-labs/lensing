@@ -46,9 +46,7 @@ describe('Photo Discovery & Cycling', () => {
     const extensions = photos.map((p) => path.extname(p).toLowerCase());
     expect(extensions).not.toContain('.txt');
     expect(extensions).not.toContain('.DS_Store');
-    expect(extensions).toEqual(
-      expect.arrayContaining(['.jpg', '.png', '.webp'])
-    );
+    expect(extensions).toEqual(expect.arrayContaining(['.jpg', '.png', '.webp']));
   });
 
   it('should return empty array for empty directory', () => {
