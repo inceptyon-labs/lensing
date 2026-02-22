@@ -1,0 +1,123 @@
+/**
+ * Ken Burns CSS Animation — GPU-optimized for Pi 3B
+ *
+ * Uses transform and opacity only — these are GPU-composited,
+ * avoiding layout recomputation on constrained hardware.
+ *
+ * Sizing via inset shorthand — no width/height triggers layout.
+ *
+ * Design tokens: ambient dark, gravitational lensing theme.
+ */
+
+:root {
+  --ken-burns-duration: 8000ms;
+  --ken-burns-transition: 1000ms;
+}
+
+/* ── Base photo container ───────────────────────────────────────── */
+
+.photo-slideshow {
+  position: relative;
+  overflow: hidden;
+  background: var(--void, hsl(240, 8%, 4%));
+  backdrop-filter: blur(0px);
+}
+
+.photo-slideshow__slide {
+  position: absolute;
+  inset: 0;
+  will-change: transform, opacity;
+  transform-origin: center center;
+  background: var(--event-horizon, hsl(240, 6%, 7%));
+}
+
+.photo-slideshow__slide img {
+  position: absolute;
+  inset: 0;
+  object-fit: cover;
+  display: block;
+}
+
+/* ── Crossfade transition ───────────────────────────────────────── */
+
+.photo-slideshow__slide--enter {
+  opacity: 0;
+  transition: opacity var(--ken-burns-transition) ease-in-out;
+}
+
+.photo-slideshow__slide--active {
+  opacity: 1;
+  transition: opacity var(--ken-burns-transition) ease-in-out;
+}
+
+.photo-slideshow__slide--exit {
+  opacity: 0;
+  transition: opacity var(--ken-burns-transition) ease-in-out;
+}
+
+/* ── Ken Burns keyframes — subtle pan/zoom via transforms only ─── */
+
+@keyframes ken-burns {
+  0% {
+    transform: scale(1.0) translate(0%, 0%);
+  }
+  100% {
+    transform: scale(1.12) translate(2%, 2%);
+  }
+}
+
+@keyframes ken-burns-1 {
+  0% {
+    transform: scale(1.0) translate(0%, 0%);
+  }
+  100% {
+    transform: scale(1.12) translate(-3%, -2%);
+  }
+}
+
+@keyframes ken-burns-2 {
+  0% {
+    transform: scale(1.08) translate(2%, -2%);
+  }
+  100% {
+    transform: scale(1.0) translate(-2%, 3%);
+  }
+}
+
+@keyframes ken-burns-3 {
+  0% {
+    transform: scale(1.0) translate(-3%, 2%);
+  }
+  100% {
+    transform: scale(1.1) translate(3%, -3%);
+  }
+}
+
+/* ── Variation classes ──────────────────────────────────────────── */
+
+.ken-burns-1 {
+  animation: ken-burns-1 var(--ken-burns-duration) ease-in-out forwards;
+  will-change: transform;
+}
+
+.ken-burns-2 {
+  animation: ken-burns-2 var(--ken-burns-duration) ease-in-out forwards;
+  will-change: transform;
+}
+
+.ken-burns-3 {
+  animation: ken-burns-3 var(--ken-burns-duration) ease-in-out forwards;
+  will-change: transform;
+}
+
+/* ── Reduced motion — respect user preference ───────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .photo-slideshow__slide,
+  .ken-burns-1,
+  .ken-burns-2,
+  .ken-burns-3 {
+    animation: none;
+    will-change: auto;
+  }
+}
