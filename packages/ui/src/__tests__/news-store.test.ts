@@ -1,10 +1,10 @@
 import { describe, it, expect, vi } from 'vitest';
 import { createNewsStore } from '../news-store';
-import type { NewsData } from '@lensing/types';
+import type { NewsData, NewsArticle } from '@lensing/types';
 
 // ── Test helpers ─────────────────────────────────────────────────────────────
 
-function makeArticle(overrides: Partial<ReturnType<typeof makeArticle>> = {}) {
+function makeArticle(overrides: Partial<NewsArticle> = {}): NewsArticle {
   return {
     id: 'article-1',
     title: 'Test Article',
