@@ -1,0 +1,13 @@
+{
+  "id": "sports-server",
+  "name": "Sports Scores",
+  "version": "1.0.0",
+  "description": "Live sports scores and schedules from ESPN API",
+  "ui_entry": "./SportsScores.svelte",
+  "permissions": {
+    "allowed_domains": ["site.api.espn.com"],
+    "max_refresh_ms": 120000
+  },
+  "widget_sizes": ["medium", "large"],
+  "dependencies": []
+}

@@ -116,3 +116,15 @@ export {
 export { createNewsServer } from './news-server';
 export type { NewsServerOptions, NewsServerInstance, NewsData, NewsArticle } from '@lensing/types';
 export { DEFAULT_NEWS_MAX_ITEMS, DEFAULT_NEWS_MAX_STALE_MS } from '@lensing/types';
+
+// ── Sports Scores ───────────────────────────────────────────────────────────
+export { createSportsServer } from './sports-server';
+export type {
+  SportsServerOptions,
+  SportsServerInstance,
+  SportsData,
+  SportsGame,
+  GameStatus,
+  LeagueConfig,
+} from '@lensing/types';
+export { DEFAULT_SPORTS_MAX_STALE_MS, DEFAULT_SPORTS_LEAGUES } from '@lensing/types';
