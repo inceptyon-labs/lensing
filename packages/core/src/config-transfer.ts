@@ -16,12 +16,12 @@ export function createConfigTransfer(options: ConfigTransferOptions): ConfigTran
     async exportConfig(): Promise<ConfigExportV1> {
       const settings = { ...database.getAllSettings() };
       const rawLayouts = database.getAllLayouts();
-      const layouts: Record<string, ZoneConfig[]> = {};
+      const layouts: Record<string, ZoneConfig[]> = Object.create(null);
       for (const [name, zones] of Object.entries(rawLayouts)) {
         layouts[name] = zones.map((z) => ({ ...z }));
       }
       const rawStates = database.getAllPluginStates();
-      const pluginState: Record<string, unknown> = {};
+      const pluginState: Record<string, unknown> = Object.create(null);
       for (const [id, state] of Object.entries(rawStates)) {
         pluginState[id] = state;
       }
@@ -43,11 +43,13 @@ export function createConfigTransfer(options: ConfigTransferOptions): ConfigTran
 
       const raw = data as Record<string, unknown>;
 
-      if (typeof raw['version'] !== 'number') {
-        return { success: false, migrationsApplied: 0 };
-      }
-
-      if (raw['version'] > CURRENT_CONFIG_VERSION) {
+      const version = raw['version'];
+      if (
+        typeof version !== 'number' ||
+        !Number.isInteger(version) ||
+        version < 1 ||
+        version > CURRENT_CONFIG_VERSION
+      ) {
         return { success: false, migrationsApplied: 0 };
       }
 
