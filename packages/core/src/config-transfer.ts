@@ -51,7 +51,7 @@ export function createConfigTransfer(options: ConfigTransferOptions): ConfigTran
         return { success: false, migrationsApplied: 0 };
       }
 
-      const payload = raw as ConfigExportV1;
+      const payload = raw as unknown as ConfigExportV1;
 
       if (payload.settings && typeof payload.settings === 'object') {
         for (const [key, value] of Object.entries(payload.settings)) {

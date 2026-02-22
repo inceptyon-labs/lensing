@@ -128,3 +128,15 @@ export type {
   LeagueConfig,
 } from '@lensing/types';
 export { DEFAULT_SPORTS_MAX_STALE_MS, DEFAULT_SPORTS_LEAGUES } from '@lensing/types';
+
+// ── Config Transfer ─────────────────────────────────────────────────────────
+export { createConfigTransfer } from './config-transfer';
+export type {
+  ConfigExportV1,
+  ConfigExport,
+  ImportResult,
+  ConfigMigration,
+  ConfigTransferOptions,
+  ConfigTransferInstance,
+} from '@lensing/types';
+export { CURRENT_CONFIG_VERSION } from '@lensing/types';
