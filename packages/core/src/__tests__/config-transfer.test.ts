@@ -192,25 +192,45 @@ describe('Config Transfer', () => {
   });
 
   it('should reject import with version NaN', async () => {
-    const result = await transfer.importConfig({ version: NaN, settings: {}, layouts: {}, pluginState: {} });
+    const result = await transfer.importConfig({
+      version: NaN,
+      settings: {},
+      layouts: {},
+      pluginState: {},
+    });
 
     expect(result.success).toBe(false);
   });
 
   it('should reject import with version 0', async () => {
-    const result = await transfer.importConfig({ version: 0, settings: {}, layouts: {}, pluginState: {} });
+    const result = await transfer.importConfig({
+      version: 0,
+      settings: {},
+      layouts: {},
+      pluginState: {},
+    });
 
     expect(result.success).toBe(false);
   });
 
   it('should reject import with negative version', async () => {
-    const result = await transfer.importConfig({ version: -1, settings: {}, layouts: {}, pluginState: {} });
+    const result = await transfer.importConfig({
+      version: -1,
+      settings: {},
+      layouts: {},
+      pluginState: {},
+    });
 
     expect(result.success).toBe(false);
   });
 
   it('should reject import with fractional version', async () => {
-    const result = await transfer.importConfig({ version: 0.5, settings: {}, layouts: {}, pluginState: {} });
+    const result = await transfer.importConfig({
+      version: 0.5,
+      settings: {},
+      layouts: {},
+      pluginState: {},
+    });
 
     expect(result.success).toBe(false);
   });
