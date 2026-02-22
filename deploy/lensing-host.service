@@ -1,0 +1,18 @@
+[Unit]
+Description=Lensing Host Server
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/lensing
+ExecStart=/usr/bin/node /home/pi/lensing/apps/display/build/index.js
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=lensing-host
+
+[Install]
+WantedBy=multi-user.target

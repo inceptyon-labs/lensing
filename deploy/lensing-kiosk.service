@@ -1,0 +1,18 @@
+[Unit]
+Description=Lensing Chromium Kiosk Display
+After=graphical.target lensing-host.service
+Requires=lensing-host.service
+
+[Service]
+Type=simple
+User=pi
+Environment=DISPLAY=:0
+ExecStart=/usr/bin/chromium-browser --kiosk --disable-gpu --memory-pressure-off --noerrdialogs --disable-infobars --disable-session-crashed-bubble --disable-restore-session-state --autoplay-policy=no-user-gesture-required http://localhost:3000
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=lensing-kiosk
+
+[Install]
+WantedBy=graphical.target
