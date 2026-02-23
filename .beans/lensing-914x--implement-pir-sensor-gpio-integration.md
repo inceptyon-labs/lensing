@@ -1,16 +1,16 @@
 ---
 # lensing-914x
 title: Implement PIR sensor GPIO integration
-status: todo
+status: in-progress
 type: task
 priority: normal
 tags:
-  - pasiv
-  - size:M
-  - area:backend
-  - area:infra
+    - pasiv
+    - size:M
+    - area:backend
+    - area:infra
 created_at: 2026-02-16T21:24:53Z
-updated_at: 2026-02-16T21:24:53Z
+updated_at: 2026-02-23T20:39:18Z
 parent: lensing-jnf0
 ---
 

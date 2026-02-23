@@ -1,16 +1,16 @@
 ---
 # lensing-jnf0
 title: 'Feature: Presence Detection'
-status: todo
+status: in-progress
 type: feature
 priority: normal
 tags:
-  - pasiv
-  - priority:medium
-  - area:backend
-  - area:infra
+    - pasiv
+    - priority:medium
+    - area:backend
+    - area:infra
 created_at: 2026-02-16T21:21:21Z
-updated_at: 2026-02-16T21:21:21Z
+updated_at: 2026-02-23T20:39:18Z
 parent: lensing-342l
 ---
 
