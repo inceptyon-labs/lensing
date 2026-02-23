@@ -35,7 +35,7 @@ describe('Home Assistant Plugin Integration', () => {
     const server = createHomeAssistantServer({
       url: 'http://ha.local:8123',
       token: 'test-token',
-      dataBus: { publish: () => {}, subscribe: () => () => {} } as Parameters<
+      dataBus: { publish: () => {}, subscribe: () => () => {} } as unknown as Parameters<
         typeof createHomeAssistantServer
       >[0]['dataBus'],
       notifications: {
@@ -43,7 +43,7 @@ describe('Home Assistant Plugin Integration', () => {
         subscribe: () => () => {},
         getAll: () => [],
         clear: () => {},
-      } as Parameters<typeof createHomeAssistantServer>[0]['notifications'],
+      } as unknown as Parameters<typeof createHomeAssistantServer>[0]['notifications'],
     });
     expect(typeof server.refresh).toBe('function');
     expect(typeof server.close).toBe('function');
