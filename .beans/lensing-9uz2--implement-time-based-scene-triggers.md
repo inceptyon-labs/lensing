@@ -1,7 +1,7 @@
 ---
 # lensing-9uz2
 title: Implement time-based scene triggers
-status: in-progress
+status: completed
 type: task
 priority: normal
 tags:
@@ -9,7 +9,7 @@ tags:
     - size:M
     - area:backend
 created_at: 2026-02-16T21:24:49Z
-updated_at: 2026-02-23T22:53:42Z
+updated_at: 2026-02-23T22:55:34Z
 parent: lensing-js1y
 ---
 

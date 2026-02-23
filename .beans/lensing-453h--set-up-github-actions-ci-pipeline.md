@@ -1,7 +1,7 @@
 ---
 # lensing-453h
 title: Set up GitHub Actions CI pipeline
-status: todo
+status: in-progress
 type: task
 priority: normal
 tags:
@@ -9,7 +9,7 @@ tags:
   - size:M
   - area:infra
 created_at: 2026-02-16T21:25:49Z
-updated_at: 2026-02-16T21:25:49Z
+updated_at: 2026-02-23T23:02:34Z
 parent: lensing-ojgc
 ---
 

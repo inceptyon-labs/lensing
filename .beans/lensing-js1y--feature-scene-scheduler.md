@@ -1,15 +1,15 @@
 ---
 # lensing-js1y
 title: 'Feature: Scene Scheduler'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 tags:
-  - pasiv
-  - priority:medium
-  - area:backend
+    - pasiv
+    - priority:medium
+    - area:backend
 created_at: 2026-02-16T21:21:17Z
-updated_at: 2026-02-23T22:23:17Z
+updated_at: 2026-02-23T22:55:44Z
 parent: lensing-342l
 ---
 

@@ -1,14 +1,14 @@
 ---
 # lensing-342l
 title: 'Epic: Scenes + Presence'
-status: todo
+status: completed
 type: epic
 priority: normal
 tags:
   - pasiv
   - priority:medium
 created_at: 2026-02-16T21:19:30Z
-updated_at: 2026-02-16T21:19:30Z
+updated_at: 2026-02-23T22:55:50Z
 ---
 
 Display modes, scene scheduling, presence detection, photo ambient plugin, and Home Assistant integration.
