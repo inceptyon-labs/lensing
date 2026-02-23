@@ -315,4 +315,31 @@ describe('Scene Scheduler', () => {
     expect(scheduler.getNextScheduledScene()).toBeUndefined();
     scheduler.close();
   });
+
+  it('should carry over last entry when before first entry time (midnight crossing)', () => {
+    // Set time BEFORE creating scheduler so it loads at correct time
+    vi.setSystemTime(new Date('2026-02-23T04:00:00Z'));
+
+    const scheduler = createSceneScheduler({ db, sceneManager });
+
+    // Schedule: 08:00 → ambient, 18:00 → focus
+    const schedule = {
+      id: 'midnight-test',
+      name: 'Midnight Test',
+      entries: [
+        { time: cronTime('08:00'), sceneName: 'ambient' },
+        { time: cronTime('18:00'), sceneName: 'focus' },
+      ],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    // setSchedule calls applyCurrentScene at 04:00, should apply last entry (18:00 → focus)
+    scheduler.setSchedule(schedule);
+
+    // The active scene should be 'focus' (from yesterday's 18:00 entry)
+    expect(sceneManager.getActiveSceneName()).toBe('focus');
+
+    scheduler.close();
+  });
 });

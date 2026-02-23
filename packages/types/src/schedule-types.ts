@@ -32,25 +32,25 @@ export function cronTime(input: string): CronTime {
   return input as CronTime;
 }
 
-/** Check if current time matches or exceeds a cron time */
+/** Check if current time matches or exceeds a cron time (UTC) */
 export function isCronTimeReached(cronTime: CronTime, now: Date = new Date()): boolean {
   const [hours, minutes] = cronTime.split(':').map(Number);
-  const currentHours = now.getHours();
-  const currentMinutes = now.getMinutes();
+  const currentHours = now.getUTCHours();
+  const currentMinutes = now.getUTCMinutes();
 
-  // Compare as total minutes since midnight
+  // Compare as total minutes since midnight (UTC)
   const cronTotalMinutes = hours * 60 + minutes;
   const currentTotalMinutes = currentHours * 60 + currentMinutes;
 
   return currentTotalMinutes >= cronTotalMinutes;
 }
 
-/** Get the next scheduled scene entry for the current day */
+/** Get the next scheduled scene entry for the current day (UTC) */
 export function getNextScheduleEntry(
   schedule: SceneSchedule,
   now: Date = new Date()
 ): SceneScheduleEntry | undefined {
-  const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
+  const currentTotalMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();
 
   for (const entry of schedule.entries) {
     const [hours, minutes] = entry.time.split(':').map(Number);

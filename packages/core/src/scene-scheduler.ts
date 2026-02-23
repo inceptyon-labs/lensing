@@ -49,6 +49,11 @@ function getCurrentApplicableEntry(schedule: SceneSchedule, now: Date): SceneSch
     }
   }
 
+  // If no entry found for today yet, use last entry (yesterday carryover)
+  if (!applicable && schedule.entries.length > 0) {
+    applicable = schedule.entries[schedule.entries.length - 1];
+  }
+
   return applicable;
 }
 
@@ -125,7 +130,10 @@ export function createSceneScheduler(options: SceneSchedulerOptions): SceneSched
     },
 
     overrideScene(sceneName: string, duration_ms?: number): void {
-      preOverrideScene = sceneManager.getActiveSceneName();
+      // Only save current scene when entering override from non-override state
+      if (!isOverride) {
+        preOverrideScene = sceneManager.getActiveSceneName();
+      }
       isOverride = true;
 
       if (overrideTimer !== null) {
@@ -145,15 +153,9 @@ export function createSceneScheduler(options: SceneSchedulerOptions): SceneSched
           if (closed) return;
           isOverride = false;
           overrideTimer = null;
-          // Restore to pre-override scene
-          if (preOverrideScene !== null) {
-            try {
-              sceneManager.switchTo(preOverrideScene);
-              notifyChange(preOverrideScene);
-            } catch {
-              // ignore
-            }
-          }
+          // Clear state and re-evaluate current schedule
+          lastAppliedEntry = null;
+          applyCurrentScene();
         }, duration_ms);
       }
     },
