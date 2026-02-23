@@ -5,6 +5,7 @@ import type {
   HassEntity,
   DataBusInstance,
   FetchFn,
+  WsLike,
 } from '@lensing/types';
 import { DEFAULT_HA_MAX_STALE_MS } from '@lensing/types';
 
@@ -70,6 +71,7 @@ export function createHomeAssistantServer(
     maxStale_ms = DEFAULT_HA_MAX_STALE_MS,
     fetchFn,
     domains,
+    wsFn,
   } = options;
 
   // Cast to support (url, options) call signature used internally
@@ -86,6 +88,7 @@ export function createHomeAssistantServer(
   let lastFetchedAt: number | null = null;
   let closed = false;
   let refreshing = false;
+  let currentWs: WsLike | null = null;
   const updateListeners: Array<(data: HomeAssistantData) => void> = [];
   const errorListeners: Array<(error: string) => void> = [];
 
@@ -107,6 +110,102 @@ export function createHomeAssistantServer(
         // isolate listener errors
       }
     }
+  }
+
+  function publishAndNotify(data: HomeAssistantData): void {
+    (dataBus as DataBusInstance).publish(DATA_BUS_DEVICES_CHANNEL, PLUGIN_ID, data);
+    (dataBus as DataBusInstance).publish(DATA_BUS_SENSORS_CHANNEL, PLUGIN_ID, data);
+    notifyUpdate(data);
+  }
+
+  function handleStateChanged(raw: HaStateRaw): void {
+    if (!lastData) {
+      // No initial data yet; initialise empty store
+      lastData = { devices: [], sensors: [], lastUpdated: Date.now() };
+    }
+
+    const entity = transformEntity(raw);
+    const isSensor = SENSOR_DOMAINS.has(entity.domain);
+
+    if (isSensor) {
+      const idx = lastData.sensors.findIndex((e) => e.entity_id === entity.entity_id);
+      if (idx !== -1) {
+        lastData.sensors[idx] = copyEntity(entity);
+      } else {
+        lastData.sensors.push(copyEntity(entity));
+      }
+    } else {
+      const idx = lastData.devices.findIndex((e) => e.entity_id === entity.entity_id);
+      if (idx !== -1) {
+        lastData.devices[idx] = copyEntity(entity);
+      } else {
+        lastData.devices.push(copyEntity(entity));
+      }
+    }
+
+    lastData.lastUpdated = Date.now();
+
+    const publishData = copyData(lastData);
+    publishAndNotify(publishData);
+  }
+
+  function connectWs(): void {
+    if (!wsFn) return;
+
+    // Derive ws URL: replace http(s):// with ws(s)://
+    const wsUrl = url.replace(/^https:\/\//, 'wss://').replace(/^http:\/\//, 'ws://') + '/api/websocket';
+
+    const ws = wsFn(wsUrl);
+    currentWs = ws;
+
+    ws.onopen = () => {
+      // Nothing to do on open; wait for auth_required
+    };
+
+    ws.onmessage = (event: { data: string }) => {
+      let msg: Record<string, unknown>;
+      try {
+        msg = JSON.parse(event.data) as Record<string, unknown>;
+      } catch {
+        return;
+      }
+
+      const type = msg.type as string | undefined;
+
+      if (type === 'auth_required') {
+        ws.send(JSON.stringify({ type: 'auth', access_token: token }));
+      } else if (type === 'auth_ok') {
+        ws.send(JSON.stringify({ type: 'subscribe_events', id: 1, event_type: 'state_changed' }));
+      } else if (type === 'auth_invalid') {
+        const message = typeof msg.message === 'string' ? msg.message : 'Authentication failed';
+        notifyError(`Home Assistant auth error: ${message}`);
+      } else if (type === 'event') {
+        const event = msg.event as Record<string, unknown> | undefined;
+        if (!event) return;
+
+        const eventType = event.event_type as string | undefined;
+        if (eventType !== 'state_changed') return;
+
+        const data = event.data as Record<string, unknown> | undefined;
+        if (!data) return;
+
+        const newState = data.new_state;
+        if (newState === null || newState === undefined) return;
+
+        handleStateChanged(newState as HaStateRaw);
+      }
+    };
+
+    ws.onclose = (closeEvent?: { code: number; reason: string }) => {
+      const code = closeEvent?.code ?? 1000;
+      if (code !== 1000 && !closed) {
+        setTimeout(() => connectWs(), 3000);
+      }
+    };
+
+    ws.onerror = (_event: unknown) => {
+      // Errors will be followed by close; reconnect handled there
+    };
   }
 
   async function refresh(): Promise<void> {
@@ -187,6 +286,11 @@ export function createHomeAssistantServer(
     }
   }
 
+  // Initiate WS connection if factory provided
+  if (wsFn) {
+    connectWs();
+  }
+
   return {
     refresh,
 
@@ -209,6 +313,7 @@ export function createHomeAssistantServer(
 
     close(): void {
       closed = true;
+      currentWs?.close();
     },
   };
 }
