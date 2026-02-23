@@ -1,0 +1,46 @@
+name: Bug Report
+description: Report a bug in Lensing
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened? What did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce the issue?
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Lensing Version
+      placeholder: e.g. 0.1.0
+  - type: input
+    id: node-version
+    attributes:
+      label: Node.js Version
+      placeholder: e.g. 22.0.0
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - Raspberry Pi OS
+        - Linux (other)
+        - macOS
+        - Windows
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Logs
+      render: shell

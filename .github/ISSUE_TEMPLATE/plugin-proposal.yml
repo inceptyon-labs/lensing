@@ -1,0 +1,43 @@
+name: Plugin Proposal
+description: Propose a new plugin for Lensing
+labels: ["plugin-proposal"]
+body:
+  - type: textarea
+    id: overview
+    attributes:
+      label: Plugin Overview
+      description: What does this plugin do? What data source or widget does it provide?
+    validations:
+      required: true
+  - type: input
+    id: name
+    attributes:
+      label: Proposed Plugin Name
+      placeholder: e.g. spotify-now-playing
+    validations:
+      required: true
+  - type: dropdown
+    id: type
+    attributes:
+      label: Plugin Type
+      options:
+        - Data Source (fetches external data)
+        - Widget (displays information)
+        - Both (data source + widget)
+    validations:
+      required: true
+  - type: textarea
+    id: api
+    attributes:
+      label: External APIs or Services
+      description: What APIs or services does this plugin need? Are there rate limits or auth requirements?
+  - type: textarea
+    id: config
+    attributes:
+      label: Configuration
+      description: What settings would the user need to provide? (API keys, preferences, etc.)
+  - type: textarea
+    id: mockup
+    attributes:
+      label: UI Mockup (optional)
+      description: Sketch or description of how this would look on the display
