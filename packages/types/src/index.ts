@@ -368,6 +368,11 @@ export interface NotificationQueueInstance {
   close(): void;
 }
 
+// ── Scene Scheduling ───────────────────────────────────────────────────────
+import type { CronTime, SceneScheduleEntry, SceneSchedule } from './schedule-types';
+export type { CronTime, SceneScheduleEntry, SceneSchedule };
+export { cronTime, isCronTimeReached, getNextScheduleEntry } from './schedule-types';
+
 /** Schema migration definition */
 export interface SchemaMigration {
   version: number;
@@ -423,6 +428,20 @@ export interface DatabaseInstance {
 
   /** Delete plugin state by ID */
   deletePluginState(pluginId: string): boolean;
+
+  // --- Scene Schedules (cron-style scene switching) ---
+
+  /** Get a schedule by ID */
+  getSchedule(id: string): SceneSchedule | undefined;
+
+  /** Set/upsert a schedule */
+  setSchedule(schedule: SceneSchedule): void;
+
+  /** Get all schedules as a record */
+  getAllSchedules(): Record<string, SceneSchedule>;
+
+  /** Delete a schedule by ID */
+  deleteSchedule(id: string): boolean;
 
   /** Close the database connection */
   close(): void;
@@ -840,6 +859,3 @@ export type {
 } from './pir-sensor';
 export { DEFAULT_PIR_IDLE_TIMEOUT_MS, DEFAULT_PIR_GPIO_PIN } from './pir-sensor';
 
-// ── Scene Scheduling ───────────────────────────────────────────────────────
-export type { CronTime, SceneScheduleEntry, SceneSchedule } from './schedule-types';
-export { cronTime, isCronTimeReached, getNextScheduleEntry } from './schedule-types';

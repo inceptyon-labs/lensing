@@ -4,6 +4,7 @@ import type {
   DatabaseOptions,
   SchemaMigration,
   ZoneConfig,
+  SceneSchedule,
 } from '@lensing/types';
 
 const DEFAULT_PATH = 'data/lensing.db';
@@ -28,6 +29,19 @@ const MIGRATIONS: Array<SchemaMigration & { sql: string }> = [
       CREATE TABLE IF NOT EXISTS plugin_state (
         plugin_id TEXT PRIMARY KEY,
         state TEXT NOT NULL,
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+    `,
+  },
+  {
+    version: 2,
+    description: 'add scene schedules table',
+    sql: `
+      CREATE TABLE IF NOT EXISTS scene_schedules (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        schedule TEXT NOT NULL,
+        created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL DEFAULT (datetime('now'))
       );
     `,
@@ -189,6 +203,68 @@ export function createDatabase(options: DatabaseOptions = {}): DatabaseInstance 
 
     deletePluginState(pluginId: string): boolean {
       const info = db.prepare('DELETE FROM plugin_state WHERE plugin_id = ?').run(pluginId);
+      return info.changes > 0;
+    },
+
+    // --- Scene Schedules ---
+
+    getSchedule(id: string): SceneSchedule | undefined {
+      const row = db.prepare('SELECT schedule, created_at FROM scene_schedules WHERE id = ?').get(id) as
+        | { schedule: string; created_at: string }
+        | undefined;
+      if (!row) return undefined;
+      const parsed = JSON.parse(row.schedule) as Omit<SceneSchedule, 'createdAt' | 'updatedAt'> & {
+        updatedAt: string;
+      };
+      return {
+        ...parsed,
+        createdAt: new Date(row.created_at),
+        updatedAt: new Date(parsed.updatedAt),
+      };
+    },
+
+    setSchedule(schedule: SceneSchedule): void {
+      db.prepare(
+        `
+        INSERT INTO scene_schedules (id, name, schedule, created_at, updated_at)
+        VALUES (?, ?, ?, ?, datetime('now'))
+        ON CONFLICT(id) DO UPDATE SET name = excluded.name, schedule = excluded.schedule, updated_at = excluded.updated_at
+      `
+      ).run(
+        schedule.id,
+        schedule.name,
+        JSON.stringify({
+          id: schedule.id,
+          name: schedule.name,
+          entries: schedule.entries,
+          updatedAt: schedule.updatedAt,
+        }),
+        schedule.createdAt.toISOString()
+      );
+    },
+
+    getAllSchedules(): Record<string, SceneSchedule> {
+      const rows = db.prepare('SELECT id, schedule, created_at FROM scene_schedules').all() as Array<{
+        id: string;
+        schedule: string;
+        created_at: string;
+      }>;
+      const result = Object.create(null) as Record<string, SceneSchedule>;
+      for (const row of rows) {
+        const parsed = JSON.parse(row.schedule) as Omit<SceneSchedule, 'createdAt' | 'updatedAt'> & {
+          updatedAt: string;
+        };
+        result[row.id] = {
+          ...parsed,
+          createdAt: new Date(row.created_at),
+          updatedAt: new Date(parsed.updatedAt),
+        };
+      }
+      return result;
+    },
+
+    deleteSchedule(id: string): boolean {
+      const info = db.prepare('DELETE FROM scene_schedules WHERE id = ?').run(id);
       return info.changes > 0;
     },
 
