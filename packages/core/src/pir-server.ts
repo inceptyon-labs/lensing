@@ -43,12 +43,27 @@ export function createPIRServer(options: PIRServerOptions): PIRServerInstance {
     }
   }
 
+  function notifyError(message: string): void {
+    for (const cb of [...errorListeners]) {
+      try {
+        cb(message);
+      } catch {
+        // isolate listener errors
+      }
+    }
+  }
+
   function copyData(d: PresenceData): PresenceData {
     return { ...d };
   }
 
   function publishAndNotify(data: PresenceData): void {
-    (dataBus as DataBusInstance).publish(DATA_BUS_CHANNEL, PLUGIN_ID, data);
+    try {
+      (dataBus as DataBusInstance).publish(DATA_BUS_CHANNEL, PLUGIN_ID, data);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      notifyError(`Data bus publish error: ${message}`);
+    }
     notifyUpdate(data);
   }
 
@@ -95,6 +110,15 @@ export function createPIRServer(options: PIRServerOptions): PIRServerInstance {
       presenceData = { ...presenceData, available: true };
       watcher.watch(handleGpioValue);
     } catch (err) {
+      // Clean up watcher if it was created but watch() failed
+      if (watcher !== null) {
+        try {
+          watcher.close();
+        } catch {
+          // ignore cleanup errors
+        }
+        watcher = null;
+      }
       const message = err instanceof Error ? err.message : String(err);
       presenceData = { ...presenceData, available: false };
       startupError = `GPIO error: ${message}`;
@@ -129,7 +153,11 @@ export function createPIRServer(options: PIRServerOptions): PIRServerInstance {
     close(): void {
       closed = true;
       clearIdleTimer();
-      watcher?.close();
+      try {
+        watcher?.close();
+      } catch {
+        // ignore GPIO close errors
+      }
     },
   };
 }

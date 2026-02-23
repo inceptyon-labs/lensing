@@ -351,4 +351,93 @@ describe('PIR Server', () => {
     expect(data2.detected).toBe(true);
     server.close();
   });
+
+  // ── Robustness (Codex review) ──────────────────────────────────────────────
+
+  it('should not crash when dataBus.publish throws during GPIO event', () => {
+    const throwingBus = {
+      publish: () => {
+        throw new Error('bus failure');
+      },
+      subscribe: () => () => {},
+      getLatest: () => undefined,
+      getChannels: () => [],
+      onMessage: () => () => {},
+      clear: () => {},
+      close: () => {},
+    } as unknown as DataBusInstance;
+
+    const { factory, watcher } = createMockGpioFactory();
+    const server = createPIRServer({ dataBus: throwingBus, gpioFactory: factory });
+
+    const errors: string[] = [];
+    server.onError((msg) => errors.push(msg));
+
+    // Should not throw — error should be caught internally
+    expect(() => watcher.trigger(1)).not.toThrow();
+    expect(errors.length).toBeGreaterThanOrEqual(1);
+    server.close();
+  });
+
+  it('should not crash when dataBus.publish throws during idle timeout', () => {
+    const throwingBus = {
+      publish: vi.fn().mockImplementation(() => {
+        throw new Error('bus failure on idle');
+      }),
+      subscribe: () => () => {},
+      getLatest: () => undefined,
+      getChannels: () => [],
+      onMessage: () => () => {},
+      clear: () => {},
+      close: () => {},
+    } as unknown as DataBusInstance;
+
+    const { factory, watcher } = createMockGpioFactory();
+    const server = createPIRServer({
+      dataBus: throwingBus,
+      gpioFactory: factory,
+      idleTimeout_ms: 5_000,
+    });
+
+    const errors: string[] = [];
+    server.onError((msg) => errors.push(msg));
+
+    // Motion triggers first publish error
+    watcher.trigger(1);
+
+    // Advancing timer should not throw
+    expect(() => vi.advanceTimersByTime(5_001)).not.toThrow();
+    server.close();
+  });
+
+  it('should close watcher if watch() throws after successful creation', () => {
+    const mockWatcher = createMockGpioWatcher();
+    const throwingWatchWatcher = {
+      ...mockWatcher,
+      watch: () => {
+        throw new Error('watch failed');
+      },
+      close: vi.fn(),
+    } as unknown as ReturnType<typeof createMockGpioWatcher>;
+
+    const factory = vi.fn(() => throwingWatchWatcher) as unknown as GpioWatcherFactory;
+    const server = createPIRServer({ dataBus, gpioFactory: factory });
+
+    // Watcher should have been cleaned up
+    expect(throwingWatchWatcher.close).toHaveBeenCalledOnce();
+    expect(server.getData()!.available).toBe(false);
+    server.close();
+  });
+
+  it('should not crash when watcher.close() throws', () => {
+    const mockWatcher = createMockGpioWatcher();
+    (mockWatcher.close as ReturnType<typeof vi.fn>).mockImplementation(() => {
+      throw new Error('close failed');
+    });
+
+    const { factory } = createMockGpioFactory(mockWatcher);
+    const server = createPIRServer({ dataBus, gpioFactory: factory });
+
+    expect(() => server.close()).not.toThrow();
+  });
 });
