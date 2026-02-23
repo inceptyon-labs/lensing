@@ -151,3 +151,14 @@ export type {
 } from '@lensing/types';
 export { DEFAULT_HA_MAX_STALE_MS, DEFAULT_HA_DOMAINS } from '@lensing/types';
 export type { WsLike, WsFactory } from '@lensing/types';
+
+// ── PIR Sensor / Presence Detection ────────────────────────────────────────
+export { createPIRServer } from './pir-server';
+export type {
+  PIRServerOptions,
+  PIRServerInstance,
+  PresenceData,
+  GpioWatcher,
+  GpioWatcherFactory,
+} from '@lensing/types';
+export { DEFAULT_PIR_IDLE_TIMEOUT_MS, DEFAULT_PIR_GPIO_PIN } from '@lensing/types';

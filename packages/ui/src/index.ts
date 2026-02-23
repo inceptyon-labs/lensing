@@ -39,4 +39,11 @@ export type {
   HomeAssistantStoreState,
 } from './home-assistant-store';
 
+export { createPresenceStore } from './presence-store';
+export type {
+  PresenceStore,
+  PresenceStoreOptions,
+  PresenceStoreState,
+} from './presence-store';
+
 /** Placeholder: UI primitives will be exported here (cards, charts, text blocks, loading states) */

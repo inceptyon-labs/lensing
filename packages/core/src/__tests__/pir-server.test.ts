@@ -339,7 +339,7 @@ describe('PIR Server', () => {
 
     watcher.trigger(1);
     const data1 = server.getData()!;
-    (data1 as Record<string, unknown>).detected = false;
+    (data1 as unknown as Record<string, unknown>).detected = false;
 
     const data2 = server.getData()!;
     expect(data2.detected).toBe(true);

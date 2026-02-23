@@ -146,7 +146,7 @@ describe('Presence Store', () => {
     store.setData(presenceData);
 
     const state1 = store.getState();
-    (state1 as Record<string, unknown>).detected = false;
+    (state1 as unknown as Record<string, unknown>).detected = false;
 
     const state2 = store.getState();
     expect(state2.detected).toBe(true);

@@ -1,0 +1,12 @@
+{
+  "id": "pir-sensor",
+  "name": "PIR Sensor",
+  "version": "1.0.0",
+  "description": "Presence detection via PIR sensor GPIO for display wake/sleep control",
+  "permissions": {
+    "allowed_domains": [],
+    "max_refresh_ms": 0
+  },
+  "widget_sizes": ["small"],
+  "dependencies": []
+}
