@@ -63,7 +63,6 @@ export function createSceneScheduler(options: SceneSchedulerOptions): SceneSched
   let activeSchedule: SceneSchedule | undefined = undefined;
   let lastAppliedEntry: SceneScheduleEntry | null = null;
   let isOverride = false;
-  let preOverrideScene: string | null = null;
   let overrideTimer: ReturnType<typeof setTimeout> | null = null;
   let ticker: ReturnType<typeof setInterval> | null = null;
   let closed = false;
@@ -142,10 +141,6 @@ export function createSceneScheduler(options: SceneSchedulerOptions): SceneSched
     },
 
     overrideScene(sceneName: string, duration_ms?: number): void {
-      // Only save current scene when entering override from non-override state
-      if (!isOverride) {
-        preOverrideScene = sceneManager.getActiveSceneName();
-      }
       isOverride = true;
 
       if (overrideTimer !== null) {
