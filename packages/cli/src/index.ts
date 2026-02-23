@@ -12,5 +12,8 @@ export {
   generatePluginId,
 } from './commands/plugin-create';
 
+export { listScenes, switchScene } from './commands/scene';
+export type { ListScenesOptions, SwitchSceneOptions, SwitchSceneResult } from './commands/scene';
+
 // CLI commands: dev, start, plugin, config, scene, agent, health, logs
 // Note: shebang (#!/usr/bin/env node) will be added by build tool (tsup) when CLI is implemented
