@@ -16,9 +16,13 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "turbo run test",
-    "clean": "turbo clean && rm -rf node_modules **/node_modules .turbo"
+    "clean": "turbo clean && rm -rf node_modules **/node_modules .turbo",
+    "changeset": "changeset",
+    "changeset:version": "changeset version && pnpm install --no-frozen-lockfile",
+    "publish": "turbo run publish && pnpm changeset:version"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.27.1",
     "@eslint/js": "^9.39.3",
     "eslint": "^9.39.3",
     "eslint-config-prettier": "^10.1.8",
