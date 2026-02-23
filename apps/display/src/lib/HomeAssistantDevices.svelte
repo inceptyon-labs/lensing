@@ -47,12 +47,14 @@
               class:ha-devices__item--active={isActive(entity)}
               class:ha-devices__item--warning={isWarning(entity)}
             >
-              <span class="ha-devices__name">{entity.attributes.friendly_name ?? entity.entity_id}</span>
+              <span class="ha-devices__name"
+                >{entity.friendly_name}</span
+              >
               <span
                 class="ha-devices__state"
                 class:ha-devices__state--on={entity.state === 'on'}
-                class:ha-devices__state--off={entity.state === 'off'}
-              >{stateLabel(entity)}</span>
+                class:ha-devices__state--off={entity.state === 'off'}>{stateLabel(entity)}</span
+              >
             </li>
           {/each}
         </ul>
@@ -69,12 +71,14 @@
               class:ha-devices__item--active={isActive(entity)}
               class:ha-devices__item--warning={isWarning(entity)}
             >
-              <span class="ha-devices__name">{entity.attributes.friendly_name ?? entity.entity_id}</span>
+              <span class="ha-devices__name"
+                >{entity.friendly_name}</span
+              >
               <span
                 class="ha-devices__state"
                 class:ha-devices__state--on={entity.state === 'on'}
-                class:ha-devices__state--off={entity.state === 'off'}
-              >{stateLabel(entity)}</span>
+                class:ha-devices__state--off={entity.state === 'off'}>{stateLabel(entity)}</span
+              >
             </li>
           {/each}
         </ul>
@@ -91,12 +95,14 @@
               class:ha-devices__item--active={isActive(entity)}
               class:ha-devices__item--warning={isWarning(entity)}
             >
-              <span class="ha-devices__name">{entity.attributes.friendly_name ?? entity.entity_id}</span>
+              <span class="ha-devices__name"
+                >{entity.friendly_name}</span
+              >
               <span
                 class="ha-devices__state"
                 class:ha-devices__state--locked={entity.state === 'locked'}
-                class:ha-devices__state--warning={isWarning(entity)}
-              >{stateLabel(entity)}</span>
+                class:ha-devices__state--warning={isWarning(entity)}>{stateLabel(entity)}</span
+              >
             </li>
           {/each}
         </ul>
@@ -109,8 +115,11 @@
         <ul class="ha-devices__list">
           {#each climate as entity (entity.entity_id)}
             <li class="ha-devices__item">
-              <span class="ha-devices__name">{entity.attributes.friendly_name ?? entity.entity_id}</span>
-              <span class="ha-devices__state ha-devices__state--climate">{tempDisplay(entity)}</span>
+              <span class="ha-devices__name"
+                >{entity.friendly_name}</span
+              >
+              <span class="ha-devices__state ha-devices__state--climate">{tempDisplay(entity)}</span
+              >
             </li>
           {/each}
         </ul>
@@ -123,9 +132,13 @@
         <ul class="ha-devices__list">
           {#each sensors as entity (entity.entity_id)}
             <li class="ha-devices__item">
-              <span class="ha-devices__name">{entity.attributes.friendly_name ?? entity.entity_id}</span>
+              <span class="ha-devices__name"
+                >{entity.friendly_name}</span
+              >
               <span class="ha-devices__state ha-devices__state--sensor">
-                {entity.state}{entity.attributes.unit_of_measurement ? ` ${entity.attributes.unit_of_measurement}` : ''}
+                {entity.state}{entity.attributes.unit_of_measurement
+                  ? ` ${entity.attributes.unit_of_measurement}`
+                  : ''}
               </span>
             </li>
           {/each}
@@ -200,7 +213,7 @@
   }
 
   .ha-devices__item--warning {
-    border-left: 2px solid var(--alert-warning, hsl(45, 90%, 55%));
+    border-left: 2px solid var(--alert-warning, hsl(38, 65%, 50%));
     padding-left: var(--space-2, 8px);
   }
 
@@ -233,7 +246,7 @@
   }
 
   .ha-devices__state--warning {
-    color: var(--alert-warning, hsl(45, 90%, 55%));
+    color: var(--alert-warning, hsl(38, 65%, 50%));
   }
 
   .ha-devices__state--climate {
