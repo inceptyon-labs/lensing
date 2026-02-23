@@ -818,3 +818,14 @@ export type {
   ConfigTransferInstance,
 } from './config-transfer';
 export { CURRENT_CONFIG_VERSION } from './config-transfer';
+
+// ── Home Assistant ──────────────────────────────────────────────────────────
+export type {
+  HassEntity,
+  HomeAssistantData,
+  HomeAssistantServerOptions,
+  HomeAssistantServerInstance,
+  WsLike,
+  WsFactory,
+} from './home-assistant';
+export { DEFAULT_HA_MAX_STALE_MS, DEFAULT_HA_DOMAINS } from './home-assistant';
