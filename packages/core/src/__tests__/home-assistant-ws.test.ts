@@ -479,6 +479,42 @@ describe('Home Assistant Server — WebSocket', () => {
     expect(wsFn).toHaveBeenCalledTimes(1);
   });
 
+  it('should apply domain filter to WS state_changed events', async () => {
+    const server = createHomeAssistantServer({
+      url: HA_URL,
+      token: HA_TOKEN,
+      dataBus,
+      notifications,
+      fetchFn: createMockFetch([]),
+      wsFn,
+      domains: ['light'],
+    });
+
+    await server.refresh();
+    doHaHandshake(mockWs, HA_TOKEN);
+
+    // state_changed for automation (NOT in the 'light' filter)
+    mockWs._simulateMessage({
+      type: 'event',
+      event: {
+        event_type: 'state_changed',
+        data: {
+          entity_id: 'automation.morning_routine',
+          new_state: {
+            entity_id: 'automation.morning_routine',
+            state: 'on',
+            attributes: { friendly_name: 'Morning Routine' },
+            last_changed: '2026-02-23T07:00:00.000Z',
+            last_updated: '2026-02-23T07:00:00.000Z',
+          },
+        },
+      },
+    });
+
+    const data = server.getData()!;
+    expect(data.devices.some((e) => e.entity_id === 'automation.morning_routine')).toBe(false);
+  });
+
   // ── No WS option ──────────────────────────────────────────────────────────────
 
   it('should work without wsFn option (REST-only mode)', async () => {

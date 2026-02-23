@@ -1,7 +1,7 @@
 ---
 # lensing-a37a
 title: Implement Home Assistant API client and widget
-status: todo
+status: in-progress
 type: task
 priority: normal
 tags:
@@ -10,7 +10,7 @@ tags:
   - area:backend
   - area:frontend
 created_at: 2026-02-16T21:25:07Z
-updated_at: 2026-02-16T21:25:07Z
+updated_at: 2026-02-23T15:57:30Z
 parent: lensing-i1z4
 ---
 

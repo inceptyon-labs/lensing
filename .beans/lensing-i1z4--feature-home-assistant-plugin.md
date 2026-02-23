@@ -1,7 +1,7 @@
 ---
 # lensing-i1z4
 title: 'Feature: Home Assistant Plugin'
-status: todo
+status: in-progress
 type: feature
 priority: normal
 tags:
@@ -10,7 +10,7 @@ tags:
   - area:backend
   - area:frontend
 created_at: 2026-02-16T21:21:30Z
-updated_at: 2026-02-16T21:21:30Z
+updated_at: 2026-02-23T15:57:38Z
 parent: lensing-342l
 ---
 

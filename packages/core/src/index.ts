@@ -149,8 +149,5 @@ export type {
   HomeAssistantData,
   HassEntity,
 } from '@lensing/types';
-export {
-  DEFAULT_HA_MAX_STALE_MS,
-  DEFAULT_HA_DOMAINS,
-} from '@lensing/types';
+export { DEFAULT_HA_MAX_STALE_MS, DEFAULT_HA_DOMAINS } from '@lensing/types';
 export type { WsLike, WsFactory } from '@lensing/types';

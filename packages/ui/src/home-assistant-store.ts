@@ -44,7 +44,7 @@ function copyData(d: HomeAssistantData): HomeAssistantData {
 // ── Factory ───────────────────────────────────────────────────────────────────
 
 export function createHomeAssistantStore(
-  options: HomeAssistantStoreOptions = {},
+  options: HomeAssistantStoreOptions = {}
 ): HomeAssistantStore {
   const { maxStale_ms = 120_000 } = options;
 

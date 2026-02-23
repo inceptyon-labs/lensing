@@ -1,7 +1,7 @@
 ---
 # lensing-kd62
 title: 'Feature: Backup & Restore'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 tags:
@@ -9,7 +9,7 @@ tags:
   - priority:medium
   - area:backend
 created_at: 2026-02-16T21:22:02Z
-updated_at: 2026-02-22T03:42:11Z
+updated_at: 2026-02-22T11:52:58Z
 parent: lensing-oeoo
 ---
 

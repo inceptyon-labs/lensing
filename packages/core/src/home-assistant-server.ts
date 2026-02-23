@@ -6,7 +6,7 @@ import type {
   DataBusInstance,
   WsLike,
 } from '@lensing/types';
-import { DEFAULT_HA_MAX_STALE_MS } from '@lensing/types';
+import { DEFAULT_HA_MAX_STALE_MS, DEFAULT_HA_DOMAINS } from '@lensing/types';
 
 const PLUGIN_ID = 'home-assistant-server';
 const DATA_BUS_DEVICES_CHANNEL = 'home.devices';
@@ -84,6 +84,10 @@ export function createHomeAssistantServer(
 
   const effectiveFetch = (fetchFn ?? fetch) as unknown as FetchWithOptions;
 
+  // Compute active domain set once: use explicit domains or fall back to DEFAULT_HA_DOMAINS
+  const activeDomains = domains ?? DEFAULT_HA_DOMAINS;
+  const activeDomainSet = activeDomains.length > 0 ? new Set(activeDomains) : null;
+
   let lastData: HomeAssistantData | null = null;
   let lastFetchedAt: number | null = null;
   let closed = false;
@@ -125,6 +129,12 @@ export function createHomeAssistantServer(
     }
 
     const entity = transformEntity(raw);
+
+    // Apply domain filter (same as REST refresh)
+    if (activeDomainSet !== null && !activeDomainSet.has(entity.domain)) {
+      return;
+    }
+
     const isSensor = SENSOR_DOMAINS.has(entity.domain);
 
     if (isSensor) {
@@ -252,13 +262,17 @@ export function createHomeAssistantServer(
         return;
       }
 
+      if (!Array.isArray(raw)) {
+        notifyError('Home Assistant response parse error: expected array of states');
+        return;
+      }
+
       const rawStates = raw as HaStateRaw[];
       let entities = rawStates.map(transformEntity);
 
-      // Apply domain filter if provided
-      if (domains && domains.length > 0) {
-        const domainSet = new Set(domains);
-        entities = entities.filter((e) => domainSet.has(e.domain));
+      // Apply domain filter
+      if (activeDomainSet !== null) {
+        entities = entities.filter((e) => activeDomainSet.has(e.domain));
       }
 
       const sensors = entities.filter((e) => SENSOR_DOMAINS.has(e.domain));
