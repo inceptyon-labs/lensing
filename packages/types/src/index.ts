@@ -829,3 +829,13 @@ export type {
   WsFactory,
 } from './home-assistant';
 export { DEFAULT_HA_MAX_STALE_MS, DEFAULT_HA_DOMAINS } from './home-assistant';
+
+// ── PIR Sensor / Presence Detection ────────────────────────────────────────
+export type {
+  PresenceData,
+  GpioWatcher,
+  GpioWatcherFactory,
+  PIRServerOptions,
+  PIRServerInstance,
+} from './pir-sensor';
+export { DEFAULT_PIR_IDLE_TIMEOUT_MS, DEFAULT_PIR_GPIO_PIN } from './pir-sensor';
