@@ -1,9 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type {
-  CronTime,
-  SceneScheduleEntry,
-  SceneSchedule,
-} from '../schedule-types';
+import type { CronTime, SceneScheduleEntry, SceneSchedule } from '../schedule-types';
 
 describe('Schedule Types', () => {
   it('should export CronTime type for HH:MM format', () => {
@@ -53,7 +49,12 @@ describe('Schedule Types', () => {
 
   it('should validate CronTime format', () => {
     // Valid times
-    const validTimes: CronTime[] = ['00:00' as CronTime, '06:00' as CronTime, '12:30' as CronTime, '23:59' as CronTime];
+    const validTimes: CronTime[] = [
+      '00:00' as CronTime,
+      '06:00' as CronTime,
+      '12:30' as CronTime,
+      '23:59' as CronTime,
+    ];
     validTimes.forEach((time) => {
       expect(time).toMatch(/^\d{2}:\d{2}$/);
     });

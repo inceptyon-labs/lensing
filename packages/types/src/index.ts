@@ -858,4 +858,3 @@ export type {
   PIRServerInstance,
 } from './pir-sensor';
 export { DEFAULT_PIR_IDLE_TIMEOUT_MS, DEFAULT_PIR_GPIO_PIN } from './pir-sensor';
-

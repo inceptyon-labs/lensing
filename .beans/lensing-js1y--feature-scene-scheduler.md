@@ -5,9 +5,9 @@ status: in-progress
 type: feature
 priority: normal
 tags:
-    - pasiv
-    - priority:medium
-    - area:backend
+  - pasiv
+  - priority:medium
+  - area:backend
 created_at: 2026-02-16T21:21:17Z
 updated_at: 2026-02-23T22:23:17Z
 parent: lensing-342l

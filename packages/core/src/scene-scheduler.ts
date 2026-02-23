@@ -37,10 +37,7 @@ function utcMinutes(date: Date): number {
 }
 
 /** Find the most recent schedule entry that should be active now */
-function getCurrentApplicableEntry(
-  schedule: SceneSchedule,
-  now: Date
-): SceneScheduleEntry | null {
+function getCurrentApplicableEntry(schedule: SceneSchedule, now: Date): SceneScheduleEntry | null {
   const current = utcMinutes(now);
   let applicable: SceneScheduleEntry | null = null;
 

@@ -209,9 +209,9 @@ export function createDatabase(options: DatabaseOptions = {}): DatabaseInstance 
     // --- Scene Schedules ---
 
     getSchedule(id: string): SceneSchedule | undefined {
-      const row = db.prepare('SELECT schedule, created_at FROM scene_schedules WHERE id = ?').get(id) as
-        | { schedule: string; created_at: string }
-        | undefined;
+      const row = db
+        .prepare('SELECT schedule, created_at FROM scene_schedules WHERE id = ?')
+        .get(id) as { schedule: string; created_at: string } | undefined;
       if (!row) return undefined;
       const parsed = JSON.parse(row.schedule) as Omit<SceneSchedule, 'createdAt' | 'updatedAt'> & {
         updatedAt: string;
@@ -244,14 +244,19 @@ export function createDatabase(options: DatabaseOptions = {}): DatabaseInstance 
     },
 
     getAllSchedules(): Record<string, SceneSchedule> {
-      const rows = db.prepare('SELECT id, schedule, created_at FROM scene_schedules').all() as Array<{
+      const rows = db
+        .prepare('SELECT id, schedule, created_at FROM scene_schedules')
+        .all() as Array<{
         id: string;
         schedule: string;
         created_at: string;
       }>;
       const result = Object.create(null) as Record<string, SceneSchedule>;
       for (const row of rows) {
-        const parsed = JSON.parse(row.schedule) as Omit<SceneSchedule, 'createdAt' | 'updatedAt'> & {
+        const parsed = JSON.parse(row.schedule) as Omit<
+          SceneSchedule,
+          'createdAt' | 'updatedAt'
+        > & {
           updatedAt: string;
         };
         result[row.id] = {

@@ -5,9 +5,9 @@ status: in-progress
 type: task
 priority: normal
 tags:
-    - pasiv
-    - size:M
-    - area:backend
+  - pasiv
+  - size:M
+  - area:backend
 created_at: 2026-02-16T21:24:49Z
 updated_at: 2026-02-23T22:23:15Z
 parent: lensing-js1y
