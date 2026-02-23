@@ -18,21 +18,23 @@ describe('Database', () => {
       expect(db).toBeDefined();
     });
 
-    it('should apply schema migration v1 on creation', () => {
-      expect(db.getSchemaVersion()).toBe(1);
+    it('should apply all schema migrations on creation', () => {
+      expect(db.getSchemaVersion()).toBe(2);
     });
 
     it('should track applied migrations', () => {
       const migrations = db.getMigrations();
-      expect(migrations).toHaveLength(1);
+      expect(migrations).toHaveLength(2);
       expect(migrations[0].version).toBe(1);
       expect(migrations[0].description).toBe('initial schema');
+      expect(migrations[1].version).toBe(2);
+      expect(migrations[1].description).toBe('add scene schedules table');
     });
 
     it('should be idempotent — creating a second instance on same db applies no extra migrations', () => {
       // In-memory DBs are isolated, so test via getMigrations count
       const migrations = db.getMigrations();
-      expect(migrations).toHaveLength(1);
+      expect(migrations).toHaveLength(2);
     });
   });
 
@@ -196,8 +198,8 @@ describe('Database', () => {
       const testDb = createDatabase({ path: ':memory:' });
       // This test verifies the behavior would fail with a real upgraded DB
       // In-memory DBs are isolated, so we test the logic indirectly:
-      // The factory should work with v1, and reject anything > v1 on next instantiation
-      expect(testDb.getSchemaVersion()).toBe(1);
+      // The factory should work with v2, and reject anything > v2 on next instantiation
+      expect(testDb.getSchemaVersion()).toBe(2);
       testDb.close();
     });
 
