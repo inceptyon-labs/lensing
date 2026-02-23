@@ -87,12 +87,15 @@ export function createSceneScheduler(options: SceneSchedulerOptions): SceneSched
     if (applicable.sceneName === lastAppliedEntry?.sceneName) return;
 
     lastAppliedEntry = applicable;
-    notifyChange(applicable.sceneName);
     try {
       sceneManager.switchTo(applicable.sceneName);
     } catch {
-      // scene may not exist — still notify listeners
+      // scene may not exist — reset and don't notify
+      lastAppliedEntry = null;
+      return;
     }
+    // Only notify listeners after successful scene switch
+    notifyChange(applicable.sceneName);
   }
 
   // Load any persisted schedule on creation
@@ -108,8 +111,17 @@ export function createSceneScheduler(options: SceneSchedulerOptions): SceneSched
     },
 
     setSchedule(schedule: SceneSchedule): void {
-      db.setSchedule(schedule);
-      activeSchedule = schedule;
+      // Sort entries by time for deterministic behavior
+      const sorted = {
+        ...schedule,
+        entries: [...schedule.entries].sort((a, b) => {
+          const [aH, aM] = a.time.split(':').map(Number);
+          const [bH, bM] = b.time.split(':').map(Number);
+          return aH * 60 + aM - (bH * 60 + bM);
+        }),
+      };
+      db.setSchedule(sorted);
+      activeSchedule = sorted;
       lastAppliedEntry = null; // reset so current entry is re-applied
       applyCurrentScene();
     },
@@ -143,10 +155,11 @@ export function createSceneScheduler(options: SceneSchedulerOptions): SceneSched
 
       try {
         sceneManager.switchTo(sceneName);
-        notifyChange(sceneName);
       } catch {
-        // scene may not exist
+        // scene may not exist — still set override flag for duration timer
       }
+      // Notify listeners after switchTo (whether successful or not)
+      notifyChange(sceneName);
 
       if (duration_ms !== undefined) {
         overrideTimer = setTimeout(() => {
@@ -155,7 +168,7 @@ export function createSceneScheduler(options: SceneSchedulerOptions): SceneSched
           overrideTimer = null;
           // Clear state and re-evaluate current schedule
           lastAppliedEntry = null;
-          applyCurrentScene();
+          applyCurrentScene(); // This will call notifyChange if successful
         }, duration_ms);
       }
     },

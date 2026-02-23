@@ -23,11 +23,18 @@ export interface SceneSchedule {
   updatedAt: Date;
 }
 
-/** Helper to create a CronTime from a string (validation can be added) */
+/** Helper to create a CronTime from a string with full validation */
 export function cronTime(input: string): CronTime {
-  // Basic validation: HH:MM format
+  // Validate HH:MM format and ranges
   if (!input.match(/^\d{2}:\d{2}$/)) {
     throw new Error(`Invalid cron time format: ${input}. Expected HH:MM`);
+  }
+  const [hours, minutes] = input.split(':').map(Number);
+  if (hours < 0 || hours > 23) {
+    throw new Error(`Invalid hour: ${hours}. Must be 00-23`);
+  }
+  if (minutes < 0 || minutes > 59) {
+    throw new Error(`Invalid minute: ${minutes}. Must be 00-59`);
   }
   return input as CronTime;
 }
