@@ -152,6 +152,12 @@ export type {
 export { DEFAULT_HA_MAX_STALE_MS, DEFAULT_HA_DOMAINS } from '@lensing/types';
 export type { WsLike, WsFactory } from '@lensing/types';
 
+// ── Scene Scheduling ─────────────────────────────────────────────────────────
+export { createSceneScheduler } from './scene-scheduler';
+export type { SceneSchedulerOptions, SceneSchedulerInstance } from './scene-scheduler';
+export type { CronTime, SceneScheduleEntry, SceneSchedule } from '@lensing/types';
+export { cronTime, isCronTimeReached, getNextScheduleEntry } from '@lensing/types';
+
 // ── PIR Sensor / Presence Detection ────────────────────────────────────────
 export { createPIRServer } from './pir-server';
 export type {
