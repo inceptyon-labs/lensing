@@ -2,7 +2,13 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { createHomeAssistantServer } from '../home-assistant-server';
 import { createDataBus } from '../data-bus';
 import { createNotificationQueue } from '../notification-queue';
-import type { DataBusInstance, FetchFn, HomeAssistantData, WsFactory, WsLike } from '@lensing/types';
+import type {
+  DataBusInstance,
+  FetchFn,
+  HomeAssistantData,
+  WsFactory,
+  WsLike,
+} from '@lensing/types';
 import type { NotificationQueueInstance } from '../notification-queue';
 
 // ── WS mock helpers ───────────────────────────────────────────────────────────
@@ -66,7 +72,7 @@ function createMockFetch(responseData: unknown = []): FetchFn {
 }
 
 // Simulate complete HA WS auth + subscribe handshake
-function doHaHandshake(ws: MockWs, token: string): void {
+function doHaHandshake(ws: MockWs, _token: string): void {
   ws._simulateOpen();
   ws._simulateMessage({ type: 'auth_required' });
   // Server should have sent auth message; now send auth_ok
@@ -148,7 +154,7 @@ describe('Home Assistant Server — WebSocket', () => {
 
     const authMsg = mockWs._sentMessages.find(
       (m): m is { type: string; access_token: string } =>
-        typeof m === 'object' && m !== null && (m as { type: string }).type === 'auth',
+        typeof m === 'object' && m !== null && (m as { type: string }).type === 'auth'
     );
     expect(authMsg).toBeDefined();
     expect(authMsg!.access_token).toBe(HA_TOKEN);
@@ -170,7 +176,7 @@ describe('Home Assistant Server — WebSocket', () => {
 
     const subscribeMsg = mockWs._sentMessages.find(
       (m): m is { type: string; event_type: string } =>
-        typeof m === 'object' && m !== null && (m as { type: string }).type === 'subscribe_events',
+        typeof m === 'object' && m !== null && (m as { type: string }).type === 'subscribe_events'
     );
     expect(subscribeMsg).toBeDefined();
     expect(subscribeMsg!.event_type).toBe('state_changed');

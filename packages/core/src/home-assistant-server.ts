@@ -4,7 +4,6 @@ import type {
   HomeAssistantData,
   HassEntity,
   DataBusInstance,
-  FetchFn,
   WsLike,
 } from '@lensing/types';
 import { DEFAULT_HA_MAX_STALE_MS } from '@lensing/types';
@@ -30,9 +29,7 @@ interface HaStateRaw {
 function transformEntity(raw: HaStateRaw): HassEntity {
   const domain = raw.entity_id.split('.')[0] ?? '';
   const friendly_name =
-    typeof raw.attributes.friendly_name === 'string'
-      ? raw.attributes.friendly_name
-      : raw.entity_id;
+    typeof raw.attributes.friendly_name === 'string' ? raw.attributes.friendly_name : raw.entity_id;
 
   return {
     entity_id: raw.entity_id,
@@ -62,7 +59,7 @@ function copyData(d: HomeAssistantData): HomeAssistantData {
 // ── Factory ────────────────────────────────────────────────────────────────
 
 export function createHomeAssistantServer(
-  options: HomeAssistantServerOptions,
+  options: HomeAssistantServerOptions
 ): HomeAssistantServerInstance {
   const {
     url,
@@ -75,7 +72,10 @@ export function createHomeAssistantServer(
   } = options;
 
   // Cast to support (url, options) call signature used internally
-  type FetchWithOptions = (url: string, init?: RequestInit) => Promise<{
+  type FetchWithOptions = (
+    url: string,
+    init?: RequestInit
+  ) => Promise<{
     ok: boolean;
     status?: number;
     statusText?: string;
@@ -153,7 +153,8 @@ export function createHomeAssistantServer(
     if (!wsFn) return;
 
     // Derive ws URL: replace http(s):// with ws(s)://
-    const wsUrl = url.replace(/^https:\/\//, 'wss://').replace(/^http:\/\//, 'ws://') + '/api/websocket';
+    const wsUrl =
+      url.replace(/^https:\/\//, 'wss://').replace(/^http:\/\//, 'ws://') + '/api/websocket';
 
     const ws = wsFn(wsUrl);
     currentWs = ws;
@@ -236,7 +237,7 @@ export function createHomeAssistantServer(
 
       if (!response.ok) {
         notifyError(
-          `Home Assistant API error ${response.status ?? ''}: ${response.statusText ?? 'unknown'}`,
+          `Home Assistant API error ${response.status ?? ''}: ${response.statusText ?? 'unknown'}`
         );
         return;
       }
