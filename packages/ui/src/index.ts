@@ -32,4 +32,11 @@ export type { NewsStore, NewsStoreOptions, NewsStoreState } from './news-store';
 export { createSportsStore } from './sports-store';
 export type { SportsStore, SportsStoreOptions, SportsStoreState } from './sports-store';
 
+export { createHomeAssistantStore } from './home-assistant-store';
+export type {
+  HomeAssistantStore,
+  HomeAssistantStoreOptions,
+  HomeAssistantStoreState,
+} from './home-assistant-store';
+
 /** Placeholder: UI primitives will be exported here (cards, charts, text blocks, loading states) */
