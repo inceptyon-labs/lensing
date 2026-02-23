@@ -10,7 +10,7 @@ tags:
     - area:backend
     - area:frontend
 created_at: 2026-02-16T21:25:07Z
-updated_at: 2026-02-23T17:28:51Z
+updated_at: 2026-02-23T17:30:50Z
 parent: lensing-i1z4
 ---
 
@@ -27,3 +27,26 @@ Home Assistant plugin: REST/WebSocket API client and device state widgets.
 ---
 
 **Size:** L
+
+## Completed
+
+**Files changed:**
+packages/types/src/home-assistant.ts (types, constants)
+packages/core/src/home-assistant-server.ts (REST + WS factory)
+packages/core/src/home-assistant-integration.test.ts (7 integration tests)
+packages/ui/src/home-assistant-store.ts (UI store factory)
+apps/display/src/lib/HomeAssistantDevices.svelte (widget)
+packages/core/src/plugins/home-assistant/plugin.json (manifest)
+
+**Key decisions:**
+- Domain filtering: DEFAULT_HA_DOMAINS as fallback + explicit domains option
+- WS auto-reconnect with closed guard to prevent race condition  
+- Defensive copies (shallow attributes sufficient for HA)
+- Data bus: publish both home.devices and home.sensors channels
+- Store: domain helpers + onChange with re-entrancy guard
+
+**Notes for next task:**
+- Factory pattern established (createHomeAssistantServer, createHomeAssistantStore)
+- 561 tests total (types, server, store, widget integration)
+- Design system integration complete (all tokens used)
+- Ready for display app integration
