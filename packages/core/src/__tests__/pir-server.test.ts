@@ -1,7 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { createPIRServer } from '../pir-server';
 import { createDataBus } from '../data-bus';
-import type { DataBusInstance, GpioWatcher, GpioWatcherFactory, PresenceData } from '@lensing/types';
+import type {
+  DataBusInstance,
+  GpioWatcher,
+  GpioWatcherFactory,
+  PresenceData,
+} from '@lensing/types';
 
 // ── Mock GPIO helpers ────────────────────────────────────────────────────────
 
@@ -24,9 +29,10 @@ function createMockGpioWatcher(): GpioWatcher & { trigger(value: 0 | 1): void } 
   };
 }
 
-function createMockGpioFactory(
-  watcher?: ReturnType<typeof createMockGpioWatcher>
-): { factory: GpioWatcherFactory; watcher: ReturnType<typeof createMockGpioWatcher> } {
+function createMockGpioFactory(watcher?: ReturnType<typeof createMockGpioWatcher>): {
+  factory: GpioWatcherFactory;
+  watcher: ReturnType<typeof createMockGpioWatcher>;
+} {
   const mockWatcher = watcher ?? createMockGpioWatcher();
   const factory = vi.fn(() => mockWatcher) as unknown as GpioWatcherFactory;
   return { factory, watcher: mockWatcher };

@@ -43,16 +43,6 @@ export function createPIRServer(options: PIRServerOptions): PIRServerInstance {
     }
   }
 
-  function notifyError(message: string): void {
-    for (const cb of [...errorListeners]) {
-      try {
-        cb(message);
-      } catch {
-        // isolate listener errors
-      }
-    }
-  }
-
   function copyData(d: PresenceData): PresenceData {
     return { ...d };
   }

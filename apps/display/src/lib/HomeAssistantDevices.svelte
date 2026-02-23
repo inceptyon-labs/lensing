@@ -47,9 +47,7 @@
               class:ha-devices__item--active={isActive(entity)}
               class:ha-devices__item--warning={isWarning(entity)}
             >
-              <span class="ha-devices__name"
-                >{entity.friendly_name}</span
-              >
+              <span class="ha-devices__name">{entity.friendly_name}</span>
               <span
                 class="ha-devices__state"
                 class:ha-devices__state--on={entity.state === 'on'}
@@ -71,9 +69,7 @@
               class:ha-devices__item--active={isActive(entity)}
               class:ha-devices__item--warning={isWarning(entity)}
             >
-              <span class="ha-devices__name"
-                >{entity.friendly_name}</span
-              >
+              <span class="ha-devices__name">{entity.friendly_name}</span>
               <span
                 class="ha-devices__state"
                 class:ha-devices__state--on={entity.state === 'on'}
@@ -95,9 +91,7 @@
               class:ha-devices__item--active={isActive(entity)}
               class:ha-devices__item--warning={isWarning(entity)}
             >
-              <span class="ha-devices__name"
-                >{entity.friendly_name}</span
-              >
+              <span class="ha-devices__name">{entity.friendly_name}</span>
               <span
                 class="ha-devices__state"
                 class:ha-devices__state--locked={entity.state === 'locked'}
@@ -115,9 +109,7 @@
         <ul class="ha-devices__list">
           {#each climate as entity (entity.entity_id)}
             <li class="ha-devices__item">
-              <span class="ha-devices__name"
-                >{entity.friendly_name}</span
-              >
+              <span class="ha-devices__name">{entity.friendly_name}</span>
               <span class="ha-devices__state ha-devices__state--climate">{tempDisplay(entity)}</span
               >
             </li>
@@ -132,9 +124,7 @@
         <ul class="ha-devices__list">
           {#each sensors as entity (entity.entity_id)}
             <li class="ha-devices__item">
-              <span class="ha-devices__name"
-                >{entity.friendly_name}</span
-              >
+              <span class="ha-devices__name">{entity.friendly_name}</span>
               <span class="ha-devices__state ha-devices__state--sensor">
                 {entity.state}{entity.attributes.unit_of_measurement
                   ? ` ${entity.attributes.unit_of_measurement}`

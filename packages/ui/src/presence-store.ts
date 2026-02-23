@@ -2,9 +2,7 @@ import type { PresenceData } from '@lensing/types';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-export interface PresenceStoreOptions {
-  // Reserved for future options (e.g., maxStale_ms)
-}
+export type PresenceStoreOptions = Record<string, never>;
 
 export interface PresenceStoreState {
   detected: boolean;

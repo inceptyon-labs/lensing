@@ -5,10 +5,10 @@ status: completed
 type: task
 priority: normal
 tags:
-    - pasiv
-    - size:L
-    - area:backend
-    - area:frontend
+  - pasiv
+  - size:L
+  - area:backend
+  - area:frontend
 created_at: 2026-02-16T21:25:07Z
 updated_at: 2026-02-23T17:31:26Z
 parent: lensing-i1z4
@@ -39,13 +39,15 @@ apps/display/src/lib/HomeAssistantDevices.svelte (widget)
 packages/core/src/plugins/home-assistant/plugin.json (manifest)
 
 **Key decisions:**
+
 - Domain filtering: DEFAULT_HA_DOMAINS as fallback + explicit domains option
-- WS auto-reconnect with closed guard to prevent race condition  
+- WS auto-reconnect with closed guard to prevent race condition
 - Defensive copies (shallow attributes sufficient for HA)
 - Data bus: publish both home.devices and home.sensors channels
 - Store: domain helpers + onChange with re-entrancy guard
 
 **Notes for next task:**
+
 - Factory pattern established (createHomeAssistantServer, createHomeAssistantStore)
 - 561 tests total (types, server, store, widget integration)
 - Design system integration complete (all tokens used)
