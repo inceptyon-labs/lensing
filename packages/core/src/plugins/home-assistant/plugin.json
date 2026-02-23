@@ -1,0 +1,13 @@
+{
+  "id": "home-assistant-server",
+  "name": "Home Assistant",
+  "version": "1.0.0",
+  "description": "Smart home device states via Home Assistant REST and WebSocket API",
+  "ui_entry": "./HomeAssistantDevices.svelte",
+  "permissions": {
+    "allowed_domains": [],
+    "max_refresh_ms": 60000
+  },
+  "widget_sizes": ["medium", "large"],
+  "dependencies": []
+}

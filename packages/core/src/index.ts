@@ -140,3 +140,17 @@ export type {
   ConfigTransferInstance,
 } from '@lensing/types';
 export { CURRENT_CONFIG_VERSION } from '@lensing/types';
+
+// ── Home Assistant ──────────────────────────────────────────────────────────
+export { createHomeAssistantServer } from './home-assistant-server';
+export type {
+  HomeAssistantServerOptions,
+  HomeAssistantServerInstance,
+  HomeAssistantData,
+  HassEntity,
+} from '@lensing/types';
+export {
+  DEFAULT_HA_MAX_STALE_MS,
+  DEFAULT_HA_DOMAINS,
+} from '@lensing/types';
+export type { WsLike, WsFactory } from '@lensing/types';
