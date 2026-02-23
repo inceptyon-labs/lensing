@@ -151,6 +151,7 @@ export function createHomeAssistantServer(
 
   function connectWs(): void {
     if (!wsFn) return;
+    if (closed) return;
 
     // Derive ws URL: replace http(s):// with ws(s)://
     const wsUrl =

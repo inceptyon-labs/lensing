@@ -453,6 +453,32 @@ describe('Home Assistant Server — WebSocket', () => {
     expect(wsFn).toHaveBeenCalledTimes(1);
   });
 
+  it('should NOT reconnect when close() is called after unexpected disconnect before timer fires', () => {
+    const server = createHomeAssistantServer({
+      url: HA_URL,
+      token: HA_TOKEN,
+      dataBus,
+      notifications,
+      fetchFn: createMockFetch(),
+      wsFn,
+    });
+
+    doHaHandshake(mockWs, HA_TOKEN);
+
+    // WS drops unexpectedly — schedules reconnect in 3s
+    const secondWs = createMockWs();
+    (wsFn as ReturnType<typeof vi.fn>).mockReturnValue(secondWs);
+    mockWs._simulateClose(1006, 'Connection dropped');
+
+    // close() is called BEFORE the 3s timer fires
+    server.close();
+
+    // Even after the timer fires, no new connection should be made
+    vi.advanceTimersByTime(3000);
+
+    expect(wsFn).toHaveBeenCalledTimes(1);
+  });
+
   // ── No WS option ──────────────────────────────────────────────────────────────
 
   it('should work without wsFn option (REST-only mode)', async () => {
