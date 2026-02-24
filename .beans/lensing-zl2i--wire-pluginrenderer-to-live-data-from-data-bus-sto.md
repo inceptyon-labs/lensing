@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: critical
 created_at: 2026-02-24T18:00:08Z
-updated_at: 2026-02-24T20:31:50Z
+updated_at: 2026-02-24T21:53:00Z
 parent: lensing-wbum
 blocked_by:
   - lensing-gi9v
@@ -24,15 +24,15 @@ PluginRenderer currently passes hardcoded empty arrays to every widget component
 
 ## What to Do
 
-- Import the data bus store
-- For each plugin_id, subscribe to the appropriate channel and pass data:
+- [x] Import the data bus store
+- [x] For each plugin_id, subscribe to the appropriate channel and pass data:
   - news → dataBus['news.headlines']?.articles → headlines prop
   - sports → dataBus['sports.scores']?.games → games prop
   - home-assistant → dataBus['home.devices'] + dataBus['home.sensors']
   - crypto → dataBus['crypto.prices'] → new CryptoWidget
   - weather → dataBus['weather.current'] → new WeatherWidget
   - etc.
-- Handle the case where data hasn't arrived yet (loading state vs empty state)
+- [x] Handle the case where data hasn't arrived yet (loading state vs empty state)
 
 ## Blocked By
 
