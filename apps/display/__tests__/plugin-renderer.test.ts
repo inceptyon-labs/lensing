@@ -123,6 +123,26 @@ describe('Data Bus Store Integration', () => {
     expect(source).toMatch(/current=\{[^}]*\}/);
     expect(source).toMatch(/forecast=\{[^}]*\}/);
   });
+
+  it('should import CalendarWidget component', () => {
+    const source = readFileSync(rendererPath, 'utf-8');
+    expect(source).toContain('CalendarWidget');
+  });
+
+  it('should subscribe to calendar-server channel', () => {
+    const source = readFileSync(rendererPath, 'utf-8');
+    expect(source).toContain('calendar-server');
+  });
+
+  it('should render CalendarWidget for calendar plugin_id', () => {
+    const source = readFileSync(rendererPath, 'utf-8');
+    expect(source).toMatch(/{:else if.*calendar/);
+  });
+
+  it('should pass events prop to CalendarWidget', () => {
+    const source = readFileSync(rendererPath, 'utf-8');
+    expect(source).toMatch(/events=\{[^}]*\}/);
+  });
 });
 
 describe('Built-in Plugin Map', () => {
