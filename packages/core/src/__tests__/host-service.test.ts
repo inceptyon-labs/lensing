@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createHostService } from '../host-service';
+import type { HostServiceInstance } from '../host-service';
 import path from 'node:path';
 import os from 'node:os';
 import fs from 'node:fs';
-import type { HostServiceInstance } from '@lensing/types';
 
 describe('HostService (host-service.ts)', () => {
   let hostService: HostServiceInstance | null = null;

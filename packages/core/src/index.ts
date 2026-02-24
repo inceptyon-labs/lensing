@@ -171,4 +171,5 @@ export { DEFAULT_PIR_IDLE_TIMEOUT_MS, DEFAULT_PIR_GPIO_PIN } from '@lensing/type
 
 // ── Host Service (unified boot sequence) ────────────────────────────────────
 export { createHostService } from './host-service';
-export type { HostServiceOptions, HostServiceInstance, HostServiceLogger } from '@lensing/types';
+export type { HostServiceInstance } from './host-service';
+export type { HostServiceOptions, HostServiceLogger } from '@lensing/types';
