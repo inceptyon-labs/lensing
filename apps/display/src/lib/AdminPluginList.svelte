@@ -9,6 +9,7 @@
 
   onMount(async () => {
     try {
+      // eslint-disable-next-line no-undef
       const res = await fetch('/plugins');
       if (!res.ok) throw new Error(`Failed to load plugins (${res.status})`);
       plugins = (await res.json()) as PluginAdminEntry[];
@@ -20,17 +21,17 @@
   });
 
   async function handleToggleEnabled(id: string, enabled: boolean) {
+    // eslint-disable-next-line no-undef
     await fetch(`/plugins/${encodeURIComponent(id)}/enabled`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ enabled }),
     });
-    plugins = plugins.map((p) =>
-      p.plugin_id === id ? { ...p, enabled } : p
-    );
+    plugins = plugins.map((p) => (p.plugin_id === id ? { ...p, enabled } : p));
   }
 
   async function handleZoneChange(id: string, zone: string | undefined) {
+    // eslint-disable-next-line no-undef
     await fetch(`/plugins/${encodeURIComponent(id)}/zone`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },

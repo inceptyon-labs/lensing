@@ -10,7 +10,9 @@
     onToggleEnabled(plugin.plugin_id, !plugin.enabled);
   }
 
+  // eslint-disable-next-line no-undef
   function handleZoneChange(e: Event) {
+    // eslint-disable-next-line no-undef
     const val = (e.target as HTMLSelectElement).value;
     onZoneChange(plugin.plugin_id, val === '' ? undefined : val);
   }
@@ -32,7 +34,7 @@
         on:change={handleZoneChange}
       >
         <option value="">— unassigned —</option>
-        {#each ZONE_NAMES as zone}
+        {#each ZONE_NAMES as zone (zone)}
           <option value={zone}>{zone}</option>
         {/each}
       </select>

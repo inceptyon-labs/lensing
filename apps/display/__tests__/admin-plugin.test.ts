@@ -200,8 +200,8 @@ describe('Admin Plugin Management Components', () => {
 
     it('should be easy to find (in top-bar or left-col)', () => {
       const source = readFileSync(mainPagePath, 'utf-8');
-      const hasAdminInNav = source.includes('admin') &&
-        (source.includes('top-bar') || source.includes('left-col'));
+      const hasAdminInNav =
+        source.includes('admin') && (source.includes('top-bar') || source.includes('left-col'));
       expect(hasAdminInNav || source.includes('admin')).toBe(true);
     });
   });
