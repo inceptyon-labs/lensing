@@ -1,14 +1,14 @@
 ---
 # lensing-o5do
 title: 'Feature: Dynamic Plugin Rendering'
-status: in-progress
+status: completed
 type: feature
 priority: high
 tags:
     - pasiv
     - area:frontend
 created_at: 2026-02-24T02:45:21Z
-updated_at: 2026-02-24T14:08:28Z
+updated_at: 2026-02-24T14:10:30Z
 parent: lensing-z2ez
 ---
 

@@ -1,14 +1,14 @@
 ---
 # lensing-hyji
 title: Replace placeholders with dynamic plugin widgets
-status: in-progress
+status: completed
 type: task
 priority: high
 tags:
     - area:frontend
     - size:M
 created_at: 2026-02-24T02:46:17Z
-updated_at: 2026-02-24T14:10:12Z
+updated_at: 2026-02-24T14:10:27Z
 parent: lensing-o5do
 ---
 
