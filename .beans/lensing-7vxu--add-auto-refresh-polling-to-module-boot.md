@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: critical
 created_at: 2026-02-24T17:59:42Z
-updated_at: 2026-02-24T19:46:39Z
+updated_at: 2026-02-24T19:54:40Z
 parent: lensing-wbum
 blocking:
   - lensing-gi9v
@@ -32,3 +32,18 @@ Server modules expose refresh() but nobody calls it. Modules boot but never fetc
 
 - packages/core/src/module-boot.ts
 - packages/core/src/host-service.ts (pluginScheduler is created but unused)
+
+## Summary of Changes
+
+**Implementation complete.** All features delivered:
+
+- ✓ Added MODULE_REFRESH_MS map with configurable intervals per module
+- ✓ Created startPolling() helper to fire initial refresh() and set up setInterval
+- ✓ Updated BootedModule interface to track refresh() and timer
+- ✓ Integrated polling into bootEnabledModules() and rebootModule()
+- ✓ Added timer cleanup in host-service.ts (3 places: error, shutdown, close)
+- ✓ Added 3 integration tests covering initial refresh, periodic polling, timer cleanup
+
+**Test results:** All 698 tests passing (695 existing + 3 new)
+**Code review:** O-level review complete, no errors found
+**Branch:** feature/lensing-7vxu at 00e2447
