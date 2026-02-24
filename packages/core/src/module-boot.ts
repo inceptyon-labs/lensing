@@ -15,6 +15,7 @@ import { createCalendarServer } from './caldav-client';
 import { createHomeAssistantServer } from './home-assistant-server';
 import { createAllergiesServer } from './allergies-server';
 import { createPIRServer } from './pir-server';
+import { createPhotoSlideshowServer } from './photo-slideshow-server';
 
 /** Dependencies injected into module boot */
 export interface BootDeps {
@@ -39,6 +40,7 @@ const MODULE_REFRESH_MS: Partial<Record<ModuleId, number>> = {
   'home-assistant': 60_000, // 1 min
   allergies: 3_600_000, // 1 hour
   // pir: event-driven, no polling
+  'photo-slideshow': 600_000, // 10 min
 };
 
 /**
@@ -234,6 +236,12 @@ function bootModule(
       return createPIRServer({
         idleTimeout_ms:
           values['idleTimeout_ms'] != null ? Number(values['idleTimeout_ms']) : undefined,
+        dataBus,
+      });
+
+    case 'photo-slideshow':
+      return createPhotoSlideshowServer({
+        photoDir: String(values['photoDirectory'] ?? ''),
         dataBus,
       });
 

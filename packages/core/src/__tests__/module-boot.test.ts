@@ -29,6 +29,13 @@ vi.mock('../allergies-server', () => ({
 vi.mock('../pir-server', () => ({
   createPIRServer: vi.fn(() => ({ close: vi.fn() })),
 }));
+vi.mock('../photo-slideshow-server', () => ({
+  createPhotoSlideshowServer: vi.fn(() => ({
+    close: vi.fn(),
+    refresh: vi.fn(() => Promise.resolve()),
+    getPhotoPaths: vi.fn(() => []),
+  })),
+}));
 
 import { bootEnabledModules, rebootModule } from '../module-boot';
 import type { BootedModule } from '../module-boot';
@@ -36,6 +43,7 @@ import { createWeatherServer } from '../weather-server';
 import { createCalendarServer } from '../caldav-client';
 import { createCryptoServer } from '../crypto-server';
 import { createPIRServer } from '../pir-server';
+import { createPhotoSlideshowServer } from '../photo-slideshow-server';
 
 /** Minimal in-memory DB stub for settings */
 function createMockDb(): DatabaseInstance {
@@ -222,6 +230,17 @@ describe('bootEnabledModules', () => {
 
     expect(createWeatherServer).toHaveBeenCalledWith(
       expect.objectContaining({ dataBus: deps.dataBus })
+    );
+  });
+
+  it('should boot photo-slideshow module with photoDirectory', () => {
+    db.setSetting('photo-slideshow.enabled', 'true');
+    db.setSetting('photo-slideshow.photoDirectory', '/home/pi/photos');
+
+    const modules = bootEnabledModules(db, deps);
+    expect(modules.some((m) => m.id === 'photo-slideshow')).toBe(true);
+    expect(createPhotoSlideshowServer).toHaveBeenCalledWith(
+      expect.objectContaining({ photoDir: '/home/pi/photos', dataBus: deps.dataBus })
     );
   });
 

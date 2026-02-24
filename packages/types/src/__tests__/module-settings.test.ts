@@ -2,9 +2,18 @@ import { describe, it, expect } from 'vitest';
 import { MODULE_SCHEMAS, MODULE_IDS } from '../module-settings';
 
 describe('Module Settings Schemas', () => {
-  it('should define exactly 8 modules', () => {
-    expect(MODULE_SCHEMAS).toHaveLength(8);
-    expect(MODULE_IDS).toHaveLength(8);
+  it('should define exactly 9 modules', () => {
+    expect(MODULE_SCHEMAS).toHaveLength(9);
+    expect(MODULE_IDS).toHaveLength(9);
+  });
+
+  it('should include photo-slideshow module with photoDirectory field', () => {
+    const schema = MODULE_SCHEMAS.find((s) => s.id === 'photo-slideshow');
+    expect(schema).toBeDefined();
+    expect(schema!.name).toBe('Photo Slideshow');
+    const dirField = schema!.fields.find((f) => f.key === 'photoDirectory');
+    expect(dirField).toBeDefined();
+    expect(dirField!.type).toBe('string');
   });
 
   it('should have a schema for every MODULE_ID', () => {

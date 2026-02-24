@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { PluginAdminEntry } from '@lensing/types';
-  import type { NewsData, SportsData, HomeAssistantData, CryptoData, WeatherData, CalendarData } from '@lensing/types';
+  import type { NewsData, SportsData, HomeAssistantData, CryptoData, WeatherData, CalendarData, PhotoSlideshowData } from '@lensing/types';
   import PhotoSlideshow from './PhotoSlideshow.svelte';
   import NewsHeadlines from './NewsHeadlines.svelte';
   import SportsScores from './SportsScores.svelte';
@@ -23,6 +23,7 @@
   const cryptoStore = getChannelData('crypto-server');
   const weatherStore = getChannelData('weather-server');
   const calendarStore = getChannelData('calendar-server');
+  const photoStore = getChannelData('photo-slideshow-server');
 
   $: newsData = $newsStore as NewsData | null;
   $: sportsData = $sportsStore as SportsData | null;
@@ -30,10 +31,11 @@
   $: cryptoData = $cryptoStore as CryptoData | null;
   $: weatherData = $weatherStore as WeatherData | null;
   $: calendarData = $calendarStore as CalendarData | null;
+  $: photoData = $photoStore as PhotoSlideshowData | null;
 </script>
 
 {#if pluginId === 'photo-slideshow'}
-  <PhotoSlideshow photoPaths={[]} />
+  <PhotoSlideshow photoPaths={photoData?.photoPaths ?? []} />
 {:else if pluginId === 'news'}
   <NewsHeadlines headlines={newsData?.articles ?? []} />
 {:else if pluginId === 'sports'}

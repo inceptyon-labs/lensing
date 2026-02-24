@@ -1,4 +1,6 @@
 import http from 'node:http';
+import fs from 'node:fs';
+import nodePath from 'node:path';
 import type { ZoneConfig, ConversationEntry, PluginAdminEntry, ZoneName } from '@lensing/types';
 
 /** Log entry emitted after each request */
@@ -36,6 +38,8 @@ export interface RestServerOptions {
   corsOrigins?: string[];
   /** Structured log callback. Receives one entry per request */
   logger?: (entry: LogEntry) => void;
+  /** Directory to serve static photos from at /photos/* */
+  photoDir?: string;
 }
 
 /** Public interface returned by createRestServer */
@@ -130,7 +134,7 @@ export function createRestServer(
   handlers: RestServerHandlers,
   options: RestServerOptions = {}
 ): RestServerInstance {
-  const { port = 0, corsOrigins, logger } = options;
+  const { port = 0, corsOrigins, logger, photoDir } = options;
   const startedAt = Date.now();
   let boundPort = 0;
   let closed = false;
@@ -495,6 +499,39 @@ export function createRestServer(
           } catch {
             // Ignore logger errors
           }
+          return;
+        }
+
+        // GET /photos/:filename — static photo serving
+        if (cleanPath.startsWith('/photos/') && method === 'GET') {
+          if (!photoDir) {
+            writeJson(res, 404, { error: 'Not Found' });
+            return;
+          }
+          const filename = decodeURIComponent(cleanPath.slice('/photos/'.length));
+          const resolved = nodePath.resolve(photoDir, filename);
+          if (!resolved.startsWith(nodePath.resolve(photoDir))) {
+            res.writeHead(403);
+            res.end();
+            return;
+          }
+          if (!fs.existsSync(resolved)) {
+            res.writeHead(404);
+            res.end();
+            return;
+          }
+          const ext = nodePath.extname(resolved).toLowerCase();
+          const mimeTypes: Record<string, string> = {
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.png': 'image/png',
+            '.webp': 'image/webp',
+            '.gif': 'image/gif',
+          };
+          const contentType = mimeTypes[ext] ?? 'application/octet-stream';
+          const data = fs.readFileSync(resolved);
+          res.writeHead(200, { 'Content-Type': contentType, 'Content-Length': data.length });
+          res.end(data);
           return;
         }
 

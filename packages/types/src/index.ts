@@ -816,6 +816,12 @@ export interface CryptoServerInstance {
 
 // ── Photo Slideshow ────────────────────────────────────────────────────────
 export type { PhotoSlideshow, KenBurnsConfig, PhotoSlideshowManifest } from './photo-slideshow';
+
+/** Full photo slideshow data payload published by photo-slideshow-server */
+export interface PhotoSlideshowData {
+  photoPaths: string[];
+  lastUpdated: number; // Unix timestamp in ms
+}
 export {
   DEFAULT_KEN_BURNS_CONFIG,
   DEFAULT_CYCLE_INTERVAL_MS,

@@ -59,7 +59,7 @@ describe('PluginAdminHandlers (plugin-admin-handlers.ts)', () => {
     // No third-party plugins
     expect(plugins.filter((p) => !p.builtin).length).toBe(0);
     // Built-in modules present
-    expect(plugins.filter((p) => p.builtin).length).toBe(8);
+    expect(plugins.filter((p) => p.builtin).length).toBe(9);
 
     db.close();
   });

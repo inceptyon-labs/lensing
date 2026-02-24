@@ -143,6 +143,19 @@ describe('Data Bus Store Integration', () => {
     const source = readFileSync(rendererPath, 'utf-8');
     expect(source).toMatch(/events=\{[^}]*\}/);
   });
+
+  it('should subscribe to photo-slideshow-server channel', () => {
+    const source = readFileSync(rendererPath, 'utf-8');
+    expect(source).toContain('photo-slideshow-server');
+  });
+
+  it('should pass dynamic photoPaths to PhotoSlideshow (not empty array)', () => {
+    const source = readFileSync(rendererPath, 'utf-8');
+    // Should NOT have photoPaths={[]} anymore
+    expect(source).not.toContain('photoPaths={[]}');
+    // Should pass data from store
+    expect(source).toMatch(/photoPaths=\{[^}]*\}/);
+  });
 });
 
 describe('Built-in Plugin Map', () => {
