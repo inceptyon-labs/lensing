@@ -1,15 +1,15 @@
 ---
 # lensing-0rn7
 title: 'Feature: Data Bus'
-status: in-progress
+status: completed
 type: feature
 priority: high
 tags:
-  - pasiv
-  - priority:high
-  - area:backend
+    - pasiv
+    - priority:high
+    - area:backend
 created_at: 2026-02-16T21:20:30Z
-updated_at: 2026-02-19T15:15:42Z
+updated_at: 2026-02-24T00:30:43Z
 parent: lensing-oo03
 ---
 

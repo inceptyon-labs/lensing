@@ -1,7 +1,7 @@
 ---
 # lensing-9k8b
 title: 'Feature: Community Infrastructure'
-status: in-progress
+status: completed
 type: feature
 priority: low
 tags:
@@ -9,7 +9,7 @@ tags:
     - priority:low
     - area:infra
 created_at: 2026-02-16T21:22:18Z
-updated_at: 2026-02-23T23:09:23Z
+updated_at: 2026-02-23T23:21:52Z
 parent: lensing-46q9
 ---
 

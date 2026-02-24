@@ -1,7 +1,7 @@
 ---
 # lensing-sk6l
 title: Create CONTRIBUTING.md and community templates
-status: in-progress
+status: completed
 type: task
 priority: low
 tags:
@@ -9,7 +9,7 @@ tags:
     - size:S
     - area:infra
 created_at: 2026-02-16T21:25:53Z
-updated_at: 2026-02-23T23:21:37Z
+updated_at: 2026-02-23T23:21:45Z
 parent: lensing-9k8b
 ---
 

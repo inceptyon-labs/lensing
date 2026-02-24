@@ -1,15 +1,15 @@
 ---
 # lensing-7dtq
 title: 'Feature: Starter Plugin Template'
-status: todo
+status: completed
 type: feature
 priority: normal
 tags:
-  - pasiv
-  - priority:medium
-  - area:infra
+    - pasiv
+    - priority:medium
+    - area:infra
 created_at: 2026-02-16T21:22:22Z
-updated_at: 2026-02-16T21:22:22Z
+updated_at: 2026-02-24T00:30:43Z
 parent: lensing-46q9
 ---
 

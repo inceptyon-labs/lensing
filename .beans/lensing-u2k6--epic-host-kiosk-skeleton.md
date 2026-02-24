@@ -1,14 +1,14 @@
 ---
 # lensing-u2k6
 title: 'Epic: Host + Kiosk Skeleton'
-status: todo
+status: completed
 type: epic
 priority: high
 tags:
-  - pasiv
-  - priority:high
+    - pasiv
+    - priority:high
 created_at: 2026-02-16T21:19:15Z
-updated_at: 2026-02-16T21:19:15Z
+updated_at: 2026-02-24T00:30:50Z
 ---
 
 Foundational milestone: Pi OS setup, SvelteKit app with zone-based layout, Node host with REST + WebSocket, SQLite persistence, dark theming, and systemd deployment.

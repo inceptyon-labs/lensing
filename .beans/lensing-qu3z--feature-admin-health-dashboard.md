@@ -1,15 +1,15 @@
 ---
 # lensing-qu3z
 title: 'Feature: Admin Health Dashboard'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 tags:
-  - pasiv
-  - priority:medium
-  - area:frontend
+    - pasiv
+    - priority:medium
+    - area:frontend
 created_at: 2026-02-16T21:21:57Z
-updated_at: 2026-02-19T20:10:17Z
+updated_at: 2026-02-24T00:30:43Z
 parent: lensing-oeoo
 ---
 

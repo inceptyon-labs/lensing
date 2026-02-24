@@ -1,14 +1,14 @@
 ---
 # lensing-5abn
 title: 'Epic: Agent Integration v1'
-status: todo
+status: completed
 type: epic
 priority: normal
 tags:
-  - pasiv
-  - priority:medium
+    - pasiv
+    - priority:medium
 created_at: 2026-02-16T21:19:35Z
-updated_at: 2026-02-16T21:19:35Z
+updated_at: 2026-02-24T00:30:50Z
 ---
 
 AI agent system: gateway on Pi, orchestration service remote, morning brief generation, Ask Lensing, and agent-driven scene/alert control.

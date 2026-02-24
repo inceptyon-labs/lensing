@@ -1,14 +1,14 @@
 ---
 # lensing-mrxz
 title: 'Epic: Core Plugins'
-status: todo
+status: completed
 type: epic
 priority: high
 tags:
-  - pasiv
-  - priority:high
+    - pasiv
+    - priority:high
 created_at: 2026-02-16T21:19:25Z
-updated_at: 2026-02-16T21:19:25Z
+updated_at: 2026-02-24T00:30:50Z
 ---
 
 First-party plugin suite: weather, allergies, crypto, news, calendar (CalDAV/iCloud), and sports scores.
