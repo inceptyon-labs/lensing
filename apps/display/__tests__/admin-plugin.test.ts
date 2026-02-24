@@ -80,6 +80,27 @@ describe('Admin Plugin Management Components', () => {
       expect(source).toContain('--starlight');
       expect(source).toContain('--dim-light');
     });
+
+    it('should import AdminConfigForm', () => {
+      const source = readFileSync(cardPath, 'utf-8');
+      expect(source).toContain('AdminConfigForm');
+    });
+
+    it('should accept onConfigSave callback', () => {
+      const source = readFileSync(cardPath, 'utf-8');
+      expect(source).toContain('onConfigSave');
+    });
+
+    it('should show configure button when plugin has config_schema', () => {
+      const source = readFileSync(cardPath, 'utf-8');
+      expect(source).toContain('config_schema');
+      expect(source).toMatch(/[Cc]onfigure|[Cc]onfig/);
+    });
+
+    it('should render AdminConfigForm in expandable section', () => {
+      const source = readFileSync(cardPath, 'utf-8');
+      expect(source).toContain('<AdminConfigForm');
+    });
   });
 
   // ── AdminPluginList ───────────────────────────────────────────

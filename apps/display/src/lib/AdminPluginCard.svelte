@@ -1,10 +1,19 @@
 <script lang="ts">
   import type { PluginAdminEntry } from '@lensing/types';
   import { ZONE_NAMES } from './config.ts';
+  import AdminConfigForm from './AdminConfigForm.svelte';
 
   export let plugin: PluginAdminEntry;
   export let onToggleEnabled: (id: string, enabled: boolean) => void = () => {};
   export let onZoneChange: (id: string, zone: string | undefined) => void = () => {};
+  export let onConfigSave: (
+    id: string,
+    config: Record<string, string | number | boolean>
+  ) => void = () => {};
+
+  let configOpen = false;
+
+  $: hasConfig = !!plugin.manifest.config_schema?.fields?.length;
 
   function handleToggle() {
     onToggleEnabled(plugin.plugin_id, !plugin.enabled);
@@ -15,6 +24,11 @@
     // eslint-disable-next-line no-undef
     const val = (e.target as HTMLSelectElement).value;
     onZoneChange(plugin.plugin_id, val === '' ? undefined : val);
+  }
+
+  function handleConfigSave(config: Record<string, string | number | boolean>) {
+    onConfigSave(plugin.plugin_id, config);
+    configOpen = false;
   }
 </script>
 
@@ -49,7 +63,23 @@
     >
       {plugin.enabled ? 'Disable' : 'Enable'}
     </button>
+
+    {#if hasConfig}
+      <button
+        class="configure-btn"
+        on:click={() => (configOpen = !configOpen)}
+        aria-expanded={configOpen ? 'true' : 'false'}
+      >
+        Configure
+      </button>
+    {/if}
   </div>
+
+  {#if configOpen && hasConfig}
+    <div class="config-section">
+      <AdminConfigForm {plugin} onSave={handleConfigSave} />
+    </div>
+  {/if}
 </div>
 
 <style>
@@ -171,5 +201,28 @@
   .toggle-btn--enable:hover {
     color: var(--starlight);
     background-color: color-mix(in srgb, var(--edge) 30%, transparent);
+  }
+
+  .configure-btn {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--edge);
+    cursor: pointer;
+    background-color: var(--void);
+    color: var(--dim-light);
+    transition: all var(--duration-fast) var(--ease-out);
+  }
+
+  .configure-btn:hover {
+    color: var(--starlight);
+    border-color: var(--edge-bright);
+  }
+
+  .config-section {
+    border-top: 1px solid var(--edge-soft);
+    padding-top: var(--space-4);
+    margin-top: var(--space-1);
   }
 </style>
