@@ -1,7 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { get } from 'svelte/store';
 import type { DataBusMessage } from '@lensing/types';
-import { dataBusStore, handlePluginData, getChannelData, resetStore } from '../src/lib/stores/dataBusStore';
+import {
+  dataBusStore,
+  handlePluginData,
+  getChannelData,
+  resetStore,
+} from '../src/lib/stores/dataBusStore';
 
 function makeMsg(pluginId: string, channel: string, data: unknown): DataBusMessage {
   return { plugin_id: pluginId, channel, data, timestamp: new Date().toISOString() };

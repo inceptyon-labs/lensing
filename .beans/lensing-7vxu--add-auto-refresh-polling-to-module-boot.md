@@ -1,11 +1,11 @@
 ---
 # lensing-7vxu
 title: Add auto-refresh polling to module boot
-status: in-progress
+status: completed
 type: task
 priority: critical
 created_at: 2026-02-24T17:59:42Z
-updated_at: 2026-02-24T19:54:40Z
+updated_at: 2026-02-24T19:55:13Z
 parent: lensing-wbum
 blocking:
   - lensing-gi9v
