@@ -108,7 +108,9 @@ describe('startServer', () => {
     // Should log something about the port/address
     const logMessages = logger.info.mock.calls.map((c: unknown[]) => c[0]);
     expect(
-      logMessages.some((msg) => typeof msg === 'string' && (msg.includes('3100') || msg.includes('listening')))
+      logMessages.some(
+        (msg) => typeof msg === 'string' && (msg.includes('3100') || msg.includes('listening'))
+      )
     ).toBe(true);
   });
 

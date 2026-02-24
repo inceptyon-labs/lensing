@@ -7,6 +7,7 @@
 ## What Was Done
 
 ### Task 1: lensing-hyji — Replace Placeholders with Dynamic Plugin Widgets
+
 - ✓ Created PluginRenderer.svelte with plugin_id-based component routing
 - ✓ Fixed plugin ID mismatches (news-server, sports-server, home-assistant-server)
 - ✓ Updated BUILTIN_PLUGIN_MAP with correct manifest IDs
@@ -15,6 +16,7 @@
 - **Note:** lensing-hyji created incomplete: PhotoSlideshow imports @lensing/core (unresolved)
 
 ### Task 2: lensing-6dsp — Add CLI lensing Start Command
+
 - ✓ Created startServer() function with CLI defaults (port 3100, dbPath './data/lensing.db')
 - ✓ 8 comprehensive tests via TDD (test-first)
 - ✓ Exported from @lensing/cli index.ts
@@ -39,16 +41,19 @@
 ## Files Modified This Session
 
 ### lensing-hyji (completed & merged)
+
 - apps/display/src/lib/PluginRenderer.svelte (NEW)
 - apps/display/src/lib/config.ts (BUILTIN_PLUGIN_MAP added)
 - apps/display/src/routes/+page.svelte (dynamic zones, WebSocket layout_change)
 
 ### lensing-6dsp (completed & merged)
+
 - packages/cli/src/commands/start.ts (NEW)
-- packages/cli/src/__tests__/start.test.ts (NEW, 8 tests)
+- packages/cli/src/**tests**/start.test.ts (NEW, 8 tests)
 - packages/cli/src/index.ts (exports added)
 
 ### Bean Files Updated
+
 - .beans/lensing-6dsp--add-cli-lensing-start-command.md (completion summary)
 - .beans/lensing-hyji--replace-placeholders-with-dynamic-plugin-widgets.md
 - .beans/lensing-c6mt--build-plugin-config-form-component.md (blockers cleared)
@@ -56,6 +61,7 @@
 ## Blocking Relationships Cleared
 
 Two tasks had stale circular/self-blocking relationships that were cleared:
+
 - lensing-6dsp: removed blocker lensing-is1m (parent feature, now unneeded)
 - lensing-c6mt: removed blocker lensing-aim8 (parent feature, now unneeded)
 
@@ -96,4 +102,5 @@ beans list --json --ready -t task | jq '.[0]'
 - **TDD Cycles:** 1 per task (all GREEN ✓)
 
 ---
-*Auto-generated handoff for session continuation*
+
+_Auto-generated handoff for session continuation_

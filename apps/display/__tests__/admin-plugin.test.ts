@@ -156,6 +156,12 @@ describe('Admin Plugin Management Components', () => {
       expect(source).toContain('zone');
     });
 
+    it('should handle config save with PUT /plugins/:id/config', () => {
+      const source = readFileSync(listPath, 'utf-8');
+      expect(source).toContain('/config');
+      expect(source).toContain('onConfigSave');
+    });
+
     it('should have empty state message', () => {
       const source = readFileSync(listPath, 'utf-8');
       expect(source).toMatch(/[Nn]o plugins|empty/);

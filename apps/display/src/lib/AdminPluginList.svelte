@@ -58,6 +58,25 @@
       error = err instanceof Error ? err.message : 'Failed to change plugin zone';
     }
   }
+
+  async function handleConfigSave(
+    id: string,
+    config: Record<string, string | number | boolean>
+  ) {
+    try {
+      // eslint-disable-next-line no-undef
+      const res = await fetch(`/plugins/${encodeURIComponent(id)}/config`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ config }),
+      });
+      if (!res.ok) throw new Error(`Server returned ${res.status}`);
+      plugins = plugins.map((p) => (p.plugin_id === id ? { ...p, config } : p));
+      error = null;
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Failed to save config';
+    }
+  }
 </script>
 
 <div class="plugin-list">
@@ -73,6 +92,7 @@
         {plugin}
         onToggleEnabled={handleToggleEnabled}
         onZoneChange={handleZoneChange}
+        onConfigSave={handleConfigSave}
       />
     {/each}
   {/if}

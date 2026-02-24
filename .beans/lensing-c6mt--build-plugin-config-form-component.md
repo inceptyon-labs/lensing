@@ -5,8 +5,8 @@ status: in-progress
 type: task
 priority: normal
 tags:
-    - area:frontend
-    - size:S
+  - area:frontend
+  - size:S
 created_at: 2026-02-24T02:46:02Z
 updated_at: 2026-02-24T14:45:51Z
 parent: lensing-aim8
