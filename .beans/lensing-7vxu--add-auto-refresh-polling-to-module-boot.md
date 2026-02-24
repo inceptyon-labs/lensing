@@ -1,14 +1,14 @@
 ---
 # lensing-7vxu
 title: Add auto-refresh polling to module boot
-status: todo
+status: in-progress
 type: task
 priority: critical
 created_at: 2026-02-24T17:59:42Z
-updated_at: 2026-02-24T18:00:55Z
+updated_at: 2026-02-24T19:46:39Z
 parent: lensing-wbum
 blocking:
-  - lensing-gi9v
+    - lensing-gi9v
 ---
 
 Server modules expose refresh() but nobody calls it. Modules boot but never fetch data. Need to call refresh() after boot and set up periodic polling intervals.

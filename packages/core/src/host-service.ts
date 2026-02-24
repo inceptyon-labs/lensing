@@ -156,6 +156,7 @@ export function createHostService(options: HostServiceOptions = {}): HostService
       log.error('Boot failed, cleaning up', err);
       for (const mod of _modules) {
         try {
+          if (mod.timer !== undefined) clearInterval(mod.timer);
           mod.instance.close();
         } catch {
           /* ignore */
@@ -191,7 +192,8 @@ export function createHostService(options: HostServiceOptions = {}): HostService
       try {
         for (const mod of _modules) {
           try {
-            mod.instance.close();
+            if (mod.timer !== undefined) clearInterval(mod.timer);
+          mod.instance.close();
           } catch {
             /* ignore */
           }
@@ -220,6 +222,7 @@ export function createHostService(options: HostServiceOptions = {}): HostService
       process.off('SIGTERM', shutdownHandler);
       for (const mod of _modules) {
         try {
+          if (mod.timer !== undefined) clearInterval(mod.timer);
           mod.instance.close();
         } catch {
           /* ignore */

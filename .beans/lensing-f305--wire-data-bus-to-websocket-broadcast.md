@@ -1,11 +1,11 @@
 ---
 # lensing-f305
 title: Wire data bus to WebSocket broadcast
-status: in-progress
+status: completed
 type: task
 priority: critical
 created_at: 2026-02-24T17:59:33Z
-updated_at: 2026-02-24T18:33:19Z
+updated_at: 2026-02-24T18:33:37Z
 parent: lensing-wbum
 blocking:
     - lensing-gi9v

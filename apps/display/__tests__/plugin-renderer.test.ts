@@ -59,12 +59,12 @@ describe('Built-in Plugin Map', () => {
 
   it('should map news module id', () => {
     const source = readFileSync(configPath, 'utf-8');
-    expect(source).toContain("news:");
+    expect(source).toContain('news:');
   });
 
   it('should map sports module id', () => {
     const source = readFileSync(configPath, 'utf-8');
-    expect(source).toContain("sports:");
+    expect(source).toContain('sports:');
   });
 
   it('should map home-assistant module id', () => {

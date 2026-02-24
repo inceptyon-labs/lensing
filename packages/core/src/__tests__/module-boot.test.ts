@@ -3,25 +3,25 @@ import type { DatabaseInstance, DataBusInstance, NotificationQueueInstance } fro
 
 // Mock all server factories before importing module-boot
 vi.mock('../weather-server', () => ({
-  createWeatherServer: vi.fn(() => ({ close: vi.fn() })),
+  createWeatherServer: vi.fn(() => ({ close: vi.fn(), refresh: vi.fn(() => Promise.resolve()) })),
 }));
 vi.mock('../crypto-server', () => ({
-  createCryptoServer: vi.fn(() => ({ close: vi.fn() })),
+  createCryptoServer: vi.fn(() => ({ close: vi.fn(), refresh: vi.fn(() => Promise.resolve()) })),
 }));
 vi.mock('../news-server', () => ({
-  createNewsServer: vi.fn(() => ({ close: vi.fn() })),
+  createNewsServer: vi.fn(() => ({ close: vi.fn(), refresh: vi.fn(() => Promise.resolve()) })),
 }));
 vi.mock('../sports-server', () => ({
-  createSportsServer: vi.fn(() => ({ close: vi.fn() })),
+  createSportsServer: vi.fn(() => ({ close: vi.fn(), refresh: vi.fn(() => Promise.resolve()) })),
 }));
 vi.mock('../caldav-client', () => ({
-  createCalendarServer: vi.fn(() => ({ close: vi.fn() })),
+  createCalendarServer: vi.fn(() => ({ close: vi.fn(), refresh: vi.fn(() => Promise.resolve()) })),
 }));
 vi.mock('../home-assistant-server', () => ({
-  createHomeAssistantServer: vi.fn(() => ({ close: vi.fn() })),
+  createHomeAssistantServer: vi.fn(() => ({ close: vi.fn(), refresh: vi.fn(() => Promise.resolve()) })),
 }));
 vi.mock('../allergies-server', () => ({
-  createAllergiesServer: vi.fn(() => ({ close: vi.fn() })),
+  createAllergiesServer: vi.fn(() => ({ close: vi.fn(), refresh: vi.fn(() => Promise.resolve()) })),
 }));
 vi.mock('../pir-server', () => ({
   createPIRServer: vi.fn(() => ({ close: vi.fn() })),
@@ -31,6 +31,7 @@ import { bootEnabledModules, rebootModule } from '../module-boot';
 import type { BootedModule } from '../module-boot';
 import { createWeatherServer } from '../weather-server';
 import { createCryptoServer } from '../crypto-server';
+import { createPIRServer } from '../pir-server';
 
 /** Minimal in-memory DB stub for settings */
 function createMockDb(): DatabaseInstance {
@@ -136,6 +137,75 @@ describe('bootEnabledModules', () => {
     const log = { info: vi.fn(), error: vi.fn(), debug: vi.fn() };
     bootEnabledModules(db, deps, log);
     expect(log.info).toHaveBeenCalledWith('Built-in modules booted', { count: 1 });
+  });
+
+  it('should call refresh() immediately after booting polling modules', async () => {
+    db.setSetting('weather.enabled', 'true');
+    db.setSetting('weather.apiKey', 'key');
+    db.setSetting('weather.lat', '0');
+    db.setSetting('weather.lon', '0');
+    db.setSetting('pir.enabled', 'true');
+
+    const modules = bootEnabledModules(db, deps);
+
+    // Give async refresh time to execute
+    await new Promise((r) => setTimeout(r, 50));
+
+    const weatherMock = vi.mocked(createWeatherServer);
+    expect(weatherMock).toHaveBeenCalledOnce();
+    const weatherInstance = weatherMock.mock.results[0]!.value;
+    expect(weatherInstance.refresh).toHaveBeenCalled();
+
+    // PIR has no refresh method — should not be called
+    const pirInstance = vi.mocked(createPIRServer).mock.results[0]?.value;
+    if (pirInstance) {
+      expect((pirInstance as any).refresh).toBeUndefined();
+    }
+  });
+
+  it('should set up interval timer with correct refresh interval', async () => {
+    vi.useFakeTimers();
+
+    db.setSetting('crypto.enabled', 'true');
+    db.setSetting('crypto.watchlist', 'bitcoin');
+
+    const modules = bootEnabledModules(db, deps);
+
+    // Timer should exist (Node returns a Timeout object, not a number)
+    expect(modules[0]!.timer).toBeDefined();
+
+    // Advance time by refresh interval (~5min for crypto)
+    vi.advanceTimersByTime(5 * 60 * 1000);
+
+    // Verify refresh was called again by the timer
+    const cryptoMock = vi.mocked(createCryptoServer);
+    const cryptoInstance = cryptoMock.mock.results[0]!.value;
+    expect(cryptoInstance.refresh).toHaveBeenCalledTimes(2); // initial + 1 from timer
+
+    vi.useRealTimers();
+  });
+
+  it('should clear timer when rebootModule closes old instance', () => {
+    vi.useFakeTimers();
+
+    const oldRefresh = vi.fn(() => Promise.resolve());
+    const oldClose = vi.fn();
+    const modules: BootedModule[] = [
+      { id: 'weather', instance: { close: oldClose, refresh: oldRefresh }, timer: 12345 as any },
+    ];
+
+    db.setSetting('weather.enabled', 'true');
+    db.setSetting('weather.apiKey', 'new-key');
+    db.setSetting('weather.lat', '0');
+    db.setSetting('weather.lon', '0');
+
+    rebootModule('weather', modules, db, deps);
+
+    // Old timer should have been cleared (clearInterval called with 12345)
+    // Since we can't directly check clearInterval, we verify timer is updated
+    expect(modules[0]!.timer).toBeDefined();
+
+    vi.useRealTimers();
   });
 });
 

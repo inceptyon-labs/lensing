@@ -160,7 +160,11 @@ export function createPluginAdminHandlers(options: PluginAdminHandlersOptions) {
         for (const [key, value] of Object.entries(config)) {
           // Skip redacted placeholders
           if (String(value) === REDACTED) continue;
-          if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+          if (
+            typeof value === 'string' ||
+            typeof value === 'number' ||
+            typeof value === 'boolean'
+          ) {
             db.setSetting(`${id}.${key}`, String(value));
           }
         }

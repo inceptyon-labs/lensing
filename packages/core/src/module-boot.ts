@@ -25,8 +25,21 @@ export interface BootDeps {
 /** A successfully booted module */
 export interface BootedModule {
   id: ModuleId;
-  instance: { close(): void };
+  instance: { close(): void; refresh?(): Promise<void> };
+  timer?: ReturnType<typeof setInterval>;
 }
+
+/** Polling intervals per module (ms). Modules without an entry are event-driven. */
+const MODULE_REFRESH_MS: Partial<Record<ModuleId, number>> = {
+  weather: 3_600_000,       // 1 hour
+  crypto: 300_000,          // 5 min
+  news: 600_000,            // 10 min
+  sports: 120_000,          // 2 min
+  calendar: 3_600_000,      // 1 hour
+  'home-assistant': 60_000, // 1 min
+  allergies: 3_600_000,     // 1 hour
+  // pir: event-driven, no polling
+};
 
 /**
  * Hot-restart a single module: close old instance, re-read config from DB,
@@ -43,8 +56,12 @@ export function rebootModule(
   // Close and remove existing instance (if any)
   const existingIdx = modules.findIndex((m) => m.id === id);
   if (existingIdx !== -1) {
+    const existing = modules[existingIdx]!;
+    if (existing.timer !== undefined) {
+      clearInterval(existing.timer);
+    }
     try {
-      modules[existingIdx]!.instance.close();
+      existing.instance.close();
     } catch (err) {
       log?.error(`Module close failed: ${id}`, err);
     }
@@ -67,9 +84,27 @@ export function rebootModule(
   if (!instance) return null;
 
   const booted: BootedModule = { id, instance };
+  startPolling(booted, log);
   modules.push(booted);
   log?.info(`Module rebooted: ${id}`);
   return booted;
+}
+
+/** Fire initial refresh and set up periodic polling timer for a booted module. */
+function startPolling(booted: BootedModule, log?: HostServiceLogger): void {
+  const { id, instance } = booted;
+  if (!instance.refresh) return;
+
+  // Initial data fetch (fire-and-forget)
+  instance.refresh().catch((err) => log?.error(`Initial refresh failed: ${id}`, err));
+
+  // Periodic polling
+  const interval = MODULE_REFRESH_MS[id];
+  if (interval !== undefined) {
+    booted.timer = setInterval(() => {
+      instance.refresh!().catch((err) => log?.error(`Refresh failed: ${id}`, err));
+    }, interval);
+  }
 }
 
 /** Boot all enabled built-in modules based on DB settings */
@@ -87,7 +122,9 @@ export function bootEnabledModules(
     try {
       const instance = bootModule(schema.id, config.values, deps);
       if (instance) {
-        booted.push({ id: schema.id, instance });
+        const booted_module: BootedModule = { id: schema.id, instance };
+        startPolling(booted_module, log);
+        booted.push(booted_module);
         log?.info(`Module booted: ${schema.id}`);
       }
     } catch (err) {
