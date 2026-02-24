@@ -1,14 +1,14 @@
 ---
 # lensing-bxi7
 title: Build CryptoWidget.svelte
-status: todo
+status: in-progress
 type: task
 priority: high
 created_at: 2026-02-24T18:00:25Z
-updated_at: 2026-02-24T18:01:08Z
+updated_at: 2026-02-24T22:13:15Z
 parent: lensing-wbum
 blocked_by:
-  - lensing-zl2i
+    - lensing-zl2i
 ---
 
 No crypto display widget exists. PluginRenderer has no 'crypto' branch — it falls through to Placeholder.

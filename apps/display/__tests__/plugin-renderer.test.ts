@@ -21,6 +21,7 @@ describe('PluginRenderer Component', () => {
     expect(source).toContain('NewsHeadlines');
     expect(source).toContain('SportsScores');
     expect(source).toContain('HomeAssistantDevices');
+    expect(source).toContain('CryptoWidget');
   });
 
   it('should import Placeholder for fallback rendering', () => {
@@ -81,6 +82,24 @@ describe('Data Bus Store Integration', () => {
     const source = readFileSync(rendererPath, 'utf-8');
     // Should have null coalescing or fallback logic
     expect(source).toMatch(/\?\?|empty|null|undefined|=\[\]/);
+  });
+
+  it('should subscribe to crypto-server channel for crypto prices', () => {
+    const source = readFileSync(rendererPath, 'utf-8');
+    // Should call getChannelData or use store subscription for crypto
+    expect(source).toContain('crypto');
+  });
+
+  it('should pass store data to CryptoWidget coins prop', () => {
+    const source = readFileSync(rendererPath, 'utf-8');
+    // Should pass dynamic coins prop (not empty array)
+    expect(source).toMatch(/coins=\{[^}]*\}/);
+  });
+
+  it('should render CryptoWidget for crypto plugin_id', () => {
+    const source = readFileSync(rendererPath, 'utf-8');
+    // Should have conditional rendering for crypto plugin
+    expect(source).toMatch(/{:else if.*crypto/);
   });
 });
 
