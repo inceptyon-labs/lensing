@@ -41,64 +41,89 @@ export function createHostService(options: HostServiceOptions = {}): HostService
   };
 
   const ready = (async () => {
-    // 1. Database
-    _db = createDatabase({ path: dbPath });
-    log.info('Database ready');
+    try {
+      // 1. Database
+      _db = createDatabase({ path: dbPath });
+      log.info('Database ready');
 
-    // 2. Plugin loader
-    _plugins = createPluginLoader({ pluginsDir });
-    await _plugins.load();
-    log.info('Plugins loaded', { count: _plugins.getAllPlugins().length });
+      // 2. Plugin loader
+      _plugins = createPluginLoader({ pluginsDir });
+      await _plugins.load();
+      log.info('Plugins loaded', { count: _plugins.getAllPlugins().length });
 
-    // 3. Data bus
-    const dataBus = createDataBus();
+      // 3. Data bus
+      const dataBus = createDataBus();
 
-    // 4. REST server (wired to database)
-    _rest = createRestServer(
-      {
-        getSettings: async () => _db.getAllSettings(),
-        putSettings: async (settings) => {
-          for (const [key, value] of Object.entries(settings)) {
-            _db.setSetting(key, String(value));
-          }
+      // 4. REST server (wired to database)
+      _rest = createRestServer(
+        {
+          getSettings: async () => _db.getAllSettings(),
+          putSettings: async (settings) => {
+            for (const [key, value] of Object.entries(settings)) {
+              _db.setSetting(key, String(value));
+            }
+          },
+          getLayout: async () => _db.getLayout('default') ?? [],
+          putLayout: async (layout) => {
+            _db.setLayout('default', layout);
+          },
+          postAsk: async (question) => ({
+            id: crypto.randomUUID(),
+            question,
+            response: 'Ask feature not yet available.',
+            timestamp: new Date().toISOString(),
+            tool_calls_made: 0,
+          }),
         },
-        getLayout: async () => _db.getLayout('default') ?? [],
-        putLayout: async (layout) => {
-          _db.setLayout('default', layout);
-        },
-        postAsk: async (question) => ({
-          id: crypto.randomUUID(),
-          question,
-          response: 'Ask feature not yet available.',
-          timestamp: new Date().toISOString(),
-          tool_calls_made: 0,
-        }),
-      },
-      { port }
-    );
+        { port }
+      );
 
-    await _rest.ready();
-    _port = _rest.port;
-    log.info('REST server ready', { port: _port });
+      await _rest.ready();
+      _port = _rest.port;
+      log.info('REST server ready', { port: _port });
 
-    // 5. WebSocket server (attached to REST's HTTP server)
-    _ws = createWsServer({ server: _rest.server });
-    await _ws.ready();
-    log.info('WebSocket server ready');
+      // 5. WebSocket server (attached to REST's HTTP server)
+      _ws = createWsServer({ server: _rest.server });
+      await _ws.ready();
+      log.info('WebSocket server ready');
 
-    // 6. Plugin scheduler (no-op — plugins can register themselves)
-    createPluginScheduler();
-    log.info('Host service boot complete');
+      // 6. Plugin scheduler (no-op — plugins can register themselves)
+      createPluginScheduler();
+      log.info('Host service boot complete');
 
-    void dataBus; // used for future plugin wiring
+      void dataBus; // used for future plugin wiring
+    } catch (err) {
+      // Clean up any resources that were initialized before the failure
+      log.error('Boot failed, cleaning up', err);
+      try {
+        await _ws?.close();
+      } catch {
+        /* ignore cleanup errors */
+      }
+      try {
+        await _rest?.close();
+      } catch {
+        /* ignore cleanup errors */
+      }
+      try {
+        _db?.close();
+      } catch {
+        /* ignore cleanup errors */
+      }
+      throw err;
+    }
   })();
 
   // Set up SIGINT/SIGTERM graceful shutdown
   const shutdownHandler = () => {
     void (async () => {
-      await _ws?.close();
-      await _rest?.close();
-      _db?.close();
+      try {
+        await _ws?.close();
+        await _rest?.close();
+        _db?.close();
+      } catch (err) {
+        log.error('Shutdown error', err);
+      }
     })();
   };
   process.once('SIGINT', shutdownHandler);
