@@ -5,10 +5,12 @@ import type {
   PluginLoader,
   DatabaseInstance,
 } from '@lensing/types';
+import { installPluginFromZip } from './plugin-install';
 
 export interface PluginAdminHandlersOptions {
   pluginLoader: PluginLoader;
   db: DatabaseInstance;
+  pluginsDir?: string;
   onChange?: (pluginId: string, action: string) => void;
 }
 
@@ -55,7 +57,7 @@ function buildEntry(
 }
 
 export function createPluginAdminHandlers(options: PluginAdminHandlersOptions) {
-  const { pluginLoader, db, onChange } = options;
+  const { pluginLoader, db, pluginsDir, onChange } = options;
 
   return {
     async getPlugins(): Promise<PluginAdminEntry[]> {
@@ -110,6 +112,17 @@ export function createPluginAdminHandlers(options: PluginAdminHandlersOptions) {
 
     async reloadPlugins(): Promise<void> {
       await pluginLoader.reload();
+    },
+
+    async installPlugin(zipBuffer: Buffer): Promise<PluginAdminEntry> {
+      if (!pluginsDir) {
+        throw new Error('Plugin installation not configured (no pluginsDir)');
+      }
+      const { pluginId, manifest } = installPluginFromZip(zipBuffer, pluginsDir);
+      await pluginLoader.reload();
+      onChange?.(pluginId, 'installed');
+      const state = getPersistedState(db, pluginId);
+      return buildEntry(pluginId, manifest as PluginManifestWithConfig, 'loaded', undefined, state);
     },
   };
 }

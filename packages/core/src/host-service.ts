@@ -59,6 +59,7 @@ export function createHostService(options: HostServiceOptions = {}): HostService
       const pluginHandlers = createPluginAdminHandlers({
         pluginLoader: _plugins,
         db: _db!,
+        pluginsDir,
       });
 
       _rest = createRestServer(

@@ -23,6 +23,7 @@ export interface RestServerHandlers {
   updatePluginConfig?: (id: string, config: Record<string, unknown>) => Promise<void>;
   assignPluginZone?: (id: string, zone: ZoneName | undefined) => Promise<void>;
   reloadPlugins?: () => Promise<void>;
+  installPlugin?: (zipBuffer: Buffer) => Promise<PluginAdminEntry>;
 }
 
 /** Configuration options for the REST server */
@@ -64,6 +65,33 @@ function writeJson(res: http.ServerResponse, status: number, data: unknown): voi
     'Content-Length': Buffer.byteLength(payload),
   });
   res.end(payload);
+}
+
+/** Read the full request body as a Buffer with size limit */
+function readBinaryBody(
+  req: http.IncomingMessage,
+  maxBytes: number = 10 * 1024 * 1024
+): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    let totalBytes = 0;
+    const chunks: Buffer[] = [];
+
+    req.on('data', (chunk: Buffer) => {
+      totalBytes += chunk.length;
+      if (totalBytes > maxBytes) {
+        req.pause();
+        reject(new Error('Payload too large'));
+        return;
+      }
+      chunks.push(chunk);
+    });
+
+    req.on('end', () => {
+      resolve(Buffer.concat(chunks));
+    });
+
+    req.on('error', reject);
+  });
 }
 
 /** Read the full request body as a string with size limit */
@@ -208,6 +236,37 @@ export function createRestServer(
         const cleanPath = path.split('?')[0];
 
         // Try parameterized plugin routes before exact-match lookup
+        if (cleanPath === '/plugins/install' && method === 'POST') {
+          if (!handlers.installPlugin) {
+            writeJson(res, 404, { error: 'Not Found' });
+            try {
+              logger?.({ method, path, status: 404, duration_ms: Date.now() - start });
+            } catch {
+              // Ignore logger errors
+            }
+            return;
+          }
+          try {
+            const zipBuffer = await readBinaryBody(req);
+            const plugin = await handlers.installPlugin(zipBuffer);
+            writeJson(res, 201, { ok: true, plugin });
+            try {
+              logger?.({ method, path, status: 201, duration_ms: Date.now() - start });
+            } catch {
+              // Ignore logger errors
+            }
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : 'Install failed';
+            writeJson(res, 400, { error: msg });
+            try {
+              logger?.({ method, path, status: 400, duration_ms: Date.now() - start });
+            } catch {
+              // Ignore logger errors
+            }
+          }
+          return;
+        }
+
         if (cleanPath === '/plugins/reload' && method === 'POST') {
           if (!handlers.reloadPlugins) {
             writeJson(res, 404, { error: 'Not Found' });

@@ -3,6 +3,7 @@
   import type { PluginAdminEntry } from '@lensing/types';
   import { ZONE_NAMES } from './config.ts';
   import AdminPluginCard from './AdminPluginCard.svelte';
+  import AdminPluginUpload from './AdminPluginUpload.svelte';
 
   let plugins: PluginAdminEntry[] = [];
   let loading = true;
@@ -59,10 +60,19 @@
     }
   }
 
-  async function handleConfigSave(
-    id: string,
-    config: Record<string, string | number | boolean>
-  ) {
+  async function refreshPlugins() {
+    try {
+      // eslint-disable-next-line no-undef
+      const res = await fetch('/plugins');
+      if (!res.ok) throw new Error(`Failed to load plugins (${res.status})`);
+      plugins = (await res.json()) as PluginAdminEntry[];
+      error = null;
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Unknown error';
+    }
+  }
+
+  async function handleConfigSave(id: string, config: Record<string, string | number | boolean>) {
     try {
       // eslint-disable-next-line no-undef
       const res = await fetch(`/plugins/${encodeURIComponent(id)}/config`, {
@@ -80,6 +90,8 @@
 </script>
 
 <div class="plugin-list">
+  <AdminPluginUpload onInstalled={refreshPlugins} />
+
   {#if loading}
     <p class="state-message">Loading plugins…</p>
   {:else if error}
