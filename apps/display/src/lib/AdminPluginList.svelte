@@ -28,9 +28,9 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ enabled }),
       });
-      if (res.ok) {
-        plugins = plugins.map((p) => (p.plugin_id === id ? { ...p, enabled } : p));
-      }
+      if (!res.ok) throw new Error(`Server returned ${res.status}`);
+      plugins = plugins.map((p) => (p.plugin_id === id ? { ...p, enabled } : p));
+      error = null; // Clear error on success
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to toggle plugin';
     }
@@ -38,17 +38,21 @@
 
   async function handleZoneChange(id: string, zone: string | undefined) {
     try {
+      // Validate zone before sending
+      if (zone !== undefined && !ZONE_NAMES.includes(zone as any)) {
+        throw new Error('Invalid zone selected');
+      }
       // eslint-disable-next-line no-undef
       const res = await fetch(`/plugins/${encodeURIComponent(id)}/zone`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ zone: zone ?? null }),
       });
-      if (res.ok) {
-        plugins = plugins.map((p) =>
-          p.plugin_id === id ? { ...p, zone: zone as PluginAdminEntry['zone'] } : p
-        );
-      }
+      if (!res.ok) throw new Error(`Server returned ${res.status}`);
+      plugins = plugins.map((p) =>
+        p.plugin_id === id ? { ...p, zone: zone as PluginAdminEntry['zone'] } : p
+      );
+      error = null; // Clear error on success
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to change plugin zone';
     }
