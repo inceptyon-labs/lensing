@@ -308,7 +308,11 @@ export function createRestServer(
               }
               return;
             }
-            if (!parsed['config'] || typeof parsed['config'] !== 'object' || Array.isArray(parsed['config'])) {
+            if (
+              !parsed['config'] ||
+              typeof parsed['config'] !== 'object' ||
+              Array.isArray(parsed['config'])
+            ) {
               writeJson(res, 400, { error: 'config (object) is required' });
               try {
                 logger?.({ method, path, status: 400, duration_ms: Date.now() - start });
@@ -317,7 +321,10 @@ export function createRestServer(
               }
               return;
             }
-            await handlers.updatePluginConfig!(pluginId, parsed['config'] as Record<string, unknown>);
+            await handlers.updatePluginConfig!(
+              pluginId,
+              parsed['config'] as Record<string, unknown>
+            );
             writeJson(res, 200, { ok: true });
             try {
               logger?.({ method, path, status: 200, duration_ms: Date.now() - start });
