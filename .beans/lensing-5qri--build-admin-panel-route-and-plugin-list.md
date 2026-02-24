@@ -1,17 +1,17 @@
 ---
 # lensing-5qri
 title: Build admin panel route and plugin list
-status: todo
+status: in-progress
 type: task
 priority: high
 tags:
-  - area:frontend
-  - size:M
+    - area:frontend
+    - size:M
 created_at: 2026-02-24T02:46:02Z
-updated_at: 2026-02-24T02:46:02Z
+updated_at: 2026-02-24T03:43:10Z
 parent: lensing-aim8
 blocked_by:
-  - lensing-b6ki
+    - lensing-b6ki
 ---
 
 Create /admin route in the display app with plugin list and management controls.

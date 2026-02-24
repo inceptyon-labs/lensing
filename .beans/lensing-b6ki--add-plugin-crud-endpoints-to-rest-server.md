@@ -1,14 +1,14 @@
 ---
 # lensing-b6ki
 title: Add plugin CRUD endpoints to REST server
-status: in-progress
+status: completed
 type: task
 priority: high
 tags:
-  - area:backend
-  - size:M
+    - area:backend
+    - size:M
 created_at: 2026-02-24T02:45:48Z
-updated_at: 2026-02-24T03:28:30Z
+updated_at: 2026-02-24T03:41:03Z
 parent: lensing-ij9t
 ---
 
@@ -37,3 +37,16 @@ Extend createRestServer with plugin management endpoints.
 - Follow existing route registration pattern (Map-based)
 - Parse :id from URL path manually (no router library)
 - Return 404 for unknown plugin IDs
+
+## Completed
+
+Plugin CRUD endpoints implemented with full test coverage and SC review.
+
+**Changes:**
+- Extended RestServerHandlers with optional plugin callbacks (getPlugins, getPlugin, setPluginEnabled, updatePluginConfig, assignPluginZone, reloadPlugins)
+- Implemented parameterized plugin routes: GET /plugins, GET /plugins/:id, PUT /plugins/:id/enabled, PUT /plugins/:id/config, PUT /plugins/:id/zone, POST /plugins/reload
+- Added comprehensive test coverage with 12 tests covering all endpoints and backward compatibility
+- Fixed handler gating to check each handler individually before use
+- All tests passing (633), build successful, format verified
+
+**Merge:** a03a692 to main

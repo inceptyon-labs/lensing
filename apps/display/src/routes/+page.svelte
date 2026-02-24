@@ -14,6 +14,7 @@
     <ErrorBoundary name="Status Bar">
       <Placeholder title="Status Bar" index={0} />
     </ErrorBoundary>
+    <a href="/admin" class="admin-link">Admin</a>
   </svelte:fragment>
 
   <svelte:fragment slot="left-col">
@@ -67,3 +68,19 @@
     </ErrorBoundary>
   </svelte:fragment>
 </Layout>
+
+<style>
+  .admin-link {
+    font-size: var(--text-xs);
+    color: var(--dim-light);
+    text-decoration: none;
+    font-family: var(--font-mono);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+
+  .admin-link:hover {
+    color: var(--ember);
+  }
+</style>
