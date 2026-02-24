@@ -1,10 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import type { PluginAdminEntry } from '@lensing/types';
+  import type { DataBusMessage, WsMessage } from '@lensing/types';
   import Layout from '../lib/Layout.svelte';
   import Placeholder from '../lib/Placeholder.svelte';
   import ErrorBoundary from '../lib/ErrorBoundary.svelte';
   import PluginRenderer from '../lib/PluginRenderer.svelte';
+  import { handlePluginData } from '../lib/stores/dataBusStore';
 
   type ZoneKey = 'top-bar' | 'left-col' | 'center' | 'right-col' | 'bottom-bar';
 
@@ -43,9 +45,11 @@
     const ws = new WebSocket(`ws://${location.host}`);
     ws.addEventListener('message', (event) => {
       try {
-        const msg = JSON.parse(String(event.data)) as { type: string };
+        const msg = JSON.parse(String(event.data)) as WsMessage;
         if (msg.type === 'layout_change') {
           void loadPlugins();
+        } else if (msg.type === 'plugin_data') {
+          handlePluginData(msg.payload as DataBusMessage);
         }
       } catch {
         // ignore malformed messages

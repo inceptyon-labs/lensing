@@ -111,4 +111,16 @@ describe('Main Page Component', () => {
     const content = fs.readFileSync(pagePath, 'utf-8');
     expect(content).toContain('layout_change');
   });
+
+  it('should import handlePluginData from dataBusStore', () => {
+    const content = fs.readFileSync(pagePath, 'utf-8');
+    expect(content).toContain('handlePluginData');
+    expect(content).toContain('dataBusStore');
+  });
+
+  it('should handle plugin_data WebSocket messages and dispatch to store', () => {
+    const content = fs.readFileSync(pagePath, 'utf-8');
+    expect(content).toContain('plugin_data');
+    expect(content).toContain('handlePluginData');
+  });
 });
