@@ -5,8 +5,8 @@ status: in-progress
 type: task
 priority: high
 tags:
-    - area:backend
-    - size:M
+  - area:backend
+  - size:M
 created_at: 2026-02-24T02:45:48Z
 updated_at: 2026-02-24T03:28:30Z
 parent: lensing-ij9t

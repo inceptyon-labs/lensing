@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { createRestServer, type RestServerInstance, type RestServerHandlers } from '../rest-server';
 import http from 'node:http';
-import type { PluginAdminEntry, ZoneName } from '@lensing/types';
+import type { PluginAdminEntry } from '@lensing/types';
 
 /** Helper to make HTTP requests to the test server */
 function request(
@@ -148,7 +148,6 @@ describe('RestServer Plugin Endpoints', () => {
     });
 
     it('should return 400 for invalid JSON', async () => {
-      const res = await request(port, 'PUT', '/plugins/weather/enabled', undefined);
       // Send raw invalid data
       const rawRes = await new Promise<{ status: number; body: string }>((resolve, reject) => {
         const req = http.request(

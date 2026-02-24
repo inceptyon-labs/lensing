@@ -878,4 +878,3 @@ export interface HostServiceOptions {
   /** Logger for startup and errors. Defaults to console */
   logger?: HostServiceLogger;
 }
-

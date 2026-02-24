@@ -233,19 +233,18 @@ export function createRestServer(
           const pluginId = decodeURIComponent(pluginMatch[1]!);
           const action = pluginMatch[2];
 
-          if (!handlers.getPlugins) {
-            writeJson(res, 404, { error: 'Not Found' });
-            try {
-              logger?.({ method, path, status: 404, duration_ms: Date.now() - start });
-            } catch {
-              // Ignore logger errors
-            }
-            return;
-          }
-
           // GET /plugins/:id
           if (!action && method === 'GET') {
-            const plugin = await handlers.getPlugin!(pluginId);
+            if (!handlers.getPlugin) {
+              writeJson(res, 404, { error: 'Not Found' });
+              try {
+                logger?.({ method, path, status: 404, duration_ms: Date.now() - start });
+              } catch {
+                // Ignore logger errors
+              }
+              return;
+            }
+            const plugin = await handlers.getPlugin(pluginId);
             if (!plugin) {
               writeJson(res, 404, { error: `Plugin '${pluginId}' not found` });
             } else {
@@ -261,6 +260,15 @@ export function createRestServer(
 
           // PUT /plugins/:id/enabled
           if (action === 'enabled' && method === 'PUT') {
+            if (!handlers.setPluginEnabled) {
+              writeJson(res, 404, { error: 'Not Found' });
+              try {
+                logger?.({ method, path, status: 404, duration_ms: Date.now() - start });
+              } catch {
+                // Ignore logger errors
+              }
+              return;
+            }
             const body = await readBody(req);
             let parsed: Record<string, unknown>;
             try {
@@ -283,7 +291,7 @@ export function createRestServer(
               }
               return;
             }
-            await handlers.setPluginEnabled!(pluginId, parsed['enabled'] as boolean);
+            await handlers.setPluginEnabled(pluginId, parsed['enabled'] as boolean);
             writeJson(res, 200, { ok: true });
             try {
               logger?.({ method, path, status: 200, duration_ms: Date.now() - start });
@@ -295,6 +303,15 @@ export function createRestServer(
 
           // PUT /plugins/:id/config
           if (action === 'config' && method === 'PUT') {
+            if (!handlers.updatePluginConfig) {
+              writeJson(res, 404, { error: 'Not Found' });
+              try {
+                logger?.({ method, path, status: 404, duration_ms: Date.now() - start });
+              } catch {
+                // Ignore logger errors
+              }
+              return;
+            }
             const body = await readBody(req);
             let parsed: Record<string, unknown>;
             try {
@@ -321,7 +338,7 @@ export function createRestServer(
               }
               return;
             }
-            await handlers.updatePluginConfig!(
+            await handlers.updatePluginConfig(
               pluginId,
               parsed['config'] as Record<string, unknown>
             );
@@ -336,6 +353,15 @@ export function createRestServer(
 
           // PUT /plugins/:id/zone
           if (action === 'zone' && method === 'PUT') {
+            if (!handlers.assignPluginZone) {
+              writeJson(res, 404, { error: 'Not Found' });
+              try {
+                logger?.({ method, path, status: 404, duration_ms: Date.now() - start });
+              } catch {
+                // Ignore logger errors
+              }
+              return;
+            }
             const body = await readBody(req);
             let parsed: Record<string, unknown>;
             try {
@@ -359,7 +385,7 @@ export function createRestServer(
               return;
             }
             const zone = parsed['zone'] === null ? undefined : (parsed['zone'] as ZoneName);
-            await handlers.assignPluginZone!(pluginId, zone);
+            await handlers.assignPluginZone(pluginId, zone);
             writeJson(res, 200, { ok: true });
             try {
               logger?.({ method, path, status: 200, duration_ms: Date.now() - start });

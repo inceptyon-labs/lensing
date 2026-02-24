@@ -5,8 +5,8 @@ status: completed
 type: task
 priority: high
 tags:
-    - area:backend
-    - size:M
+  - area:backend
+  - size:M
 created_at: 2026-02-24T02:45:35Z
 updated_at: 2026-02-24T03:24:06Z
 parent: lensing-is1m
@@ -31,6 +31,7 @@ Create packages/core/src/host-service.ts with createHostService() factory.
 ## Completed
 
 **Implementation Summary:**
+
 - ✓ Created packages/core/src/host-service.ts with createHostService() factory
 - ✓ Added HostServiceOptions/Logger types to @lensing/types
 - ✓ Added HostServiceInstance interface to @lensing/core/src/host-service.ts
