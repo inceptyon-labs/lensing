@@ -1,14 +1,14 @@
 ---
 # lensing-5qri
 title: Build admin panel route and plugin list
-status: in-progress
+status: completed
 type: task
 priority: high
 tags:
   - area:frontend
   - size:M
 created_at: 2026-02-24T02:46:02Z
-updated_at: 2026-02-24T03:43:10Z
+updated_at: 2026-02-24T03:55:48Z
 parent: lensing-aim8
 blocked_by:
   - lensing-b6ki
@@ -33,3 +33,28 @@ Create /admin route in the display app with plugin list and management controls.
 Each plugin card shows:
 [icon] Plugin Name [zone: ▼ center] [● enabled]
 Status: active | Version: 1.0.0
+
+## Completed
+
+Admin panel with plugin management UI fully implemented and merged.
+
+**Commits:**
+
+- 1c6c272 feat: add AdminPluginCard, AdminPluginList, admin route, and nav link
+- 569646c fix: address lint errors
+- 034eac0 fix: address Sonnet review findings
+- 92d6d3d fix: address Codex review findings
+- eabb930 fix: resolve lint errors
+
+**Features:**
+
+- AdminPluginCard component with plugin enable/disable toggle and zone selector
+- AdminPluginList component with plugin fetching and state management
+- Admin route at /admin for plugin management
+- Navigation link from main display to admin panel
+- Full SC review (Sonnet + Codex) with all findings addressed
+- Error handling for network failures
+- Zone validation on client and server
+- All 1302 tests passing
+
+**Test Results:** 34 admin-plugin tests, 1302 total tests all passing

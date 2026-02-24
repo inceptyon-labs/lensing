@@ -1,14 +1,14 @@
 ---
 # lensing-ij9t
 title: 'Feature: Plugin Management REST API'
-status: in-progress
+status: completed
 type: feature
 priority: high
 tags:
   - pasiv
   - area:backend
 created_at: 2026-02-24T02:45:07Z
-updated_at: 2026-02-24T13:23:54Z
+updated_at: 2026-02-24T13:49:49Z
 parent: lensing-z2ez
 ---
 

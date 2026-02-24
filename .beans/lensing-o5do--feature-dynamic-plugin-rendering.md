@@ -1,14 +1,14 @@
 ---
 # lensing-o5do
 title: 'Feature: Dynamic Plugin Rendering'
-status: todo
+status: in-progress
 type: feature
 priority: high
 tags:
-  - pasiv
-  - area:frontend
+    - pasiv
+    - area:frontend
 created_at: 2026-02-24T02:45:21Z
-updated_at: 2026-02-24T02:45:21Z
+updated_at: 2026-02-24T14:08:28Z
 parent: lensing-z2ez
 ---
 
@@ -24,7 +24,7 @@ Replace hardcoded Placeholder components with dynamic plugin widget rendering ba
 
 ## Acceptance Criteria
 
-- [ ] Zones render assigned plugin widgets instead of placeholders
-- [ ] Unassigned zones show placeholder
-- [ ] WebSocket layout_change messages trigger re-render
-- [ ] Plugin widget errors are caught by ErrorBoundary
+- [x] Zones render assigned plugin widgets instead of placeholders
+- [x] Unassigned zones show placeholder
+- [x] WebSocket layout_change messages trigger re-render
+- [x] Plugin widget errors are caught by ErrorBoundary
