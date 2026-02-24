@@ -193,7 +193,7 @@ export function createHostService(options: HostServiceOptions = {}): HostService
         for (const mod of _modules) {
           try {
             if (mod.timer !== undefined) clearInterval(mod.timer);
-          mod.instance.close();
+            mod.instance.close();
           } catch {
             /* ignore */
           }

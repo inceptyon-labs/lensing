@@ -31,13 +31,13 @@ export interface BootedModule {
 
 /** Polling intervals per module (ms). Modules without an entry are event-driven. */
 const MODULE_REFRESH_MS: Partial<Record<ModuleId, number>> = {
-  weather: 3_600_000,       // 1 hour
-  crypto: 300_000,          // 5 min
-  news: 600_000,            // 10 min
-  sports: 120_000,          // 2 min
-  calendar: 3_600_000,      // 1 hour
+  weather: 3_600_000, // 1 hour
+  crypto: 300_000, // 5 min
+  news: 600_000, // 10 min
+  sports: 120_000, // 2 min
+  calendar: 3_600_000, // 1 hour
   'home-assistant': 60_000, // 1 min
-  allergies: 3_600_000,     // 1 hour
+  allergies: 3_600_000, // 1 hour
   // pir: event-driven, no polling
 };
 

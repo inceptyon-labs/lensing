@@ -18,7 +18,10 @@ vi.mock('../caldav-client', () => ({
   createCalendarServer: vi.fn(() => ({ close: vi.fn(), refresh: vi.fn(() => Promise.resolve()) })),
 }));
 vi.mock('../home-assistant-server', () => ({
-  createHomeAssistantServer: vi.fn(() => ({ close: vi.fn(), refresh: vi.fn(() => Promise.resolve()) })),
+  createHomeAssistantServer: vi.fn(() => ({
+    close: vi.fn(),
+    refresh: vi.fn(() => Promise.resolve()),
+  })),
 }));
 vi.mock('../allergies-server', () => ({
   createAllergiesServer: vi.fn(() => ({ close: vi.fn(), refresh: vi.fn(() => Promise.resolve()) })),
