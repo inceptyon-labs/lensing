@@ -1,11 +1,11 @@
 ---
 # lensing-bxi7
 title: Build CryptoWidget.svelte
-status: in-progress
+status: completed
 type: task
 priority: high
 created_at: 2026-02-24T18:00:25Z
-updated_at: 2026-02-24T22:13:15Z
+updated_at: 2026-02-24T22:18:15Z
 parent: lensing-wbum
 blocked_by:
     - lensing-zl2i

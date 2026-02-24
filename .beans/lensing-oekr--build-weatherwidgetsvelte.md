@@ -1,15 +1,15 @@
 ---
 # lensing-oekr
 title: Build WeatherWidget.svelte
-status: todo
+status: in-progress
 type: task
 priority: high
 created_at: 2026-02-24T18:00:18Z
-updated_at: 2026-02-24T18:01:07Z
+updated_at: 2026-02-24T22:21:30Z
 parent: lensing-wbum
 blocked_by:
-  - lensing-zl2i
-  - lensing-e0mr
+    - lensing-zl2i
+    - lensing-e0mr
 ---
 
 No weather display widget exists. PluginRenderer has no 'weather' branch — it falls through to Placeholder.

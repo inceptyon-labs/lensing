@@ -101,6 +101,28 @@ describe('Data Bus Store Integration', () => {
     // Should have conditional rendering for crypto plugin
     expect(source).toMatch(/{:else if.*crypto/);
   });
+
+  it('should import WeatherWidget component', () => {
+    const source = readFileSync(rendererPath, 'utf-8');
+    expect(source).toContain('WeatherWidget');
+  });
+
+  it('should subscribe to weather-server channel for weather data', () => {
+    const source = readFileSync(rendererPath, 'utf-8');
+    expect(source).toContain('weather');
+    expect(source).toContain('getChannelData');
+  });
+
+  it('should render WeatherWidget for weather plugin_id', () => {
+    const source = readFileSync(rendererPath, 'utf-8');
+    expect(source).toMatch(/{:else if.*weather/);
+  });
+
+  it('should pass current and forecast props to WeatherWidget', () => {
+    const source = readFileSync(rendererPath, 'utf-8');
+    expect(source).toMatch(/current=\{[^}]*\}/);
+    expect(source).toMatch(/forecast=\{[^}]*\}/);
+  });
 });
 
 describe('Built-in Plugin Map', () => {
