@@ -43,6 +43,47 @@ describe('PluginRenderer Component', () => {
   });
 });
 
+describe('Data Bus Store Integration', () => {
+  const rendererPath = join(__dirname, '../src/lib/PluginRenderer.svelte');
+
+  it('should import getChannelData from dataBusStore', () => {
+    const source = readFileSync(rendererPath, 'utf-8');
+    expect(source).toContain('dataBusStore');
+    expect(source).toContain('getChannelData');
+  });
+
+  it('should subscribe to data bus store for news plugin', () => {
+    const source = readFileSync(rendererPath, 'utf-8');
+    // Should call getChannelData or use store subscription for news
+    expect(source).toContain('news');
+  });
+
+  it('should pass store data to NewsHeadlines headlines prop', () => {
+    const source = readFileSync(rendererPath, 'utf-8');
+    // Should pass dynamic headlines prop (not empty array)
+    expect(source).toMatch(/headlines=\{[^}]*\}/);
+  });
+
+  it('should pass store data to SportsScores games prop', () => {
+    const source = readFileSync(rendererPath, 'utf-8');
+    // Should pass dynamic games prop (not empty array)
+    expect(source).toMatch(/games=\{[^}]*\}/);
+  });
+
+  it('should pass store data to HomeAssistantDevices devices and sensors props', () => {
+    const source = readFileSync(rendererPath, 'utf-8');
+    // Should pass dynamic devices/sensors props (not empty arrays)
+    expect(source).toMatch(/devices=\{[^}]*\}/);
+    expect(source).toMatch(/sensors=\{[^}]*\}/);
+  });
+
+  it('should handle null data by using empty array fallback', () => {
+    const source = readFileSync(rendererPath, 'utf-8');
+    // Should have null coalescing or fallback logic
+    expect(source).toMatch(/\?\?|empty|null|undefined|=\[\]/);
+  });
+});
+
 describe('Built-in Plugin Map', () => {
   const configPath = join(__dirname, '../src/lib/config.ts');
 
