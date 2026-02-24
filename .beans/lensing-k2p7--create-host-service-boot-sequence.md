@@ -5,10 +5,10 @@ status: in-progress
 type: task
 priority: high
 tags:
-  - area:backend
-  - size:M
+    - area:backend
+    - size:M
 created_at: 2026-02-24T02:45:35Z
-updated_at: 2026-02-24T02:47:57Z
+updated_at: 2026-02-24T03:22:31Z
 parent: lensing-is1m
 ---
 
@@ -27,3 +27,18 @@ Create packages/core/src/host-service.ts with createHostService() factory.
 - Wire RestServerHandlers to database: getSettings→db.getAllSettings, putSettings→db.setSetting, etc.
 - Use WsServer's server option to share the HTTP server with REST
 - Add HostServiceOptions and HostServiceInstance types to @lensing/types
+
+## Completed
+
+**Implementation Summary:**
+- ✓ Created packages/core/src/host-service.ts with createHostService() factory
+- ✓ Added HostServiceOptions/Logger types to @lensing/types
+- ✓ Added HostServiceInstance interface to @lensing/core/src/host-service.ts
+- ✓ Boot sequence: Database → PluginLoader → DataBus → RestServer (wired) → WebSocket (attached) → PluginScheduler
+- ✓ Graceful shutdown on SIGINT/SIGTERM, cleanup on boot failure
+- ✓ Exported from @lensing/core
+- ✓ Comprehensive tests: 9 tests, all passing
+- ✓ TDD: RED → GREEN → REFACTOR → COMMIT
+- ✓ SC Review: Sonnet + Codex fixes applied
+
+**Test Results:** 621/621 tests passing (36 test suites)

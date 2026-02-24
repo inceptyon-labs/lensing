@@ -29,10 +29,10 @@ export interface HostServiceInstance {
 export function createHostService(options: HostServiceOptions = {}): HostServiceInstance {
   const { port = 0, pluginsDir = './plugins', dbPath = ':memory:', logger } = options;
 
-  let _db: DatabaseInstance;
-  let _rest: RestServerInstance;
-  let _ws: WsServerInstance;
-  let _plugins: PluginLoader;
+  let _db: DatabaseInstance | undefined;
+  let _rest: RestServerInstance | undefined;
+  let _ws: WsServerInstance | undefined;
+  let _plugins: PluginLoader | undefined;
   let _port = 0;
 
   const log = {
@@ -57,15 +57,15 @@ export function createHostService(options: HostServiceOptions = {}): HostService
       // 4. REST server (wired to database)
       _rest = createRestServer(
         {
-          getSettings: async () => _db.getAllSettings(),
+          getSettings: async () => _db!.getAllSettings(),
           putSettings: async (settings) => {
             for (const [key, value] of Object.entries(settings)) {
-              _db.setSetting(key, String(value));
+              _db!.setSetting(key, String(value));
             }
           },
-          getLayout: async () => _db.getLayout('default') ?? [],
+          getLayout: async () => _db!.getLayout('default') ?? [],
           putLayout: async (layout) => {
-            _db.setLayout('default', layout);
+            _db!.setLayout('default', layout);
           },
           postAsk: async (question) => ({
             id: crypto.randomUUID(),
@@ -145,19 +145,19 @@ export function createHostService(options: HostServiceOptions = {}): HostService
     },
 
     get db() {
-      return _db;
+      return _db!;
     },
 
     get rest() {
-      return _rest;
+      return _rest!;
     },
 
     get ws() {
-      return _ws;
+      return _ws!;
     },
 
     get plugins() {
-      return _plugins;
+      return _plugins!;
     },
   };
 }
