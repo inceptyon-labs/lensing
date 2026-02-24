@@ -41,7 +41,7 @@
 
     // eslint-disable-next-line no-undef
     const ws = new WebSocket(`ws://${location.host}`);
-    ws.addEventListener('message', (event: MessageEvent) => {
+    ws.addEventListener('message', (event) => {
       try {
         const msg = JSON.parse(String(event.data)) as { type: string };
         if (msg.type === 'layout_change') {
