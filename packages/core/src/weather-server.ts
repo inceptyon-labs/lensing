@@ -1,3 +1,5 @@
+import type { DataBusInstance } from './data-bus';
+
 // Weather data types (mirrored from @lensing/ui — core cannot depend on ui)
 
 /** Current weather conditions */
@@ -53,6 +55,8 @@ export interface WeatherServerOptions {
   refreshInterval_ms?: number;
   /** Injectable fetch function (defaults to global fetch) */
   fetchFn?: FetchFn;
+  /** Optional data bus to publish weather data after each refresh */
+  dataBus?: DataBusInstance;
 }
 
 /** Instance returned by createWeatherServer */
@@ -131,7 +135,7 @@ function transformForecast(daily: OWMDaily[]): WeatherForecastDay[] {
  * Creates a weather server module that fetches, caches, and publishes weather data.
  */
 export function createWeatherServer(options: WeatherServerOptions): WeatherServerInstance {
-  const { apiKey, location, units = 'imperial', fetchFn = fetch as unknown as FetchFn } = options;
+  const { apiKey, location, units = 'imperial', fetchFn = fetch as unknown as FetchFn, dataBus } = options;
 
   if (!apiKey) {
     throw new Error('WeatherServer: apiKey is required');
@@ -220,6 +224,9 @@ export function createWeatherServer(options: WeatherServerOptions): WeatherServe
     lastData = data;
     lastFetchedAt = Date.now();
     notifyUpdate(data);
+    if (dataBus) {
+      dataBus.publish('weather.current', 'weather-server', data);
+    }
   }
 
   return {

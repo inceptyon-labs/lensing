@@ -534,6 +534,38 @@ END:VEVENT</calendar-data>
     });
   });
 
+  describe('dataBus publishing', () => {
+    it('should publish events to dataBus on successful refresh', async () => {
+      const publish = vi.fn();
+      const dataBus = { publish } as unknown as import('../data-bus').DataBusInstance;
+      const server = createCalendarServer(validOptions({ dataBus }));
+      await server.refresh();
+      expect(publish).toHaveBeenCalledTimes(1);
+      expect(publish).toHaveBeenCalledWith(
+        'calendar.events',
+        'calendar-server',
+        expect.objectContaining({
+          events: expect.any(Array),
+          lastUpdated: expect.any(Number),
+        })
+      );
+    });
+
+    it('should not publish to dataBus on fetch failure', async () => {
+      const publish = vi.fn();
+      const dataBus = { publish } as unknown as import('../data-bus').DataBusInstance;
+      const fetchFn = vi.fn().mockRejectedValue(new Error('network error'));
+      const server = createCalendarServer(validOptions({ dataBus, fetchFn }));
+      await server.refresh();
+      expect(publish).not.toHaveBeenCalled();
+    });
+
+    it('should not throw when dataBus is not provided', async () => {
+      const server = createCalendarServer(validOptions());
+      await expect(server.refresh()).resolves.not.toThrow();
+    });
+  });
+
   describe('exports', () => {
     it('should be exported from @lensing/core index', async () => {
       const core = await import('../index');

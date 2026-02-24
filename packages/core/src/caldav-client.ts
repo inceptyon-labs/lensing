@@ -1,4 +1,5 @@
 import type { CalendarEvent } from '@lensing/types';
+import type { DataBusInstance } from './data-bus';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -34,6 +35,8 @@ export interface CalendarServerOptions {
   maxStale_ms?: number;
   /** Injectable fetch function (defaults to global fetch) */
   fetchFn?: CalDAVFetchFn;
+  /** Optional data bus to publish calendar events after each refresh */
+  dataBus?: DataBusInstance;
 }
 
 /** Instance returned by createCalendarServer */
@@ -170,7 +173,7 @@ function sleep(ms: number): Promise<void> {
  * password authentication.
  */
 export function createCalendarServer(options: CalendarServerOptions): CalendarServerInstance {
-  const { username, password, serverUrl, calendarPath } = options;
+  const { username, password, serverUrl, calendarPath, dataBus } = options;
 
   if (!username) throw new Error('CalendarServer: username is required');
   if (!password) throw new Error('CalendarServer: password is required');
@@ -278,6 +281,9 @@ export function createCalendarServer(options: CalendarServerOptions): CalendarSe
     lastEvents = events;
     lastFetchedAt = Date.now();
     notifyUpdate(events);
+    if (dataBus) {
+      dataBus.publish('calendar.events', 'calendar-server', { events: [...events], lastUpdated: Date.now() });
+    }
   }
 
   async function refresh(): Promise<void> {

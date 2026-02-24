@@ -1,11 +1,11 @@
 ---
 # lensing-e0mr
 title: Wire weather and calendar modules to data bus
-status: todo
+status: in-progress
 type: task
 priority: high
 created_at: 2026-02-24T17:59:49Z
-updated_at: 2026-02-24T17:59:49Z
+updated_at: 2026-02-24T21:58:57Z
 parent: lensing-wbum
 ---
 

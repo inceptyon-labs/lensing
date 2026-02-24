@@ -384,6 +384,43 @@ describe('WeatherServer', () => {
     });
   });
 
+  describe('dataBus publishing', () => {
+    it('should publish weather data to dataBus on successful refresh', async () => {
+      const publish = vi.fn();
+      const dataBus = { publish } as unknown as import('../data-bus').DataBusInstance;
+      const server = createWeatherServer(validOptions({ dataBus }));
+      await server.refresh();
+      expect(publish).toHaveBeenCalledTimes(1);
+      expect(publish).toHaveBeenCalledWith(
+        'weather.current',
+        'weather-server',
+        expect.objectContaining({
+          current: expect.any(Object),
+          forecast: expect.any(Array),
+          lastUpdated: expect.any(Number),
+        })
+      );
+    });
+
+    it('should not publish to dataBus on fetch failure', async () => {
+      const publish = vi.fn();
+      const dataBus = { publish } as unknown as import('../data-bus').DataBusInstance;
+      const fetchFn = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+      });
+      const server = createWeatherServer(validOptions({ dataBus, fetchFn }));
+      await server.refresh();
+      expect(publish).not.toHaveBeenCalled();
+    });
+
+    it('should not throw when dataBus is not provided', async () => {
+      const server = createWeatherServer(validOptions());
+      await expect(server.refresh()).resolves.not.toThrow();
+    });
+  });
+
   describe('exports', () => {
     it('should be exported from @lensing/core index', async () => {
       const core = await import('../index');

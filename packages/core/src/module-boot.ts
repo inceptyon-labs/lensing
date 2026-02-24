@@ -169,6 +169,7 @@ function bootModule(
         apiKey: String(values['apiKey'] ?? ''),
         location: { lat: Number(values['lat']), lon: Number(values['lon']) },
         units: (values['units'] as 'imperial' | 'metric') ?? 'imperial',
+        dataBus,
       });
 
     case 'crypto':
@@ -205,6 +206,7 @@ function bootModule(
         password: String(values['password'] ?? ''),
         calendarPath: String(values['calendarPath'] ?? ''),
         rangeDays: values['rangeDays'] != null ? Number(values['rangeDays']) : undefined,
+        dataBus,
       };
       return createCalendarServer(calOpts);
     }

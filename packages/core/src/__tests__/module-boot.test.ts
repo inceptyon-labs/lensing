@@ -33,6 +33,7 @@ vi.mock('../pir-server', () => ({
 import { bootEnabledModules, rebootModule } from '../module-boot';
 import type { BootedModule } from '../module-boot';
 import { createWeatherServer } from '../weather-server';
+import { createCalendarServer } from '../caldav-client';
 import { createCryptoServer } from '../crypto-server';
 import { createPIRServer } from '../pir-server';
 
@@ -209,6 +210,33 @@ describe('bootEnabledModules', () => {
     expect(modules[0]!.timer).toBeDefined();
 
     vi.useRealTimers();
+  });
+
+  it('should pass dataBus to weather module', () => {
+    db.setSetting('weather.enabled', 'true');
+    db.setSetting('weather.apiKey', 'key');
+    db.setSetting('weather.lat', '40.7');
+    db.setSetting('weather.lon', '-74');
+
+    bootEnabledModules(db, deps);
+
+    expect(createWeatherServer).toHaveBeenCalledWith(
+      expect.objectContaining({ dataBus: deps.dataBus })
+    );
+  });
+
+  it('should pass dataBus to calendar module', () => {
+    db.setSetting('calendar.enabled', 'true');
+    db.setSetting('calendar.serverUrl', 'https://caldav.icloud.com');
+    db.setSetting('calendar.username', 'user@icloud.com');
+    db.setSetting('calendar.password', 'app-specific-password');
+    db.setSetting('calendar.calendarPath', '/calendars/user@icloud.com/calendar/');
+
+    bootEnabledModules(db, deps);
+
+    expect(createCalendarServer).toHaveBeenCalledWith(
+      expect.objectContaining({ dataBus: deps.dataBus })
+    );
   });
 });
 
