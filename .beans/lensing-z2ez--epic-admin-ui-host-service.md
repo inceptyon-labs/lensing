@@ -1,11 +1,11 @@
 ---
 # lensing-z2ez
 title: 'Epic: Admin UI & Host Service'
-status: todo
+status: in-progress
 type: epic
 priority: high
 created_at: 2026-02-24T02:44:50Z
-updated_at: 2026-02-24T02:44:50Z
+updated_at: 2026-02-24T02:47:57Z
 ---
 
 Wire all core building blocks into a running system with admin UI for plugin management. Currently the display shows only placeholders and there's no way to boot or administer the system.

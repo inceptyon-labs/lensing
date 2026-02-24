@@ -34,6 +34,8 @@ export interface RestServerInstance {
   ready(): Promise<void>;
   /** Actual bound port (available after ready resolves) */
   readonly port: number;
+  /** The underlying Node.js HTTP server (for attaching WebSocket, etc.) */
+  readonly server: http.Server;
   /** Gracefully close the server */
   close(): Promise<void>;
 }
@@ -273,6 +275,9 @@ export function createRestServer(
   return {
     get port() {
       return boundPort;
+    },
+    get server() {
+      return server;
     },
     ready() {
       return readyPromise;

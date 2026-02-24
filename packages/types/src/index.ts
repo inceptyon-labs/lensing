@@ -858,3 +858,41 @@ export type {
   PIRServerInstance,
 } from './pir-sensor';
 export { DEFAULT_PIR_IDLE_TIMEOUT_MS, DEFAULT_PIR_GPIO_PIN } from './pir-sensor';
+
+// ── Host Service (unified boot sequence) ────────────────────────────────────
+/** Logger interface for host service */
+export interface HostServiceLogger {
+  debug(msg: string, data?: unknown): void;
+  info(msg: string, data?: unknown): void;
+  error(msg: string, error?: unknown): void;
+}
+
+/** Configuration options for the Host Service factory */
+export interface HostServiceOptions {
+  /** Port to listen on for REST API and WebSocket. Defaults to 3100 */
+  port?: number;
+  /** Directory to search for plugins. Defaults to './plugins' */
+  pluginsDir?: string;
+  /** Path to SQLite database file. Defaults to './data/lensing.db' */
+  dbPath?: string;
+  /** Logger for startup and errors. Defaults to console */
+  logger?: HostServiceLogger;
+}
+
+/** Public interface returned by createHostService factory */
+export interface HostServiceInstance {
+  /** Resolves when the host service has fully booted (all services ready) */
+  ready: Promise<void>;
+  /** Actual bound port (available after ready resolves) */
+  readonly port: number;
+  /** Stop all services and release resources */
+  close(): Promise<void>;
+  /** The database instance (available after ready) */
+  readonly db: DatabaseInstance;
+  /** The REST server instance (available after ready) */
+  readonly rest: RestServerInstance;
+  /** The WebSocket server instance (available after ready) */
+  readonly ws: WsServerInstance;
+  /** The plugin loader instance (available after ready) */
+  readonly plugins: PluginLoader;
+}

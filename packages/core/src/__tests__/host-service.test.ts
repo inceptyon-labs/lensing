@@ -1,0 +1,168 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { createHostService } from '../host-service';
+import path from 'node:path';
+import os from 'node:os';
+import fs from 'node:fs';
+import type { HostServiceInstance } from '@lensing/types';
+
+describe('HostService (host-service.ts)', () => {
+  let hostService: HostServiceInstance | null = null;
+  let tempDir: string;
+
+  beforeEach(() => {
+    // Create a temporary directory for test databases
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'lensing-test-'));
+  });
+
+  afterEach(async () => {
+    // Clean up
+    if (hostService) {
+      await hostService.close();
+      hostService = null;
+    }
+    // Remove temporary directory
+    if (fs.existsSync(tempDir)) {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  it('should boot successfully and resolve ready promise', async () => {
+    hostService = createHostService({
+      port: 0,
+      dbPath: path.join(tempDir, 'test.db'),
+      pluginsDir: path.join(tempDir, 'plugins'),
+    });
+
+    // ready should be a Promise that resolves
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Boot timeout')), 5000)
+    );
+
+    await Promise.race([hostService.ready, timeoutPromise]);
+    expect(hostService.port).toBeGreaterThan(0);
+  });
+
+  it('should expose database instance after ready', async () => {
+    hostService = createHostService({
+      port: 0,
+      dbPath: path.join(tempDir, 'test.db'),
+      pluginsDir: path.join(tempDir, 'plugins'),
+    });
+
+    await hostService.ready;
+    expect(hostService.db).toBeDefined();
+    expect(typeof hostService.db.getSetting).toBe('function');
+  });
+
+  it('should expose REST server instance after ready', async () => {
+    hostService = createHostService({
+      port: 0,
+      dbPath: path.join(tempDir, 'test.db'),
+      pluginsDir: path.join(tempDir, 'plugins'),
+    });
+
+    await hostService.ready;
+    expect(hostService.rest).toBeDefined();
+    expect(typeof hostService.rest.close).toBe('function');
+    expect(hostService.rest.port).toBe(hostService.port);
+  });
+
+  it('should expose WebSocket server instance after ready', async () => {
+    hostService = createHostService({
+      port: 0,
+      dbPath: path.join(tempDir, 'test.db'),
+      pluginsDir: path.join(tempDir, 'plugins'),
+    });
+
+    await hostService.ready;
+    expect(hostService.ws).toBeDefined();
+    expect(typeof hostService.ws.close).toBe('function');
+  });
+
+  it('should expose plugin loader instance after ready', async () => {
+    hostService = createHostService({
+      port: 0,
+      dbPath: path.join(tempDir, 'test.db'),
+      pluginsDir: path.join(tempDir, 'plugins'),
+    });
+
+    await hostService.ready;
+    expect(hostService.plugins).toBeDefined();
+    expect(typeof hostService.plugins.discover).toBe('function');
+    expect(typeof hostService.plugins.load).toBe('function');
+  });
+
+  it('should allow REST /health endpoint to be called after boot', async () => {
+    hostService = createHostService({
+      port: 0,
+      dbPath: path.join(tempDir, 'test.db'),
+      pluginsDir: path.join(tempDir, 'plugins'),
+    });
+
+    await hostService.ready;
+    const port = hostService.port;
+
+    const response = await fetch(`http://127.0.0.1:${port}/health`);
+    expect(response.status).toBe(200);
+
+    const body = (await response.json()) as { status: string };
+    expect(body.status).toBe('ok');
+  });
+
+  it('should close all services gracefully', async () => {
+    hostService = createHostService({
+      port: 0,
+      dbPath: path.join(tempDir, 'test.db'),
+      pluginsDir: path.join(tempDir, 'plugins'),
+    });
+
+    await hostService.ready;
+    const port = hostService.port;
+
+    // Verify server is responsive
+    let response = await fetch(`http://127.0.0.1:${port}/health`);
+    expect(response.status).toBe(200);
+
+    // Close the service
+    await hostService.close();
+
+    // Try to connect again — should fail
+    try {
+      await fetch(`http://127.0.0.1:${port}/health`, { signal: AbortSignal.timeout(500) });
+      expect.fail('Should not reach closed server');
+    } catch (err) {
+      // Expected: connection refused or timeout
+      expect(err).toBeDefined();
+    }
+
+    hostService = null;
+  });
+
+  it('should handle missing plugins directory gracefully', async () => {
+    const nonExistentPluginsDir = path.join(tempDir, 'nonexistent', 'plugins');
+    hostService = createHostService({
+      port: 0,
+      dbPath: path.join(tempDir, 'test.db'),
+      pluginsDir: nonExistentPluginsDir,
+    });
+
+    // Should boot without error even if plugins dir doesn't exist
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Boot timeout')), 5000)
+    );
+
+    await Promise.race([hostService.ready, timeoutPromise]);
+    expect(hostService.port).toBeGreaterThan(0);
+  });
+
+  it('should use default options when not provided', async () => {
+    hostService = createHostService();
+
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Boot timeout')), 5000)
+    );
+
+    await Promise.race([hostService.ready, timeoutPromise]);
+    expect(hostService.port).toBeGreaterThan(0);
+  });
+});

@@ -168,3 +168,11 @@ export type {
   GpioWatcherFactory,
 } from '@lensing/types';
 export { DEFAULT_PIR_IDLE_TIMEOUT_MS, DEFAULT_PIR_GPIO_PIN } from '@lensing/types';
+
+// ── Host Service (unified boot sequence) ────────────────────────────────────
+export { createHostService } from './host-service';
+export type {
+  HostServiceOptions,
+  HostServiceInstance,
+  HostServiceLogger,
+} from '@lensing/types';
