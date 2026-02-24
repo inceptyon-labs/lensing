@@ -21,7 +21,12 @@ const DEFAULT_PLUGINS_DIR = './plugins';
 const DEFAULT_DB_PATH = './data/lensing.db';
 
 export async function startServer(options: StartServerOptions = {}): Promise<StartServerResult> {
-  const { port = DEFAULT_PORT, pluginsDir = DEFAULT_PLUGINS_DIR, dbPath = DEFAULT_DB_PATH, logger } = options;
+  const {
+    port = DEFAULT_PORT,
+    pluginsDir = DEFAULT_PLUGINS_DIR,
+    dbPath = DEFAULT_DB_PATH,
+    logger,
+  } = options;
 
   const host = createHostService({ port, pluginsDir, dbPath });
   await host.ready;

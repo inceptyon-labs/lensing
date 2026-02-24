@@ -40,9 +40,7 @@ describe('startServer', () => {
   it('should allow overriding port', async () => {
     await startServer({ port: 8080 });
 
-    expect(mockCreateHostService).toHaveBeenCalledWith(
-      expect.objectContaining({ port: 8080 })
-    );
+    expect(mockCreateHostService).toHaveBeenCalledWith(expect.objectContaining({ port: 8080 }));
   });
 
   it('should allow overriding pluginsDir', async () => {
@@ -109,7 +107,9 @@ describe('startServer', () => {
     expect(logger.info).toHaveBeenCalled();
     // Should log something about the port/address
     const logMessages = logger.info.mock.calls.map((c: unknown[]) => c[0]);
-    expect(logMessages.some((msg: string) => msg.includes('3100') || msg.includes('listening'))).toBe(true);
+    expect(
+      logMessages.some((msg: string) => msg.includes('3100') || msg.includes('listening'))
+    ).toBe(true);
   });
 
   it('should propagate errors from host service boot failure', async () => {

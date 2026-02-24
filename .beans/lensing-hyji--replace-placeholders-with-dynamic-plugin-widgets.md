@@ -5,8 +5,8 @@ status: completed
 type: task
 priority: high
 tags:
-    - area:frontend
-    - size:M
+  - area:frontend
+  - size:M
 created_at: 2026-02-24T02:46:17Z
 updated_at: 2026-02-24T14:10:27Z
 parent: lensing-o5do
@@ -35,13 +35,15 @@ Update the display app to render actual plugin widgets based on zone assignments
 ## Completed
 
 **Files changed:**
+
 - apps/display/src/lib/PluginRenderer.svelte (new — maps plugin_id to widget component)
 - apps/display/src/lib/config.ts (added BUILTIN_PLUGIN_MAP)
 - apps/display/src/routes/+page.svelte (dynamic zone rendering + WebSocket)
-- apps/display/__tests__/plugin-renderer.test.ts (new — 11 tests)
-- apps/display/__tests__/page.test.ts (6 new dynamic rendering tests)
+- apps/display/**tests**/plugin-renderer.test.ts (new — 11 tests)
+- apps/display/**tests**/page.test.ts (6 new dynamic rendering tests)
 
 **Key decisions:**
+
 - PluginRenderer uses inline if/else (not a runtime lookup map) for Svelte-compatible component selection
 - Actual plugin IDs from manifests: photo-slideshow, news-server, sports-server, home-assistant-server
 - Zone validation uses Object.hasOwn() to prevent prototype pollution
@@ -49,6 +51,7 @@ Update the display app to render actual plugin widgets based on zone assignments
 - Build failure is pre-existing (PhotoSlideshow imports @lensing/core — not caused by this task)
 
 **Notes for next task:**
+
 - PluginRenderer currently renders widgets with empty data props (data wiring is future work)
 - WebSocket layout_change listening is wired on client; server-side broadcast not yet implemented
 - BUILTIN_PLUGIN_MAP in config.ts is a reference map; PluginRenderer uses inline conditionals
