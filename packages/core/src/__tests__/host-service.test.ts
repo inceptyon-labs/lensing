@@ -4,6 +4,8 @@ import type { HostServiceInstance } from '../host-service';
 import path from 'node:path';
 import os from 'node:os';
 import fs from 'node:fs';
+import { WebSocket } from 'ws';
+import type { WsMessage, DataBusMessage } from '@lensing/types';
 
 describe('HostService (host-service.ts)', () => {
   let hostService: HostServiceInstance | null = null;
@@ -356,6 +358,66 @@ describe('HostService (host-service.ts)', () => {
 
     // Verify it was written to flat settings
     expect(hostService.db.getSetting('weather.enabled')).toBe('true');
+  });
+
+  it('should expose dataBus instance after ready', async () => {
+    hostService = createHostService({
+      port: 0,
+      dbPath: path.join(tempDir, 'test.db'),
+      pluginsDir: path.join(tempDir, 'plugins'),
+    });
+
+    await hostService.ready;
+    expect(hostService.dataBus).toBeDefined();
+    expect(typeof hostService.dataBus.publish).toBe('function');
+    expect(typeof hostService.dataBus.onMessage).toBe('function');
+  });
+
+  it('should forward data bus messages to WebSocket clients as plugin_data', async () => {
+    hostService = createHostService({
+      port: 0,
+      dbPath: path.join(tempDir, 'test.db'),
+      pluginsDir: path.join(tempDir, 'plugins'),
+    });
+
+    await hostService.ready;
+    const port = hostService.port;
+
+    // Connect a WebSocket client
+    const ws = new WebSocket(`ws://127.0.0.1:${port}`);
+    const received: WsMessage[] = [];
+
+    await new Promise<void>((resolve, reject) => {
+      ws.on('open', () => resolve());
+      ws.on('error', reject);
+    });
+
+    ws.on('message', (data: Buffer) => {
+      received.push(JSON.parse(data.toString()) as WsMessage);
+    });
+
+    // Allow connection to settle
+    await new Promise((r) => setTimeout(r, 50));
+
+    // Publish a message to the data bus
+    hostService.dataBus.publish('weather', 'weather', { temp: 72, condition: 'sunny' });
+
+    // Wait for WS message to arrive
+    await new Promise((r) => setTimeout(r, 100));
+
+    ws.close();
+
+    // Verify the client received a plugin_data message
+    expect(received.length).toBeGreaterThanOrEqual(1);
+    const pluginMsg = received.find((m) => m.type === 'plugin_data');
+    expect(pluginMsg).toBeDefined();
+    expect(pluginMsg!.type).toBe('plugin_data');
+
+    const payload = pluginMsg!.payload as DataBusMessage;
+    expect(payload.channel).toBe('weather');
+    expect(payload.plugin_id).toBe('weather');
+    expect(payload.data).toEqual({ temp: 72, condition: 'sunny' });
+    expect(pluginMsg!.timestamp).toBeDefined();
   });
 
   it('should persist module zone via PUT /plugins/weather/zone', async () => {

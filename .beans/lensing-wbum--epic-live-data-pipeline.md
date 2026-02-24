@@ -1,11 +1,11 @@
 ---
 # lensing-wbum
 title: 'Epic: Live Data Pipeline'
-status: todo
+status: in-progress
 type: epic
 priority: high
 created_at: 2026-02-24T17:59:25Z
-updated_at: 2026-02-24T17:59:25Z
+updated_at: 2026-02-24T18:04:54Z
 ---
 
 The entire data pipeline from server modules to display widgets is broken. No live data reaches the client. This epic covers every link in the chain: module refresh, data bus wiring, WebSocket forwarding, client-side stores, PluginRenderer data binding, and missing widget components.

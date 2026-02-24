@@ -10,6 +10,7 @@ import { bootEnabledModules, rebootModule } from './module-boot';
 import type { BootedModule } from './module-boot';
 import type { HostServiceOptions, DatabaseInstance, PluginLoader, ModuleId } from '@lensing/types';
 import { MODULE_SCHEMAS } from '@lensing/types';
+import type { DataBusInstance } from '@lensing/types';
 import type { NotificationQueueInstance } from './notification-queue';
 import type { RestServerInstance } from './rest-server';
 import type { WsServerInstance } from './ws-server';
@@ -32,6 +33,8 @@ export interface HostServiceInstance {
   readonly plugins: PluginLoader;
   /** Booted built-in modules (available after ready) */
   readonly modules: BootedModule[];
+  /** The data bus instance (available after ready) */
+  readonly dataBus: DataBusInstance;
 }
 
 export function createHostService(options: HostServiceOptions = {}): HostServiceInstance {
@@ -44,6 +47,7 @@ export function createHostService(options: HostServiceOptions = {}): HostService
   let _modules: BootedModule[] = [];
   let _notificationQueue: NotificationQueueInstance | undefined;
   let _port = 0;
+  let _dataBus: DataBusInstance | undefined;
 
   const log = {
     info: (msg: string, data?: unknown) => logger?.info(msg, data),
@@ -63,6 +67,7 @@ export function createHostService(options: HostServiceOptions = {}): HostService
 
       // 3. Data bus
       const dataBus = createDataBus();
+      _dataBus = dataBus;
 
       // 4. REST server (wired to database + plugins)
       const pluginHandlers = createPluginAdminHandlers({
@@ -132,6 +137,11 @@ export function createHostService(options: HostServiceOptions = {}): HostService
       _ws = createWsServer({ server: _rest.server });
       await _ws.ready();
       log.info('WebSocket server ready');
+
+      // Wire data bus → WebSocket: forward all module data to connected display clients
+      dataBus.onMessage((msg) => {
+        _ws!.broadcast({ type: 'plugin_data', payload: msg, timestamp: new Date().toISOString() });
+      });
 
       // 6. Plugin scheduler (no-op — plugins can register themselves)
       createPluginScheduler();
@@ -239,6 +249,10 @@ export function createHostService(options: HostServiceOptions = {}): HostService
 
     get modules() {
       return _modules;
+    },
+
+    get dataBus() {
+      return _dataBus!;
     },
   };
 }
