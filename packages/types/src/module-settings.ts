@@ -9,7 +9,8 @@ export type ModuleId =
   | 'calendar'
   | 'home-assistant'
   | 'allergies'
-  | 'pir';
+  | 'pir'
+  | 'photo-slideshow';
 
 /** All module IDs as a constant array */
 export const MODULE_IDS: readonly ModuleId[] = [
@@ -21,6 +22,7 @@ export const MODULE_IDS: readonly ModuleId[] = [
   'home-assistant',
   'allergies',
   'pir',
+  'photo-slideshow',
 ] as const;
 
 /** Schema describing a built-in module's user-configurable settings */
@@ -179,6 +181,20 @@ export const MODULE_SCHEMAS: readonly ModuleSettingsSchema[] = [
         description: 'Milliseconds without motion before idle state',
         default: 300000,
         min: 1000,
+      },
+    ],
+  },
+  {
+    id: 'photo-slideshow',
+    name: 'Photo Slideshow',
+    description: 'Ambient photo slideshow from a local directory',
+    fields: [
+      {
+        key: 'photoDirectory',
+        type: 'string',
+        label: 'Photo Directory',
+        description: 'Absolute path to the directory containing photos',
+        required: true,
       },
     ],
   },
