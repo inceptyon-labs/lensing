@@ -54,6 +54,15 @@
             bind:value={values[field.key]}
             required={field.required}
           />
+        {:else if field.type === 'password'}
+          <input
+            id="cfg-{field.key}"
+            type="password"
+            class="field-input"
+            bind:value={values[field.key]}
+            required={field.required}
+            autocomplete="off"
+          />
         {:else if field.type === 'number'}
           <input
             id="cfg-{field.key}"

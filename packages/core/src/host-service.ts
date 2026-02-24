@@ -5,7 +5,12 @@ import { createRestServer } from './rest-server';
 import { createWsServer } from './ws-server';
 import { createPluginScheduler } from './plugin-scheduler';
 import { createPluginAdminHandlers } from './plugin-admin-handlers';
+import { createNotificationQueue } from './notification-queue';
+import { bootEnabledModules } from './module-boot';
+import type { BootedModule } from './module-boot';
 import type { HostServiceOptions, DatabaseInstance, PluginLoader } from '@lensing/types';
+import { MODULE_SCHEMAS } from '@lensing/types';
+import type { NotificationQueueInstance } from './notification-queue';
 import type { RestServerInstance } from './rest-server';
 import type { WsServerInstance } from './ws-server';
 
@@ -25,6 +30,8 @@ export interface HostServiceInstance {
   readonly ws: WsServerInstance;
   /** The plugin loader instance (available after ready) */
   readonly plugins: PluginLoader;
+  /** Booted built-in modules (available after ready) */
+  readonly modules: BootedModule[];
 }
 
 export function createHostService(options: HostServiceOptions = {}): HostServiceInstance {
@@ -34,6 +41,8 @@ export function createHostService(options: HostServiceOptions = {}): HostService
   let _rest: RestServerInstance | undefined;
   let _ws: WsServerInstance | undefined;
   let _plugins: PluginLoader | undefined;
+  let _modules: BootedModule[] = [];
+  let _notificationQueue: NotificationQueueInstance | undefined;
   let _port = 0;
 
   const log = {
@@ -64,9 +73,26 @@ export function createHostService(options: HostServiceOptions = {}): HostService
 
       _rest = createRestServer(
         {
-          getSettings: async () => _db!.getAllSettings(),
+          getSettings: async () => {
+            const all = _db!.getAllSettings();
+            // Redact password-typed fields so plaintext secrets are never sent to the client
+            const redacted: Record<string, unknown> = { ...all };
+            for (const schema of MODULE_SCHEMAS) {
+              for (const field of schema.fields) {
+                if (field.type === 'password') {
+                  const key = `${schema.id}.${field.key}`;
+                  if (key in redacted) {
+                    redacted[key] = '••••••••';
+                  }
+                }
+              }
+            }
+            return redacted;
+          },
           putSettings: async (settings) => {
             for (const [key, value] of Object.entries(settings)) {
+              // Skip redacted placeholders so we never overwrite real secrets
+              if (String(value) === '••••••••') continue;
               _db!.setSetting(key, String(value));
             }
           },
@@ -97,12 +123,27 @@ export function createHostService(options: HostServiceOptions = {}): HostService
 
       // 6. Plugin scheduler (no-op — plugins can register themselves)
       createPluginScheduler();
-      log.info('Host service boot complete');
 
-      void dataBus; // used for future plugin wiring
+      // 7. Boot enabled built-in modules from DB settings
+      _notificationQueue = createNotificationQueue();
+      _modules = bootEnabledModules(_db!, { dataBus, notifications: _notificationQueue }, logger);
+
+      log.info('Host service boot complete');
     } catch (err) {
       // Clean up any resources that were initialized before the failure
       log.error('Boot failed, cleaning up', err);
+      for (const mod of _modules) {
+        try {
+          mod.instance.close();
+        } catch {
+          /* ignore */
+        }
+      }
+      try {
+        _notificationQueue?.close();
+      } catch {
+        /* ignore cleanup errors */
+      }
       try {
         await _ws?.close();
       } catch {
@@ -126,6 +167,14 @@ export function createHostService(options: HostServiceOptions = {}): HostService
   const shutdownHandler = () => {
     void (async () => {
       try {
+        for (const mod of _modules) {
+          try {
+            mod.instance.close();
+          } catch {
+            /* ignore */
+          }
+        }
+        _notificationQueue?.close();
         await _ws?.close();
         await _rest?.close();
         _db?.close();
@@ -147,6 +196,14 @@ export function createHostService(options: HostServiceOptions = {}): HostService
     async close() {
       process.off('SIGINT', shutdownHandler);
       process.off('SIGTERM', shutdownHandler);
+      for (const mod of _modules) {
+        try {
+          mod.instance.close();
+        } catch {
+          /* ignore */
+        }
+      }
+      _notificationQueue?.close();
       await _ws?.close();
       await _rest?.close();
       _db?.close();
@@ -166,6 +223,10 @@ export function createHostService(options: HostServiceOptions = {}): HostService
 
     get plugins() {
       return _plugins!;
+    },
+
+    get modules() {
+      return _modules;
     },
   };
 }

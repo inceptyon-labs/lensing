@@ -232,8 +232,10 @@ export interface WsMessage<T = unknown> {
 /** Client connection status for UI indicator */
 export type ConnectionStatus = 'connected' | 'disconnecting' | 'disconnected' | 'reconnecting';
 
-/** Supported config field types for plugin settings forms */
-export type ConfigFieldType = 'string' | 'number' | 'boolean' | 'select';
+/** Supported config field types for plugin settings forms.
+ * 'password' is a presentation hint — stored and coerced identically to 'string',
+ * but rendered as <input type="password"> in the admin UI. */
+export type ConfigFieldType = 'string' | 'number' | 'boolean' | 'select' | 'password';
 
 /** A single field in a plugin config schema */
 export interface ConfigField {
@@ -858,6 +860,10 @@ export type {
   PIRServerInstance,
 } from './pir-sensor';
 export { DEFAULT_PIR_IDLE_TIMEOUT_MS, DEFAULT_PIR_GPIO_PIN } from './pir-sensor';
+
+// ── Module Settings ─────────────────────────────────────────────────────────
+export type { ModuleId, ModuleSettingsSchema } from './module-settings';
+export { MODULE_IDS, MODULE_SCHEMAS } from './module-settings';
 
 // ── Host Service (unified boot sequence) ────────────────────────────────────
 /** Logger interface for host service */

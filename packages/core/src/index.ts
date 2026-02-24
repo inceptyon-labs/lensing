@@ -169,6 +169,14 @@ export type {
 } from '@lensing/types';
 export { DEFAULT_PIR_IDLE_TIMEOUT_MS, DEFAULT_PIR_GPIO_PIN } from '@lensing/types';
 
+// ── Module Settings ─────────────────────────────────────────────────────────
+export { readModuleConfig, writeModuleConfig } from './module-settings';
+export type { ModuleConfig } from './module-settings';
+
+// ── Module Boot ─────────────────────────────────────────────────────────────
+export { bootEnabledModules } from './module-boot';
+export type { BootedModule, BootDeps } from './module-boot';
+
 // ── Host Service (unified boot sequence) ────────────────────────────────────
 export { createHostService } from './host-service';
 export type { HostServiceInstance } from './host-service';

@@ -49,6 +49,10 @@ importers:
         version: 2.1.9(@types/node@25.2.3)
 
   apps/display:
+    dependencies:
+      '@lensing/types':
+        specifier: workspace:*
+        version: link:../../packages/types
     devDependencies:
       '@sveltejs/adapter-static':
         specifier: ^3.0.0

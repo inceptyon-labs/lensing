@@ -1,0 +1,26 @@
+{
+  "id": "hello-world",
+  "name": "Hello World",
+  "version": "0.1.0",
+  "config_schema": {
+    "fields": [
+      {
+        "key": "greeting",
+        "type": "string",
+        "label": "Greeting Text",
+        "description": "The message to display",
+        "default": "Hello from Lensing!",
+        "required": true
+      },
+      {
+        "key": "refreshInterval",
+        "type": "number",
+        "label": "Refresh Interval (ms)",
+        "description": "How often to update",
+        "default": 5000,
+        "min": 1000,
+        "max": 60000
+      }
+    ]
+  }
+}

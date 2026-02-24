@@ -5,8 +5,8 @@ status: completed
 type: task
 priority: normal
 tags:
-    - area:frontend
-    - size:S
+  - area:frontend
+  - size:S
 created_at: 2026-02-24T02:46:02Z
 updated_at: 2026-02-24T14:54:47Z
 parent: lensing-aim8
@@ -30,13 +30,15 @@ Dynamic config form that renders from a plugin's config_schema.
 ## Completed
 
 **Files changed:**
+
 - apps/display/src/lib/AdminConfigForm.svelte (NEW)
-- apps/display/__tests__/admin-config-form.test.ts (NEW, 14 tests)
+- apps/display/**tests**/admin-config-form.test.ts (NEW, 14 tests)
 - apps/display/src/lib/AdminPluginCard.svelte (MODIFIED)
 - apps/display/src/lib/AdminPluginList.svelte (MODIFIED)
-- apps/display/__tests__/admin-plugin.test.ts (MODIFIED, +5 tests)
+- apps/display/**tests**/admin-plugin.test.ts (MODIFIED, +5 tests)
 
 **Key decisions:**
+
 - Component reads config_schema.fields from PluginAdminEntry.manifest
 - Values initialized from plugin.config with type-appropriate defaults (false/0/'')
 - Configure button only shown when plugin.manifest.config_schema.fields.length > 0
@@ -45,10 +47,12 @@ Dynamic config form that renders from a plugin's config_schema.
 - Design tokens: --control-bg/--control-border for inputs, --ember for Save button
 
 **Notes for next task:**
+
 - AdminConfigForm is fully wired: AdminPluginList → AdminPluginCard → AdminConfigForm
 - PUT /plugins/:id/config sends { config: Record<string, string|number|boolean> }
 - Server merges config with existing state (doesn't replace — partial updates OK)
 - 1359 total tests passing
 
 ---
-*Task completed via TDD (test-first)*
+
+_Task completed via TDD (test-first)_

@@ -22,6 +22,7 @@ describe('startServer', () => {
       rest: {} as never,
       ws: {} as never,
       plugins: {} as never,
+      modules: [],
     });
   });
 
@@ -72,6 +73,7 @@ describe('startServer', () => {
       rest: {} as never,
       ws: {} as never,
       plugins: {} as never,
+      modules: [],
     });
 
     let resolved = false;
@@ -123,6 +125,7 @@ describe('startServer', () => {
       rest: {} as never,
       ws: {} as never,
       plugins: {} as never,
+      modules: [],
     });
 
     await expect(startServer()).rejects.toThrow('Boot failed');

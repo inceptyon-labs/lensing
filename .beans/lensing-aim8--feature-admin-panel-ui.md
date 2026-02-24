@@ -5,8 +5,8 @@ status: completed
 type: feature
 priority: high
 tags:
-    - pasiv
-    - area:frontend
+  - pasiv
+  - area:frontend
 created_at: 2026-02-24T02:45:14Z
 updated_at: 2026-02-24T14:54:55Z
 parent: lensing-z2ez
