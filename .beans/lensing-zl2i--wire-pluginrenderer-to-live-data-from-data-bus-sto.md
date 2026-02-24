@@ -8,12 +8,13 @@ created_at: 2026-02-24T18:00:08Z
 updated_at: 2026-02-24T18:01:07Z
 parent: lensing-wbum
 blocked_by:
-    - lensing-gi9v
+  - lensing-gi9v
 ---
 
 PluginRenderer currently passes hardcoded empty arrays to every widget component. It needs to read from the client-side data bus store and pass live data.
 
 ## Current State
+
 ```svelte
 <NewsHeadlines headlines={[]} />
 <SportsScores games={[]} />
@@ -22,6 +23,7 @@ PluginRenderer currently passes hardcoded empty arrays to every widget component
 ```
 
 ## What to Do
+
 - Import the data bus store
 - For each plugin_id, subscribe to the appropriate channel and pass data:
   - news → dataBus['news.headlines']?.articles → headlines prop
@@ -33,7 +35,9 @@ PluginRenderer currently passes hardcoded empty arrays to every widget component
 - Handle the case where data hasn't arrived yet (loading state vs empty state)
 
 ## Blocked By
+
 - lensing-gi9v (client-side data bus store)
 
 ## Key Files
+
 - apps/display/src/lib/PluginRenderer.svelte

@@ -11,6 +11,7 @@ updated_at: 2026-02-24T17:21:08Z
 Make plugin-admin-handlers synthesize PluginAdminEntry objects for MODULE_SCHEMAS entries alongside real plugins. Route enable/config mutations to flat DB settings. Zone assignment uses db.setPluginState() for both. Kill the Settings tab. Delete AdminModuleSettings and AdminModuleCard.
 
 ## Todo
+
 - [x] Add builtin flag to PluginAdminEntry type
 - [x] Synthesize module entries in plugin-admin-handlers
 - [x] Add plugin-admin-handlers tests for modules

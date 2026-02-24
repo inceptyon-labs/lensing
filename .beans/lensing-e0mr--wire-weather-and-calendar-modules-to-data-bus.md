@@ -12,6 +12,7 @@ parent: lensing-wbum
 Weather and Calendar server modules don't receive dataBus in their options, so they never publish data. Every other module (crypto, news, sports, home-assistant, allergies, pir) does.
 
 ## Current State
+
 - module-boot.ts passes dataBus to crypto, news, sports, home-assistant, allergies, pir
 - Weather: createWeatherServer({apiKey, location, units}) — no dataBus param
 - Calendar: createCalendarServer({serverUrl, username, password, calendarPath, rangeDays}) — no dataBus param
@@ -19,6 +20,7 @@ Weather and Calendar server modules don't receive dataBus in their options, so t
 - CalendarServerOptions (in caldav-client.ts) has no dataBus field
 
 ## What to Do
+
 - Add dataBus to WeatherServerOptions and CalendarServerOptions interfaces
 - Publish weather data to channel 'weather.current' after each refresh
 - Publish calendar events to channel 'calendar.events' after each refresh
@@ -26,6 +28,7 @@ Weather and Calendar server modules don't receive dataBus in their options, so t
 - Add tests
 
 ## Key Files
+
 - packages/core/src/weather-server.ts
 - packages/core/src/caldav-client.ts
 - packages/core/src/module-boot.ts

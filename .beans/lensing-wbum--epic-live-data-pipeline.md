@@ -11,6 +11,7 @@ updated_at: 2026-02-24T18:04:54Z
 The entire data pipeline from server modules to display widgets is broken. No live data reaches the client. This epic covers every link in the chain: module refresh, data bus wiring, WebSocket forwarding, client-side stores, PluginRenderer data binding, and missing widget components.
 
 ## Pipeline Links (all broken)
+
 1. Server modules never call refresh() — no polling, no timers
 2. Weather & Calendar modules don't publish to data bus at all
 3. Data bus → WebSocket bridge doesn't exist (dataBus.onMessage never wired to ws.broadcast)

@@ -11,6 +11,7 @@ updated_at: 2026-02-24T16:56:37Z
 After saving module config, add a Restart button that hot-reboots just the changed module in-place via rebootModule() + POST /modules/:id/restart endpoint.
 
 ## Todo
+
 - [x] Add rebootModule() function to module-boot.ts
 - [x] Add rebootModule tests
 - [x] Add restartModule handler + POST /modules/:id/restart route to rest-server.ts
