@@ -9,6 +9,7 @@
 <div class="admin-page">
   <header class="admin-header">
     <div class="admin-nav">
+      <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
       <a href="/" class="back-link">← Back to Display</a>
     </div>
     <h1 class="admin-title">Admin: Plugin Management</h1>

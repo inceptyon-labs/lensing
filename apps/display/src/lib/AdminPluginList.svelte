@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import type { PluginAdminEntry } from '@lensing/types';
+  import { ZONE_NAMES } from './config.ts';
   import AdminPluginCard from './AdminPluginCard.svelte';
 
   let plugins: PluginAdminEntry[] = [];
@@ -39,7 +40,7 @@
   async function handleZoneChange(id: string, zone: string | undefined) {
     try {
       // Validate zone before sending
-      if (zone !== undefined && !ZONE_NAMES.includes(zone as any)) {
+      if (zone !== undefined && !ZONE_NAMES.includes(zone as (typeof ZONE_NAMES)[number])) {
         throw new Error('Invalid zone selected');
       }
       // eslint-disable-next-line no-undef
