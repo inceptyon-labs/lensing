@@ -1,4 +1,4 @@
-import type { DataBusInstance } from './data-bus';
+import type { DataBusInstance } from '@lensing/types';
 
 // Weather data types (mirrored from @lensing/ui — core cannot depend on ui)
 

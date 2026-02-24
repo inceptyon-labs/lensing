@@ -387,7 +387,7 @@ describe('WeatherServer', () => {
   describe('dataBus publishing', () => {
     it('should publish weather data to dataBus on successful refresh', async () => {
       const publish = vi.fn();
-      const dataBus = { publish } as unknown as import('../data-bus').DataBusInstance;
+      const dataBus = { publish } as unknown as import('@lensing/types').DataBusInstance;
       const server = createWeatherServer(validOptions({ dataBus }));
       await server.refresh();
       expect(publish).toHaveBeenCalledTimes(1);
@@ -404,7 +404,7 @@ describe('WeatherServer', () => {
 
     it('should not publish to dataBus on fetch failure', async () => {
       const publish = vi.fn();
-      const dataBus = { publish } as unknown as import('../data-bus').DataBusInstance;
+      const dataBus = { publish } as unknown as import('@lensing/types').DataBusInstance;
       const fetchFn = vi.fn().mockResolvedValue({
         ok: false,
         status: 500,

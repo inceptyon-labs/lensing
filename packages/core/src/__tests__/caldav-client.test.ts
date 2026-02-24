@@ -537,7 +537,7 @@ END:VEVENT</calendar-data>
   describe('dataBus publishing', () => {
     it('should publish events to dataBus on successful refresh', async () => {
       const publish = vi.fn();
-      const dataBus = { publish } as unknown as import('../data-bus').DataBusInstance;
+      const dataBus = { publish } as unknown as import('@lensing/types').DataBusInstance;
       const server = createCalendarServer(validOptions({ dataBus }));
       await server.refresh();
       expect(publish).toHaveBeenCalledTimes(1);
@@ -553,7 +553,7 @@ END:VEVENT</calendar-data>
 
     it('should not publish to dataBus on fetch failure', async () => {
       const publish = vi.fn();
-      const dataBus = { publish } as unknown as import('../data-bus').DataBusInstance;
+      const dataBus = { publish } as unknown as import('@lensing/types').DataBusInstance;
       const fetchFn = vi.fn().mockRejectedValue(new Error('network error'));
       const server = createCalendarServer(validOptions({ dataBus, fetchFn }));
       await server.refresh();

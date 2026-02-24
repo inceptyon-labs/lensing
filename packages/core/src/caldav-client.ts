@@ -1,5 +1,5 @@
 import type { CalendarEvent } from '@lensing/types';
-import type { DataBusInstance } from './data-bus';
+import type { DataBusInstance } from '@lensing/types';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
