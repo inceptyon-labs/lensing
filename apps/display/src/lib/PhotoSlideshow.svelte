@@ -1,6 +1,10 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import { getNextPhotoIndex } from '@lensing/core';
+
+  function getNextPhotoIndex(current: number, total: number): number {
+    if (total <= 1) return 0;
+    return (current + 1) % total;
+  }
 
   export let photoPaths: string[] = [];
   export let cycleInterval: number = 8000;

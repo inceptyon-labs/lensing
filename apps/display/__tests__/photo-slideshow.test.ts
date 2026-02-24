@@ -54,4 +54,14 @@ describe('PhotoSlideshow Widget', () => {
     expect(content).not.toMatch(/style="width:\s*\d+px/);
     expect(content).not.toMatch(/style="height:\s*\d+px/);
   });
+
+  it('should not import from @lensing/core (Node.js package breaks SSR build)', () => {
+    content = fs.readFileSync(WIDGET_PATH, 'utf-8');
+    expect(content).not.toContain('@lensing/core');
+  });
+
+  it('should have inline getNextPhotoIndex function', () => {
+    content = fs.readFileSync(WIDGET_PATH, 'utf-8');
+    expect(content).toContain('getNextPhotoIndex');
+  });
 });
