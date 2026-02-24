@@ -1,14 +1,14 @@
 ---
 # lensing-c6mt
 title: Build plugin config form component
-status: in-progress
+status: completed
 type: task
 priority: normal
 tags:
     - area:frontend
     - size:S
 created_at: 2026-02-24T02:46:02Z
-updated_at: 2026-02-24T14:54:35Z
+updated_at: 2026-02-24T14:54:47Z
 parent: lensing-aim8
 ---
 
