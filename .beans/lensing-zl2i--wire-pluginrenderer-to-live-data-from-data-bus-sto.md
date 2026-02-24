@@ -1,11 +1,11 @@
 ---
 # lensing-zl2i
 title: Wire PluginRenderer to live data from data bus store
-status: todo
+status: in-progress
 type: task
 priority: critical
 created_at: 2026-02-24T18:00:08Z
-updated_at: 2026-02-24T18:01:07Z
+updated_at: 2026-02-24T20:31:50Z
 parent: lensing-wbum
 blocked_by:
   - lensing-gi9v
