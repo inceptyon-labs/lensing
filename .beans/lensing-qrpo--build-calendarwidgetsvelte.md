@@ -1,15 +1,15 @@
 ---
 # lensing-qrpo
 title: Build CalendarWidget.svelte
-status: todo
+status: in-progress
 type: task
 priority: normal
 created_at: 2026-02-24T18:00:33Z
-updated_at: 2026-02-24T18:01:08Z
+updated_at: 2026-02-24T22:52:43Z
 parent: lensing-wbum
 blocked_by:
-  - lensing-zl2i
-  - lensing-e0mr
+    - lensing-zl2i
+    - lensing-e0mr
 ---
 
 No calendar display widget exists. PluginRenderer has no 'calendar' branch — it falls through to Placeholder.

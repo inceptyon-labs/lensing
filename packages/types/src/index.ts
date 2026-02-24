@@ -325,6 +325,12 @@ export interface CalendarEvent {
   allDay?: boolean;
 }
 
+/** Full calendar data payload published by calendar-server */
+export interface CalendarData {
+  events: CalendarEvent[];
+  lastUpdated: number; // Unix timestamp in ms
+}
+
 /** A notification with read/dismissed tracking for the store */
 export interface NotificationEntry extends Notification {
   read: boolean;

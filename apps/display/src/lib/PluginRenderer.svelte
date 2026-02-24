@@ -1,12 +1,13 @@
 <script lang="ts">
   import type { PluginAdminEntry } from '@lensing/types';
-  import type { NewsData, SportsData, HomeAssistantData, CryptoData, WeatherData } from '@lensing/types';
+  import type { NewsData, SportsData, HomeAssistantData, CryptoData, WeatherData, CalendarData } from '@lensing/types';
   import PhotoSlideshow from './PhotoSlideshow.svelte';
   import NewsHeadlines from './NewsHeadlines.svelte';
   import SportsScores from './SportsScores.svelte';
   import HomeAssistantDevices from './HomeAssistantDevices.svelte';
   import CryptoWidget from './CryptoWidget.svelte';
   import WeatherWidget from './WeatherWidget.svelte';
+  import CalendarWidget from './CalendarWidget.svelte';
   import Placeholder from './Placeholder.svelte';
   import { getChannelData } from './stores/dataBusStore';
 
@@ -21,12 +22,14 @@
   const haStore = getChannelData('home-assistant-server');
   const cryptoStore = getChannelData('crypto-server');
   const weatherStore = getChannelData('weather-server');
+  const calendarStore = getChannelData('calendar-server');
 
   $: newsData = $newsStore as NewsData | null;
   $: sportsData = $sportsStore as SportsData | null;
   $: haData = $haStore as HomeAssistantData | null;
   $: cryptoData = $cryptoStore as CryptoData | null;
   $: weatherData = $weatherStore as WeatherData | null;
+  $: calendarData = $calendarStore as CalendarData | null;
 </script>
 
 {#if pluginId === 'photo-slideshow'}
@@ -41,6 +44,8 @@
   <CryptoWidget coins={cryptoData?.coins ?? []} />
 {:else if pluginId === 'weather'}
   <WeatherWidget current={weatherData?.current ?? null} forecast={weatherData?.forecast ?? []} />
+{:else if pluginId === 'calendar'}
+  <CalendarWidget events={calendarData?.events ?? []} />
 {:else}
   <Placeholder title={plugin.manifest.name} index={0} />
 {/if}
