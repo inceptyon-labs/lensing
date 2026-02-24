@@ -52,7 +52,7 @@ describe('Main Page Component', () => {
     expect(content).toContain('slot="bottom-bar"');
   });
 
-  it('should use Placeholder widgets in at least one zone', () => {
+  it('should use Placeholder widgets in at least one zone as fallback', () => {
     const content = fs.readFileSync(pagePath, 'utf-8');
     expect(content).toMatch(/<Placeholder[\s\S]*?\/>/);
   });
@@ -73,9 +73,42 @@ describe('Main Page Component', () => {
 
   it('should use svelte:fragment for slots (not div wrappers that bypass zone grid)', () => {
     const content = fs.readFileSync(pagePath, 'utf-8');
-    // svelte:fragment slots pass children directly to Zone grid
-    // div slot wrappers collapse all children into one grid item
     expect(content).toContain('svelte:fragment');
     expect(content).not.toMatch(/<div slot=/);
+  });
+
+  // ── Dynamic Plugin Rendering ──────────────────────────────────────────────
+
+  it('should import PluginRenderer component', () => {
+    const content = fs.readFileSync(pagePath, 'utf-8');
+    expect(content).toContain('PluginRenderer');
+    expect(content).toContain('import');
+  });
+
+  it('should import onMount from svelte for data fetching', () => {
+    const content = fs.readFileSync(pagePath, 'utf-8');
+    expect(content).toContain('onMount');
+    expect(content).toContain('svelte');
+  });
+
+  it('should fetch /plugins on mount to get zone assignments', () => {
+    const content = fs.readFileSync(pagePath, 'utf-8');
+    expect(content).toContain('/plugins');
+    expect(content).toContain('fetch');
+  });
+
+  it('should use PluginRenderer for assigned plugins in zones', () => {
+    const content = fs.readFileSync(pagePath, 'utf-8');
+    expect(content).toContain('<PluginRenderer');
+  });
+
+  it('should connect to WebSocket for live layout updates', () => {
+    const content = fs.readFileSync(pagePath, 'utf-8');
+    expect(content).toContain('WebSocket');
+  });
+
+  it('should handle layout_change WebSocket messages to refresh plugins', () => {
+    const content = fs.readFileSync(pagePath, 'utf-8');
+    expect(content).toContain('layout_change');
   });
 });
