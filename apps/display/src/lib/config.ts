@@ -26,6 +26,14 @@ export const DEFAULT_LAYOUT: LayoutConfig = {
   ],
 };
 
+/** Maps built-in plugin IDs to their display component names */
+export const BUILTIN_PLUGIN_MAP: Record<string, string> = {
+  'photo-slideshow': 'PhotoSlideshow',
+  'news-headlines': 'NewsHeadlines',
+  'sports-scores': 'SportsScores',
+  'home-assistant': 'HomeAssistantDevices',
+};
+
 /** Build an inline style string for a zone's internal CSS grid */
 export function createZoneStyle(config: ZoneConfig): string {
   return [
