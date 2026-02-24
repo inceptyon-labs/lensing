@@ -1,14 +1,14 @@
 ---
 # lensing-6dsp
 title: Add CLI lensing start command
-status: in-progress
+status: completed
 type: task
 priority: normal
 tags:
     - area:backend
     - size:S
 created_at: 2026-02-24T02:45:35Z
-updated_at: 2026-02-24T14:43:42Z
+updated_at: 2026-02-24T14:43:55Z
 parent: lensing-is1m
 ---
 
