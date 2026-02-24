@@ -45,7 +45,7 @@
     <button
       class="toggle-btn toggle-btn--{plugin.enabled ? 'disable' : 'enable'}"
       on:click={handleToggle}
-      aria-pressed={plugin.enabled}
+      aria-pressed={plugin.enabled ? 'true' : 'false'}
     >
       {plugin.enabled ? 'Disable' : 'Enable'}
     </button>

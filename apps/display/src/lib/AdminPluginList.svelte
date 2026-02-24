@@ -21,25 +21,37 @@
   });
 
   async function handleToggleEnabled(id: string, enabled: boolean) {
-    // eslint-disable-next-line no-undef
-    await fetch(`/plugins/${encodeURIComponent(id)}/enabled`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ enabled }),
-    });
-    plugins = plugins.map((p) => (p.plugin_id === id ? { ...p, enabled } : p));
+    try {
+      // eslint-disable-next-line no-undef
+      const res = await fetch(`/plugins/${encodeURIComponent(id)}/enabled`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled }),
+      });
+      if (res.ok) {
+        plugins = plugins.map((p) => (p.plugin_id === id ? { ...p, enabled } : p));
+      }
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Failed to toggle plugin';
+    }
   }
 
   async function handleZoneChange(id: string, zone: string | undefined) {
-    // eslint-disable-next-line no-undef
-    await fetch(`/plugins/${encodeURIComponent(id)}/zone`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ zone: zone ?? null }),
-    });
-    plugins = plugins.map((p) =>
-      p.plugin_id === id ? { ...p, zone: zone as PluginAdminEntry['zone'] } : p
-    );
+    try {
+      // eslint-disable-next-line no-undef
+      const res = await fetch(`/plugins/${encodeURIComponent(id)}/zone`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ zone: zone ?? null }),
+      });
+      if (res.ok) {
+        plugins = plugins.map((p) =>
+          p.plugin_id === id ? { ...p, zone: zone as PluginAdminEntry['zone'] } : p
+        );
+      }
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Failed to change plugin zone';
+    }
   }
 </script>
 
