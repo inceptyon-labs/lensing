@@ -1,5 +1,5 @@
 import http from 'node:http';
-import type { ZoneConfig, ConversationEntry } from '@lensing/types';
+import type { ZoneConfig, ConversationEntry, PluginAdminEntry, ZoneName } from '@lensing/types';
 
 /** Log entry emitted after each request */
 export interface LogEntry {
@@ -16,6 +16,13 @@ export interface RestServerHandlers {
   getLayout: () => Promise<ZoneConfig[]>;
   putLayout: (layout: ZoneConfig[]) => Promise<void>;
   postAsk: (question: string) => Promise<ConversationEntry>;
+  // Plugin management (optional — omit to disable plugin endpoints)
+  getPlugins?: () => Promise<PluginAdminEntry[]>;
+  getPlugin?: (id: string) => Promise<PluginAdminEntry | undefined>;
+  setPluginEnabled?: (id: string, enabled: boolean) => Promise<void>;
+  updatePluginConfig?: (id: string, config: Record<string, unknown>) => Promise<void>;
+  assignPluginZone?: (id: string, zone: ZoneName | undefined) => Promise<void>;
+  reloadPlugins?: () => Promise<void>;
 }
 
 /** Configuration options for the REST server */
@@ -199,6 +206,192 @@ export function createRestServer(
       try {
         // Strip query string from path for route matching
         const cleanPath = path.split('?')[0];
+
+        // Try parameterized plugin routes before exact-match lookup
+        if (cleanPath === '/plugins/reload' && method === 'POST') {
+          if (!handlers.reloadPlugins) {
+            writeJson(res, 404, { error: 'Not Found' });
+            try {
+              logger?.({ method, path, status: 404, duration_ms: Date.now() - start });
+            } catch {
+              // Ignore logger errors
+            }
+            return;
+          }
+          await handlers.reloadPlugins();
+          writeJson(res, 200, { ok: true });
+          try {
+            logger?.({ method, path, status: 200, duration_ms: Date.now() - start });
+          } catch {
+            // Ignore logger errors
+          }
+          return;
+        }
+
+        const pluginMatch = cleanPath.match(/^\/plugins\/([^/]+)(?:\/(.+))?$/);
+        if (pluginMatch) {
+          const pluginId = decodeURIComponent(pluginMatch[1]!);
+          const action = pluginMatch[2];
+
+          if (!handlers.getPlugins) {
+            writeJson(res, 404, { error: 'Not Found' });
+            try {
+              logger?.({ method, path, status: 404, duration_ms: Date.now() - start });
+            } catch {
+              // Ignore logger errors
+            }
+            return;
+          }
+
+          // GET /plugins/:id
+          if (!action && method === 'GET') {
+            const plugin = await handlers.getPlugin!(pluginId);
+            if (!plugin) {
+              writeJson(res, 404, { error: `Plugin '${pluginId}' not found` });
+            } else {
+              writeJson(res, 200, plugin);
+            }
+            try {
+              logger?.({ method, path, status: res.statusCode, duration_ms: Date.now() - start });
+            } catch {
+              // Ignore logger errors
+            }
+            return;
+          }
+
+          // PUT /plugins/:id/enabled
+          if (action === 'enabled' && method === 'PUT') {
+            const body = await readBody(req);
+            let parsed: Record<string, unknown>;
+            try {
+              parsed = JSON.parse(body) as Record<string, unknown>;
+            } catch {
+              writeJson(res, 400, { error: 'Invalid JSON' });
+              try {
+                logger?.({ method, path, status: 400, duration_ms: Date.now() - start });
+              } catch {
+                // Ignore logger errors
+              }
+              return;
+            }
+            if (typeof parsed['enabled'] !== 'boolean') {
+              writeJson(res, 400, { error: 'enabled (boolean) is required' });
+              try {
+                logger?.({ method, path, status: 400, duration_ms: Date.now() - start });
+              } catch {
+                // Ignore logger errors
+              }
+              return;
+            }
+            await handlers.setPluginEnabled!(pluginId, parsed['enabled'] as boolean);
+            writeJson(res, 200, { ok: true });
+            try {
+              logger?.({ method, path, status: 200, duration_ms: Date.now() - start });
+            } catch {
+              // Ignore logger errors
+            }
+            return;
+          }
+
+          // PUT /plugins/:id/config
+          if (action === 'config' && method === 'PUT') {
+            const body = await readBody(req);
+            let parsed: Record<string, unknown>;
+            try {
+              parsed = JSON.parse(body) as Record<string, unknown>;
+            } catch {
+              writeJson(res, 400, { error: 'Invalid JSON' });
+              try {
+                logger?.({ method, path, status: 400, duration_ms: Date.now() - start });
+              } catch {
+                // Ignore logger errors
+              }
+              return;
+            }
+            if (!parsed['config'] || typeof parsed['config'] !== 'object' || Array.isArray(parsed['config'])) {
+              writeJson(res, 400, { error: 'config (object) is required' });
+              try {
+                logger?.({ method, path, status: 400, duration_ms: Date.now() - start });
+              } catch {
+                // Ignore logger errors
+              }
+              return;
+            }
+            await handlers.updatePluginConfig!(pluginId, parsed['config'] as Record<string, unknown>);
+            writeJson(res, 200, { ok: true });
+            try {
+              logger?.({ method, path, status: 200, duration_ms: Date.now() - start });
+            } catch {
+              // Ignore logger errors
+            }
+            return;
+          }
+
+          // PUT /plugins/:id/zone
+          if (action === 'zone' && method === 'PUT') {
+            const body = await readBody(req);
+            let parsed: Record<string, unknown>;
+            try {
+              parsed = JSON.parse(body) as Record<string, unknown>;
+            } catch {
+              writeJson(res, 400, { error: 'Invalid JSON' });
+              try {
+                logger?.({ method, path, status: 400, duration_ms: Date.now() - start });
+              } catch {
+                // Ignore logger errors
+              }
+              return;
+            }
+            if (!Object.prototype.hasOwnProperty.call(parsed, 'zone')) {
+              writeJson(res, 400, { error: 'zone is required' });
+              try {
+                logger?.({ method, path, status: 400, duration_ms: Date.now() - start });
+              } catch {
+                // Ignore logger errors
+              }
+              return;
+            }
+            const zone = parsed['zone'] === null ? undefined : (parsed['zone'] as ZoneName);
+            await handlers.assignPluginZone!(pluginId, zone);
+            writeJson(res, 200, { ok: true });
+            try {
+              logger?.({ method, path, status: 200, duration_ms: Date.now() - start });
+            } catch {
+              // Ignore logger errors
+            }
+            return;
+          }
+
+          writeJson(res, 404, { error: 'Not Found' });
+          try {
+            logger?.({ method, path, status: 404, duration_ms: Date.now() - start });
+          } catch {
+            // Ignore logger errors
+          }
+          return;
+        }
+
+        // GET /plugins (exact match handled here since it's not parameterized)
+        if (cleanPath === '/plugins' && method === 'GET') {
+          if (!handlers.getPlugins) {
+            writeJson(res, 404, { error: 'Not Found' });
+            try {
+              logger?.({ method, path, status: 404, duration_ms: Date.now() - start });
+            } catch {
+              // Ignore logger errors
+            }
+            return;
+          }
+          const plugins = await handlers.getPlugins();
+          writeJson(res, 200, plugins);
+          try {
+            logger?.({ method, path, status: 200, duration_ms: Date.now() - start });
+          } catch {
+            // Ignore logger errors
+          }
+          return;
+        }
+
         const pathRoutes = routes.get(cleanPath);
         if (!pathRoutes) {
           writeJson(res, 404, { error: 'Not Found' });

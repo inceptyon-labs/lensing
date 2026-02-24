@@ -1,14 +1,14 @@
 ---
 # lensing-k2p7
 title: Create host service boot sequence
-status: in-progress
+status: completed
 type: task
 priority: high
 tags:
     - area:backend
     - size:M
 created_at: 2026-02-24T02:45:35Z
-updated_at: 2026-02-24T03:22:31Z
+updated_at: 2026-02-24T03:24:06Z
 parent: lensing-is1m
 ---
 
