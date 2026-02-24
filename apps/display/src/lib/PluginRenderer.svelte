@@ -13,11 +13,11 @@
 
 {#if pluginId === 'photo-slideshow'}
   <PhotoSlideshow photoPaths={[]} />
-{:else if pluginId === 'news-server'}
+{:else if pluginId === 'news'}
   <NewsHeadlines headlines={[]} />
-{:else if pluginId === 'sports-server'}
+{:else if pluginId === 'sports'}
   <SportsScores games={[]} />
-{:else if pluginId === 'home-assistant-server'}
+{:else if pluginId === 'home-assistant'}
   <HomeAssistantDevices devices={[]} sensors={[]} />
 {:else}
   <Placeholder title={plugin.manifest.name} index={0} />

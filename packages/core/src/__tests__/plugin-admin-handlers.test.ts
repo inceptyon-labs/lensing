@@ -3,6 +3,7 @@ import { createPluginAdminHandlers } from '../plugin-admin-handlers';
 import { createPluginLoader } from '../plugin-loader';
 import { createDatabase } from '../database';
 import type { PluginManifestWithConfig, ZoneName } from '@lensing/types';
+import { MODULE_SCHEMAS } from '@lensing/types';
 import path from 'node:path';
 import os from 'node:os';
 import fs from 'node:fs';
@@ -46,7 +47,7 @@ describe('PluginAdminHandlers (plugin-admin-handlers.ts)', () => {
     db.close();
   });
 
-  it('should return empty array when no plugins exist', async () => {
+  it('should return only built-in module entries when no third-party plugins exist', async () => {
     const db = createDatabase({ path: ':memory:' });
     const loader = createPluginLoader({ pluginsDir });
     await loader.load();
@@ -55,7 +56,10 @@ describe('PluginAdminHandlers (plugin-admin-handlers.ts)', () => {
     const plugins = await handlers.getPlugins!();
 
     expect(Array.isArray(plugins)).toBe(true);
-    expect(plugins.length).toBe(0);
+    // No third-party plugins
+    expect(plugins.filter((p) => !p.builtin).length).toBe(0);
+    // Built-in modules present
+    expect(plugins.filter((p) => p.builtin).length).toBe(8);
 
     db.close();
   });
@@ -302,6 +306,155 @@ describe('PluginAdminHandlers (plugin-admin-handlers.ts)', () => {
     expect(plugin!.enabled).toBe(false);
     expect(plugin!.config).toEqual({ key: 'value' });
     expect(plugin!.zone).toBe('left-col');
+
+    db.close();
+  });
+
+  // ── Built-in Module Synthesis ─────────────────────────────────────────────
+
+  it('should include built-in module entries with builtin flag in getPlugins', async () => {
+    const db = createDatabase({ path: ':memory:' });
+    const loader = createPluginLoader({ pluginsDir });
+    await loader.load();
+
+    const handlers = createPluginAdminHandlers({ pluginLoader: loader, db });
+    const plugins = await handlers.getPlugins!();
+
+    const builtinPlugins = plugins.filter((p) => p.builtin);
+    expect(builtinPlugins.length).toBe(MODULE_SCHEMAS.length);
+
+    for (const schema of MODULE_SCHEMAS) {
+      const entry = builtinPlugins.find((p) => p.plugin_id === schema.id);
+      expect(entry).toBeDefined();
+      expect(entry!.builtin).toBe(true);
+      expect(entry!.manifest.name).toBe(schema.name);
+      expect(entry!.manifest.version).toBe('built-in');
+      expect(entry!.manifest.config_schema).toBeDefined();
+    }
+
+    db.close();
+  });
+
+  it('should return module entry via getPlugin for a built-in module', async () => {
+    const db = createDatabase({ path: ':memory:' });
+    const loader = createPluginLoader({ pluginsDir });
+    await loader.load();
+
+    const handlers = createPluginAdminHandlers({ pluginLoader: loader, db });
+    const entry = await handlers.getPlugin!('weather');
+
+    expect(entry).toBeDefined();
+    expect(entry!.plugin_id).toBe('weather');
+    expect(entry!.builtin).toBe(true);
+    expect(entry!.manifest.name).toBe('Weather');
+    expect(entry!.manifest.config_schema?.fields.length).toBeGreaterThan(0);
+
+    db.close();
+  });
+
+  it('should write module enabled state to flat DB settings', async () => {
+    const db = createDatabase({ path: ':memory:' });
+    const loader = createPluginLoader({ pluginsDir });
+    await loader.load();
+
+    const handlers = createPluginAdminHandlers({ pluginLoader: loader, db });
+
+    await handlers.setPluginEnabled!('weather', true);
+    expect(db.getSetting('weather.enabled')).toBe('true');
+
+    await handlers.setPluginEnabled!('weather', false);
+    expect(db.getSetting('weather.enabled')).toBe('false');
+
+    db.close();
+  });
+
+  it('should write module config to flat DB settings', async () => {
+    const db = createDatabase({ path: ':memory:' });
+    const loader = createPluginLoader({ pluginsDir });
+    await loader.load();
+
+    const handlers = createPluginAdminHandlers({ pluginLoader: loader, db });
+
+    await handlers.updatePluginConfig!('weather', { apiKey: 'test-key', lat: 40.7, lon: -74 });
+
+    expect(db.getSetting('weather.apiKey')).toBe('test-key');
+    expect(db.getSetting('weather.lat')).toBe('40.7');
+    expect(db.getSetting('weather.lon')).toBe('-74');
+
+    db.close();
+  });
+
+  it('should skip redacted password placeholders in module config update', async () => {
+    const db = createDatabase({ path: ':memory:' });
+    const loader = createPluginLoader({ pluginsDir });
+    await loader.load();
+
+    // Set a real secret
+    db.setSetting('weather.apiKey', 'real-secret');
+
+    const handlers = createPluginAdminHandlers({ pluginLoader: loader, db });
+
+    // Update with redacted placeholder — should be skipped
+    await handlers.updatePluginConfig!('weather', { apiKey: '••••••••', lat: 42 });
+
+    expect(db.getSetting('weather.apiKey')).toBe('real-secret');
+    expect(db.getSetting('weather.lat')).toBe('42');
+
+    db.close();
+  });
+
+  it('should persist zone for built-in modules via assignPluginZone', async () => {
+    const db = createDatabase({ path: ':memory:' });
+    const loader = createPluginLoader({ pluginsDir });
+    await loader.load();
+
+    const handlers = createPluginAdminHandlers({ pluginLoader: loader, db });
+
+    await handlers.assignPluginZone!('weather', 'right-col' as ZoneName);
+
+    const entry = await handlers.getPlugin!('weather');
+    expect(entry!.zone).toBe('right-col');
+
+    db.close();
+  });
+
+  it('should redact password fields in module config returned by getPlugins', async () => {
+    const db = createDatabase({ path: ':memory:' });
+    const loader = createPluginLoader({ pluginsDir });
+    await loader.load();
+
+    // Set a password field
+    db.setSetting('weather.apiKey', 'super-secret');
+    db.setSetting('weather.lat', '40.7');
+
+    const handlers = createPluginAdminHandlers({ pluginLoader: loader, db });
+    const plugins = await handlers.getPlugins!();
+
+    const weather = plugins.find((p) => p.plugin_id === 'weather');
+    expect(weather).toBeDefined();
+    expect(weather!.config['apiKey']).toBe('••••••••');
+    expect(weather!.config['lat']).toBe(40.7);
+
+    db.close();
+  });
+
+  it('should show module as enabled after setPluginEnabled for module', async () => {
+    const db = createDatabase({ path: ':memory:' });
+    const loader = createPluginLoader({ pluginsDir });
+    await loader.load();
+
+    const handlers = createPluginAdminHandlers({ pluginLoader: loader, db });
+
+    // Initially disabled
+    let entry = await handlers.getPlugin!('crypto');
+    expect(entry!.enabled).toBe(false);
+    expect(entry!.status).toBe('disabled');
+
+    // Enable
+    await handlers.setPluginEnabled!('crypto', true);
+    entry = await handlers.getPlugin!('crypto');
+    expect(entry!.enabled).toBe(true);
+    expect(entry!.status).toBe('active');
 
     db.close();
   });

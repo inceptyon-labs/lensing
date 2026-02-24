@@ -28,6 +28,50 @@ export interface BootedModule {
   instance: { close(): void };
 }
 
+/**
+ * Hot-restart a single module: close old instance, re-read config from DB,
+ * boot new instance. Mutates the `modules` array by reference.
+ * Returns the new BootedModule, or null if the module is disabled/unknown.
+ */
+export function rebootModule(
+  id: ModuleId,
+  modules: BootedModule[],
+  db: DatabaseInstance,
+  deps: BootDeps,
+  log?: HostServiceLogger
+): BootedModule | null {
+  // Close and remove existing instance (if any)
+  const existingIdx = modules.findIndex((m) => m.id === id);
+  if (existingIdx !== -1) {
+    try {
+      modules[existingIdx]!.instance.close();
+    } catch (err) {
+      log?.error(`Module close failed: ${id}`, err);
+    }
+    modules.splice(existingIdx, 1);
+  }
+
+  // Find schema — return null for unknown modules
+  const schema = MODULE_SCHEMAS.find((s) => s.id === id);
+  if (!schema) return null;
+
+  // Re-read config from DB
+  const config = readModuleConfig(db, schema);
+  if (!config.enabled) {
+    log?.info(`Module disabled, removed: ${id}`);
+    return null;
+  }
+
+  // Boot new instance (let errors propagate after old is already closed)
+  const instance = bootModule(id, config.values, deps);
+  if (!instance) return null;
+
+  const booted: BootedModule = { id, instance };
+  modules.push(booted);
+  log?.info(`Module rebooted: ${id}`);
+  return booted;
+}
+
 /** Boot all enabled built-in modules based on DB settings */
 export function bootEnabledModules(
   db: DatabaseInstance,

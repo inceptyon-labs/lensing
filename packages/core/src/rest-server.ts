@@ -24,6 +24,8 @@ export interface RestServerHandlers {
   assignPluginZone?: (id: string, zone: ZoneName | undefined) => Promise<void>;
   reloadPlugins?: () => Promise<void>;
   installPlugin?: (zipBuffer: Buffer) => Promise<PluginAdminEntry>;
+  // Module management
+  restartModule?: (id: string) => Promise<{ ok: boolean; running: boolean }>;
 }
 
 /** Configuration options for the REST server */
@@ -234,6 +236,39 @@ export function createRestServer(
       try {
         // Strip query string from path for route matching
         const cleanPath = path.split('?')[0];
+
+        // Module restart route: POST /modules/:id/restart
+        const moduleMatch = cleanPath.match(/^\/modules\/([^/]+)\/restart$/);
+        if (moduleMatch && method === 'POST') {
+          if (!handlers.restartModule) {
+            writeJson(res, 404, { error: 'Not Found' });
+            try {
+              logger?.({ method, path, status: 404, duration_ms: Date.now() - start });
+            } catch {
+              // Ignore logger errors
+            }
+            return;
+          }
+          try {
+            const moduleId = decodeURIComponent(moduleMatch[1]!);
+            const result = await handlers.restartModule(moduleId);
+            writeJson(res, 200, result);
+            try {
+              logger?.({ method, path, status: 200, duration_ms: Date.now() - start });
+            } catch {
+              // Ignore logger errors
+            }
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : 'Restart failed';
+            writeJson(res, 500, { error: msg });
+            try {
+              logger?.({ method, path, status: 500, duration_ms: Date.now() - start });
+            } catch {
+              // Ignore logger errors
+            }
+          }
+          return;
+        }
 
         // Try parameterized plugin routes before exact-match lookup
         if (cleanPath === '/plugins/install' && method === 'POST') {

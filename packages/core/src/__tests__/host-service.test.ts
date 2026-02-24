@@ -255,6 +255,51 @@ describe('HostService (host-service.ts)', () => {
     expect(hostService.db.getSetting('weather.lat')).toBe('42.0');
   });
 
+  it('should restart an enabled module via POST /modules/:id/restart', async () => {
+    hostService = createHostService({
+      port: 0,
+      dbPath: path.join(tempDir, 'test.db'),
+      pluginsDir: path.join(tempDir, 'plugins'),
+    });
+
+    await hostService.ready;
+    const port = hostService.port;
+
+    // Enable weather module in DB
+    hostService.db.setSetting('weather.enabled', 'true');
+    hostService.db.setSetting('weather.apiKey', 'test-key');
+    hostService.db.setSetting('weather.lat', '40.7');
+    hostService.db.setSetting('weather.lon', '-74');
+
+    const res = await fetch(`http://127.0.0.1:${port}/modules/weather/restart`, {
+      method: 'POST',
+    });
+    expect(res.status).toBe(200);
+
+    const body = (await res.json()) as { ok: boolean; running: boolean };
+    expect(body.ok).toBe(true);
+    expect(body.running).toBe(true);
+  });
+
+  it('should return 500 for POST /modules/unknown/restart', async () => {
+    hostService = createHostService({
+      port: 0,
+      dbPath: path.join(tempDir, 'test.db'),
+      pluginsDir: path.join(tempDir, 'plugins'),
+    });
+
+    await hostService.ready;
+    const port = hostService.port;
+
+    const res = await fetch(`http://127.0.0.1:${port}/modules/unknown/restart`, {
+      method: 'POST',
+    });
+    expect(res.status).toBe(500);
+
+    const body = (await res.json()) as { error: string };
+    expect(body.error).toContain('Unknown module');
+  });
+
   it('should boot with 0 modules when no module settings exist', async () => {
     hostService = createHostService({
       port: 0,
@@ -264,5 +309,74 @@ describe('HostService (host-service.ts)', () => {
 
     await hostService.ready;
     expect(hostService.modules).toHaveLength(0);
+  });
+
+  it('should return built-in module entries in GET /plugins', async () => {
+    hostService = createHostService({
+      port: 0,
+      dbPath: path.join(tempDir, 'test.db'),
+      pluginsDir: path.join(tempDir, 'plugins'),
+    });
+
+    await hostService.ready;
+    const port = hostService.port;
+
+    const res = await fetch(`http://127.0.0.1:${port}/plugins`);
+    expect(res.status).toBe(200);
+
+    const plugins = (await res.json()) as Array<{
+      plugin_id: string;
+      builtin?: boolean;
+      manifest: { version: string };
+    }>;
+    const builtins = plugins.filter((p) => p.builtin);
+    expect(builtins.length).toBe(8);
+
+    const weather = builtins.find((p) => p.plugin_id === 'weather');
+    expect(weather).toBeDefined();
+    expect(weather!.manifest.version).toBe('built-in');
+  });
+
+  it('should persist module enabled state via PUT /plugins/weather/enabled', async () => {
+    hostService = createHostService({
+      port: 0,
+      dbPath: path.join(tempDir, 'test.db'),
+      pluginsDir: path.join(tempDir, 'plugins'),
+    });
+
+    await hostService.ready;
+    const port = hostService.port;
+
+    const res = await fetch(`http://127.0.0.1:${port}/plugins/weather/enabled`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled: true }),
+    });
+    expect(res.status).toBe(200);
+
+    // Verify it was written to flat settings
+    expect(hostService.db.getSetting('weather.enabled')).toBe('true');
+  });
+
+  it('should persist module zone via PUT /plugins/weather/zone', async () => {
+    hostService = createHostService({
+      port: 0,
+      dbPath: path.join(tempDir, 'test.db'),
+      pluginsDir: path.join(tempDir, 'plugins'),
+    });
+
+    await hostService.ready;
+    const port = hostService.port;
+
+    const res = await fetch(`http://127.0.0.1:${port}/plugins/weather/zone`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ zone: 'right-col' }),
+    });
+    expect(res.status).toBe(200);
+
+    // Verify zone was persisted in plugin state
+    const state = hostService.db.getPluginState<{ zone?: string }>('weather');
+    expect(state?.zone).toBe('right-col');
   });
 });

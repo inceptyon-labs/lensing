@@ -10,8 +10,11 @@
     id: string,
     config: Record<string, string | number | boolean>
   ) => void = () => {};
+  export let onRestart: ((id: string) => Promise<void>) | undefined = undefined;
 
   let configOpen = false;
+  let restartStatus: 'idle' | 'restarting' | 'restarted' | 'error' = 'idle';
+  let restartError = '';
 
   $: hasConfig = !!plugin.manifest.config_schema?.fields?.length;
 
@@ -30,11 +33,31 @@
     onConfigSave(plugin.plugin_id, config);
     configOpen = false;
   }
+
+  async function handleRestart() {
+    restartStatus = 'restarting';
+    restartError = '';
+    try {
+      await onRestart!(plugin.plugin_id);
+      restartStatus = 'restarted';
+      setTimeout(() => (restartStatus = 'idle'), 2000);
+    } catch (err) {
+      restartError = err instanceof Error ? err.message : 'Restart failed';
+      restartStatus = 'error';
+    }
+  }
 </script>
 
 <div class="plugin-card">
   <div class="card-header">
-    <h3 class="plugin-name">{plugin.manifest.name}</h3>
+    <div class="card-info">
+      <h3 class="plugin-name">{plugin.manifest.name}</h3>
+      {#if plugin.builtin}
+        <p class="plugin-subtitle">Built-in module</p>
+      {:else}
+        <p class="plugin-subtitle">v{plugin.manifest.version}</p>
+      {/if}
+    </div>
     <span class="status status--{plugin.status}">{plugin.status}</span>
   </div>
 
@@ -73,6 +96,19 @@
         Configure
       </button>
     {/if}
+
+    {#if onRestart}
+      {#if restartStatus === 'idle'}
+        <button class="restart-btn" on:click={handleRestart}>Restart</button>
+      {:else if restartStatus === 'restarting'}
+        <span class="restart-notice">Restarting…</span>
+      {:else if restartStatus === 'restarted'}
+        <span class="restarted-notice">Restarted</span>
+      {:else if restartStatus === 'error'}
+        <span class="error-notice">{restartError}</span>
+        <button class="restart-btn" on:click={handleRestart}>Retry</button>
+      {/if}
+    {/if}
   </div>
 
   {#if configOpen && hasConfig}
@@ -102,9 +138,15 @@
 
   .card-header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     gap: var(--space-2);
+  }
+
+  .card-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
   }
 
   .plugin-name {
@@ -112,6 +154,13 @@
     font-weight: var(--weight-medium);
     color: var(--starlight);
     margin: 0;
+  }
+
+  .plugin-subtitle {
+    font-size: var(--text-xs);
+    color: var(--faint-light);
+    margin: 0;
+    line-height: var(--leading-normal);
   }
 
   .status {
@@ -203,6 +252,12 @@
     background-color: color-mix(in srgb, var(--edge) 30%, transparent);
   }
 
+  .card-footer {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
   .configure-btn {
     font-size: var(--text-sm);
     font-weight: var(--weight-medium);
@@ -218,6 +273,41 @@
   .configure-btn:hover {
     color: var(--starlight);
     border-color: var(--edge-bright);
+  }
+
+  .restart-btn {
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
+    border: 1px solid color-mix(in srgb, var(--ember) 50%, transparent);
+    cursor: pointer;
+    background-color: var(--void);
+    color: var(--ember);
+    font-family: var(--font-mono);
+    transition: all var(--duration-fast) var(--ease-out);
+  }
+
+  .restart-btn:hover {
+    background-color: color-mix(in srgb, var(--ember) 15%, transparent);
+  }
+
+  .restart-notice {
+    font-size: var(--text-xs);
+    color: var(--ember);
+    font-family: var(--font-mono);
+  }
+
+  .restarted-notice {
+    font-size: var(--text-xs);
+    color: var(--dim-light);
+    font-family: var(--font-mono);
+  }
+
+  .error-notice {
+    font-size: var(--text-xs);
+    color: var(--nova);
+    font-family: var(--font-mono);
   }
 
   .config-section {

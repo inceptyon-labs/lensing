@@ -29,9 +29,9 @@ export const DEFAULT_LAYOUT: LayoutConfig = {
 /** Maps built-in plugin IDs to their display component names */
 export const BUILTIN_PLUGIN_MAP: Record<string, string> = {
   'photo-slideshow': 'PhotoSlideshow',
-  'news-server': 'NewsHeadlines',
-  'sports-server': 'SportsScores',
-  'home-assistant-server': 'HomeAssistantDevices',
+  news: 'NewsHeadlines',
+  sports: 'SportsScores',
+  'home-assistant': 'HomeAssistantDevices',
 };
 
 /** Build an inline style string for a zone's internal CSS grid */

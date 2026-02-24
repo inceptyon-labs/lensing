@@ -1,8 +1,5 @@
 <script lang="ts">
   import AdminPluginList from '../../lib/AdminPluginList.svelte';
-  import AdminModuleSettings from '../../lib/AdminModuleSettings.svelte';
-
-  let activeTab: 'plugins' | 'settings' = 'plugins';
 </script>
 
 <svelte:head>
@@ -16,34 +13,10 @@
       <a href="/" class="back-link">← Back to Display</a>
     </div>
     <h1 class="admin-title">Admin</h1>
-    <div class="tab-bar" role="tablist" aria-label="Admin sections">
-      <button
-        class="tab-btn"
-        class:tab-btn--active={activeTab === 'plugins'}
-        on:click={() => (activeTab = 'plugins')}
-        role="tab"
-        aria-selected={activeTab === 'plugins'}
-      >
-        Plugins
-      </button>
-      <button
-        class="tab-btn"
-        class:tab-btn--active={activeTab === 'settings'}
-        on:click={() => (activeTab = 'settings')}
-        role="tab"
-        aria-selected={activeTab === 'settings'}
-      >
-        Settings
-      </button>
-    </div>
   </header>
 
   <main class="admin-main">
-    {#if activeTab === 'plugins'}
-      <AdminPluginList />
-    {:else}
-      <AdminModuleSettings />
-    {/if}
+    <AdminPluginList />
   </main>
 </div>
 
@@ -93,36 +66,6 @@
     font-weight: var(--weight-semibold);
     color: var(--starlight);
     margin: 0;
-  }
-
-  .tab-bar {
-    display: flex;
-    gap: var(--space-1);
-    border-bottom: 1px solid var(--edge-soft);
-    padding-bottom: 0;
-  }
-
-  .tab-btn {
-    background: none;
-    border: none;
-    border-bottom: 2px solid transparent;
-    color: var(--dim-light);
-    font-size: var(--text-sm);
-    font-weight: var(--weight-medium);
-    font-family: var(--font-sans);
-    padding: var(--space-2) var(--space-3);
-    cursor: pointer;
-    transition: all var(--duration-fast) var(--ease-out);
-    margin-bottom: -1px;
-  }
-
-  .tab-btn:hover {
-    color: var(--starlight);
-  }
-
-  .tab-btn--active {
-    color: var(--ember);
-    border-bottom-color: var(--ember);
   }
 
   .admin-main {

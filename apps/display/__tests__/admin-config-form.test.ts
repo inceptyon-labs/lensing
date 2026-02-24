@@ -81,4 +81,14 @@ describe('AdminConfigForm Component', () => {
     expect(source).toContain('--control-bg');
     expect(source).toContain('--control-border');
   });
+
+  it('should support password field type', () => {
+    const source = readFileSync(formPath, 'utf-8');
+    expect(source).toContain('type="password"');
+  });
+
+  it('should check for password type in conditional', () => {
+    const source = readFileSync(formPath, 'utf-8');
+    expect(source).toContain("field.type === 'password'");
+  });
 });

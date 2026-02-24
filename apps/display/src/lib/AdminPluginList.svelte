@@ -87,6 +87,15 @@
       error = err instanceof Error ? err.message : 'Failed to save config';
     }
   }
+
+  async function handleRestart(id: string) {
+    // eslint-disable-next-line no-undef
+    const res = await fetch(`/modules/${encodeURIComponent(id)}/restart`, { method: 'POST' });
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      throw new Error(body.error ?? `Server returned ${res.status}`);
+    }
+  }
 </script>
 
 <div class="plugin-list">
@@ -105,6 +114,7 @@
         onToggleEnabled={handleToggleEnabled}
         onZoneChange={handleZoneChange}
         onConfigSave={handleConfigSave}
+        onRestart={plugin.builtin ? handleRestart : undefined}
       />
     {/each}
   {/if}

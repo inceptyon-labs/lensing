@@ -4,7 +4,11 @@ import type {
   ZoneName,
   PluginLoader,
   DatabaseInstance,
+  ModuleSettingsSchema,
+  ConfigField,
 } from '@lensing/types';
+import { MODULE_SCHEMAS, MODULE_IDS } from '@lensing/types';
+import { readModuleConfig } from './module-settings';
 import { installPluginFromZip } from './plugin-install';
 
 export interface PluginAdminHandlersOptions {
@@ -56,12 +60,55 @@ function buildEntry(
   return entry;
 }
 
+const REDACTED = '••••••••';
+
+function buildModuleEntry(db: DatabaseInstance, schema: ModuleSettingsSchema): PluginAdminEntry {
+  const config = readModuleConfig(db, schema);
+  const zoneState = db.getPluginState<PluginPersistedState>(schema.id);
+
+  // Build manifest from schema
+  const manifest: PluginManifestWithConfig = {
+    id: schema.id,
+    name: schema.name,
+    version: 'built-in',
+    config_schema: { fields: schema.fields as ConfigField[] },
+  };
+
+  // Redact password-typed fields
+  const redactedConfig: Record<string, string | number | boolean> = {};
+  for (const [key, value] of Object.entries(config.values)) {
+    const field = schema.fields.find((f) => f.key === key);
+    if (field?.type === 'password' && typeof value === 'string' && value !== '') {
+      redactedConfig[key] = REDACTED;
+    } else {
+      redactedConfig[key] = value;
+    }
+  }
+
+  const entry: PluginAdminEntry = {
+    plugin_id: schema.id,
+    manifest,
+    status: config.enabled ? 'active' : 'disabled',
+    enabled: config.enabled,
+    config: redactedConfig,
+    builtin: true,
+  };
+
+  if (zoneState?.zone !== undefined) entry.zone = zoneState.zone;
+
+  return entry;
+}
+
+function isModuleId(id: string): boolean {
+  return (MODULE_IDS as readonly string[]).includes(id);
+}
+
 export function createPluginAdminHandlers(options: PluginAdminHandlersOptions) {
   const { pluginLoader, db, pluginsDir, onChange } = options;
 
   return {
     async getPlugins(): Promise<PluginAdminEntry[]> {
-      return pluginLoader.getAllPlugins().map((plugin) => {
+      const pluginEntries = pluginLoader.getAllPlugins().map((plugin) => {
         const state = getPersistedState(db, plugin.manifest.id);
         return buildEntry(
           plugin.manifest.id,
@@ -71,28 +118,55 @@ export function createPluginAdminHandlers(options: PluginAdminHandlersOptions) {
           state
         );
       });
+
+      const moduleEntries = MODULE_SCHEMAS.map((s) => buildModuleEntry(db, s));
+
+      return [...pluginEntries, ...moduleEntries];
     },
 
     async getPlugin(id: string): Promise<PluginAdminEntry | undefined> {
       const plugin = pluginLoader.getPlugin(id);
-      if (!plugin) return undefined;
-      const state = getPersistedState(db, id);
-      return buildEntry(
-        id,
-        plugin.manifest as PluginManifestWithConfig,
-        plugin.status,
-        plugin.error,
-        state
-      );
+      if (plugin) {
+        const state = getPersistedState(db, id);
+        return buildEntry(
+          id,
+          plugin.manifest as PluginManifestWithConfig,
+          plugin.status,
+          plugin.error,
+          state
+        );
+      }
+
+      // Check built-in modules
+      const schema = MODULE_SCHEMAS.find((s) => s.id === id);
+      if (schema) return buildModuleEntry(db, schema);
+
+      return undefined;
     },
 
     async setPluginEnabled(id: string, enabled: boolean): Promise<void> {
+      if (isModuleId(id)) {
+        db.setSetting(`${id}.enabled`, String(enabled));
+        onChange?.(id, 'enabled');
+        return;
+      }
       const state = getPersistedState(db, id);
       db.setPluginState(id, { ...state, enabled });
       onChange?.(id, 'enabled');
     },
 
     async updatePluginConfig(id: string, config: Record<string, unknown>): Promise<void> {
+      if (isModuleId(id)) {
+        for (const [key, value] of Object.entries(config)) {
+          // Skip redacted placeholders
+          if (String(value) === REDACTED) continue;
+          if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+            db.setSetting(`${id}.${key}`, String(value));
+          }
+        }
+        onChange?.(id, 'config_updated');
+        return;
+      }
       const state = getPersistedState(db, id);
       const safe: Record<string, string | number | boolean> = {};
       for (const [k, v] of Object.entries(config)) {

@@ -101,6 +101,31 @@ describe('Admin Plugin Management Components', () => {
       const source = readFileSync(cardPath, 'utf-8');
       expect(source).toContain('<AdminConfigForm');
     });
+
+    it('should accept optional onRestart callback', () => {
+      const source = readFileSync(cardPath, 'utf-8');
+      expect(source).toContain('export let onRestart');
+    });
+
+    it('should have restart button markup', () => {
+      const source = readFileSync(cardPath, 'utf-8');
+      expect(source).toContain('restart-btn');
+      expect(source).toContain('Restart');
+    });
+
+    it('should have restart status states', () => {
+      const source = readFileSync(cardPath, 'utf-8');
+      expect(source).toContain("'restarting'");
+      expect(source).toContain("'restarted'");
+      expect(source).toContain('Restarting');
+      expect(source).toContain('Restarted');
+    });
+
+    it('should show built-in module subtitle', () => {
+      const source = readFileSync(cardPath, 'utf-8');
+      expect(source).toContain('plugin.builtin');
+      expect(source).toContain('Built-in module');
+    });
   });
 
   // ── AdminPluginList ───────────────────────────────────────────
@@ -175,6 +200,19 @@ describe('Admin Plugin Management Components', () => {
     it('should display error message if fetch fails', () => {
       const source = readFileSync(listPath, 'utf-8');
       expect(source).toMatch(/Error|error|failed/);
+    });
+
+    it('should have handleRestart function for built-in modules', () => {
+      const source = readFileSync(listPath, 'utf-8');
+      expect(source).toContain('handleRestart');
+      expect(source).toContain('/modules/');
+      expect(source).toContain('/restart');
+    });
+
+    it('should pass onRestart only for builtin plugins', () => {
+      const source = readFileSync(listPath, 'utf-8');
+      expect(source).toContain('plugin.builtin');
+      expect(source).toContain('onRestart');
     });
   });
 

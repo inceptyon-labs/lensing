@@ -269,6 +269,8 @@ export interface PluginAdminEntry {
   zone?: ZoneName;
   config: Record<string, string | number | boolean>;
   error?: string;
+  /** True for built-in modules synthesized from MODULE_SCHEMAS */
+  builtin?: boolean;
 }
 
 /** Zone assignment: which plugin is in which zone */

@@ -6,9 +6,9 @@ import { createWsServer } from './ws-server';
 import { createPluginScheduler } from './plugin-scheduler';
 import { createPluginAdminHandlers } from './plugin-admin-handlers';
 import { createNotificationQueue } from './notification-queue';
-import { bootEnabledModules } from './module-boot';
+import { bootEnabledModules, rebootModule } from './module-boot';
 import type { BootedModule } from './module-boot';
-import type { HostServiceOptions, DatabaseInstance, PluginLoader } from '@lensing/types';
+import type { HostServiceOptions, DatabaseInstance, PluginLoader, ModuleId } from '@lensing/types';
 import { MODULE_SCHEMAS } from '@lensing/types';
 import type { NotificationQueueInstance } from './notification-queue';
 import type { RestServerInstance } from './rest-server';
@@ -108,6 +108,18 @@ export function createHostService(options: HostServiceOptions = {}): HostService
             tool_calls_made: 0,
           }),
           ...pluginHandlers,
+          restartModule: async (id) => {
+            const schema = MODULE_SCHEMAS.find((s) => s.id === id);
+            if (!schema) throw new Error(`Unknown module: ${id}`);
+            const result = rebootModule(
+              id as ModuleId,
+              _modules,
+              _db!,
+              { dataBus, notifications: _notificationQueue! },
+              logger
+            );
+            return { ok: true, running: result !== null };
+          },
         },
         { port }
       );

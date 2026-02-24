@@ -7,6 +7,7 @@ export default defineConfig({
   plugins: [sveltekit()],
   server: {
     proxy: {
+      '/modules': { target: API_TARGET },
       '/plugins': { target: API_TARGET },
       '/settings': { target: API_TARGET },
       '/layout': { target: API_TARGET },

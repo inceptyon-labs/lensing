@@ -27,7 +27,8 @@ vi.mock('../pir-server', () => ({
   createPIRServer: vi.fn(() => ({ close: vi.fn() })),
 }));
 
-import { bootEnabledModules } from '../module-boot';
+import { bootEnabledModules, rebootModule } from '../module-boot';
+import type { BootedModule } from '../module-boot';
 import { createWeatherServer } from '../weather-server';
 import { createCryptoServer } from '../crypto-server';
 
@@ -135,5 +136,108 @@ describe('bootEnabledModules', () => {
     const log = { info: vi.fn(), error: vi.fn(), debug: vi.fn() };
     bootEnabledModules(db, deps, log);
     expect(log.info).toHaveBeenCalledWith('Built-in modules booted', { count: 1 });
+  });
+});
+
+describe('rebootModule', () => {
+  let db: DatabaseInstance;
+  let deps: ReturnType<typeof createMockDeps>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    db = createMockDb();
+    deps = createMockDeps();
+  });
+
+  it('should reboot a running module (old closed, new in array)', () => {
+    const oldClose = vi.fn();
+    const modules: BootedModule[] = [{ id: 'weather', instance: { close: oldClose } }];
+
+    db.setSetting('weather.enabled', 'true');
+    db.setSetting('weather.apiKey', 'new-key');
+    db.setSetting('weather.lat', '40.7');
+    db.setSetting('weather.lon', '-74');
+
+    const result = rebootModule('weather', modules, db, deps);
+
+    expect(oldClose).toHaveBeenCalledOnce();
+    expect(result).not.toBeNull();
+    expect(modules).toHaveLength(1);
+    expect(modules[0]!.id).toBe('weather');
+    expect(modules[0]!.instance).not.toEqual({ close: oldClose });
+    expect(createWeatherServer).toHaveBeenCalledOnce();
+  });
+
+  it('should boot a module not previously running', () => {
+    const modules: BootedModule[] = [];
+
+    db.setSetting('weather.enabled', 'true');
+    db.setSetting('weather.apiKey', 'key');
+    db.setSetting('weather.lat', '0');
+    db.setSetting('weather.lon', '0');
+
+    const result = rebootModule('weather', modules, db, deps);
+
+    expect(result).not.toBeNull();
+    expect(modules).toHaveLength(1);
+    expect(modules[0]!.id).toBe('weather');
+  });
+
+  it('should return null and remove old for disabled module', () => {
+    const oldClose = vi.fn();
+    const modules: BootedModule[] = [{ id: 'weather', instance: { close: oldClose } }];
+
+    db.setSetting('weather.enabled', 'false');
+
+    const result = rebootModule('weather', modules, db, deps);
+
+    expect(oldClose).toHaveBeenCalledOnce();
+    expect(result).toBeNull();
+    expect(modules).toHaveLength(0);
+  });
+
+  it('should return null for unknown module ID', () => {
+    const modules: BootedModule[] = [];
+
+    const result = rebootModule('nonexistent' as any, modules, db, deps);
+
+    expect(result).toBeNull();
+    expect(modules).toHaveLength(0);
+  });
+
+  it('should continue reboot even if old close() throws', () => {
+    const oldClose = vi.fn(() => {
+      throw new Error('Close failed');
+    });
+    const modules: BootedModule[] = [{ id: 'weather', instance: { close: oldClose } }];
+
+    db.setSetting('weather.enabled', 'true');
+    db.setSetting('weather.apiKey', 'key');
+    db.setSetting('weather.lat', '0');
+    db.setSetting('weather.lon', '0');
+
+    const log = { info: vi.fn(), error: vi.fn(), debug: vi.fn() };
+    const result = rebootModule('weather', modules, db, deps, log);
+
+    expect(oldClose).toHaveBeenCalledOnce();
+    expect(log.error).toHaveBeenCalledWith('Module close failed: weather', expect.any(Error));
+    expect(result).not.toBeNull();
+    expect(modules).toHaveLength(1);
+    expect(modules[0]!.id).toBe('weather');
+  });
+
+  it('should throw on boot error after closing old', () => {
+    const oldClose = vi.fn();
+    const modules: BootedModule[] = [{ id: 'weather', instance: { close: oldClose } }];
+
+    db.setSetting('weather.enabled', 'true');
+    vi.mocked(createWeatherServer).mockImplementationOnce(() => {
+      throw new Error('Boot failed');
+    });
+
+    expect(() => rebootModule('weather', modules, db, deps)).toThrow('Boot failed');
+    expect(oldClose).toHaveBeenCalledOnce();
+    // Old module removed even though new boot failed
+    expect(modules).toHaveLength(0);
   });
 });
