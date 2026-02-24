@@ -165,4 +165,40 @@ describe('HostService (host-service.ts)', () => {
     await Promise.race([hostService.ready, timeoutPromise]);
     expect(hostService.port).toBeGreaterThan(0);
   });
+
+  it('should wire plugin handlers to REST server', async () => {
+    hostService = createHostService({
+      port: 0,
+      dbPath: path.join(tempDir, 'test.db'),
+      pluginsDir: path.join(tempDir, 'plugins'),
+    });
+
+    await hostService.ready;
+    const port = hostService.port;
+
+    // Plugin endpoints should respond (may be empty)
+    const response = await fetch(`http://127.0.0.1:${port}/plugins`);
+    expect(response.status).toBe(200);
+
+    const plugins = (await response.json()) as Array<{ plugin_id: string }>;
+    expect(Array.isArray(plugins)).toBe(true);
+  });
+
+  it('should persist plugin enabled state to database', async () => {
+    const dbPath = path.join(tempDir, 'test-persist.db');
+    hostService = createHostService({
+      port: 0,
+      dbPath,
+      pluginsDir: path.join(tempDir, 'plugins'),
+    });
+
+    await hostService.ready;
+
+    // Manually set a plugin state in the database
+    hostService.db.setPluginState('test-plugin', { enabled: false, config: {} });
+
+    // Verify it was persisted
+    const state = hostService.db.getPluginState<{ enabled: boolean }>('test-plugin');
+    expect(state?.enabled).toBe(false);
+  });
 });

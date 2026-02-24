@@ -173,3 +173,6 @@ export { DEFAULT_PIR_IDLE_TIMEOUT_MS, DEFAULT_PIR_GPIO_PIN } from '@lensing/type
 export { createHostService } from './host-service';
 export type { HostServiceInstance } from './host-service';
 export type { HostServiceOptions, HostServiceLogger } from '@lensing/types';
+
+export { createPluginAdminHandlers } from './plugin-admin-handlers';
+export type { PluginAdminHandlersOptions } from './plugin-admin-handlers';

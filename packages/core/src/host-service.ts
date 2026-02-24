@@ -4,6 +4,7 @@ import { createDataBus } from './data-bus';
 import { createRestServer } from './rest-server';
 import { createWsServer } from './ws-server';
 import { createPluginScheduler } from './plugin-scheduler';
+import { createPluginAdminHandlers } from './plugin-admin-handlers';
 import type { HostServiceOptions, DatabaseInstance, PluginLoader } from '@lensing/types';
 import type { RestServerInstance } from './rest-server';
 import type { WsServerInstance } from './ws-server';
@@ -54,7 +55,12 @@ export function createHostService(options: HostServiceOptions = {}): HostService
       // 3. Data bus
       const dataBus = createDataBus();
 
-      // 4. REST server (wired to database)
+      // 4. REST server (wired to database + plugins)
+      const pluginHandlers = createPluginAdminHandlers({
+        pluginLoader: _plugins,
+        db: _db!,
+      });
+
       _rest = createRestServer(
         {
           getSettings: async () => _db!.getAllSettings(),
@@ -74,6 +80,7 @@ export function createHostService(options: HostServiceOptions = {}): HostService
             timestamp: new Date().toISOString(),
             tool_calls_made: 0,
           }),
+          ...pluginHandlers,
         },
         { port }
       );
