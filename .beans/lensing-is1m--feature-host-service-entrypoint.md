@@ -1,14 +1,14 @@
 ---
 # lensing-is1m
 title: 'Feature: Host Service Entrypoint'
-status: in-progress
+status: completed
 type: feature
 priority: high
 tags:
-  - pasiv
-  - area:backend
+    - pasiv
+    - area:backend
 created_at: 2026-02-24T02:45:01Z
-updated_at: 2026-02-24T02:47:57Z
+updated_at: 2026-02-24T14:55:26Z
 parent: lensing-z2ez
 ---
 
