@@ -5,8 +5,8 @@ status: todo
 type: task
 priority: high
 tags:
-    - area:backend
-    - size:M
+  - area:backend
+  - size:M
 created_at: 2026-02-24T02:45:48Z
 updated_at: 2026-02-24T02:45:48Z
 parent: lensing-ij9t
@@ -15,6 +15,7 @@ parent: lensing-ij9t
 Extend createRestServer with plugin management endpoints.
 
 ## What to build
+
 - Extend RestServerHandlers with plugin callbacks:
   - getPlugins: () => PluginAdminEntry[]
   - getPlugin: (id: string) => PluginAdminEntry | undefined
@@ -32,6 +33,7 @@ Extend createRestServer with plugin management endpoints.
 - Broadcast WS message on mutations
 
 ## Notes
+
 - Follow existing route registration pattern (Map-based)
 - Parse :id from URL path manually (no router library)
 - Return 404 for unknown plugin IDs

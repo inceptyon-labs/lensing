@@ -4,17 +4,17 @@ import { createDataBus } from './data-bus';
 import { createRestServer } from './rest-server';
 import { createWsServer } from './ws-server';
 import { createPluginScheduler } from './plugin-scheduler';
-import type { HostServiceOptions, HostServiceInstance, DatabaseInstance, PluginLoader } from '@lensing/types';
+import type {
+  HostServiceOptions,
+  HostServiceInstance,
+  DatabaseInstance,
+  PluginLoader,
+} from '@lensing/types';
 import type { RestServerInstance } from './rest-server';
 import type { WsServerInstance } from './ws-server';
 
 export function createHostService(options: HostServiceOptions = {}): HostServiceInstance {
-  const {
-    port = 0,
-    pluginsDir = './plugins',
-    dbPath = ':memory:',
-    logger,
-  } = options;
+  const { port = 0, pluginsDir = './plugins', dbPath = ':memory:', logger } = options;
 
   let _db: DatabaseInstance;
   let _rest: RestServerInstance;

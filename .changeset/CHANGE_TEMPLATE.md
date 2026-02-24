@@ -12,10 +12,12 @@ with the following format:
 -->
 
 ---
+
 "@lensing/core": patch
 "@lensing/ui": patch
 "@lensing/cli": patch
 "@lensing/types": patch
+
 ---
 
 Brief description of the changes in this release. This will be included in the changelog.

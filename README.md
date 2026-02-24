@@ -34,28 +34,28 @@ Host (Node.js)                         Display (Chromium)
 
 ### Monorepo Structure
 
-| Package | Description |
-|---------|-------------|
-| `packages/types` | Shared TypeScript types and interfaces |
-| `packages/core` | Host services: plugin loader, scheduler, database, data servers |
-| `packages/ui` | Svelte stores and UI state management |
-| `packages/cli` | CLI commands for dev, plugin management, and scenes |
-| `packages/create-plugin` | Starter template for building plugins |
-| `apps/display` | SvelteKit display application (kiosk frontend) |
+| Package                  | Description                                                     |
+| ------------------------ | --------------------------------------------------------------- |
+| `packages/types`         | Shared TypeScript types and interfaces                          |
+| `packages/core`          | Host services: plugin loader, scheduler, database, data servers |
+| `packages/ui`            | Svelte stores and UI state management                           |
+| `packages/cli`           | CLI commands for dev, plugin management, and scenes             |
+| `packages/create-plugin` | Starter template for building plugins                           |
+| `apps/display`           | SvelteKit display application (kiosk frontend)                  |
 
 ## Built-in Plugins
 
-| Plugin | Source | Description |
-|--------|--------|-------------|
-| Weather | OpenWeatherMap | Current conditions and forecast |
-| Calendar | CalDAV/iCloud | Upcoming events via CalDAV |
-| Crypto | CoinGecko | Prices with change tracking and alerts |
-| News | RSS | Headline aggregation from multiple feeds |
-| Sports | ESPN | Live scores and upcoming schedules |
-| Allergies | Pollen API | Allergen levels with thresholds |
-| Home Assistant | HA REST/WS | Smart home device states |
-| Photo Slideshow | Local | Ambient slideshow with Ken Burns effect |
-| PIR Sensor | GPIO | Motion-based display wake/sleep |
+| Plugin          | Source         | Description                              |
+| --------------- | -------------- | ---------------------------------------- |
+| Weather         | OpenWeatherMap | Current conditions and forecast          |
+| Calendar        | CalDAV/iCloud  | Upcoming events via CalDAV               |
+| Crypto          | CoinGecko      | Prices with change tracking and alerts   |
+| News            | RSS            | Headline aggregation from multiple feeds |
+| Sports          | ESPN           | Live scores and upcoming schedules       |
+| Allergies       | Pollen API     | Allergen levels with thresholds          |
+| Home Assistant  | HA REST/WS     | Smart home device states                 |
+| Photo Slideshow | Local          | Ambient slideshow with Ken Burns effect  |
+| PIR Sensor      | GPIO           | Motion-based display wake/sleep          |
 
 ## Display Layout
 
@@ -106,10 +106,18 @@ Implement the server module using the factory pattern:
 ```typescript
 export function createMyServer(options: MyServerOptions) {
   return {
-    async initialize() { /* setup */ },
-    async handleRequest() { /* fetch data */ },
-    onActivate() { /* start polling */ },
-    onDeactivate() { /* cleanup */ },
+    async initialize() {
+      /* setup */
+    },
+    async handleRequest() {
+      /* fetch data */
+    },
+    onActivate() {
+      /* start polling */
+    },
+    onDeactivate() {
+      /* cleanup */
+    },
   };
 }
 ```

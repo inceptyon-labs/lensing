@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createHostService } from '../host-service';
 import path from 'node:path';
 import os from 'node:os';
@@ -120,7 +120,7 @@ describe('HostService (host-service.ts)', () => {
     const port = hostService.port;
 
     // Verify server is responsive
-    let response = await fetch(`http://127.0.0.1:${port}/health`);
+    const response = await fetch(`http://127.0.0.1:${port}/health`);
     expect(response.status).toBe(200);
 
     // Close the service

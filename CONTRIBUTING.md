@@ -31,19 +31,20 @@ pnpm dev
 
 ### Monorepo Structure
 
-| Package | Description |
-|---------|-------------|
-| `packages/types` | Shared TypeScript types and interfaces |
-| `packages/core` | Core services (scheduler, database, servers) |
-| `packages/ui` | UI stores and state management |
-| `packages/cli` | CLI commands |
-| `apps/display` | SvelteKit display application |
+| Package          | Description                                  |
+| ---------------- | -------------------------------------------- |
+| `packages/types` | Shared TypeScript types and interfaces       |
+| `packages/core`  | Core services (scheduler, database, servers) |
+| `packages/ui`    | UI stores and state management               |
+| `packages/cli`   | CLI commands                                 |
+| `apps/display`   | SvelteKit display application                |
 
 ## Creating a Plugin
 
 Lensing uses a plugin system for adding new data sources and widgets. To create a plugin:
 
 1. **Define a manifest** (`plugin.json`):
+
    ```json
    {
      "name": "my-plugin",
@@ -55,6 +56,7 @@ Lensing uses a plugin system for adding new data sources and widgets. To create 
    ```
 
 2. **Create a server module** following the factory pattern:
+
    ```typescript
    export function createMyServer(options: MyServerOptions): MyServerInstance {
      // Implementation

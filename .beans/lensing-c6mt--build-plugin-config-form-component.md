@@ -5,19 +5,20 @@ status: todo
 type: task
 priority: normal
 tags:
-    - area:frontend
-    - size:S
+  - area:frontend
+  - size:S
 created_at: 2026-02-24T02:46:02Z
 updated_at: 2026-02-24T02:46:23Z
 parent: lensing-aim8
 blocked_by:
-    - lensing-aim8
-    - lensing-5qri
+  - lensing-aim8
+  - lensing-5qri
 ---
 
 Dynamic config form that renders from a plugin's config_schema.
 
 ## What to build
+
 - apps/display/src/lib/AdminConfigForm.svelte
 - Reads config_schema.fields from the plugin manifest
 - Renders appropriate input for each field type:

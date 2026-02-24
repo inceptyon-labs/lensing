@@ -5,9 +5,9 @@ status: completed
 type: feature
 priority: normal
 tags:
-    - pasiv
-    - priority:medium
-    - area:infra
+  - pasiv
+  - priority:medium
+  - area:infra
 created_at: 2026-02-16T21:22:14Z
 updated_at: 2026-02-23T23:07:13Z
 parent: lensing-46q9

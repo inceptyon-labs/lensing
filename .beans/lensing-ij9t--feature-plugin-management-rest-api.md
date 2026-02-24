@@ -5,8 +5,8 @@ status: todo
 type: feature
 priority: high
 tags:
-    - pasiv
-    - area:backend
+  - pasiv
+  - area:backend
 created_at: 2026-02-24T02:45:07Z
 updated_at: 2026-02-24T02:45:07Z
 parent: lensing-z2ez
@@ -15,6 +15,7 @@ parent: lensing-z2ez
 Add plugin CRUD endpoints to the REST server so the admin UI can manage plugins.
 
 ## Goals
+
 - GET /plugins — list all plugins with status, zone, config
 - GET /plugins/:id — single plugin detail
 - PUT /plugins/:id/enabled — enable/disable toggle
@@ -24,6 +25,7 @@ Add plugin CRUD endpoints to the REST server so the admin UI can manage plugins.
 - WebSocket broadcast on plugin state changes
 
 ## Acceptance Criteria
+
 - [ ] All endpoints implemented with proper error handling
 - [ ] Plugin state persisted to database
 - [ ] WebSocket broadcasts plugin_data messages on changes

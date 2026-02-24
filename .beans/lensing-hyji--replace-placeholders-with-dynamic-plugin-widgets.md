@@ -5,18 +5,19 @@ status: todo
 type: task
 priority: high
 tags:
-    - area:frontend
-    - size:M
+  - area:frontend
+  - size:M
 created_at: 2026-02-24T02:46:17Z
 updated_at: 2026-02-24T02:46:17Z
 parent: lensing-o5do
 blocked_by:
-    - lensing-57h8
+  - lensing-57h8
 ---
 
 Update the display app to render actual plugin widgets based on zone assignments.
 
 ## What to build
+
 - apps/display/src/lib/PluginRenderer.svelte — loads and renders a plugin widget
 - Update +page.svelte to:
   1. Fetch zone assignments from GET /plugins on mount
@@ -28,6 +29,7 @@ Update the display app to render actual plugin widgets based on zone assignments
 - Each widget wrapped in ErrorBoundary (already exists)
 
 ## Implementation notes
+
 - Start with built-in plugin mapping (plugin_id → Svelte component)
 - Zone assignments come from adminStore/REST API
 - WebSocket reconnect manager already exists in @lensing/core

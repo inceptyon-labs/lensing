@@ -1,6 +1,6 @@
 name: Feature Request
 description: Suggest a new feature for Lensing
-labels: ["feature"]
+labels: ['feature']
 body:
   - type: textarea
     id: problem

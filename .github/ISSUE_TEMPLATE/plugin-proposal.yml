@@ -1,6 +1,6 @@
 name: Plugin Proposal
 description: Propose a new plugin for Lensing
-labels: ["plugin-proposal"]
+labels: ['plugin-proposal']
 body:
   - type: textarea
     id: overview

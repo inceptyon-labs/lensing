@@ -5,9 +5,9 @@ status: completed
 type: task
 priority: low
 tags:
-    - pasiv
-    - size:S
-    - area:infra
+  - pasiv
+  - size:S
+  - area:infra
 created_at: 2026-02-16T21:25:53Z
 updated_at: 2026-02-23T23:21:45Z
 parent: lensing-9k8b

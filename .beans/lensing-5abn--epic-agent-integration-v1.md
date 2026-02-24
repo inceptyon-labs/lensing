@@ -5,8 +5,8 @@ status: completed
 type: epic
 priority: normal
 tags:
-    - pasiv
-    - priority:medium
+  - pasiv
+  - priority:medium
 created_at: 2026-02-16T21:19:35Z
 updated_at: 2026-02-24T00:30:50Z
 ---

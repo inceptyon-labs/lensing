@@ -5,9 +5,9 @@ status: completed
 type: feature
 priority: normal
 tags:
-    - pasiv
-    - priority:medium
-    - area:frontend
+  - pasiv
+  - priority:medium
+  - area:frontend
 created_at: 2026-02-16T21:21:57Z
 updated_at: 2026-02-24T00:30:43Z
 parent: lensing-oeoo
