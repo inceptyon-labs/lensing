@@ -57,18 +57,18 @@ describe('Built-in Plugin Map', () => {
     expect(source).toContain('photo-slideshow');
   });
 
-  it('should map news plugin id', () => {
+  it('should map news-server plugin id', () => {
     const source = readFileSync(configPath, 'utf-8');
-    expect(source).toContain('news');
+    expect(source).toContain('news-server');
   });
 
-  it('should map sports plugin id', () => {
+  it('should map sports-server plugin id', () => {
     const source = readFileSync(configPath, 'utf-8');
-    expect(source).toContain('sports');
+    expect(source).toContain('sports-server');
   });
 
-  it('should map home-assistant plugin id', () => {
+  it('should map home-assistant-server plugin id', () => {
     const source = readFileSync(configPath, 'utf-8');
-    expect(source).toContain('home-assistant');
+    expect(source).toContain('home-assistant-server');
   });
 });

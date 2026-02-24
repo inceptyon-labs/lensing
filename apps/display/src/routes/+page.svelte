@@ -29,7 +29,7 @@
       'bottom-bar': [],
     };
     for (const plugin of plugins) {
-      if (plugin.enabled && plugin.zone && plugin.zone in grouped) {
+      if (plugin.enabled && plugin.zone && Object.hasOwn(grouped, plugin.zone)) {
         grouped[plugin.zone as ZoneKey].push(plugin);
       }
     }
