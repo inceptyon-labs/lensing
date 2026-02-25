@@ -19,7 +19,9 @@
   border-bottom: 2px solid var(--ember-dim);
   border-radius: var(--radius-md);
   overflow: hidden;
-  height: 100%;
+  /* No explicit height — GridStack uses position:absolute with top/bottom
+     insets to size this element. Setting height:100% would cause overflow
+     (top offset + 100% > parent height) and clip the bottom border. */
 }
 
 /* Full height chain: grid cell → gs-item-content → widget content → widget root */
