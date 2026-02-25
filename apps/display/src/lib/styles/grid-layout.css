@@ -305,11 +305,9 @@
 /* ── Mobile / Touchscreen Layout ────────────────────────────────────────── */
 
 @media (max-width: 768px) {
-  /* Base adjustments for mobile */
-  .grid-stack {
-    /* Tighter margin on mobile */
-    --gs-margin: 4px;
-  }
+  /* Base adjustments for mobile.
+     Note: GridStack grid margin is set via JS options (getMobileGridPolicy),
+     not via CSS. These styles handle visual and touch-target corrections. */
 
   .grid-stack-item-content {
     /* Slightly softer radius on small screens */
