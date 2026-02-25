@@ -16,9 +16,27 @@
 .grid-stack-item-content {
   background-color: var(--event-horizon);
   border: 1px solid var(--edge);
+  border-bottom: 2px solid var(--ember-dim);
   border-radius: var(--radius-md);
   overflow: hidden;
   height: 100%;
+}
+
+/* Full height chain: grid cell → gs-item-content → widget content → widget root */
+.grid-stack-item-content .gs-item-content {
+  height: 100%;
+}
+
+/* Widget content fills the grid cell — strip the widget's own card chrome
+   since .grid-stack-item-content already provides background, border, radius. */
+.gs-item-content .dashboard-widget-content > * {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 /* ── View Mode (static grid) ─────────────────────────────────────────────── */
