@@ -74,6 +74,10 @@ export function createHostService(options: HostServiceOptions = {}): HostService
         pluginLoader: _plugins,
         db: _db!,
         pluginsDir,
+        onChange: (_pluginId, _action) => {
+          // Notify connected display clients so they re-fetch plugin data
+          _ws?.broadcast({ type: 'layout_change', payload: null, timestamp: new Date().toISOString() });
+        },
       });
 
       _rest = createRestServer(
