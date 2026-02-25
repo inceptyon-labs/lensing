@@ -15,7 +15,7 @@
 
 .grid-stack-item-content {
   background-color: var(--event-horizon);
-  border: 1px solid var(--edge);
+  border: 1px solid color-mix(in srgb, var(--ember-dim) 40%, transparent);
   border-bottom: 2px solid var(--ember-dim);
   border-radius: var(--radius-md);
   overflow: hidden;
