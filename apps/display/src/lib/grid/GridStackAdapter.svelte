@@ -103,8 +103,10 @@
     if (!gridInstance) return;
     gridInstance.removeAll(false);
     for (const w of widgets) {
+      // Validate widget ID is safe (alphanumeric + dash/underscore only)
+      const safeId = /^[a-zA-Z0-9_-]+$/.test(w.id) ? w.id : 'invalid-widget';
       gridInstance.addWidget({
-        id: w.id,
+        id: safeId,
         x: w.x,
         y: w.y,
         w: w.w,
@@ -114,7 +116,13 @@
         maxW: w.maxW,
         maxH: w.maxH,
         locked: w.locked,
-        content: `<div class="gs-item-content" data-widget-id="${w.id}"></div>`,
+        // Use DOM creation instead of string interpolation to avoid XSS
+        content: (() => {
+          const div = document.createElement('div');
+          div.className = 'gs-item-content';
+          div.setAttribute('data-widget-id', safeId);
+          return div.outerHTML;
+        })(),
       });
     }
   }

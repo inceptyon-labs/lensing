@@ -26,11 +26,24 @@ export interface ValidationResult {
 export function validatePosition(pos: WidgetPosition, cols: number): ValidationResult {
   const errors: string[] = [];
 
-  if (pos.x < 0) errors.push('X position must be 0 or greater');
-  if (pos.y < 0) errors.push('Y position must be 0 or greater');
-  if (pos.w < 1) errors.push('Width must be at least 1');
-  if (pos.h < 1) errors.push('Height must be at least 1');
-  if (pos.x + pos.w > cols) errors.push(`Widget extends beyond grid (max ${cols} columns)`);
+  // Check for finite, integer values
+  if (!Number.isFinite(pos.x) || !Number.isInteger(pos.x))
+    errors.push('X position must be a valid integer');
+  if (!Number.isFinite(pos.y) || !Number.isInteger(pos.y))
+    errors.push('Y position must be a valid integer');
+  if (!Number.isFinite(pos.w) || !Number.isInteger(pos.w))
+    errors.push('Width must be a valid integer');
+  if (!Number.isFinite(pos.h) || !Number.isInteger(pos.h))
+    errors.push('Height must be a valid integer');
+
+  // Range checks (only if values are valid)
+  if (errors.length === 0) {
+    if (pos.x < 0) errors.push('X position must be 0 or greater');
+    if (pos.y < 0) errors.push('Y position must be 0 or greater');
+    if (pos.w < 1) errors.push('Width must be at least 1');
+    if (pos.h < 1) errors.push('Height must be at least 1');
+    if (pos.x + pos.w > cols) errors.push(`Widget extends beyond grid (max ${cols} columns)`);
+  }
 
   return { valid: errors.length === 0, errors };
 }

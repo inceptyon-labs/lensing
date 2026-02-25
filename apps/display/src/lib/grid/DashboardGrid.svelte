@@ -26,17 +26,19 @@
   let activeContextWidget = $state<GridWidget | null>(null);
   let activeResizeWidget = $state<GridWidget | null>(null);
   let localWidgets = $state<GridWidget[]>([]);
+  let initialized = $state(false);
 
   let initialWidgets = $derived(pluginsToGridWidgets(plugins));
 
   $effect(() => {
-    // Sync initial widgets from plugins on first load
-    if (localWidgets.length === 0) {
+    // Sync initial widgets from plugins on first load only
+    if (!initialized) {
       localWidgets = [...initialWidgets];
+      initialized = true;
     }
   });
 
-  let gridWidgets = $derived(localWidgets.length > 0 ? localWidgets : initialWidgets);
+  let gridWidgets = $derived(localWidgets);
 
   /** Map plugin_id to its PluginAdminEntry for quick lookup */
   let pluginMap = $derived(new Map(plugins.filter((p) => p.enabled).map((p) => [p.plugin_id, p])));
@@ -92,9 +94,33 @@
   function handleSave() {
     onsave?.(gridWidgets);
   }
+
+  function handleGridContextMenu(event: MouseEvent) {
+    if (!editMode) return;
+    // Find the widget element that was right-clicked
+    let target = event.target as HTMLElement;
+    while (target && target !== event.currentTarget) {
+      const widgetId = target.getAttribute('data-widget-id');
+      if (widgetId) {
+        event.preventDefault();
+        const widget = gridWidgets.find((w) => w.id === widgetId);
+        if (widget) {
+          activeContextWidget = widget;
+          // Position context menu near cursor
+          // (WidgetContextMenu handles positioning in its own CSS)
+        }
+        break;
+      }
+      target = target.parentElement || (event.currentTarget as HTMLElement);
+    }
+  }
 </script>
 
-<div class="dashboard-grid" class:dashboard-edit-mode={editMode}>
+<div
+  class="dashboard-grid"
+  class:dashboard-edit-mode={editMode}
+  oncontextmenu={handleGridContextMenu}
+>
   <GridStackAdapter
     items={gridWidgets}
     {editMode}
@@ -110,11 +136,11 @@
     </div>
   {/if}
 
-  <!-- Plugin content rendered for each widget -->
+  <!-- Plugin content rendered for each widget (transferred to grid tiles at runtime) -->
   {#each gridWidgets as widget (widget.id)}
     {@const plugin = pluginMap.get(widget.id)}
     {#if plugin}
-      <div class="dashboard-widget-content" data-plugin-id={widget.id} style="display: none;">
+      <div class="dashboard-widget-content" data-widget-id={widget.id} style="display: none;">
         <ErrorBoundary name={plugin.manifest.name}>
           <PluginRenderer {plugin} />
         </ErrorBoundary>

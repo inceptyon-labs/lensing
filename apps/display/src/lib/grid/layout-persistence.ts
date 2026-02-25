@@ -4,7 +4,10 @@
 
 import type { GridWidget } from './types';
 
-const LAYOUT_API = '/api/layout';
+// TODO: Coordinate with backend on endpoint path and payload schema
+// Current placeholder: targets /api/layout with GridWidget[] payload
+// May need adjustment to match actual backend REST contract
+const LAYOUT_API = '/layout';
 
 /**
  * Save the current grid layout to the backend.
