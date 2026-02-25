@@ -18,7 +18,8 @@
     void loadPlugins();
 
     // eslint-disable-next-line no-undef
-    const ws = new WebSocket(`ws://${location.host}`);
+    const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(`${wsProto}//${location.host}/ws`);
     ws.addEventListener('message', (event) => {
       try {
         const msg = JSON.parse(String(event.data)) as WsMessage;
