@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { PluginAdminEntry } from '@lensing/types';
-  import type { NewsData, SportsData, HomeAssistantData, CryptoData, WeatherData, CalendarData, PhotoSlideshowData } from '@lensing/types';
+  import type { NewsData, SportsData, HomeAssistantData, CryptoData, WeatherData, CalendarData, PhotoSlideshowData, AllergyData } from '@lensing/types';
   import PhotoSlideshow from './PhotoSlideshow.svelte';
   import NewsHeadlines from './NewsHeadlines.svelte';
   import SportsScores from './SportsScores.svelte';
@@ -8,6 +8,7 @@
   import CryptoWidget from './CryptoWidget.svelte';
   import WeatherWidget from './WeatherWidget.svelte';
   import CalendarWidget from './CalendarWidget.svelte';
+  import AllergiesWidget from './AllergiesWidget.svelte';
   import Placeholder from './Placeholder.svelte';
   import { getChannelData } from './stores/dataBusStore';
 
@@ -24,6 +25,7 @@
   const weatherStore = getChannelData('weather-server');
   const calendarStore = getChannelData('calendar-server');
   const photoStore = getChannelData('photo-slideshow-server');
+  const allergiesStore = getChannelData('allergies-server');
 
   $: newsData = $newsStore as NewsData | null;
   $: sportsData = $sportsStore as SportsData | null;
@@ -32,6 +34,7 @@
   $: weatherData = $weatherStore as WeatherData | null;
   $: calendarData = $calendarStore as CalendarData | null;
   $: photoData = $photoStore as PhotoSlideshowData | null;
+  $: allergiesData = $allergiesStore as AllergyData | null;
 </script>
 
 {#if pluginId === 'photo-slideshow'}
@@ -48,6 +51,8 @@
   <WeatherWidget current={weatherData?.current ?? null} forecast={weatherData?.forecast ?? []} />
 {:else if pluginId === 'calendar'}
   <CalendarWidget events={calendarData?.events ?? []} />
+{:else if pluginId === 'allergies'}
+  <AllergiesWidget index={allergiesData?.index ?? 0} allergens={allergiesData?.allergens ?? []} />
 {:else}
   <Placeholder title={plugin.manifest.name} index={0} />
 {/if}

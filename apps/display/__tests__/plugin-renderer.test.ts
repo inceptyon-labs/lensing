@@ -156,6 +156,27 @@ describe('Data Bus Store Integration', () => {
     // Should pass data from store
     expect(source).toMatch(/photoPaths=\{[^}]*\}/);
   });
+
+  it('should import AllergiesWidget component', () => {
+    const source = readFileSync(rendererPath, 'utf-8');
+    expect(source).toContain('AllergiesWidget');
+  });
+
+  it('should subscribe to allergies-server channel', () => {
+    const source = readFileSync(rendererPath, 'utf-8');
+    expect(source).toContain('allergies-server');
+  });
+
+  it('should render AllergiesWidget for allergies plugin_id', () => {
+    const source = readFileSync(rendererPath, 'utf-8');
+    expect(source).toMatch(/{:else if.*allergies/);
+  });
+
+  it('should pass index and allergens props to AllergiesWidget', () => {
+    const source = readFileSync(rendererPath, 'utf-8');
+    expect(source).toMatch(/index=\{[^}]*\}/);
+    expect(source).toMatch(/allergens=\{[^}]*\}/);
+  });
 });
 
 describe('Built-in Plugin Map', () => {

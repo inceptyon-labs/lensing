@@ -1,11 +1,11 @@
 ---
 # lensing-35n4
 title: Photo slideshow data pipeline
-status: in-progress
+status: completed
 type: task
 priority: normal
 created_at: 2026-02-24T18:00:49Z
-updated_at: 2026-02-24T23:34:27Z
+updated_at: 2026-02-25T01:57:02Z
 parent: lensing-wbum
 ---
 
