@@ -70,7 +70,7 @@
 
   .admin-main {
     padding: var(--space-6);
-    max-width: 800px;
+    max-width: 960px;
     margin: 0 auto;
   }
 </style>

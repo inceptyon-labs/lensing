@@ -53,6 +53,9 @@ importers:
       '@lensing/types':
         specifier: workspace:*
         version: link:../../packages/types
+      gridstack:
+        specifier: ^10.3.0
+        version: 10.3.1
     devDependencies:
       '@sveltejs/adapter-static':
         specifier: ^3.0.0
@@ -1432,6 +1435,9 @@ packages:
 
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
+
+  gridstack@10.3.1:
+    resolution: {integrity: sha512-Ra82k/88gdeiu3ZP40COS4bI4sGhNQlZAaAQ6szfPfr68zVpsXxiyLKr5zYcTpKX4jjcwyNsNNdcV1tDJc71fA==}
 
   has-flag@4.0.0:
     resolution: {integrity: sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==}
@@ -3398,6 +3404,8 @@ snapshots:
       slash: 3.0.0
 
   graceful-fs@4.2.11: {}
+
+  gridstack@10.3.1: {}
 
   has-flag@4.0.0: {}
 

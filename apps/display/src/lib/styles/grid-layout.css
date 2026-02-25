@@ -1,0 +1,319 @@
+/* ── GridStack Dashboard Layout ───────────────────────────────────────────── */
+/* Lensing-themed grid layout with ember accents and gravitational design.    */
+
+/* ── Base Grid Container ─────────────────────────────────────────────────── */
+
+.grid-stack {
+  min-height: 100%;
+  background-color: var(--void);
+}
+
+.grid-stack-item {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.grid-stack-item-content {
+  background-color: var(--event-horizon);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  height: 100%;
+}
+
+/* ── View Mode (static grid) ─────────────────────────────────────────────── */
+
+.grid-stack.grid-stack-static .grid-stack-item-content {
+  cursor: default;
+}
+
+/* ── Edit Mode ───────────────────────────────────────────────────────────── */
+
+.dashboard-edit-mode .grid-stack-item-content {
+  border-color: var(--ember);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--ember) 30%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--ember) 10%, transparent);
+  cursor: move;
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.dashboard-edit-mode .grid-stack-item-content:hover {
+  border-color: var(--ember-bright, var(--ember));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--ember) 50%, transparent),
+    0 0 20px color-mix(in srgb, var(--ember) 15%, transparent);
+}
+
+/* ── Placeholder Ghost (drop target) ─────────────────────────────────────── */
+
+.grid-stack .grid-stack-placeholder > .placeholder-content {
+  background-color: color-mix(in srgb, var(--ember) 10%, transparent);
+  border: 2px dashed var(--ember);
+  border-radius: var(--radius-md);
+  opacity: 0.6;
+}
+
+/* ── Resize Handles (L-bracket style) ────────────────────────────────────── */
+
+.dashboard-edit-mode .grid-stack-item > .ui-resizable-handle {
+  position: absolute;
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out);
+  z-index: 10;
+}
+
+.dashboard-edit-mode .grid-stack-item:hover > .ui-resizable-handle,
+.dashboard-edit-mode .grid-stack-item.ui-resizable-resizing > .ui-resizable-handle {
+  opacity: 1;
+}
+
+/* Handle sizing */
+.dashboard-edit-mode .ui-resizable-n,
+.dashboard-edit-mode .ui-resizable-s {
+  height: 8px;
+  left: 12px;
+  right: 12px;
+  cursor: ns-resize;
+}
+
+.dashboard-edit-mode .ui-resizable-e,
+.dashboard-edit-mode .ui-resizable-w {
+  width: 8px;
+  top: 12px;
+  bottom: 12px;
+  cursor: ew-resize;
+}
+
+.dashboard-edit-mode .ui-resizable-n {
+  top: -4px;
+}
+
+.dashboard-edit-mode .ui-resizable-s {
+  bottom: -4px;
+}
+
+.dashboard-edit-mode .ui-resizable-e {
+  right: -4px;
+}
+
+.dashboard-edit-mode .ui-resizable-w {
+  left: -4px;
+}
+
+/* Corner handles */
+.dashboard-edit-mode .ui-resizable-ne,
+.dashboard-edit-mode .ui-resizable-nw,
+.dashboard-edit-mode .ui-resizable-se,
+.dashboard-edit-mode .ui-resizable-sw {
+  width: 14px;
+  height: 14px;
+}
+
+.dashboard-edit-mode .ui-resizable-ne {
+  top: -4px;
+  right: -4px;
+  cursor: ne-resize;
+}
+
+.dashboard-edit-mode .ui-resizable-nw {
+  top: -4px;
+  left: -4px;
+  cursor: nw-resize;
+}
+
+.dashboard-edit-mode .ui-resizable-se {
+  bottom: -4px;
+  right: -4px;
+  cursor: se-resize;
+}
+
+.dashboard-edit-mode .ui-resizable-sw {
+  bottom: -4px;
+  left: -4px;
+  cursor: sw-resize;
+}
+
+/* L-bracket visual on corner handles */
+.dashboard-edit-mode .ui-resizable-se::before,
+.dashboard-edit-mode .ui-resizable-se::after,
+.dashboard-edit-mode .ui-resizable-sw::before,
+.dashboard-edit-mode .ui-resizable-sw::after,
+.dashboard-edit-mode .ui-resizable-ne::before,
+.dashboard-edit-mode .ui-resizable-ne::after,
+.dashboard-edit-mode .ui-resizable-nw::before,
+.dashboard-edit-mode .ui-resizable-nw::after {
+  content: '';
+  position: absolute;
+  background-color: var(--ember);
+  border-radius: 1px;
+}
+
+/* SE corner L-bracket */
+.dashboard-edit-mode .ui-resizable-se::before {
+  bottom: 2px;
+  right: 2px;
+  width: 10px;
+  height: 2px;
+}
+
+.dashboard-edit-mode .ui-resizable-se::after {
+  bottom: 2px;
+  right: 2px;
+  width: 2px;
+  height: 10px;
+}
+
+/* SW corner L-bracket */
+.dashboard-edit-mode .ui-resizable-sw::before {
+  bottom: 2px;
+  left: 2px;
+  width: 10px;
+  height: 2px;
+}
+
+.dashboard-edit-mode .ui-resizable-sw::after {
+  bottom: 2px;
+  left: 2px;
+  width: 2px;
+  height: 10px;
+}
+
+/* NE corner L-bracket */
+.dashboard-edit-mode .ui-resizable-ne::before {
+  top: 2px;
+  right: 2px;
+  width: 10px;
+  height: 2px;
+}
+
+.dashboard-edit-mode .ui-resizable-ne::after {
+  top: 2px;
+  right: 2px;
+  width: 2px;
+  height: 10px;
+}
+
+/* NW corner L-bracket */
+.dashboard-edit-mode .ui-resizable-nw::before {
+  top: 2px;
+  left: 2px;
+  width: 10px;
+  height: 2px;
+}
+
+.dashboard-edit-mode .ui-resizable-nw::after {
+  top: 2px;
+  left: 2px;
+  width: 2px;
+  height: 10px;
+}
+
+/* Edge handle bars */
+.dashboard-edit-mode .ui-resizable-n::before,
+.dashboard-edit-mode .ui-resizable-s::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 2px;
+  background-color: var(--ember);
+  border-radius: 1px;
+  top: 3px;
+}
+
+.dashboard-edit-mode .ui-resizable-e::before,
+.dashboard-edit-mode .ui-resizable-w::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 24px;
+  background-color: var(--ember);
+  border-radius: 1px;
+  left: 3px;
+}
+
+/* ── Edit Mode Toggle Button ─────────────────────────────────────────────── */
+
+.dashboard-edit-toggle {
+  position: fixed;
+  bottom: var(--space-4, 16px);
+  right: var(--space-4, 16px);
+  z-index: 100;
+  padding: var(--space-2, 8px) var(--space-4, 16px);
+  background-color: var(--event-horizon, #1a1a2e);
+  border: 1px solid var(--edge, #333);
+  border-radius: var(--radius-md, 8px);
+  color: var(--starlight, #e0e0e0);
+  font-family: var(--font-mono, monospace);
+  font-size: var(--text-xs, 12px);
+  font-weight: var(--weight-medium, 500);
+  letter-spacing: var(--tracking-wide, 0.05em);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast, 150ms) var(--ease-out, ease-out),
+    border-color var(--duration-fast, 150ms) var(--ease-out, ease-out),
+    color var(--duration-fast, 150ms) var(--ease-out, ease-out);
+}
+
+.dashboard-edit-toggle:hover {
+  border-color: var(--ember);
+  color: var(--ember);
+}
+
+.dashboard-edit-toggle:focus-visible {
+  outline: 2px solid var(--edge-focus, var(--ember));
+  outline-offset: 2px;
+}
+
+.dashboard-edit-toggle[aria-pressed='true'] {
+  background-color: color-mix(in srgb, var(--ember) 15%, var(--event-horizon, #1a1a2e));
+  border-color: var(--ember);
+  color: var(--ember);
+}
+
+/* ── Dragging State ──────────────────────────────────────────────────────── */
+
+.dashboard-edit-mode .grid-stack-item.ui-draggable-dragging .grid-stack-item-content {
+  box-shadow:
+    0 0 0 2px var(--ember),
+    0 8px 24px color-mix(in srgb, var(--void, #000) 60%, transparent);
+  opacity: 0.9;
+}
+
+/* ── Animation ───────────────────────────────────────────────────────────── */
+
+.grid-stack > .grid-stack-item {
+  transition:
+    left var(--duration-normal, 200ms) var(--ease-out, ease-out),
+    top var(--duration-normal, 200ms) var(--ease-out, ease-out),
+    width var(--duration-normal, 200ms) var(--ease-out, ease-out),
+    height var(--duration-normal, 200ms) var(--ease-out, ease-out);
+}
+
+.grid-stack > .grid-stack-item.ui-draggable-dragging,
+.grid-stack > .grid-stack-item.ui-resizable-resizing {
+  transition: none;
+}
+
+/* ── Reduced Motion ──────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .grid-stack > .grid-stack-item {
+    transition: none !important;
+  }
+
+  .dashboard-edit-mode .grid-stack-item > .ui-resizable-handle {
+    transition: none !important;
+  }
+
+  .dashboard-edit-toggle {
+    transition: none !important;
+  }
+}

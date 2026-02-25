@@ -63,15 +63,15 @@ describe('ErrorBoundary Component', () => {
 });
 
 describe('ErrorBoundary Integration', () => {
-  it('should wrap widgets in +page.svelte', () => {
-    const pagePath = path.join(__dirname, '..', 'src', 'routes', '+page.svelte');
-    const content = fs.readFileSync(pagePath, 'utf-8');
+  it('should wrap widgets in DashboardGrid.svelte', () => {
+    const gridPath = path.join(__dirname, '..', 'src', 'lib', 'grid', 'DashboardGrid.svelte');
+    const content = fs.readFileSync(gridPath, 'utf-8');
     expect(content).toContain('ErrorBoundary');
   });
 
-  it('should import ErrorBoundary in +page.svelte', () => {
-    const pagePath = path.join(__dirname, '..', 'src', 'routes', '+page.svelte');
-    const content = fs.readFileSync(pagePath, 'utf-8');
+  it('should import ErrorBoundary in DashboardGrid.svelte', () => {
+    const gridPath = path.join(__dirname, '..', 'src', 'lib', 'grid', 'DashboardGrid.svelte');
+    const content = fs.readFileSync(gridPath, 'utf-8');
     expect(content).toContain('import ErrorBoundary from');
   });
 });

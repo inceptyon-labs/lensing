@@ -2,12 +2,39 @@
   import { onMount } from 'svelte';
   import type { PluginAdminEntry } from '@lensing/types';
   import { ZONE_NAMES } from './config.ts';
+  import { MODULE_GROUPS } from './admin-module-groups.ts';
   import AdminPluginCard from './AdminPluginCard.svelte';
   import AdminPluginUpload from './AdminPluginUpload.svelte';
+  import AdminTabBar from './AdminTabBar.svelte';
+  import AdminModuleSection from './AdminModuleSection.svelte';
 
   let plugins: PluginAdminEntry[] = [];
   let loading = true;
   let error: string | null = null;
+  let activeTab: 'modules' | 'plugins' = 'modules';
+
+  /** Track which plugins have been saved since last restart */
+  let dirtyIds = new Set<string>();
+
+  $: builtins = plugins.filter((p) => p.builtin);
+  $: thirdParty = plugins.filter((p) => !p.builtin);
+
+  /** Group built-in plugins by MODULE_GROUPS; ungrouped go into "Other" */
+  $: groupedBuiltins = (() => {
+    const groups = MODULE_GROUPS.map((group) => ({
+      label: group.label,
+      plugins: group.ids
+        .map((id) => builtins.find((p) => p.plugin_id === id))
+        .filter((p): p is PluginAdminEntry => !!p),
+    })).filter((g) => g.plugins.length > 0);
+
+    const knownIds = new Set(MODULE_GROUPS.flatMap((g) => g.ids));
+    const ungrouped = builtins.filter((p) => !knownIds.has(p.plugin_id));
+    if (ungrouped.length > 0) {
+      groups.push({ label: 'Other', plugins: ungrouped });
+    }
+    return groups;
+  })();
 
   onMount(async () => {
     try {
@@ -32,7 +59,7 @@
       });
       if (!res.ok) throw new Error(`Server returned ${res.status}`);
       plugins = plugins.map((p) => (p.plugin_id === id ? { ...p, enabled } : p));
-      error = null; // Clear error on success
+      error = null;
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to toggle plugin';
     }
@@ -40,7 +67,6 @@
 
   async function handleZoneChange(id: string, zone: string | undefined) {
     try {
-      // Validate zone before sending
       if (zone !== undefined && !ZONE_NAMES.includes(zone as (typeof ZONE_NAMES)[number])) {
         throw new Error('Invalid zone selected');
       }
@@ -54,7 +80,7 @@
       plugins = plugins.map((p) =>
         p.plugin_id === id ? { ...p, zone: zone as PluginAdminEntry['zone'] } : p
       );
-      error = null; // Clear error on success
+      error = null;
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to change plugin zone';
     }
@@ -82,6 +108,7 @@
       });
       if (!res.ok) throw new Error(`Server returned ${res.status}`);
       plugins = plugins.map((p) => (p.plugin_id === id ? { ...p, config } : p));
+      dirtyIds = new Set([...dirtyIds, id]);
       error = null;
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to save config';
@@ -95,28 +122,55 @@
       const body = (await res.json().catch(() => ({}))) as { error?: string };
       throw new Error(body.error ?? `Server returned ${res.status}`);
     }
+    dirtyIds = new Set([...dirtyIds].filter((d) => d !== id));
   }
 </script>
 
 <div class="plugin-list">
-  <AdminPluginUpload onInstalled={refreshPlugins} />
+  <AdminTabBar {activeTab} onTabChange={(tab) => (activeTab = tab)} />
 
   {#if loading}
     <p class="state-message">Loading plugins…</p>
   {:else if error}
     <p class="state-message state-message--error">Error: {error}</p>
-  {:else if plugins.length === 0}
-    <p class="state-message">No plugins installed.</p>
+  {:else if activeTab === 'modules'}
+    {#if builtins.length === 0}
+      <p class="state-message">No built-in modules found.</p>
+    {:else}
+      <div class="modules-layout">
+        {#each groupedBuiltins as group (group.label)}
+          <AdminModuleSection label={group.label}>
+            {#each group.plugins as plugin (plugin.plugin_id)}
+              <AdminPluginCard
+                {plugin}
+                onToggleEnabled={handleToggleEnabled}
+                onZoneChange={handleZoneChange}
+                onConfigSave={handleConfigSave}
+                onRestart={plugin.builtin ? handleRestart : undefined}
+                configDirty={dirtyIds.has(plugin.plugin_id)}
+              />
+            {/each}
+          </AdminModuleSection>
+        {/each}
+      </div>
+    {/if}
   {:else}
-    {#each plugins as plugin (plugin.plugin_id)}
-      <AdminPluginCard
-        {plugin}
-        onToggleEnabled={handleToggleEnabled}
-        onZoneChange={handleZoneChange}
-        onConfigSave={handleConfigSave}
-        onRestart={plugin.builtin ? handleRestart : undefined}
-      />
-    {/each}
+    <AdminPluginUpload onInstalled={refreshPlugins} />
+
+    {#if thirdParty.length === 0}
+      <p class="state-message">No third-party plugins installed.</p>
+    {:else}
+      <div class="plugins-grid">
+        {#each thirdParty as plugin (plugin.plugin_id)}
+          <AdminPluginCard
+            {plugin}
+            onToggleEnabled={handleToggleEnabled}
+            onZoneChange={handleZoneChange}
+            onConfigSave={handleConfigSave}
+          />
+        {/each}
+      </div>
+    {/if}
   {/if}
 </div>
 
@@ -124,6 +178,18 @@
   .plugin-list {
     display: flex;
     flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .modules-layout {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+
+  .plugins-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
     gap: var(--space-4);
   }
 

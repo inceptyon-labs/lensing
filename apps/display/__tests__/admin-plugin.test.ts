@@ -189,7 +189,7 @@ describe('Admin Plugin Management Components', () => {
 
     it('should have empty state message', () => {
       const source = readFileSync(listPath, 'utf-8');
-      expect(source).toMatch(/[Nn]o plugins|empty/);
+      expect(source).toMatch(/[Nn]o.*plugins|[Nn]o.*modules|empty/);
     });
 
     it('should show loading message while fetching', () => {

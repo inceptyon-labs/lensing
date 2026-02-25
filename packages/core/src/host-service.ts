@@ -143,6 +143,21 @@ export function createHostService(options: HostServiceOptions = {}): HostService
         _ws!.broadcast({ type: 'plugin_data', payload: msg, timestamp: new Date().toISOString() });
       });
 
+      // Send cached data bus state to newly connected clients so they don't
+      // have to wait until the next module refresh (which can be up to 1 hour).
+      _ws.on('connection', () => {
+        for (const channel of dataBus.getChannels()) {
+          const latest = dataBus.getLatest(channel);
+          if (latest) {
+            _ws!.broadcast({
+              type: 'plugin_data',
+              payload: latest,
+              timestamp: new Date().toISOString(),
+            });
+          }
+        }
+      });
+
       // 6. Plugin scheduler (no-op — plugins can register themselves)
       createPluginScheduler();
 

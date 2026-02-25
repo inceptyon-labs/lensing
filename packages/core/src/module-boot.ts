@@ -168,7 +168,8 @@ function bootModule(
   switch (id) {
     case 'weather':
       return createWeatherServer({
-        apiKey: String(values['apiKey'] ?? ''),
+        provider: (values['provider'] as 'openweathermap' | 'open-meteo') ?? 'open-meteo',
+        apiKey: values['apiKey'] ? String(values['apiKey']) : undefined,
         location: { lat: Number(values['lat']), lon: Number(values['lon']) },
         units: (values['units'] as 'imperial' | 'metric') ?? 'imperial',
         dataBus,

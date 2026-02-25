@@ -1,4 +1,4 @@
-import type { DataBusInstance } from '@lensing/types';
+import type { DataBusInstance, WeatherProvider } from '@lensing/types';
 
 // Weather data types (mirrored from @lensing/ui — core cannot depend on ui)
 
@@ -43,8 +43,10 @@ export interface WeatherLocation {
 
 /** Configuration for createWeatherServer */
 export interface WeatherServerOptions {
-  /** OpenWeatherMap API key */
-  apiKey: string;
+  /** Weather data provider (default: 'open-meteo') */
+  provider?: WeatherProvider;
+  /** API key (required for OpenWeatherMap, ignored for Open-Meteo) */
+  apiKey?: string;
   /** Geographic location to query */
   location: WeatherLocation;
   /** Unit system: 'imperial' (°F) or 'metric' (°C) */
@@ -71,6 +73,101 @@ export interface WeatherServerInstance {
   onError(callback: (error: string) => void): void;
   /** Stop background refresh and release resources */
   close(): void;
+}
+
+// ── WMO Weather Code Mapping ──────────────────────────────────────────────────
+
+/** Map WMO weather interpretation codes to human-readable conditions */
+export const WMO_CODE_MAP: Record<number, string> = {
+  0: 'Clear sky',
+  1: 'Mostly clear',
+  2: 'Partly cloudy',
+  3: 'Overcast',
+  45: 'Fog',
+  48: 'Fog',
+  51: 'Drizzle',
+  53: 'Drizzle',
+  55: 'Drizzle',
+  56: 'Freezing drizzle',
+  57: 'Freezing drizzle',
+  61: 'Rain',
+  63: 'Rain',
+  65: 'Rain',
+  66: 'Freezing rain',
+  67: 'Freezing rain',
+  71: 'Snow',
+  73: 'Snow',
+  75: 'Snow',
+  77: 'Snow grains',
+  80: 'Rain showers',
+  81: 'Rain showers',
+  82: 'Rain showers',
+  85: 'Snow showers',
+  86: 'Snow showers',
+  95: 'Thunderstorm',
+  96: 'Thunderstorm',
+  99: 'Thunderstorm',
+};
+
+function wmoToConditions(code: number): string {
+  return WMO_CODE_MAP[code] ?? 'Unknown';
+}
+
+// ── Open-Meteo response types ─────────────────────────────────────────────────
+
+interface OpenMeteoCurrentUnits {
+  temperature_2m: string;
+}
+
+interface OpenMeteoCurrent {
+  temperature_2m: number;
+  apparent_temperature: number;
+  weather_code: number;
+  relative_humidity_2m: number;
+}
+
+interface OpenMeteoDaily {
+  time: string[];
+  temperature_2m_max: number[];
+  temperature_2m_min: number[];
+  weather_code: number[];
+}
+
+interface OpenMeteoResponse {
+  current: OpenMeteoCurrent;
+  current_units?: OpenMeteoCurrentUnits;
+  daily: OpenMeteoDaily;
+}
+
+function transformOpenMeteoCurrent(c: OpenMeteoCurrent): WeatherCurrent {
+  return {
+    temp: c.temperature_2m,
+    feelsLike: c.apparent_temperature,
+    humidity: c.relative_humidity_2m,
+    conditions: wmoToConditions(c.weather_code),
+    icon: '',
+  };
+}
+
+function transformOpenMeteoForecast(daily: OpenMeteoDaily): WeatherForecastDay[] {
+  return daily.time.map((date, i) => ({
+    date,
+    high: daily.temperature_2m_max[i],
+    low: daily.temperature_2m_min[i],
+    conditions: wmoToConditions(daily.weather_code[i]),
+    icon: '',
+  }));
+}
+
+function buildOpenMeteoUrl(location: WeatherLocation, units: 'imperial' | 'metric'): string {
+  const tempUnit = units === 'imperial' ? 'fahrenheit' : 'celsius';
+  return (
+    `https://api.open-meteo.com/v1/forecast` +
+    `?latitude=${location.lat}&longitude=${location.lon}` +
+    `&current=temperature_2m,apparent_temperature,weather_code,relative_humidity_2m` +
+    `&daily=temperature_2m_max,temperature_2m_min,weather_code` +
+    `&timezone=auto&forecast_days=5&temperature_unit=${tempUnit}`
+  );
 }
 
 // ── OpenWeatherMap response types ─────────────────────────────────────────────
@@ -136,6 +233,7 @@ function transformForecast(daily: OWMDaily[]): WeatherForecastDay[] {
  */
 export function createWeatherServer(options: WeatherServerOptions): WeatherServerInstance {
   const {
+    provider = 'open-meteo',
     apiKey,
     location,
     units = 'imperial',
@@ -143,8 +241,8 @@ export function createWeatherServer(options: WeatherServerOptions): WeatherServe
     dataBus,
   } = options;
 
-  if (!apiKey) {
-    throw new Error('WeatherServer: apiKey is required');
+  if (provider === 'openweathermap' && !apiKey) {
+    throw new Error('WeatherServer: apiKey is required for OpenWeatherMap provider');
   }
   if (!location) {
     throw new Error('WeatherServer: location is required');
@@ -179,8 +277,37 @@ export function createWeatherServer(options: WeatherServerOptions): WeatherServe
   }
 
   function buildUrl(): string {
+    if (provider === 'open-meteo') {
+      return buildOpenMeteoUrl(location, units);
+    }
     const base = 'https://api.openweathermap.org/data/3.0/onecall';
     return `${base}?lat=${location.lat}&lon=${location.lon}&units=${units}&appid=${apiKey}&exclude=minutely,hourly,alerts`;
+  }
+
+  function transformResponse(raw: unknown): WeatherData | null {
+    if (provider === 'open-meteo') {
+      const om = raw as OpenMeteoResponse;
+      if (!om.current || !om.daily) {
+        notifyError('Weather response missing required fields: current or daily');
+        return null;
+      }
+      return {
+        current: transformOpenMeteoCurrent(om.current),
+        forecast: transformOpenMeteoForecast(om.daily),
+        lastUpdated: Date.now(),
+      };
+    }
+    // OpenWeatherMap
+    const owm = raw as OWMResponse;
+    if (!owm.current || !Array.isArray(owm.daily)) {
+      notifyError('Weather response missing required fields: current or daily');
+      return null;
+    }
+    return {
+      current: transformCurrent(owm.current),
+      forecast: transformForecast(owm.daily),
+      lastUpdated: Date.now(),
+    };
   }
 
   async function refresh(): Promise<void> {
@@ -207,25 +334,17 @@ export function createWeatherServer(options: WeatherServerOptions): WeatherServe
       return;
     }
 
-    let raw: OWMResponse;
+    let raw: unknown;
     try {
-      raw = (await response.json()) as OWMResponse;
+      raw = await response.json();
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       notifyError(`Weather response parse error: ${message}`);
       return;
     }
 
-    if (!raw.current || !Array.isArray(raw.daily)) {
-      notifyError('Weather response missing required fields: current or daily');
-      return;
-    }
-
-    const data: WeatherData = {
-      current: transformCurrent(raw.current),
-      forecast: transformForecast(raw.daily),
-      lastUpdated: Date.now(),
-    };
+    const data = transformResponse(raw);
+    if (!data) return;
 
     lastData = data;
     lastFetchedAt = Date.now();

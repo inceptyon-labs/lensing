@@ -11,12 +11,14 @@
     config: Record<string, string | number | boolean>
   ) => void = () => {};
   export let onRestart: ((id: string) => Promise<void>) | undefined = undefined;
+  export let configDirty = false;
 
   let configOpen = false;
   let restartStatus: 'idle' | 'restarting' | 'restarted' | 'error' = 'idle';
   let restartError = '';
 
   $: hasConfig = !!plugin.manifest.config_schema?.fields?.length;
+  $: showRestart = onRestart && (configDirty || restartStatus === 'restarting' || restartStatus === 'restarted');
 
   function handleToggle() {
     onToggleEnabled(plugin.plugin_id, !plugin.enabled);
@@ -97,9 +99,9 @@
       </button>
     {/if}
 
-    {#if onRestart}
+    {#if showRestart}
       {#if restartStatus === 'idle'}
-        <button class="restart-btn" on:click={handleRestart}>Restart</button>
+        <button class="restart-btn restart-btn--glow" on:click={handleRestart}>Restart</button>
       {:else if restartStatus === 'restarting'}
         <span class="restart-notice">Restarting…</span>
       {:else if restartStatus === 'restarted'}
@@ -290,6 +292,20 @@
 
   .restart-btn:hover {
     background-color: color-mix(in srgb, var(--ember) 15%, transparent);
+  }
+
+  .restart-btn--glow {
+    animation: ember-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes ember-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 4px color-mix(in srgb, var(--ember) 30%, transparent);
+    }
+    50% {
+      box-shadow: 0 0 12px color-mix(in srgb, var(--ember) 60%, transparent);
+    }
   }
 
   .restart-notice {

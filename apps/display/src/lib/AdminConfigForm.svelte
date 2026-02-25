@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { PluginAdminEntry } from '@lensing/types';
+  import NewsFeedPresets from './NewsFeedPresets.svelte';
 
   export let plugin: PluginAdminEntry;
   export let onSave: (config: Record<string, string | number | boolean>) => void = () => {};
@@ -8,9 +9,11 @@
   $: schema = plugin.manifest.config_schema;
   $: fields = schema?.fields ?? [];
 
-  // Build a reactive local copy of the config values
+  // Build local copy of config values — only re-init when the plugin identity changes
   let values: Record<string, string | number | boolean> = {};
-  $: {
+  let initializedFor = '';
+  $: if (plugin.plugin_id !== initializedFor) {
+    initializedFor = plugin.plugin_id;
     values = {};
     for (const field of fields) {
       values[field.key] =
@@ -54,6 +57,12 @@
             bind:value={values[field.key]}
             required={field.required}
           />
+          {#if plugin.plugin_id === 'news' && field.key === 'feedUrls'}
+            <NewsFeedPresets
+              currentUrls={String(values[field.key] ?? '')}
+              onUrlsChange={(urls) => (values[field.key] = urls)}
+            />
+          {/if}
         {:else if field.type === 'password'}
           <input
             id="cfg-{field.key}"

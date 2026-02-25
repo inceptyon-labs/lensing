@@ -23,6 +23,7 @@ The entire data pipeline from server modules to display widgets is broken. No li
 ## Summary
 
 All 10 tasks completed:
+
 - Client-side data bus store + WebSocket subscription
 - Wire data bus to WebSocket broadcast
 - Wire PluginRenderer to live data from data bus store

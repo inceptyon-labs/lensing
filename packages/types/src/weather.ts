@@ -1,3 +1,6 @@
+/** Supported weather data providers */
+export type WeatherProvider = 'openweathermap' | 'open-meteo';
+
 /** Current weather conditions */
 export interface WeatherCurrent {
   temp: number;

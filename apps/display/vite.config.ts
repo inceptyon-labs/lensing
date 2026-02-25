@@ -12,6 +12,7 @@ export default defineConfig({
       '/settings': { target: API_TARGET },
       '/layout': { target: API_TARGET },
       '/ask': { target: API_TARGET },
+      '/ws': { target: API_TARGET, ws: true },
     },
   },
   test: {

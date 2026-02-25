@@ -866,7 +866,7 @@ export type {
 export { DEFAULT_HA_MAX_STALE_MS, DEFAULT_HA_DOMAINS } from './home-assistant';
 
 // ── Weather ─────────────────────────────────────────────────────────────────
-export type { WeatherCurrent, WeatherForecastDay, WeatherData } from './weather';
+export type { WeatherProvider, WeatherCurrent, WeatherForecastDay, WeatherData } from './weather';
 
 // ── PIR Sensor / Presence Detection ────────────────────────────────────────
 export type {

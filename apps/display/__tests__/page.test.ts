@@ -10,51 +10,21 @@ describe('Main Page Component', () => {
     expect(fs.existsSync(pagePath)).toBe(true);
   });
 
-  it('should import Layout component', () => {
+  it('should import DashboardGrid component', () => {
     const content = fs.readFileSync(pagePath, 'utf-8');
-    expect(content).toContain('Layout');
+    expect(content).toContain('DashboardGrid');
     expect(content).toContain('import');
   });
 
-  it('should import Placeholder component', () => {
+  it('should render DashboardGrid in template', () => {
     const content = fs.readFileSync(pagePath, 'utf-8');
-    expect(content).toContain('Placeholder');
-    expect(content).toContain('import');
+    expect(content).toContain('<DashboardGrid');
   });
 
-  it('should use Layout component in template', () => {
+  it('should pass plugins prop to DashboardGrid', () => {
     const content = fs.readFileSync(pagePath, 'utf-8');
-    expect(content).toContain('<Layout');
-  });
-
-  it('should have slot for top-bar zone', () => {
-    const content = fs.readFileSync(pagePath, 'utf-8');
-    expect(content).toContain('slot="top-bar"');
-  });
-
-  it('should have slot for left-col zone', () => {
-    const content = fs.readFileSync(pagePath, 'utf-8');
-    expect(content).toContain('slot="left-col"');
-  });
-
-  it('should have slot for center zone', () => {
-    const content = fs.readFileSync(pagePath, 'utf-8');
-    expect(content).toContain('slot="center"');
-  });
-
-  it('should have slot for right-col zone', () => {
-    const content = fs.readFileSync(pagePath, 'utf-8');
-    expect(content).toContain('slot="right-col"');
-  });
-
-  it('should have slot for bottom-bar zone', () => {
-    const content = fs.readFileSync(pagePath, 'utf-8');
-    expect(content).toContain('slot="bottom-bar"');
-  });
-
-  it('should use Placeholder widgets in at least one zone as fallback', () => {
-    const content = fs.readFileSync(pagePath, 'utf-8');
-    expect(content).toMatch(/<Placeholder[\s\S]*?\/>/);
+    expect(content).toContain('plugins');
+    expect(content).toContain('<DashboardGrid');
   });
 
   it('should include svelte:head with meta viewport for kiosk', () => {
@@ -71,19 +41,13 @@ describe('Main Page Component', () => {
     }
   });
 
-  it('should use svelte:fragment for slots (not div wrappers that bypass zone grid)', () => {
+  it('should have an admin link', () => {
     const content = fs.readFileSync(pagePath, 'utf-8');
-    expect(content).toContain('svelte:fragment');
-    expect(content).not.toMatch(/<div slot=/);
+    expect(content).toContain('/admin');
+    expect(content).toContain('admin-link');
   });
 
   // ── Dynamic Plugin Rendering ──────────────────────────────────────────────
-
-  it('should import PluginRenderer component', () => {
-    const content = fs.readFileSync(pagePath, 'utf-8');
-    expect(content).toContain('PluginRenderer');
-    expect(content).toContain('import');
-  });
 
   it('should import onMount from svelte for data fetching', () => {
     const content = fs.readFileSync(pagePath, 'utf-8');
@@ -91,15 +55,10 @@ describe('Main Page Component', () => {
     expect(content).toContain('svelte');
   });
 
-  it('should fetch /plugins on mount to get zone assignments', () => {
+  it('should fetch /plugins on mount to load plugin data', () => {
     const content = fs.readFileSync(pagePath, 'utf-8');
     expect(content).toContain('/plugins');
     expect(content).toContain('fetch');
-  });
-
-  it('should use PluginRenderer for assigned plugins in zones', () => {
-    const content = fs.readFileSync(pagePath, 'utf-8');
-    expect(content).toContain('<PluginRenderer');
   });
 
   it('should connect to WebSocket for live layout updates', () => {
@@ -122,5 +81,21 @@ describe('Main Page Component', () => {
     const content = fs.readFileSync(pagePath, 'utf-8');
     expect(content).toContain('plugin_data');
     expect(content).toContain('handlePluginData');
+  });
+
+  // ── Architecture: no longer uses zone-based layout ────────────────────────
+
+  it('should NOT import Layout component directly (uses DashboardGrid instead)', () => {
+    const content = fs.readFileSync(pagePath, 'utf-8');
+    expect(content).not.toMatch(/import\s+Layout\s+from/);
+  });
+
+  it('should NOT use zone-based slot rendering', () => {
+    const content = fs.readFileSync(pagePath, 'utf-8');
+    expect(content).not.toContain('slot="top-bar"');
+    expect(content).not.toContain('slot="left-col"');
+    expect(content).not.toContain('slot="center"');
+    expect(content).not.toContain('slot="right-col"');
+    expect(content).not.toContain('slot="bottom-bar"');
   });
 });

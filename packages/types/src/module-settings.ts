@@ -38,9 +38,24 @@ export const MODULE_SCHEMAS: readonly ModuleSettingsSchema[] = [
   {
     id: 'weather',
     name: 'Weather',
-    description: 'Current conditions and forecast via OpenWeatherMap',
+    description: 'Current conditions and forecast via Open-Meteo (free) or OpenWeatherMap',
     fields: [
-      { key: 'apiKey', type: 'password', label: 'API Key', required: true },
+      {
+        key: 'provider',
+        type: 'select',
+        label: 'Provider',
+        default: 'open-meteo',
+        options: [
+          { label: 'Open-Meteo (free, no key required)', value: 'open-meteo' },
+          { label: 'OpenWeatherMap (requires API key)', value: 'openweathermap' },
+        ],
+      },
+      {
+        key: 'apiKey',
+        type: 'password',
+        label: 'API Key',
+        description: 'Required for OpenWeatherMap only',
+      },
       { key: 'lat', type: 'number', label: 'Latitude', required: true, min: -90, max: 90 },
       { key: 'lon', type: 'number', label: 'Longitude', required: true, min: -180, max: 180 },
       {

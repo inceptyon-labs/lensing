@@ -1,10 +1,11 @@
 import { describe, it, expect, vi } from 'vitest';
-import { createWeatherServer } from '../weather-server';
+import { createWeatherServer, WMO_CODE_MAP } from '../weather-server';
 import type { WeatherServerOptions } from '../weather-server';
 
-// Minimal valid options for tests
+// Minimal valid OWM options for existing tests
 function validOptions(overrides: Partial<WeatherServerOptions> = {}): WeatherServerOptions {
   return {
+    provider: 'openweathermap',
     apiKey: 'test-api-key',
     location: { lat: 40.7128, lon: -74.006 },
     fetchFn: vi.fn().mockResolvedValue({
@@ -24,6 +25,33 @@ function validOptions(overrides: Partial<WeatherServerOptions> = {}): WeatherSer
   };
 }
 
+// Minimal valid Open-Meteo options
+function openMeteoOptions(overrides: Partial<WeatherServerOptions> = {}): WeatherServerOptions {
+  return {
+    provider: 'open-meteo',
+    location: { lat: 40.7128, lon: -74.006 },
+    fetchFn: vi.fn().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          current: {
+            temperature_2m: 72,
+            apparent_temperature: 70,
+            weather_code: 0,
+            relative_humidity_2m: 55,
+          },
+          daily: {
+            time: ['2026-02-25'],
+            temperature_2m_max: [75],
+            temperature_2m_min: [60],
+            weather_code: [2],
+          },
+        }),
+    }),
+    ...overrides,
+  };
+}
+
 describe('WeatherServer', () => {
   describe('factory and config', () => {
     it('should create a weather server instance', () => {
@@ -36,8 +64,14 @@ describe('WeatherServer', () => {
       expect(typeof server.close).toBe('function');
     });
 
-    it('should throw if apiKey is missing', () => {
-      expect(() => createWeatherServer(validOptions({ apiKey: '' }))).toThrow(/apiKey/i);
+    it('should throw if apiKey is missing for OpenWeatherMap', () => {
+      expect(() =>
+        createWeatherServer(validOptions({ provider: 'openweathermap', apiKey: '' }))
+      ).toThrow(/apiKey/i);
+    });
+
+    it('should not throw if apiKey is missing for Open-Meteo', () => {
+      expect(() => createWeatherServer(openMeteoOptions())).not.toThrow();
     });
 
     it('should throw if location is missing', () => {
@@ -48,7 +82,7 @@ describe('WeatherServer', () => {
       ).toThrow(/location/i);
     });
 
-    it('should default units to imperial', () => {
+    it('should default units to imperial (OWM)', () => {
       const fetchFn = vi.fn().mockResolvedValue({
         ok: true,
         json: () =>
@@ -67,7 +101,7 @@ describe('WeatherServer', () => {
       expect(fetchFn).toHaveBeenCalledWith(expect.stringContaining('units=imperial'));
     });
 
-    it('should accept metric units', () => {
+    it('should accept metric units (OWM)', () => {
       const fetchFn = vi.fn().mockResolvedValue({
         ok: true,
         json: () =>
@@ -84,6 +118,28 @@ describe('WeatherServer', () => {
       const server = createWeatherServer(validOptions({ units: 'metric', fetchFn }));
       server.refresh();
       expect(fetchFn).toHaveBeenCalledWith(expect.stringContaining('units=metric'));
+    });
+
+    it('should default provider to open-meteo', () => {
+      const fetchFn = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            current: {
+              temperature_2m: 72,
+              apparent_temperature: 70,
+              weather_code: 0,
+              relative_humidity_2m: 55,
+            },
+            daily: { time: [], temperature_2m_max: [], temperature_2m_min: [], weather_code: [] },
+          }),
+      });
+      const server = createWeatherServer({
+        location: { lat: 40, lon: -74 },
+        fetchFn,
+      });
+      server.refresh();
+      expect(fetchFn).toHaveBeenCalledWith(expect.stringContaining('api.open-meteo.com'));
     });
 
     it('should default maxStale_ms to 1 hour', () => {
@@ -418,6 +474,182 @@ describe('WeatherServer', () => {
     it('should not throw when dataBus is not provided', async () => {
       const server = createWeatherServer(validOptions());
       await expect(server.refresh()).resolves.not.toThrow();
+    });
+  });
+
+  describe('Open-Meteo provider', () => {
+    it('should build Open-Meteo URL with correct params', () => {
+      const fetchFn = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            current: {
+              temperature_2m: 72,
+              apparent_temperature: 70,
+              weather_code: 0,
+              relative_humidity_2m: 55,
+            },
+            daily: { time: [], temperature_2m_max: [], temperature_2m_min: [], weather_code: [] },
+          }),
+      });
+      const server = createWeatherServer(
+        openMeteoOptions({ fetchFn, location: { lat: 51.5074, lon: -0.1278 } })
+      );
+      server.refresh();
+      const url = (fetchFn as ReturnType<typeof vi.fn>).mock.calls[0][0] as string;
+      expect(url).toContain('api.open-meteo.com/v1/forecast');
+      expect(url).toContain('latitude=51.5074');
+      expect(url).toContain('longitude=-0.1278');
+      expect(url).toContain('temperature_unit=fahrenheit');
+      expect(url).toContain('current=');
+      expect(url).toContain('daily=');
+      expect(url).toContain('forecast_days=5');
+    });
+
+    it('should use celsius for metric units', () => {
+      const fetchFn = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            current: {
+              temperature_2m: 22,
+              apparent_temperature: 21,
+              weather_code: 0,
+              relative_humidity_2m: 55,
+            },
+            daily: { time: [], temperature_2m_max: [], temperature_2m_min: [], weather_code: [] },
+          }),
+      });
+      const server = createWeatherServer(openMeteoOptions({ fetchFn, units: 'metric' }));
+      server.refresh();
+      const url = (fetchFn as ReturnType<typeof vi.fn>).mock.calls[0][0] as string;
+      expect(url).toContain('temperature_unit=celsius');
+    });
+
+    it('should transform Open-Meteo current conditions', async () => {
+      const server = createWeatherServer(openMeteoOptions());
+      await server.refresh();
+      const data = server.getWeatherData();
+      expect(data).not.toBeNull();
+      expect(data!.current.temp).toBe(72);
+      expect(data!.current.feelsLike).toBe(70);
+      expect(data!.current.humidity).toBe(55);
+      expect(data!.current.conditions).toBe('Clear sky');
+      expect(data!.current.icon).toBe('');
+    });
+
+    it('should transform Open-Meteo forecast days', async () => {
+      const fetchFn = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            current: {
+              temperature_2m: 72,
+              apparent_temperature: 70,
+              weather_code: 3,
+              relative_humidity_2m: 55,
+            },
+            daily: {
+              time: ['2026-02-25', '2026-02-26', '2026-02-27'],
+              temperature_2m_max: [75, 78, 70],
+              temperature_2m_min: [60, 62, 55],
+              weather_code: [0, 61, 95],
+            },
+          }),
+      });
+      const server = createWeatherServer(openMeteoOptions({ fetchFn }));
+      await server.refresh();
+      const data = server.getWeatherData();
+      expect(data!.forecast).toHaveLength(3);
+      expect(data!.forecast[0]).toEqual({
+        date: '2026-02-25',
+        high: 75,
+        low: 60,
+        conditions: 'Clear sky',
+        icon: '',
+      });
+      expect(data!.forecast[1].conditions).toBe('Rain');
+      expect(data!.forecast[2].conditions).toBe('Thunderstorm');
+    });
+
+    it('should report error on missing current field', async () => {
+      const fetchFn = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            daily: { time: [], temperature_2m_max: [], temperature_2m_min: [], weather_code: [] },
+          }),
+      });
+      const server = createWeatherServer(openMeteoOptions({ fetchFn }));
+      const errorListener = vi.fn();
+      server.onError(errorListener);
+      await server.refresh();
+      expect(errorListener).toHaveBeenCalledWith(expect.stringContaining('missing'));
+    });
+
+    it('should report error on missing daily field', async () => {
+      const fetchFn = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            current: {
+              temperature_2m: 72,
+              apparent_temperature: 70,
+              weather_code: 0,
+              relative_humidity_2m: 55,
+            },
+          }),
+      });
+      const server = createWeatherServer(openMeteoOptions({ fetchFn }));
+      const errorListener = vi.fn();
+      server.onError(errorListener);
+      await server.refresh();
+      expect(errorListener).toHaveBeenCalledWith(expect.stringContaining('missing'));
+    });
+
+    it('should publish to dataBus on successful refresh', async () => {
+      const publish = vi.fn();
+      const dataBus = { publish } as unknown as import('@lensing/types').DataBusInstance;
+      const server = createWeatherServer(openMeteoOptions({ dataBus }));
+      await server.refresh();
+      expect(publish).toHaveBeenCalledTimes(1);
+      expect(publish).toHaveBeenCalledWith(
+        'weather.current',
+        'weather-server',
+        expect.objectContaining({
+          current: expect.objectContaining({ conditions: 'Clear sky' }),
+        })
+      );
+    });
+  });
+
+  describe('WMO code mapping', () => {
+    it('should map known codes to conditions', () => {
+      expect(WMO_CODE_MAP[0]).toBe('Clear sky');
+      expect(WMO_CODE_MAP[3]).toBe('Overcast');
+      expect(WMO_CODE_MAP[45]).toBe('Fog');
+      expect(WMO_CODE_MAP[61]).toBe('Rain');
+      expect(WMO_CODE_MAP[71]).toBe('Snow');
+      expect(WMO_CODE_MAP[95]).toBe('Thunderstorm');
+    });
+
+    it('should return Unknown for unmapped codes', async () => {
+      const fetchFn = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            current: {
+              temperature_2m: 72,
+              apparent_temperature: 70,
+              weather_code: 999,
+              relative_humidity_2m: 55,
+            },
+            daily: { time: [], temperature_2m_max: [], temperature_2m_min: [], weather_code: [] },
+          }),
+      });
+      const server = createWeatherServer(openMeteoOptions({ fetchFn }));
+      await server.refresh();
+      expect(server.getWeatherData()!.current.conditions).toBe('Unknown');
     });
   });
 
