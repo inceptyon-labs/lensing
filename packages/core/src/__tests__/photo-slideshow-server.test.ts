@@ -20,7 +20,9 @@ afterEach(() => {
   fs.rmSync(tmpDir, { recursive: true, force: true });
 });
 
-function validOptions(overrides: Partial<PhotoSlideshowServerOptions> = {}): PhotoSlideshowServerOptions {
+function validOptions(
+  overrides: Partial<PhotoSlideshowServerOptions> = {}
+): PhotoSlideshowServerOptions {
   return {
     photoDir: tmpDir,
     dataBus: createDataBus(),

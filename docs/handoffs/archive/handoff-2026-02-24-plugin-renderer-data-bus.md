@@ -13,8 +13,9 @@ Issue: lensing-zl2i - Wire PluginRenderer to live data from data bus store
 - Added 6 new tests covering store integration in plugin-renderer.test.ts
 
 Files Changed (all on feature/lensing-zl2i, about to merge to main):
+
 - apps/display/src/lib/PluginRenderer.svelte (MODIFIED)
-- apps/display/__tests__/plugin-renderer.test.ts (MODIFIED)
+- apps/display/**tests**/plugin-renderer.test.ts (MODIFIED)
 
 Test Results: All 1,347 tests passing (207 display, 698 core, 355 ui, 32 create-plugin, 61 types)
 Code Review: O-level review complete — no ERRORs, 2 WARNINGs noted (server ID coupling, test weakness)
@@ -45,15 +46,18 @@ Verification: ✓ Tests, Build, Format, TypeCheck all passing
 ## Key Implementation Notes for lensing-e0mr
 
 The dataBusStore is keyed by module PLUGIN_ID (not user-facing plugin_id):
+
 - 'news-server', 'sports-server', 'home-assistant-server' (tested in lensing-zl2i)
 - Upcoming: 'weather-server' and calendar module ID need to be wired similarly
 
 Each module publishes to dataBus with:
+
 - plugin_id: module PLUGIN_ID (e.g., 'weather-server')
 - channel: semantic channel (e.g., 'weather.current')
 - data: typed data object (e.g., WeatherData)
 
 For next tasks building widgets:
+
 - CryptoWidget: data comes from getChannelData('crypto-server')?.prices
 - WeatherWidget: data comes from getChannelData('weather-server')?.current
 - CalendarWidget: data comes from getChannelData('calendar-server')?.events

@@ -282,7 +282,10 @@ export function createCalendarServer(options: CalendarServerOptions): CalendarSe
     lastFetchedAt = Date.now();
     notifyUpdate(events);
     if (dataBus) {
-      dataBus.publish('calendar.events', 'calendar-server', { events: [...events], lastUpdated: Date.now() });
+      dataBus.publish('calendar.events', 'calendar-server', {
+        events: [...events],
+        lastUpdated: Date.now(),
+      });
     }
   }
 

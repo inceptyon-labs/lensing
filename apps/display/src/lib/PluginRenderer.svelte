@@ -1,6 +1,15 @@
 <script lang="ts">
   import type { PluginAdminEntry } from '@lensing/types';
-  import type { NewsData, SportsData, HomeAssistantData, CryptoData, WeatherData, CalendarData, PhotoSlideshowData, AllergyData } from '@lensing/types';
+  import type {
+    NewsData,
+    SportsData,
+    HomeAssistantData,
+    CryptoData,
+    WeatherData,
+    CalendarData,
+    PhotoSlideshowData,
+    AllergyData,
+  } from '@lensing/types';
   import PhotoSlideshow from './PhotoSlideshow.svelte';
   import NewsHeadlines from './NewsHeadlines.svelte';
   import SportsScores from './SportsScores.svelte';

@@ -27,18 +27,15 @@ function request(
   reqPath: string
 ): Promise<{ status: number; headers: http.IncomingHttpHeaders; body: string }> {
   return new Promise((resolve, reject) => {
-    const req = http.request(
-      { hostname: '127.0.0.1', port, method, path: reqPath },
-      (res) => {
-        let body = '';
-        res.on('data', (chunk: Buffer) => {
-          body += chunk.toString();
-        });
-        res.on('end', () => {
-          resolve({ status: res.statusCode ?? 0, headers: res.headers, body });
-        });
-      }
-    );
+    const req = http.request({ hostname: '127.0.0.1', port, method, path: reqPath }, (res) => {
+      let body = '';
+      res.on('data', (chunk: Buffer) => {
+        body += chunk.toString();
+      });
+      res.on('end', () => {
+        resolve({ status: res.statusCode ?? 0, headers: res.headers, body });
+      });
+    });
     req.on('error', reject);
     req.end();
   });

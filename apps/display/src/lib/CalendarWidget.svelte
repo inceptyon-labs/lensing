@@ -24,7 +24,8 @@
     const tomorrow = new Date();
     tomorrow.setDate(today.getDate() + 1);
 
-    const toDateStr = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'numeric', day: 'numeric' });
+    const toDateStr = (d: Date) =>
+      d.toLocaleDateString('en-US', { year: 'numeric', month: 'numeric', day: 'numeric' });
 
     if (toDateStr(date) === toDateStr(today)) return 'Today';
     if (toDateStr(date) === toDateStr(tomorrow)) return 'Tomorrow';
@@ -69,7 +70,9 @@
       {#each compactEvents as evt (evt.id)}
         <li class="calendar-widget__compact-item">
           {#if evt.allDay}
-            <span class="calendar-widget__compact-time calendar-widget__compact-time--allday">All Day</span>
+            <span class="calendar-widget__compact-time calendar-widget__compact-time--allday"
+              >All Day</span
+            >
           {:else}
             <span class="calendar-widget__compact-time">{formatTime(evt.start)}</span>
           {/if}

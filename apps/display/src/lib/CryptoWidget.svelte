@@ -5,8 +5,10 @@
   export let compact: boolean = false;
 
   function formatPrice(price: number): string {
-    if (price >= 1000) return price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    if (price >= 1) return price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+    if (price >= 1000)
+      return price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (price >= 1)
+      return price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
     return price.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 8 });
   }
 
@@ -33,7 +35,9 @@
         <li class="crypto-widget__compact-item">
           <span class="crypto-widget__symbol">{coin.symbol.toUpperCase()}</span>
           <span class="crypto-widget__compact-price">${formatPrice(coin.price)}</span>
-          <span class="crypto-widget__change {changeClass(coin.change_24h)}">{formatChange(coin.change_24h)}</span>
+          <span class="crypto-widget__change {changeClass(coin.change_24h)}"
+            >{formatChange(coin.change_24h)}</span
+          >
         </li>
       {/each}
     </ul>
@@ -59,13 +63,19 @@
               ${formatPrice(coin.price)}
             </td>
             <td class="crypto-widget__td crypto-widget__td--right">
-              <span class="crypto-widget__change {changeClass(coin.change_1h)}">{formatChange(coin.change_1h)}</span>
+              <span class="crypto-widget__change {changeClass(coin.change_1h)}"
+                >{formatChange(coin.change_1h)}</span
+              >
             </td>
             <td class="crypto-widget__td crypto-widget__td--right">
-              <span class="crypto-widget__change {changeClass(coin.change_24h)}">{formatChange(coin.change_24h)}</span>
+              <span class="crypto-widget__change {changeClass(coin.change_24h)}"
+                >{formatChange(coin.change_24h)}</span
+              >
             </td>
             <td class="crypto-widget__td crypto-widget__td--right">
-              <span class="crypto-widget__change {changeClass(coin.change_7d)}">{formatChange(coin.change_7d)}</span>
+              <span class="crypto-widget__change {changeClass(coin.change_7d)}"
+                >{formatChange(coin.change_7d)}</span
+              >
             </td>
           </tr>
         {/each}

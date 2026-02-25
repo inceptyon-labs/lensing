@@ -8,7 +8,7 @@ created_at: 2026-02-24T18:00:40Z
 updated_at: 2026-02-25T01:58:13Z
 parent: lensing-wbum
 blocked_by:
-    - lensing-zl2i
+  - lensing-zl2i
 ---
 
 No allergies display widget exists. PluginRenderer has no 'allergies' branch — it falls through to Placeholder.

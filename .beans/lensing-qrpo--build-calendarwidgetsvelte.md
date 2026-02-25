@@ -8,8 +8,8 @@ created_at: 2026-02-24T18:00:33Z
 updated_at: 2026-02-24T23:33:05Z
 parent: lensing-wbum
 blocked_by:
-    - lensing-zl2i
-    - lensing-e0mr
+  - lensing-zl2i
+  - lensing-e0mr
 ---
 
 No calendar display widget exists. PluginRenderer has no 'calendar' branch — it falls through to Placeholder.
@@ -54,15 +54,18 @@ Channel: calendar.events (after lensing-e0mr wires calendar to data bus)
 ## Completed
 
 **Files created:**
+
 - apps/display/src/lib/CalendarWidget.svelte (257 lines)
-- apps/display/__tests__/calendar-widget.test.ts (99 lines)
+- apps/display/**tests**/calendar-widget.test.ts (99 lines)
 
 **Files modified:**
+
 - apps/display/src/lib/PluginRenderer.svelte (wired calendar channel + component)
-- apps/display/__tests__/plugin-renderer.test.ts (4 new integration tests)
+- apps/display/**tests**/plugin-renderer.test.ts (4 new integration tests)
 - packages/types/src/index.ts (added CalendarData interface inline)
 
 **Key decisions:**
+
 - Three layout modes: empty state, compact (next 5 events), full (grouped by day)
 - Day grouping: Today/Tomorrow/weekday+date using locale string comparison
 - All-day events show ember-glow badge
@@ -70,6 +73,7 @@ Channel: calendar.events (after lensing-e0mr wires calendar to data bus)
 - CalendarData added inline to types/index.ts (avoids circular dependency)
 
 **Test results:**
+
 - 22 new tests passing (18 widget + 4 integration)
 - All 268 display tests passing
 - Build: clean, no type errors

@@ -8,7 +8,7 @@ created_at: 2026-02-24T18:00:25Z
 updated_at: 2026-02-24T22:18:15Z
 parent: lensing-wbum
 blocked_by:
-    - lensing-zl2i
+  - lensing-zl2i
 ---
 
 No crypto display widget exists. PluginRenderer has no 'crypto' branch — it falls through to Placeholder.

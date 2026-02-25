@@ -8,7 +8,7 @@ created_at: 2026-02-24T18:00:08Z
 updated_at: 2026-02-24T21:54:34Z
 parent: lensing-wbum
 blocked_by:
-    - lensing-gi9v
+  - lensing-gi9v
 ---
 
 PluginRenderer currently passes hardcoded empty arrays to every widget component. It needs to read from the client-side data bus store and pass live data.

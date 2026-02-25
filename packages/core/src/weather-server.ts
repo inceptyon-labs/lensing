@@ -135,7 +135,13 @@ function transformForecast(daily: OWMDaily[]): WeatherForecastDay[] {
  * Creates a weather server module that fetches, caches, and publishes weather data.
  */
 export function createWeatherServer(options: WeatherServerOptions): WeatherServerInstance {
-  const { apiKey, location, units = 'imperial', fetchFn = fetch as unknown as FetchFn, dataBus } = options;
+  const {
+    apiKey,
+    location,
+    units = 'imperial',
+    fetchFn = fetch as unknown as FetchFn,
+    dataBus,
+  } = options;
 
   if (!apiKey) {
     throw new Error('WeatherServer: apiKey is required');

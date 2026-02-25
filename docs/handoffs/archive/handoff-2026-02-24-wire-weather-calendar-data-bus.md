@@ -30,12 +30,14 @@ Weather and calendar server modules don't receive dataBus in their options, so t
 
 Add to existing test files:
 
-**packages/core/src/__tests__/weather-server.test.ts**
+**packages/core/src/**tests**/weather-server.test.ts**
+
 - Test that weather-server publishes WeatherData to dataBus on successful refresh
 - Verify channel = 'weather.current', plugin_id = 'weather-server'
 - Mock dataBus as `{ publish: vi.fn() }`
 
-**packages/core/src/__tests__/caldav-client.test.ts**
+**packages/core/src/**tests**/caldav-client.test.ts**
+
 - Test that calendar-server publishes events to dataBus on successful refresh
 - Verify channel = 'calendar.events', plugin_id = 'calendar-server'
 - Mock dataBus as `{ publish: vi.fn() }`
@@ -43,6 +45,7 @@ Add to existing test files:
 ### Step 2: GREEN — Implement
 
 **packages/core/src/weather-server.ts**
+
 - Add `dataBus?: DataBusInstance` to `WeatherServerOptions` (line 43-56)
 - Extract dataBus in `createWeatherServer` (line 133-134)
 - After refresh success (around line 170), add:
@@ -54,16 +57,21 @@ Add to existing test files:
 - Pattern: same as news-server.ts line ~58
 
 **packages/core/src/caldav-client.ts**
+
 - Add `dataBus?: DataBusInstance` to `CalendarServerOptions` (line 22-37)
 - Extract dataBus in `createCalendarServer`
 - After refresh success, add:
   ```typescript
   if (dataBus) {
-    (dataBus as DataBusInstance).publish('calendar.events', 'calendar-server', { events: eventsCopy, lastUpdated: Date.now() });
+    (dataBus as DataBusInstance).publish('calendar.events', 'calendar-server', {
+      events: eventsCopy,
+      lastUpdated: Date.now(),
+    });
   }
   ```
 
 **packages/core/src/module-boot.ts**
+
 - In `case 'weather':` (around line where createWeatherServer is called), add `dataBus` to options
 - In `case 'calendar':` (around line where createCalendarServer is called), add `dataBus` to options
 
@@ -78,8 +86,8 @@ Add to existing test files:
 - packages/core/src/weather-server.ts — target: add dataBus publishing
 - packages/core/src/caldav-client.ts — target: add dataBus publishing
 - packages/core/src/module-boot.ts — target: pass dataBus to weather + calendar
-- packages/core/src/__tests__/weather-server.test.ts — add RED tests
-- packages/core/src/__tests__/caldav-client.test.ts — add RED tests
+- packages/core/src/**tests**/weather-server.test.ts — add RED tests
+- packages/core/src/**tests**/caldav-client.test.ts — add RED tests
 
 ## What NOT to Re-Read
 
@@ -90,6 +98,7 @@ Add to existing test files:
 ## Reference: How Other Modules Publish to dataBus
 
 Pattern from news-server.ts:
+
 ```typescript
 const PLUGIN_ID = 'news-server';
 const DATA_BUS_HEADLINES_CHANNEL = 'news.headlines';
@@ -105,6 +114,7 @@ const { dataBus } = options;
 ```
 
 Pattern from module-boot.ts:
+
 ```typescript
 case 'crypto':
   return createCryptoServer({

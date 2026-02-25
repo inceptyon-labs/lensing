@@ -8,8 +8,8 @@ created_at: 2026-02-24T18:00:18Z
 updated_at: 2026-02-24T22:27:32Z
 parent: lensing-wbum
 blocked_by:
-    - lensing-zl2i
-    - lensing-e0mr
+  - lensing-zl2i
+  - lensing-e0mr
 ---
 
 No weather display widget exists. PluginRenderer has no 'weather' branch — it falls through to Placeholder.
@@ -41,16 +41,19 @@ May need to define a WeatherData type if one doesn't exist.
 ## Completed
 
 **Files created:**
+
 - apps/display/src/lib/WeatherWidget.svelte (223 lines)
-- apps/display/__tests__/weather-widget.test.ts (100 lines)
+- apps/display/**tests**/weather-widget.test.ts (100 lines)
 - packages/types/src/weather.ts (24 lines)
 
 **Files modified:**
+
 - apps/display/src/lib/PluginRenderer.svelte (wired weather channel + component)
-- apps/display/__tests__/plugin-renderer.test.ts (4 new integration tests)
+- apps/display/**tests**/plugin-renderer.test.ts (4 new integration tests)
 - packages/types/src/index.ts (exported weather types)
 
 **Key decisions:**
+
 - Three layout modes: empty state, compact (temp + conditions), full (current + 5-day forecast)
 - Temperature as hero element (--text-3xl, bold)
 - Forecast limited to 5 days to prevent DOM bloat
@@ -59,6 +62,7 @@ May need to define a WeatherData type if one doesn't exist.
 - Respects kiosk minimum text size (no --text-xs)
 
 **Test results:**
+
 - 22 new tests passing (18 widget + 4 integration)
 - All 1,083 tests passing (246 display + 706 core + 355 ui + 61 types)
 - Build: 186 modules, no type errors

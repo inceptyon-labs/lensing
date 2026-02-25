@@ -56,10 +56,9 @@
         <li class="allergies-widget__item">
           <span class="allergies-widget__allergen-name">{allergen.name}</span>
           <span class="allergies-widget__allergen-category">{allergen.category}</span>
-          <span
-            class="allergies-widget__allergen-level"
-            style="color: {levelColor(allergen.level)}"
-          >{allergen.level}</span>
+          <span class="allergies-widget__allergen-level" style="color: {levelColor(allergen.level)}"
+            >{allergen.level}</span
+          >
         </li>
       {/each}
     </ul>
@@ -128,7 +127,9 @@
   .allergies-widget__bar {
     height: 100%;
     border-radius: 2px;
-    transition: width 0.3s ease, background 0.3s ease;
+    transition:
+      width 0.3s ease,
+      background 0.3s ease;
   }
 
   .allergies-widget__empty {
