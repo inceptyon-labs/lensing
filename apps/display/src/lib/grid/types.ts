@@ -42,6 +42,10 @@ export interface GridPolicy {
   maxRow?: number;
   /** Animation speed in ms (0 = no animation) */
   animate?: number;
+  /** Touch hold delay before drag begins on touch devices (ms) */
+  touchDelay?: number;
+  /** Minimum pointer movement to initiate drag (px) */
+  moveTolerance?: number;
 }
 
 /** Default grid policy for the lensing dashboard */
