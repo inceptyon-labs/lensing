@@ -11,6 +11,7 @@
   import WidgetPicker from './WidgetPicker.svelte';
   import WidgetContextMenu from './WidgetContextMenu.svelte';
   import WidgetResizeModal from './WidgetResizeModal.svelte';
+  import WidgetConfigPanel from './WidgetConfigPanel.svelte';
   import EditBar from './EditBar.svelte';
   import { createEditHistory } from './edit-history';
   import { onMount, tick } from 'svelte';
@@ -33,6 +34,7 @@
   let activeContextWidget = $state<GridWidget | null>(null);
   let contextMenuPos = $state<{ x: number; y: number } | null>(null);
   let activeResizeWidget = $state<GridWidget | null>(null);
+  let activeConfigPlugin = $state<PluginAdminEntry | null>(null);
   let localWidgets = $state<GridWidget[]>([]);
   let savedLayout = $state<GridWidget[] | null>(null);
   let history = $state(createEditHistory([]));
@@ -133,6 +135,7 @@
     showPicker = false;
     activeContextWidget = null;
     activeResizeWidget = null;
+    activeConfigPlugin = null;
   }
 
   function handleKeydown(event: KeyboardEvent) {
@@ -186,8 +189,11 @@
 
   function handleConfigureWidget(pluginId: string) {
     activeContextWidget = null;
-    // Navigate to admin page with plugin highlighted
-    window.open(`/admin#plugin-${pluginId}`, '_blank');
+    // Find the plugin entry for inline config
+    const plugin = pluginMap.get(pluginId) ?? allPlugins.find((p) => p.plugin_id === pluginId);
+    if (plugin) {
+      activeConfigPlugin = plugin;
+    }
   }
 
   function handleResizeWidget(widget: GridWidget) {
@@ -218,6 +224,7 @@
     showPicker = false;
     activeContextWidget = null;
     activeResizeWidget = null;
+    activeConfigPlugin = null;
   }
 
   // Portal: move Svelte-rendered plugin content into GridStack item containers.
@@ -389,6 +396,14 @@
       pluginName={pluginMap.get(activeResizeWidget.id)?.manifest.name ?? activeResizeWidget.id}
       onconfirm={handleResizeConfirm}
       oncancel={() => (activeResizeWidget = null)}
+    />
+  {/if}
+
+  <!-- Inline widget configuration panel -->
+  {#if activeConfigPlugin}
+    <WidgetConfigPanel
+      plugin={activeConfigPlugin}
+      onclose={() => (activeConfigPlugin = null)}
     />
   {/if}
 
