@@ -98,17 +98,19 @@
       return;
     }
 
-    // Ctrl+Z / Cmd+Z → Undo
-    if ((event.ctrlKey || event.metaKey) && event.key === 'z' && !event.shiftKey) {
+    const key = event.key.toLowerCase();
+
+    // Ctrl+Shift+Z / Cmd+Shift+Z → Redo (check before undo)
+    if ((event.ctrlKey || event.metaKey) && key === 'z' && event.shiftKey) {
       event.preventDefault();
-      handleUndo();
+      handleRedo();
       return;
     }
 
-    // Ctrl+Shift+Z / Cmd+Shift+Z → Redo
-    if ((event.ctrlKey || event.metaKey) && event.key === 'z' && event.shiftKey) {
+    // Ctrl+Z / Cmd+Z → Undo
+    if ((event.ctrlKey || event.metaKey) && key === 'z' && !event.shiftKey) {
       event.preventDefault();
-      handleRedo();
+      handleUndo();
       return;
     }
   }
@@ -151,6 +153,12 @@
 
   function handleSave() {
     onsave?.(gridWidgets);
+    // Reset history baseline so dirty state clears after save
+    history.reset(gridWidgets);
+    editMode = false;
+    showPicker = false;
+    activeContextWidget = null;
+    activeResizeWidget = null;
   }
 
   function handleGridContextMenu(event: MouseEvent) {
