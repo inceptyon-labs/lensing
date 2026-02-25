@@ -1,20 +1,25 @@
 <script lang="ts">
+  import Pencil from '@lucide/svelte/icons/pencil';
+  import Move from '@lucide/svelte/icons/move';
+  import Trash2 from '@lucide/svelte/icons/trash-2';
+
   interface Props {
     pluginId: string;
     pluginName: string;
     x?: number;
     y?: number;
+    onconfigure: () => void;
     ondelete: () => void;
     onresize: () => void;
     onclose: () => void;
   }
 
-  let { pluginId, pluginName, x = 0, y = 0, ondelete, onresize, onclose }: Props = $props();
+  let { pluginId, pluginName, x = 0, y = 0, onconfigure, ondelete, onresize, onclose }: Props = $props();
 
   // Clamp menu position so it doesn't overflow the viewport
   let menuStyle = $derived.by(() => {
     const clampedX = Math.min(x, window.innerWidth - 200);
-    const clampedY = Math.min(y, window.innerHeight - 160);
+    const clampedY = Math.min(y, window.innerHeight - 200);
     return `left: ${clampedX}px; top: ${clampedY}px;`;
   });
 
@@ -25,15 +30,15 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-<div class="context-menu-backdrop" onclick={onclose}>
-  <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div class="context-menu-backdrop" onmousedown={onclose}>
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     class="context-menu"
     role="menu"
     tabindex="-1"
     aria-label="Widget actions for {pluginName}"
-    onclick={(e) => e.stopPropagation()}
+    onmousedown={(e) => e.stopPropagation()}
     data-plugin-id={pluginId}
     style={menuStyle}
   >
@@ -41,8 +46,13 @@
       <span class="context-menu__name">{pluginName}</span>
     </div>
 
+    <button type="button" class="context-menu__item" role="menuitem" onclick={onconfigure}>
+      <span class="context-menu__icon" aria-hidden="true"><Pencil size={14} /></span>
+      Configure
+    </button>
+
     <button type="button" class="context-menu__item" role="menuitem" onclick={onresize}>
-      <span class="context-menu__icon" aria-hidden="true">⊹</span>
+      <span class="context-menu__icon" aria-hidden="true"><Move size={14} /></span>
       Move &amp; Resize
     </button>
 
@@ -54,7 +64,7 @@
       role="menuitem"
       onclick={ondelete}
     >
-      <span class="context-menu__icon" aria-hidden="true">✕</span>
+      <span class="context-menu__icon" aria-hidden="true"><Trash2 size={14} /></span>
       Remove Widget
     </button>
   </div>
@@ -72,7 +82,7 @@
     background: var(--singularity);
     border: 1px solid var(--edge-bright);
     border-radius: var(--radius-md);
-    min-width: 180px;
+    min-width: 190px;
     overflow: hidden;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   }
@@ -116,10 +126,15 @@
   }
 
   .context-menu__icon {
-    font-size: var(--text-xs);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: var(--faint-light);
-    width: 14px;
-    text-align: center;
+    width: 16px;
+  }
+
+  .context-menu__item:hover .context-menu__icon {
+    color: inherit;
   }
 
   .context-menu__divider {

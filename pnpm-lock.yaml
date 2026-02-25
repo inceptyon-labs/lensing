@@ -53,6 +53,9 @@ importers:
       '@lensing/types':
         specifier: workspace:*
         version: link:../../packages/types
+      '@lucide/svelte':
+        specifier: ^0.575.0
+        version: 0.575.0(svelte@5.51.2)
       gridstack:
         specifier: ^10.3.0
         version: 10.3.1
@@ -726,6 +729,11 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@lucide/svelte@0.575.0':
+    resolution: {integrity: sha512-FEFp/0McZwsjBqh1Dn8H+UBm1yHFQYk+utuVMFDw57155+wz2XMoc1pw027ylCPzs+bi14UEXYKbekFhuJKtnw==}
+    peerDependencies:
+      svelte: ^5
 
   '@manypkg/find-root@1.1.0':
     resolution: {integrity: sha512-mki5uBvhHzO8kYYix/WRy2WX8S3B5wdVSc9D6KcU5lQNglP2yt58/VfLuAK49glRXChosY8ap2oJ1qgma3GUVA==}
@@ -2634,6 +2642,10 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@lucide/svelte@0.575.0(svelte@5.51.2)':
+    dependencies:
+      svelte: 5.51.2
 
   '@manypkg/find-root@1.1.0':
     dependencies:

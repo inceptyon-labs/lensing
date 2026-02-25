@@ -14,6 +14,7 @@
   import EditBar from './EditBar.svelte';
   import { createEditHistory } from './edit-history';
   import { onMount, tick } from 'svelte';
+  import Settings from '@lucide/svelte/icons/settings';
   import '../styles/grid-layout.css';
 
   const LAYOUT_KEY = 'lensing-dashboard-layout';
@@ -183,6 +184,12 @@
     activeContextWidget = null;
   }
 
+  function handleConfigureWidget(pluginId: string) {
+    activeContextWidget = null;
+    // Navigate to admin page with plugin highlighted
+    window.open(`/admin#plugin-${pluginId}`, '_blank');
+  }
+
   function handleResizeWidget(widget: GridWidget) {
     activeContextWidget = null;
     activeResizeWidget = widget;
@@ -308,10 +315,7 @@
             aria-label="Widget settings for {plugin.manifest.name}"
             onclick={(e) => handleGearClick(e, widget.id)}
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-              <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492ZM6.754 8a1.246 1.246 0 1 1 2.492 0 1.246 1.246 0 0 1-2.492 0Z"/>
-              <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0a1.97 1.97 0 0 1-2.929 1.1c-1.541-.971-3.37.858-2.4 2.4a1.97 1.97 0 0 1-1.1 2.929c-1.79.527-1.79 3.065 0 3.592a1.97 1.97 0 0 1 1.1 2.929c-.971 1.541.858 3.37 2.4 2.4a1.97 1.97 0 0 1 2.929 1.1c.527 1.79 3.065 1.79 3.592 0a1.97 1.97 0 0 1 2.929-1.1c1.541.971 3.37-.858 2.4-2.4a1.97 1.97 0 0 1 1.1-2.929c1.79-.527 1.79-3.065 0-3.592a1.97 1.97 0 0 1-1.1-2.929c.971-1.541-.858-3.37-2.4-2.4a1.97 1.97 0 0 1-2.929-1.1ZM8 6.754a1.246 1.246 0 1 0 0 2.492 1.246 1.246 0 0 0 0-2.492ZM4.754 8a3.246 3.246 0 1 1 6.492 0 3.246 3.246 0 0 1-6.492 0Z"/>
-            </svg>
+            <Settings size={14} strokeWidth={2} />
           </button>
         {/if}
         <ErrorBoundary name={plugin.manifest.name}>
@@ -364,6 +368,7 @@
       pluginName={contextPlugin?.manifest.name ?? activeContextWidget.id}
       x={contextMenuPos?.x ?? 0}
       y={contextMenuPos?.y ?? 0}
+      onconfigure={() => handleConfigureWidget(activeContextWidget!.id)}
       ondelete={() => handleDeleteWidget(activeContextWidget!.id)}
       onresize={() => handleResizeWidget(activeContextWidget!)}
       onclose={() => (activeContextWidget = null)}

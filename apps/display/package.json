@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@lensing/types": "workspace:*",
+    "@lucide/svelte": "^0.575.0",
     "gridstack": "^10.3.0"
   },
   "devDependencies": {
