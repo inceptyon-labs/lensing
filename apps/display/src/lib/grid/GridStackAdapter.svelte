@@ -3,6 +3,7 @@
   import type { Snippet } from 'svelte';
   import type { GridWidget, GridPolicy } from './types';
   import { DEFAULT_GRID_POLICY } from './types';
+  import { isMobileViewport, MOBILE_COLUMNS, getMobileGridPolicy } from './mobile-config';
 
   interface Props {
     items: GridWidget[];
@@ -52,16 +53,28 @@
     }
 
     try {
+      // Use mobile policy when viewport is small (responsive column count)
+      const mobile = isMobileViewport();
+      const activeOptions = mobile ? getMobileGridPolicy() : options;
+      const responsiveColumns = mobile ? MOBILE_COLUMNS : options.columns;
+      const touchDelay = activeOptions.touchDelay ?? 0;
+      const moveTolerance = activeOptions.moveTolerance ?? 0;
+
       gridInstance = GridStack.init(
         {
-          column: options.columns,
-          cellHeight: options.rowHeight,
-          margin: `${options.margin[0]}px`,
-          float: options.float ?? false,
-          animate: (options.animate ?? 150) > 0,
-          resizable: { handles: options.resizeHandles.join(',') },
+          column: responsiveColumns,
+          cellHeight: activeOptions.rowHeight,
+          margin: `${activeOptions.margin[0]}px`,
+          float: activeOptions.float ?? false,
+          animate: (activeOptions.animate ?? 150) > 0,
+          resizable: { handles: activeOptions.resizeHandles.join(',') },
           staticGrid: !editMode,
-          minRow: options.minRow ?? 1,
+          minRow: activeOptions.minRow ?? 1,
+          // Touch support: hold delay and movement tolerance
+          draggable: {
+            touchDelay,
+          },
+          ...(moveTolerance > 0 ? { moveTolerance } : {}),
         },
         gridEl
       );
