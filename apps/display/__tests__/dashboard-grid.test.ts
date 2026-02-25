@@ -7,7 +7,7 @@ describe('Grid Types', () => {
     const mod = await import('../src/lib/grid/types');
     // DEFAULT_GRID_POLICY uses the GridPolicy type, confirming it exports
     expect(mod.DEFAULT_GRID_POLICY).toBeDefined();
-    expect(mod.DEFAULT_GRID_POLICY.columns).toBe(24);
+    expect(mod.DEFAULT_GRID_POLICY.columns).toBe(12);
     expect(mod.DEFAULT_GRID_POLICY.rowHeight).toBe(60);
     expect(mod.DEFAULT_GRID_POLICY.margin).toEqual([5, 5]);
     expect(mod.DEFAULT_GRID_POLICY.compact).toBe('vertical');
@@ -159,10 +159,10 @@ describe('Default Layouts', () => {
     expect(widgets[0].id).toBe('weather');
   });
 
-  it('should keep all default layouts within 24-column grid', async () => {
+  it('should keep all default layouts within 12-column grid', async () => {
     const { DEFAULT_WIDGET_LAYOUTS } = await import('../src/lib/grid/default-layouts');
     for (const [id, layout] of Object.entries(DEFAULT_WIDGET_LAYOUTS)) {
-      expect(layout.x + layout.w).toBeLessThanOrEqual(24);
+      expect(layout.x + layout.w).toBeLessThanOrEqual(12);
       expect(layout.x).toBeGreaterThanOrEqual(0);
       expect(layout.y).toBeGreaterThanOrEqual(0);
     }
@@ -232,7 +232,7 @@ describe('DashboardGrid Component', () => {
 
   it('should use DEFAULT_GRID_POLICY or equivalent grid options', () => {
     const source = readFileSync(gridPath, 'utf-8');
-    expect(source).toMatch(/DEFAULT_GRID_POLICY|gridPolicy|columns.*24/);
+    expect(source).toMatch(/DEFAULT_GRID_POLICY|gridPolicy|columns.*12/);
   });
 
   it('should handle onchange callback from adapter', () => {

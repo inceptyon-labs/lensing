@@ -43,7 +43,7 @@
   <title>Lensing Display</title>
 </svelte:head>
 
-<DashboardGrid {plugins} />
+<DashboardGrid plugins={plugins.filter((p) => p.enabled)} allPlugins={plugins} />
 <a href="/admin" class="admin-link">Admin</a>
 
 <style>

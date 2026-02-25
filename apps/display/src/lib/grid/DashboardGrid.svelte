@@ -13,6 +13,7 @@
   import WidgetResizeModal from './WidgetResizeModal.svelte';
   import EditBar from './EditBar.svelte';
   import { createEditHistory } from './edit-history';
+  import { tick } from 'svelte';
   import '../styles/grid-layout.css';
 
   interface Props {
@@ -23,22 +24,21 @@
 
   let { plugins, allPlugins = [], onsave }: Props = $props();
 
+  let dashboardRef: HTMLDivElement;
   let editMode = $state(false);
   let showPicker = $state(false);
   let activeContextWidget = $state<GridWidget | null>(null);
   let activeResizeWidget = $state<GridWidget | null>(null);
   let localWidgets = $state<GridWidget[]>([]);
-  let initialized = $state(false);
   let history = $state(createEditHistory([]));
 
   let initialWidgets = $derived(pluginsToGridWidgets(plugins));
 
   $effect(() => {
-    // Sync initial widgets from plugins on first load only
-    if (!initialized) {
+    // Sync from plugins whenever they change, unless user is actively editing
+    if (!editMode) {
       localWidgets = [...initialWidgets];
       history = createEditHistory(initialWidgets);
-      initialized = true;
     }
   });
 
@@ -161,6 +161,36 @@
     activeResizeWidget = null;
   }
 
+  // Portal: move Svelte-rendered plugin content into GridStack item containers.
+  // GridStack owns the grid layout DOM; Svelte owns the plugin component DOM.
+  // This effect bridges them by moving content divs into their matching grid cells.
+  $effect(() => {
+    // Track widget IDs so effect re-runs when grid changes
+    void gridWidgets.map((w) => w.id);
+    tick().then(portalWidgetContent);
+  });
+
+  function portalWidgetContent() {
+    if (!dashboardRef) return;
+    for (const widget of gridWidgets) {
+      const safeId = CSS.escape(widget.id);
+      // Find the GridStack target container
+      const target = dashboardRef.querySelector<HTMLElement>(
+        `.gs-item-content[data-widget-id="${safeId}"]`
+      );
+      if (!target) continue;
+      // Already portaled?
+      if (target.querySelector('.dashboard-widget-content')) continue;
+      // Find the hidden Svelte-rendered content (direct child of dashboard)
+      const source = dashboardRef.querySelector<HTMLElement>(
+        `:scope > .dashboard-widget-content[data-widget-id="${safeId}"]`
+      );
+      if (!source) continue;
+      // Portal: move into GridStack container (CSS handles visibility)
+      target.appendChild(source);
+    }
+  }
+
   function handleGridContextMenu(event: MouseEvent) {
     if (!editMode) return;
     // Find the widget element that was right-clicked
@@ -184,10 +214,12 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
   class="dashboard-grid"
   class:dashboard-edit-mode={editMode}
   oncontextmenu={handleGridContextMenu}
+  bind:this={dashboardRef}
 >
   <GridStackAdapter
     items={gridWidgets}
@@ -208,7 +240,7 @@
   {#each gridWidgets as widget (widget.id)}
     {@const plugin = pluginMap.get(widget.id)}
     {#if plugin}
-      <div class="dashboard-widget-content" data-widget-id={widget.id} style="display: none;">
+      <div class="dashboard-widget-content" data-widget-id={widget.id}>
         <ErrorBoundary name={plugin.manifest.name}>
           <PluginRenderer {plugin} />
         </ErrorBoundary>
@@ -311,11 +343,16 @@
     letter-spacing: var(--tracking-wide);
   }
 
-  /* Widget content containers are used as portals by GridStack.js.
-     In static/SSR mode they are hidden; GridStack moves their content
-     into grid-stack-item-content elements at runtime. */
+  /* Widget content containers: hidden by default, visible when portaled
+     into GridStack cells via the portalWidgetContent effect. */
   .dashboard-widget-content {
     display: none;
+  }
+
+  :global(.gs-item-content) .dashboard-widget-content {
+    display: block;
+    width: 100%;
+    height: 100%;
   }
 
   .dashboard-toolbar {
@@ -329,8 +366,7 @@
   }
 
   .dashboard-edit-toggle,
-  .dashboard-add-btn,
-  .dashboard-save-btn {
+  .dashboard-add-btn {
     font-family: var(--font-mono);
     font-size: var(--text-xs);
     letter-spacing: var(--tracking-wide);
@@ -362,17 +398,6 @@
 
   .dashboard-add-btn:hover {
     background: var(--ember-dim);
-    color: var(--starlight);
-  }
-
-  .dashboard-save-btn {
-    background: transparent;
-    border: 1px solid var(--edge);
-    color: var(--dim-light);
-  }
-
-  .dashboard-save-btn:hover {
-    border-color: var(--edge-bright);
     color: var(--starlight);
   }
 </style>

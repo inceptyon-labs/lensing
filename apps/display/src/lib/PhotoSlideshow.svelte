@@ -41,7 +41,7 @@
     <div class="photo-slideshow__slide photo-slideshow__slide--active {currentVariant}">
       <img
         src={currentPhoto}
-        alt="Ambient photo"
+        alt="Ambient slideshow"
         style="object-fit: cover; position: absolute; inset: 0;"
       />
     </div>

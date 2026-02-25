@@ -9,20 +9,20 @@ export interface WidgetLayout {
   h: number;
 }
 
-/** Default layout positions for known built-in plugins on a 24-column grid */
+/** Default layout positions for known built-in plugins on a 12-column grid */
 export const DEFAULT_WIDGET_LAYOUTS: Record<string, WidgetLayout> = {
-  weather: { x: 0, y: 0, w: 6, h: 4 },
-  news: { x: 6, y: 0, w: 8, h: 4 },
-  sports: { x: 14, y: 0, w: 5, h: 4 },
-  crypto: { x: 19, y: 0, w: 5, h: 4 },
-  calendar: { x: 0, y: 4, w: 8, h: 5 },
-  'home-assistant': { x: 8, y: 4, w: 8, h: 5 },
-  'photo-slideshow': { x: 16, y: 4, w: 8, h: 5 },
-  allergies: { x: 0, y: 9, w: 6, h: 3 },
+  weather: { x: 0, y: 0, w: 3, h: 4 },
+  news: { x: 3, y: 0, w: 4, h: 4 },
+  sports: { x: 7, y: 0, w: 3, h: 4 },
+  crypto: { x: 10, y: 0, w: 2, h: 4 },
+  calendar: { x: 0, y: 4, w: 4, h: 5 },
+  'home-assistant': { x: 4, y: 4, w: 4, h: 5 },
+  'photo-slideshow': { x: 8, y: 4, w: 4, h: 5 },
+  allergies: { x: 0, y: 9, w: 3, h: 3 },
 };
 
 /** Default size for unknown plugins */
-const FALLBACK_WIDGET_SIZE = { w: 6, h: 4 };
+const FALLBACK_WIDGET_SIZE = { w: 3, h: 4 };
 
 /**
  * Track the next auto-placement row for unknown plugins.
@@ -49,7 +49,7 @@ export function getWidgetLayout(pluginId: string): WidgetLayout {
 
   // Advance auto-placement cursor
   _autoPlaceCol += FALLBACK_WIDGET_SIZE.w;
-  if (_autoPlaceCol + FALLBACK_WIDGET_SIZE.w > 24) {
+  if (_autoPlaceCol + FALLBACK_WIDGET_SIZE.w > 12) {
     _autoPlaceCol = 0;
     _autoPlaceRow += FALLBACK_WIDGET_SIZE.h;
   }

@@ -28,6 +28,7 @@
   let gridEl: HTMLDivElement | undefined = $state(undefined);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let gridInstance: any = $state(undefined);
+  let syncing = false;
 
   onMount(() => {
     // GridStack.js is loaded via CDN <script> tag at runtime.
@@ -82,8 +83,9 @@
       // Sync initial items
       syncItems(items);
 
-      // Listen for changes
+      // Listen for changes (skip events triggered by our own syncItems)
       gridInstance.on('change', () => {
+        if (syncing) return;
         if (onchange) {
           const updated = extractWidgets();
           onchange(updated);
@@ -91,6 +93,7 @@
       });
 
       gridInstance.on('added', (_event: unknown, addedItems: { id?: string }[]) => {
+        if (syncing) return;
         if (onadd && addedItems.length > 0) {
           for (const item of addedItems) {
             const w = widgetFromNode(item);
@@ -100,6 +103,7 @@
       });
 
       gridInstance.on('removed', (_event: unknown, removedItems: { id?: string }[]) => {
+        if (syncing) return;
         if (onremove && removedItems.length > 0) {
           for (const item of removedItems) {
             const w = widgetFromNode(item);
@@ -114,30 +118,69 @@
 
   function syncItems(widgets: GridWidget[]) {
     if (!gridInstance) return;
-    gridInstance.removeAll(false);
-    for (const w of widgets) {
-      // Validate widget ID is safe (alphanumeric + dash/underscore only)
-      const safeId = /^[a-zA-Z0-9_-]+$/.test(w.id) ? w.id : 'invalid-widget';
-      gridInstance.addWidget({
-        id: safeId,
-        x: w.x,
-        y: w.y,
-        w: w.w,
-        h: w.h,
-        minW: w.minW,
-        minH: w.minH,
-        maxW: w.maxW,
-        maxH: w.maxH,
-        locked: w.locked,
-        // Use DOM creation instead of string interpolation to avoid XSS
-        content: (() => {
-          const div = document.createElement('div');
-          div.className = 'gs-item-content';
-          div.setAttribute('data-widget-id', safeId);
-          return div.outerHTML;
-        })(),
-      });
+    syncing = true;
+    gridInstance.batchUpdate();
+
+    // Build map of currently rendered grid items by ID
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, svelte/prefer-svelte-reactivity
+    const currentEls = new Map<string, any>();
+    for (const el of gridInstance.getGridItems()) {
+      const id = el.gridstackNode?.id;
+      if (id) currentEls.set(id, el);
     }
+
+    const targetIds = new Set(widgets.map((w) => w.id));
+
+    // Remove items no longer needed
+    for (const [id, el] of currentEls) {
+      if (!targetIds.has(id)) {
+        gridInstance.removeWidget(el);
+      }
+    }
+
+    // Add new items or update existing ones (preserves DOM for portaled content)
+    for (const w of widgets) {
+      const safeId = /^[a-zA-Z0-9_-]+$/.test(w.id) ? w.id : 'invalid-widget';
+      const existing = currentEls.get(safeId);
+
+      if (existing) {
+        // Update position/size — preserves DOM and any portaled content
+        gridInstance.update(existing, {
+          x: w.x,
+          y: w.y,
+          w: w.w,
+          h: w.h,
+          minW: w.minW,
+          minH: w.minH,
+          maxW: w.maxW,
+          maxH: w.maxH,
+        });
+      } else {
+        // Add new widget with empty content placeholder
+        gridInstance.addWidget({
+          id: safeId,
+          x: w.x,
+          y: w.y,
+          w: w.w,
+          h: w.h,
+          minW: w.minW,
+          minH: w.minH,
+          maxW: w.maxW,
+          maxH: w.maxH,
+          locked: w.locked,
+          // Use DOM creation instead of string interpolation to avoid XSS
+          content: (() => {
+            const div = document.createElement('div');
+            div.className = 'gs-item-content';
+            div.setAttribute('data-widget-id', safeId);
+            return div.outerHTML;
+          })(),
+        });
+      }
+    }
+
+    gridInstance.batchUpdate(false);
+    syncing = false;
   }
 
   function extractWidgets(): GridWidget[] {
@@ -174,9 +217,22 @@
   });
 
   $effect(() => {
-    if (gridInstance && items) {
-      syncItems(items);
-    }
+    if (!gridInstance) return;
+    // Build a snapshot to ensure effect tracks each widget's identity and position.
+    // Without this, Svelte 5 may not detect array content changes.
+    const snapshot: GridWidget[] = items.map((i) => ({
+      id: i.id,
+      x: i.x,
+      y: i.y,
+      w: i.w,
+      h: i.h,
+      minW: i.minW,
+      minH: i.minH,
+      maxW: i.maxW,
+      maxH: i.maxH,
+      locked: i.locked,
+    }));
+    syncItems(snapshot);
   });
 </script>
 

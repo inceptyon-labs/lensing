@@ -22,6 +22,7 @@
   <div
     class="context-menu"
     role="menu"
+    tabindex="-1"
     aria-label="Widget actions for {pluginName}"
     onclick={(e) => e.stopPropagation()}
     data-plugin-id={pluginId}

@@ -1,57 +1,57 @@
 import type { GridSpan, PluginManifest, WidgetSize } from '@lensing/types';
 
-/** Default size constraints for built-in widgets */
+/** Default size constraints for built-in widgets (12-column grid) */
 export const WIDGET_SIZE_REGISTRY: Record<string, GridSpan> = {
   // Small widgets
   weather: {
-    min: [3, 2],
-    preferred: [6, 4],
-    max: [12, 8],
+    min: [2, 2],
+    preferred: [3, 4],
+    max: [6, 8],
   },
   allergies: {
-    min: [3, 2],
-    preferred: [6, 3],
-    max: [12, 6],
+    min: [2, 2],
+    preferred: [3, 3],
+    max: [6, 6],
   },
   crypto: {
-    min: [3, 2],
-    preferred: [5, 4],
-    max: [12, 8],
+    min: [2, 2],
+    preferred: [2, 4],
+    max: [6, 8],
   },
   // Medium widgets
   news: {
-    min: [4, 3],
-    preferred: [8, 4],
-    max: [16, 10],
+    min: [2, 3],
+    preferred: [4, 4],
+    max: [8, 10],
   },
   sports: {
-    min: [3, 2],
-    preferred: [5, 4],
-    max: [12, 8],
+    min: [2, 2],
+    preferred: [3, 4],
+    max: [6, 8],
   },
   // Large widgets
   'photo-slideshow': {
-    min: [4, 3],
-    preferred: [8, 5],
-    max: [24, 12],
+    min: [2, 3],
+    preferred: [4, 5],
+    max: [12, 12],
   },
   calendar: {
-    min: [4, 3],
-    preferred: [8, 5],
-    max: [16, 10],
+    min: [2, 3],
+    preferred: [4, 5],
+    max: [8, 10],
   },
   'home-assistant': {
-    min: [4, 3],
-    preferred: [8, 5],
-    max: [16, 10],
+    min: [2, 3],
+    preferred: [4, 5],
+    max: [8, 10],
   },
 };
 
 /** Fallback constraints for unknown/third-party plugins */
 export const DEFAULT_WIDGET_SIZE: GridSpan = {
-  min: [2, 2],
-  preferred: [4, 3],
-  max: [24, 12],
+  min: [1, 2],
+  preferred: [2, 3],
+  max: [12, 12],
 };
 
 /** Type guard for GridSpan vs WidgetSize[] */

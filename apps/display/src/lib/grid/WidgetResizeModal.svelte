@@ -33,9 +33,13 @@
     oncancel,
   }: Props = $props();
 
+  // svelte-ignore state_referenced_locally — intentionally capturing initial prop values
   let localX = $state(x);
+  // svelte-ignore state_referenced_locally
   let localY = $state(y);
+  // svelte-ignore state_referenced_locally
   let localW = $state(w);
+  // svelte-ignore state_referenced_locally
   let localH = $state(h);
 
   let validation = $derived(validatePosition({ x: localX, y: localY, w: localW, h: localH }, 24));
@@ -63,6 +67,7 @@
   <div
     class="modal"
     role="dialog"
+    tabindex="-1"
     aria-modal="true"
     aria-label="Resize {pluginName}"
     onclick={(e) => e.stopPropagation()}

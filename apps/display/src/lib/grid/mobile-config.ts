@@ -15,7 +15,7 @@ export const MOVE_TOLERANCE = 5;
 /** Viewport width threshold for mobile layout (px) */
 export const MOBILE_BREAKPOINT = 768;
 
-/** Column count on mobile (vs 24 on desktop) */
+/** Column count on mobile (vs 12 on desktop) */
 export const MOBILE_COLUMNS = 4;
 
 /** WCAG minimum touch target size (px) */

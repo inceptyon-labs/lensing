@@ -24,7 +24,7 @@ export interface GridWidget {
 
 /** Grid layout policy / options */
 export interface GridPolicy {
-  /** Number of columns (default: 24) */
+  /** Number of columns (default: 12) */
   columns: number;
   /** Row height in pixels (default: 60) */
   rowHeight: number;
@@ -50,7 +50,7 @@ export interface GridPolicy {
 
 /** Default grid policy for the lensing dashboard */
 export const DEFAULT_GRID_POLICY: GridPolicy = {
-  columns: 24,
+  columns: 12,
   rowHeight: 60,
   margin: [5, 5],
   compact: 'vertical',
