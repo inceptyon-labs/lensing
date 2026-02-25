@@ -1,11 +1,11 @@
 ---
 # lensing-wbum
 title: 'Epic: Live Data Pipeline'
-status: in-progress
+status: completed
 type: epic
 priority: high
 created_at: 2026-02-24T17:59:25Z
-updated_at: 2026-02-24T18:04:54Z
+updated_at: 2026-02-25T02:11:18Z
 ---
 
 The entire data pipeline from server modules to display widgets is broken. No live data reaches the client. This epic covers every link in the chain: module refresh, data bus wiring, WebSocket forwarding, client-side stores, PluginRenderer data binding, and missing widget components.
@@ -19,3 +19,19 @@ The entire data pipeline from server modules to display widgets is broken. No li
 5. No client-side reactive data store (Svelte stores)
 6. PluginRenderer passes hardcoded empty arrays to all widgets
 7. 5 of 8 modules have no widget component (weather, crypto, calendar, allergies, PIR)
+
+## Summary
+
+All 10 tasks completed:
+- Client-side data bus store + WebSocket subscription
+- Wire data bus to WebSocket broadcast
+- Wire PluginRenderer to live data from data bus store
+- Wire weather and calendar modules to data bus
+- Add auto-refresh polling to module boot
+- Photo slideshow data pipeline
+- Build WeatherWidget.svelte
+- Build CalendarWidget.svelte
+- Build CryptoWidget.svelte
+- Build AllergiesWidget.svelte
+
+Epic fully implemented and merged to main.
