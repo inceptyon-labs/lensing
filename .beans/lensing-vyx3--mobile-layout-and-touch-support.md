@@ -1,11 +1,11 @@
 ---
 # lensing-vyx3
 title: Mobile layout and touch support
-status: todo
+status: in-progress
 type: task
 priority: normal
 created_at: 2026-02-25T16:14:12Z
-updated_at: 2026-02-25T16:14:12Z
+updated_at: 2026-02-25T16:50:04Z
 parent: lensing-yoif
 blocked_by:
   - lensing-ct4d
