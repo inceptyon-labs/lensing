@@ -14,12 +14,8 @@
     plugins = (await res.json()) as PluginAdminEntry[];
   }
 
-  onMount(() => {
-    void loadPlugins();
-
-    // eslint-disable-next-line no-undef
-    const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(`${wsProto}//${location.host}/ws`);
+  /** Set up a WebSocket listener that handles layout_change and plugin_data messages */
+  function setupWsListener(ws: WebSocket): void {
     ws.addEventListener('message', (event) => {
       try {
         const msg = JSON.parse(String(event.data)) as WsMessage;
@@ -32,9 +28,41 @@
         // ignore malformed messages
       }
     });
+  }
+
+  let ws: WebSocket | null = null;
+  let cleanupWs: (() => void) | null = null;
+
+  function connectWs(): void {
+    // eslint-disable-next-line no-undef
+    const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    // eslint-disable-next-line no-undef
+    const newWs = new WebSocket(`${wsProto}//${location.host}/ws`);
+    setupWsListener(newWs);
+    ws = newWs;
+    cleanupWs = () => newWs.close();
+  }
+
+  /**
+   * After a widget config save, reconnect WebSocket so the server pushes
+   * the latest cached data bus state (which includes fresh module data).
+   */
+  function handleConfigSaved(): void {
+    void loadPlugins();
+    // Reconnect WebSocket to trigger server-side "connection" handler
+    // which sends all cached data bus messages to the new client
+    if (ws) {
+      ws.close();
+    }
+    connectWs();
+  }
+
+  onMount(() => {
+    void loadPlugins();
+    connectWs();
 
     return () => {
-      ws.close();
+      cleanupWs?.();
     };
   });
 </script>
@@ -44,7 +72,11 @@
   <title>Lensing Display</title>
 </svelte:head>
 
-<DashboardGrid plugins={plugins.filter((p) => p.enabled)} allPlugins={plugins} />
+<DashboardGrid
+  plugins={plugins.filter((p) => p.enabled)}
+  allPlugins={plugins}
+  onconfigsaved={handleConfigSaved}
+/>
 <a href="/admin" class="admin-link">Admin</a>
 
 <style>

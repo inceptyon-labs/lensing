@@ -24,9 +24,10 @@
     plugins: PluginAdminEntry[];
     allPlugins?: PluginAdminEntry[];
     onsave?: (widgets: GridWidget[]) => void;
+    onconfigsaved?: () => void;
   }
 
-  let { plugins, allPlugins = [], onsave }: Props = $props();
+  let { plugins, allPlugins = [], onsave, onconfigsaved }: Props = $props();
 
   let dashboardRef: HTMLDivElement;
   let editMode = $state(false);
@@ -404,6 +405,7 @@
     <WidgetConfigPanel
       plugin={activeConfigPlugin}
       onclose={() => (activeConfigPlugin = null)}
+      onsaved={onconfigsaved}
     />
   {/if}
 

@@ -4,9 +4,10 @@
   interface Props {
     plugin: PluginAdminEntry;
     onclose: () => void;
+    onsaved?: () => void;
   }
 
-  let { plugin, onclose }: Props = $props();
+  let { plugin, onclose, onsaved }: Props = $props();
 
   let fields = $derived(plugin.manifest.config_schema?.fields ?? []);
 
@@ -50,12 +51,20 @@
       }
       // Restart built-in modules so config takes effect immediately
       if (plugin.builtin) {
-        await fetch(`/modules/${encodeURIComponent(plugin.plugin_id)}/restart`, {
+        const restartRes = await fetch(`/modules/${encodeURIComponent(plugin.plugin_id)}/restart`, {
           method: 'POST',
         });
+        if (!restartRes.ok) {
+          const body = await restartRes.text();
+          throw new Error(`Restart failed: ${body || `HTTP ${restartRes.status}`}`);
+        }
       }
       saved = true;
-      setTimeout(() => onclose(), 600);
+      // Give the module time to fetch fresh data before notifying
+      setTimeout(() => {
+        onsaved?.();
+        onclose();
+      }, plugin.builtin ? 1500 : 600);
     } catch (e) {
       error = e instanceof Error ? e.message : 'Save failed';
     } finally {
