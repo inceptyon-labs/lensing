@@ -2,12 +2,21 @@
   interface Props {
     pluginId: string;
     pluginName: string;
+    x?: number;
+    y?: number;
     ondelete: () => void;
     onresize: () => void;
     onclose: () => void;
   }
 
-  let { pluginId, pluginName, ondelete, onresize, onclose }: Props = $props();
+  let { pluginId, pluginName, x = 0, y = 0, ondelete, onresize, onclose }: Props = $props();
+
+  // Clamp menu position so it doesn't overflow the viewport
+  let menuStyle = $derived.by(() => {
+    const clampedX = Math.min(x, window.innerWidth - 200);
+    const clampedY = Math.min(y, window.innerHeight - 160);
+    return `left: ${clampedX}px; top: ${clampedY}px;`;
+  });
 
   function handleKeydown(event: KeyboardEvent) {
     if (event.key === 'Escape') onclose();
@@ -26,6 +35,7 @@
     aria-label="Widget actions for {pluginName}"
     onclick={(e) => e.stopPropagation()}
     data-plugin-id={pluginId}
+    style={menuStyle}
   >
     <div class="context-menu__header">
       <span class="context-menu__name">{pluginName}</span>
@@ -58,7 +68,7 @@
   }
 
   .context-menu {
-    position: absolute;
+    position: fixed;
     background: var(--singularity);
     border: 1px solid var(--edge-bright);
     border-radius: var(--radius-md);

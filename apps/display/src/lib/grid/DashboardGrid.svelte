@@ -30,6 +30,7 @@
   let editMode = $state(false);
   let showPicker = $state(false);
   let activeContextWidget = $state<GridWidget | null>(null);
+  let contextMenuPos = $state<{ x: number; y: number } | null>(null);
   let activeResizeWidget = $state<GridWidget | null>(null);
   let localWidgets = $state<GridWidget[]>([]);
   let savedLayout = $state<GridWidget[] | null>(null);
@@ -242,20 +243,28 @@
     }
   }
 
+  function openWidgetMenu(widgetId: string, x: number, y: number) {
+    const widget = gridWidgets.find((w) => w.id === widgetId);
+    if (widget) {
+      activeContextWidget = widget;
+      contextMenuPos = { x, y };
+    }
+  }
+
+  function handleGearClick(event: MouseEvent, widgetId: string) {
+    event.stopPropagation();
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    openWidgetMenu(widgetId, rect.left, rect.bottom + 4);
+  }
+
   function handleGridContextMenu(event: MouseEvent) {
     if (!editMode) return;
-    // Find the widget element that was right-clicked
     let target = event.target as HTMLElement;
     while (target && target !== event.currentTarget) {
       const widgetId = target.getAttribute('data-widget-id');
       if (widgetId) {
         event.preventDefault();
-        const widget = gridWidgets.find((w) => w.id === widgetId);
-        if (widget) {
-          activeContextWidget = widget;
-          // Position context menu near cursor
-          // (WidgetContextMenu handles positioning in its own CSS)
-        }
+        openWidgetMenu(widgetId, event.clientX, event.clientY);
         break;
       }
       target = target.parentElement || (event.currentTarget as HTMLElement);
@@ -292,6 +301,19 @@
     {@const plugin = pluginMap.get(widget.id)}
     {#if plugin}
       <div class="dashboard-widget-content" data-widget-id={widget.id}>
+        {#if editMode}
+          <button
+            type="button"
+            class="widget-gear-btn"
+            aria-label="Widget settings for {plugin.manifest.name}"
+            onclick={(e) => handleGearClick(e, widget.id)}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+              <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492ZM6.754 8a1.246 1.246 0 1 1 2.492 0 1.246 1.246 0 0 1-2.492 0Z"/>
+              <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0a1.97 1.97 0 0 1-2.929 1.1c-1.541-.971-3.37.858-2.4 2.4a1.97 1.97 0 0 1-1.1 2.929c-1.79.527-1.79 3.065 0 3.592a1.97 1.97 0 0 1 1.1 2.929c-.971 1.541.858 3.37 2.4 2.4a1.97 1.97 0 0 1 2.929 1.1c.527 1.79 3.065 1.79 3.592 0a1.97 1.97 0 0 1 2.929-1.1c1.541.971 3.37-.858 2.4-2.4a1.97 1.97 0 0 1 1.1-2.929c1.79-.527 1.79-3.065 0-3.592a1.97 1.97 0 0 1-1.1-2.929c.971-1.541-.858-3.37-2.4-2.4a1.97 1.97 0 0 1-2.929-1.1ZM8 6.754a1.246 1.246 0 1 0 0 2.492 1.246 1.246 0 0 0 0-2.492ZM4.754 8a3.246 3.246 0 1 1 6.492 0 3.246 3.246 0 0 1-6.492 0Z"/>
+            </svg>
+          </button>
+        {/if}
         <ErrorBoundary name={plugin.manifest.name}>
           <PluginRenderer {plugin} />
         </ErrorBoundary>
@@ -340,6 +362,8 @@
     <WidgetContextMenu
       pluginId={activeContextWidget.id}
       pluginName={contextPlugin?.manifest.name ?? activeContextWidget.id}
+      x={contextMenuPos?.x ?? 0}
+      y={contextMenuPos?.y ?? 0}
       ondelete={() => handleDeleteWidget(activeContextWidget!.id)}
       onresize={() => handleResizeWidget(activeContextWidget!)}
       onclose={() => (activeContextWidget = null)}
@@ -404,6 +428,37 @@
     display: block;
     width: 100%;
     height: 100%;
+    position: relative;
+  }
+
+  /* Gear settings button — top-right of each widget in edit mode */
+  .widget-gear-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 20;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--event-horizon);
+    border: 1px solid var(--edge-bright);
+    border-radius: var(--radius-sm);
+    color: var(--dim-light);
+    cursor: pointer;
+    pointer-events: auto;
+    opacity: 0.7;
+    transition:
+      opacity var(--duration-fast) var(--ease-out),
+      color var(--duration-fast) var(--ease-out),
+      border-color var(--duration-fast) var(--ease-out);
+  }
+
+  .widget-gear-btn:hover {
+    opacity: 1;
+    color: var(--ember);
+    border-color: var(--ember-dim);
   }
 
   .dashboard-toolbar {
