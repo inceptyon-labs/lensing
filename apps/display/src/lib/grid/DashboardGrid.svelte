@@ -11,6 +11,8 @@
   import WidgetPicker from './WidgetPicker.svelte';
   import WidgetContextMenu from './WidgetContextMenu.svelte';
   import WidgetResizeModal from './WidgetResizeModal.svelte';
+  import EditBar from './EditBar.svelte';
+  import { createEditHistory } from './edit-history';
   import '../styles/grid-layout.css';
 
   interface Props {
@@ -27,6 +29,7 @@
   let activeResizeWidget = $state<GridWidget | null>(null);
   let localWidgets = $state<GridWidget[]>([]);
   let initialized = $state(false);
+  let history = $state(createEditHistory([]));
 
   let initialWidgets = $derived(pluginsToGridWidgets(plugins));
 
@@ -34,6 +37,7 @@
     // Sync initial widgets from plugins on first load only
     if (!initialized) {
       localWidgets = [...initialWidgets];
+      history = createEditHistory(initialWidgets);
       initialized = true;
     }
   });
@@ -49,15 +53,63 @@
   );
 
   function handleGridChange(updatedWidgets: GridWidget[]) {
+    history.pushState(updatedWidgets);
     localWidgets = updatedWidgets;
   }
 
   function toggleEditMode() {
-    editMode = !editMode;
-    if (!editMode) {
-      showPicker = false;
-      activeContextWidget = null;
-      activeResizeWidget = null;
+    if (editMode) {
+      // Exiting edit mode — cancel unsaved changes
+      handleCancel();
+      return;
+    }
+    editMode = true;
+    // Snapshot current state as edit-session baseline
+    history = createEditHistory(localWidgets);
+  }
+
+  function handleUndo() {
+    const restored = history.undo();
+    localWidgets = restored;
+  }
+
+  function handleRedo() {
+    const restored = history.redo();
+    localWidgets = restored;
+  }
+
+  function handleCancel() {
+    // Revert to initial state when edit mode was entered
+    history.reset(initialWidgets);
+    localWidgets = [...initialWidgets];
+    editMode = false;
+    showPicker = false;
+    activeContextWidget = null;
+    activeResizeWidget = null;
+  }
+
+  function handleKeydown(event: KeyboardEvent) {
+    if (!editMode) return;
+
+    // Escape → Cancel
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      handleCancel();
+      return;
+    }
+
+    // Ctrl+Z / Cmd+Z → Undo
+    if ((event.ctrlKey || event.metaKey) && event.key === 'z' && !event.shiftKey) {
+      event.preventDefault();
+      handleUndo();
+      return;
+    }
+
+    // Ctrl+Shift+Z / Cmd+Shift+Z → Redo
+    if ((event.ctrlKey || event.metaKey) && event.key === 'z' && event.shiftKey) {
+      event.preventDefault();
+      handleRedo();
+      return;
     }
   }
 
@@ -70,12 +122,16 @@
       w: preferred.w,
       h: preferred.h,
     };
-    localWidgets = [...localWidgets, newWidget];
+    const updated = [...localWidgets, newWidget];
+    history.pushState(updated);
+    localWidgets = updated;
     showPicker = false;
   }
 
   function handleDeleteWidget(widgetId: string) {
-    localWidgets = localWidgets.filter((w) => w.id !== widgetId);
+    const updated = localWidgets.filter((w) => w.id !== widgetId);
+    history.pushState(updated);
+    localWidgets = updated;
     activeContextWidget = null;
   }
 
@@ -87,7 +143,9 @@
   function handleResizeConfirm(pos: WidgetPosition) {
     if (!activeResizeWidget) return;
     const id = activeResizeWidget.id;
-    localWidgets = localWidgets.map((w) => (w.id === id ? { ...w, ...pos } : w));
+    const updated = localWidgets.map((w) => (w.id === id ? { ...w, ...pos } : w));
+    history.pushState(updated);
+    localWidgets = updated;
     activeResizeWidget = null;
   }
 
@@ -115,6 +173,8 @@
     }
   }
 </script>
+
+<svelte:window onkeydown={handleKeydown} />
 
 <div
   class="dashboard-grid"
@@ -150,15 +210,6 @@
 
   <!-- Edit mode toolbar -->
   <div class="dashboard-toolbar">
-    <button
-      class="dashboard-edit-toggle"
-      type="button"
-      aria-pressed={editMode}
-      onclick={toggleEditMode}
-    >
-      {editMode ? 'Done' : 'Edit Layout'}
-    </button>
-
     {#if editMode}
       <button
         class="dashboard-add-btn"
@@ -169,13 +220,23 @@
         Add Widget
       </button>
 
+      <EditBar
+        onsave={handleSave}
+        oncancel={handleCancel}
+        onundo={handleUndo}
+        onredo={handleRedo}
+        canUndo={history.canUndo()}
+        canRedo={history.canRedo()}
+        dirty={history.isDirty()}
+      />
+    {:else}
       <button
-        class="dashboard-save-btn"
+        class="dashboard-edit-toggle"
         type="button"
-        onclick={handleSave}
-        aria-label="Save layout"
+        aria-pressed={editMode}
+        onclick={toggleEditMode}
       >
-        Save
+        Edit Layout
       </button>
     {/if}
   </div>
