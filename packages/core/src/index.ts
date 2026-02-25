@@ -105,7 +105,7 @@ export {
   calculateKenBurnsTransform,
   getNextPhotoIndex,
 } from './plugins/photo-slideshow/index';
-export type { PhotoSlideshow, KenBurnsConfig, PhotoSlideshowManifest } from '@lensing/types';
+export type { PhotoSlideshow, KenBurnsConfig } from '@lensing/types';
 export {
   DEFAULT_KEN_BURNS_CONFIG,
   DEFAULT_CYCLE_INTERVAL_MS,

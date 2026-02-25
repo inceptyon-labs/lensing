@@ -20,9 +20,6 @@ export interface KenBurnsConfig {
   panY: [number, number];
 }
 
-/** Plugin manifest for photo slideshow */
-export interface PhotoSlideshowManifest extends PluginManifestWithConfig {}
-
 /** Default Ken Burns animation configuration */
 export const DEFAULT_KEN_BURNS_CONFIG: KenBurnsConfig = {
   duration: 8000,

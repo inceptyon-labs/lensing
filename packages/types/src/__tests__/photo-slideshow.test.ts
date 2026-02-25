@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { PhotoSlideshow, KenBurnsConfig, PhotoSlideshowManifest } from '../photo-slideshow';
+import type { PhotoSlideshow, KenBurnsConfig, PluginManifestWithConfig } from '../index';
 import {
   DEFAULT_KEN_BURNS_CONFIG,
   DEFAULT_CYCLE_INTERVAL_MS,
@@ -35,8 +35,8 @@ describe('PhotoSlideshow Types & Constants', () => {
     expect(config.panY).toEqual([-5, 5]);
   });
 
-  it('should have PhotoSlideshowManifest extending PluginManifestWithConfig', () => {
-    const manifest: PhotoSlideshowManifest = {
+  it('should allow PluginManifestWithConfig for photo slideshow', () => {
+    const manifest: PluginManifestWithConfig = {
       id: 'photo-slideshow',
       version: '1.0.0',
       name: 'Photo Slideshow',

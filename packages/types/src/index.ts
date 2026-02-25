@@ -815,7 +815,7 @@ export interface CryptoServerInstance {
 }
 
 // ── Photo Slideshow ────────────────────────────────────────────────────────
-export type { PhotoSlideshow, KenBurnsConfig, PhotoSlideshowManifest } from './photo-slideshow';
+export type { PhotoSlideshow, KenBurnsConfig } from './photo-slideshow';
 
 /** Full photo slideshow data payload published by photo-slideshow-server */
 export interface PhotoSlideshowData {
