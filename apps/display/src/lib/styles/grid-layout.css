@@ -302,6 +302,90 @@
   transition: none;
 }
 
+/* ── Mobile / Touchscreen Layout ────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  /* Base adjustments for mobile */
+  .grid-stack {
+    /* Tighter margin on mobile */
+    --gs-margin: 4px;
+  }
+
+  .grid-stack-item-content {
+    /* Slightly softer radius on small screens */
+    border-radius: var(--radius-sm);
+  }
+
+  /* Ensure every grid item meets WCAG 44px minimum touch target */
+  .grid-stack-item {
+    min-height: 44px;
+  }
+
+  /* Edit mode: enlarge widget border for easier grip on touch */
+  .dashboard-edit-mode .grid-stack-item-content {
+    border-width: 2px;
+  }
+
+  /* ── Hide edge handles on mobile (too small to hit reliably) ── */
+
+  .dashboard-edit-mode .ui-resizable-n,
+  .dashboard-edit-mode .ui-resizable-s,
+  .dashboard-edit-mode .ui-resizable-e,
+  .dashboard-edit-mode .ui-resizable-w {
+    display: none;
+  }
+
+  /* ── Enlarge corner handles for touch ergonomics ── */
+
+  .dashboard-edit-mode .ui-resizable-se,
+  .dashboard-edit-mode .ui-resizable-sw,
+  .dashboard-edit-mode .ui-resizable-ne,
+  .dashboard-edit-mode .ui-resizable-nw {
+    width: 44px;
+    height: 44px;
+  }
+
+  /* L-bracket visuals for mobile corner handles — keep ember style */
+  .dashboard-edit-mode .ui-resizable-se::before,
+  .dashboard-edit-mode .ui-resizable-sw::before,
+  .dashboard-edit-mode .ui-resizable-ne::before,
+  .dashboard-edit-mode .ui-resizable-nw::before {
+    width: 14px;
+    height: 3px;
+  }
+
+  .dashboard-edit-mode .ui-resizable-se::after,
+  .dashboard-edit-mode .ui-resizable-sw::after,
+  .dashboard-edit-mode .ui-resizable-ne::after,
+  .dashboard-edit-mode .ui-resizable-nw::after {
+    width: 3px;
+    height: 14px;
+  }
+
+  /* ── Edit toolbar: full-width on mobile ── */
+
+  .dashboard-toolbar {
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: var(--space-2, 8px) var(--space-3, 12px);
+    background-color: var(--event-horizon);
+    border-top: 1px solid var(--edge);
+    justify-content: space-between;
+    border-radius: 0;
+  }
+
+  /* ── Touch-friendly button sizing ── */
+
+  .dashboard-edit-toggle,
+  .dashboard-add-btn,
+  .dashboard-save-btn {
+    min-height: 44px;
+    min-width: 44px;
+    padding: var(--space-2, 8px) var(--space-3, 12px);
+  }
+}
+
 /* ── Reduced Motion ──────────────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
