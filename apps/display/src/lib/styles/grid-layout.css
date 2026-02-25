@@ -15,8 +15,8 @@
 
 .grid-stack-item-content {
   background-color: var(--event-horizon);
-  border: 1px solid color-mix(in srgb, var(--ember-dim) 40%, transparent);
-  border-bottom: 2px solid var(--ember-dim);
+  border: 1px solid transparent;
+  border-bottom: 2px solid transparent;
   border-radius: var(--radius-md);
   overflow: hidden;
   /* No explicit height — GridStack uses position:absolute with top/bottom
@@ -50,7 +50,8 @@
 /* ── Edit Mode ───────────────────────────────────────────────────────────── */
 
 .dashboard-edit-mode .grid-stack-item-content {
-  border-color: var(--ember);
+  border-color: color-mix(in srgb, var(--ember-dim) 40%, transparent);
+  border-bottom-color: var(--ember-dim);
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--ember) 30%, transparent),
     inset 0 0 0 1px color-mix(in srgb, var(--ember) 10%, transparent);
