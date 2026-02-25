@@ -38,9 +38,7 @@
   </div>
 
   {#if dirty}
-    <span class="edit-bar__dirty" aria-label="Unsaved changes">
-      Unsaved changes
-    </span>
+    <span class="edit-bar__dirty" aria-label="Unsaved changes"> Unsaved changes </span>
   {/if}
 
   <div class="edit-bar__group">
