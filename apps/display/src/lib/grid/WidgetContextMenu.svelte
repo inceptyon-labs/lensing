@@ -30,12 +30,7 @@
       <span class="context-menu__name">{pluginName}</span>
     </div>
 
-    <button
-      type="button"
-      class="context-menu__item"
-      role="menuitem"
-      onclick={onresize}
-    >
+    <button type="button" class="context-menu__item" role="menuitem" onclick={onresize}>
       <span class="context-menu__icon" aria-hidden="true">⊹</span>
       Move &amp; Resize
     </button>

@@ -106,7 +106,7 @@ export function toGridWidgetConstraints(span: GridSpan): {
  */
 export function getPreferredSize(
   pluginId: string,
-  manifest?: PluginManifest,
+  manifest?: PluginManifest
 ): { w: number; h: number } {
   const constraints = getWidgetConstraints(pluginId, manifest);
   return {

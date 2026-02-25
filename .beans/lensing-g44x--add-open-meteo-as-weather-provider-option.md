@@ -22,6 +22,7 @@ Add Open-Meteo (api.open-meteo.com) as a free alternative to OpenWeatherMap. Ope
 ## Summary of Changes
 
 Added Open-Meteo as a free weather provider alternative to OpenWeatherMap:
+
 - `WeatherProvider` type (`openweathermap` | `open-meteo`) in types package
 - WMO weather code → condition string mapping (28 codes)
 - Open-Meteo URL builder and response transformer in weather-server

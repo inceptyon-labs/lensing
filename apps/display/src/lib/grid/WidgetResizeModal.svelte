@@ -38,15 +38,13 @@
   let localW = $state(w);
   let localH = $state(h);
 
-  let validation = $derived(
-    validatePosition({ x: localX, y: localY, w: localW, h: localH }, 24),
-  );
+  let validation = $derived(validatePosition({ x: localX, y: localY, w: localW, h: localH }, 24));
 
   function handleConfirm() {
     if (!validation.valid) return;
     const clamped = clampToConstraints(
       { x: localX, y: localY, w: localW, h: localH },
-      { minW, minH, maxW, maxH },
+      { minW, minH, maxW, maxH }
     );
     onconfirm(clamped);
   }

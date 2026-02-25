@@ -97,28 +97,28 @@ describe('WidgetResizeModal validation', () => {
   it('validatePosition: x must be >= 0', async () => {
     const { validatePosition } = await import('../src/lib/grid/resize-modal-validation');
     expect(validatePosition({ x: -1, y: 0, w: 4, h: 3 }, 24)).toEqual(
-      expect.objectContaining({ valid: false }),
+      expect.objectContaining({ valid: false })
     );
   });
 
   it('validatePosition: w must be >= 1', async () => {
     const { validatePosition } = await import('../src/lib/grid/resize-modal-validation');
     expect(validatePosition({ x: 0, y: 0, w: 0, h: 3 }, 24)).toEqual(
-      expect.objectContaining({ valid: false }),
+      expect.objectContaining({ valid: false })
     );
   });
 
   it('validatePosition: x + w must not exceed grid columns', async () => {
     const { validatePosition } = await import('../src/lib/grid/resize-modal-validation');
     expect(validatePosition({ x: 20, y: 0, w: 8, h: 3 }, 24)).toEqual(
-      expect.objectContaining({ valid: false }),
+      expect.objectContaining({ valid: false })
     );
   });
 
   it('validatePosition: valid position passes', async () => {
     const { validatePosition } = await import('../src/lib/grid/resize-modal-validation');
     expect(validatePosition({ x: 0, y: 0, w: 6, h: 4 }, 24)).toEqual(
-      expect.objectContaining({ valid: true }),
+      expect.objectContaining({ valid: true })
     );
   });
 
@@ -126,7 +126,7 @@ describe('WidgetResizeModal validation', () => {
     const { clampToConstraints } = await import('../src/lib/grid/resize-modal-validation');
     const result = clampToConstraints(
       { x: 0, y: 0, w: 1, h: 4 },
-      { minW: 3, minH: 2, maxW: 12, maxH: 8 },
+      { minW: 3, minH: 2, maxW: 12, maxH: 8 }
     );
     expect(result.w).toBe(3);
   });
@@ -135,7 +135,7 @@ describe('WidgetResizeModal validation', () => {
     const { clampToConstraints } = await import('../src/lib/grid/resize-modal-validation');
     const result = clampToConstraints(
       { x: 0, y: 0, w: 20, h: 4 },
-      { minW: 3, minH: 2, maxW: 12, maxH: 8 },
+      { minW: 3, minH: 2, maxW: 12, maxH: 8 }
     );
     expect(result.w).toBe(12);
   });
@@ -144,7 +144,7 @@ describe('WidgetResizeModal validation', () => {
     const { clampToConstraints } = await import('../src/lib/grid/resize-modal-validation');
     const result = clampToConstraints(
       { x: 0, y: 0, w: 6, h: 1 },
-      { minW: 3, minH: 2, maxW: 12, maxH: 8 },
+      { minW: 3, minH: 2, maxW: 12, maxH: 8 }
     );
     expect(result.h).toBe(2);
   });
@@ -153,7 +153,7 @@ describe('WidgetResizeModal validation', () => {
     const { clampToConstraints } = await import('../src/lib/grid/resize-modal-validation');
     const result = clampToConstraints(
       { x: 0, y: 0, w: 6, h: 4 },
-      { minW: 3, minH: 2, maxW: 12, maxH: 8 },
+      { minW: 3, minH: 2, maxW: 12, maxH: 8 }
     );
     expect(result).toEqual({ x: 0, y: 0, w: 6, h: 4 });
   });

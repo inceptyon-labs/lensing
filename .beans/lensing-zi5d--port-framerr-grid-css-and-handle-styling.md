@@ -27,9 +27,11 @@ Port Framerr's grid visual styling, adapted to lensing's gravitational theme.
 ## Summary of Changes
 
 **Files Created:**
+
 - apps/display/src/lib/styles/grid-layout.css (461 lines)
 
 **Files Modified:**
+
 - apps/display/src/lib/styles/global.css (added grid-layout.css import)
 
 All CSS variables cross-referenced against tokens.css — zero undefined references. Build passes cleanly.

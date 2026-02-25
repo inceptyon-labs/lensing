@@ -80,25 +80,22 @@ describe('Widget Size Registry', () => {
 
   describe('getWidgetConstraints', () => {
     it('should return registry values for known plugins', async () => {
-      const { getWidgetConstraints, WIDGET_SIZE_REGISTRY } = await import(
-        '../src/lib/grid/widget-sizes'
-      );
+      const { getWidgetConstraints, WIDGET_SIZE_REGISTRY } =
+        await import('../src/lib/grid/widget-sizes');
       const result = getWidgetConstraints('weather');
       expect(result).toEqual(WIDGET_SIZE_REGISTRY['weather']);
     });
 
     it('should return default constraints for unknown plugins', async () => {
-      const { getWidgetConstraints, DEFAULT_WIDGET_SIZE } = await import(
-        '../src/lib/grid/widget-sizes'
-      );
+      const { getWidgetConstraints, DEFAULT_WIDGET_SIZE } =
+        await import('../src/lib/grid/widget-sizes');
       const result = getWidgetConstraints('some-unknown-plugin');
       expect(result).toEqual(DEFAULT_WIDGET_SIZE);
     });
 
     it('should prefer manifest GridSpan over registry', async () => {
-      const { getWidgetConstraints, WIDGET_SIZE_REGISTRY } = await import(
-        '../src/lib/grid/widget-sizes'
-      );
+      const { getWidgetConstraints, WIDGET_SIZE_REGISTRY } =
+        await import('../src/lib/grid/widget-sizes');
       const manifest: PluginManifest = {
         id: 'weather',
         name: 'Weather',
@@ -116,9 +113,8 @@ describe('Widget Size Registry', () => {
     });
 
     it('should fall back to registry when manifest has WidgetSize[] instead of GridSpan', async () => {
-      const { getWidgetConstraints, WIDGET_SIZE_REGISTRY } = await import(
-        '../src/lib/grid/widget-sizes'
-      );
+      const { getWidgetConstraints, WIDGET_SIZE_REGISTRY } =
+        await import('../src/lib/grid/widget-sizes');
       const manifest: PluginManifest = {
         id: 'weather',
         name: 'Weather',
@@ -130,9 +126,8 @@ describe('Widget Size Registry', () => {
     });
 
     it('should fall back to registry when manifest has no widget_sizes', async () => {
-      const { getWidgetConstraints, WIDGET_SIZE_REGISTRY } = await import(
-        '../src/lib/grid/widget-sizes'
-      );
+      const { getWidgetConstraints, WIDGET_SIZE_REGISTRY } =
+        await import('../src/lib/grid/widget-sizes');
       const manifest: PluginManifest = {
         id: 'weather',
         name: 'Weather',
@@ -179,9 +174,8 @@ describe('Widget Size Registry', () => {
 
   describe('getPreferredSize', () => {
     it('should return preferred size for a known plugin', async () => {
-      const { getPreferredSize, WIDGET_SIZE_REGISTRY } = await import(
-        '../src/lib/grid/widget-sizes'
-      );
+      const { getPreferredSize, WIDGET_SIZE_REGISTRY } =
+        await import('../src/lib/grid/widget-sizes');
       const result = getPreferredSize('weather');
       expect(result).toEqual({
         w: WIDGET_SIZE_REGISTRY['weather'].preferred[0],
@@ -190,9 +184,8 @@ describe('Widget Size Registry', () => {
     });
 
     it('should return default preferred size for unknown plugins', async () => {
-      const { getPreferredSize, DEFAULT_WIDGET_SIZE } = await import(
-        '../src/lib/grid/widget-sizes'
-      );
+      const { getPreferredSize, DEFAULT_WIDGET_SIZE } =
+        await import('../src/lib/grid/widget-sizes');
       const result = getPreferredSize('totally-unknown');
       expect(result).toEqual({
         w: DEFAULT_WIDGET_SIZE.preferred[0],

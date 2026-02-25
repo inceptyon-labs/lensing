@@ -18,7 +18,8 @@
   let restartError = '';
 
   $: hasConfig = !!plugin.manifest.config_schema?.fields?.length;
-  $: showRestart = onRestart && (configDirty || restartStatus === 'restarting' || restartStatus === 'restarted');
+  $: showRestart =
+    onRestart && (configDirty || restartStatus === 'restarting' || restartStatus === 'restarted');
 
   function handleToggle() {
     onToggleEnabled(plugin.plugin_id, !plugin.enabled);

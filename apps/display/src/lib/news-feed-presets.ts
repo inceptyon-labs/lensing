@@ -39,6 +39,4 @@ export const FEED_PRESETS: FeedCategory[] = [
 ];
 
 /** Flat list of all preset URLs for quick lookup */
-export const ALL_PRESET_URLS = new Set(
-  FEED_PRESETS.flatMap((cat) => cat.feeds.map((f) => f.url))
-);
+export const ALL_PRESET_URLS = new Set(FEED_PRESETS.flatMap((cat) => cat.feeds.map((f) => f.url)));

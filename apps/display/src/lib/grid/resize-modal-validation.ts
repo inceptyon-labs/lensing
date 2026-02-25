@@ -38,7 +38,7 @@ export function validatePosition(pos: WidgetPosition, cols: number): ValidationR
 /** Clamp a position to the given min/max constraints */
 export function clampToConstraints(
   pos: WidgetPosition,
-  constraints: WidgetConstraints,
+  constraints: WidgetConstraints
 ): WidgetPosition {
   return {
     x: pos.x,

@@ -39,13 +39,11 @@
   let gridWidgets = $derived(localWidgets.length > 0 ? localWidgets : initialWidgets);
 
   /** Map plugin_id to its PluginAdminEntry for quick lookup */
-  let pluginMap = $derived(
-    new Map(plugins.filter((p) => p.enabled).map((p) => [p.plugin_id, p])),
-  );
+  let pluginMap = $derived(new Map(plugins.filter((p) => p.enabled).map((p) => [p.plugin_id, p])));
 
   /** Plugins from allPlugins not yet placed on the grid */
   let availablePlugins = $derived(
-    allPlugins.filter((p) => !gridWidgets.some((w) => w.id === p.plugin_id)),
+    allPlugins.filter((p) => !gridWidgets.some((w) => w.id === p.plugin_id))
   );
 
   function handleGridChange(updatedWidgets: GridWidget[]) {
@@ -158,7 +156,9 @@
 
   <!-- Widget context menu (shown on widget action in edit mode) -->
   {#if editMode && activeContextWidget}
-    {@const contextPlugin = pluginMap.get(activeContextWidget.id) ?? allPlugins.find((p) => p.plugin_id === activeContextWidget!.id)}
+    {@const contextPlugin =
+      pluginMap.get(activeContextWidget.id) ??
+      allPlugins.find((p) => p.plugin_id === activeContextWidget!.id)}
     <WidgetContextMenu
       pluginId={activeContextWidget.id}
       pluginName={contextPlugin?.manifest.name ?? activeContextWidget.id}
@@ -187,11 +187,7 @@
 
   <!-- Widget picker (add new widgets) -->
   {#if editMode && showPicker}
-    <WidgetPicker
-      {availablePlugins}
-      onadd={handleAddWidget}
-      onclose={() => (showPicker = false)}
-    />
+    <WidgetPicker {availablePlugins} onadd={handleAddWidget} onclose={() => (showPicker = false)} />
   {/if}
 </div>
 
