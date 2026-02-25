@@ -13,8 +13,10 @@
   import WidgetResizeModal from './WidgetResizeModal.svelte';
   import EditBar from './EditBar.svelte';
   import { createEditHistory } from './edit-history';
-  import { tick } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import '../styles/grid-layout.css';
+
+  const LAYOUT_KEY = 'lensing-dashboard-layout';
 
   interface Props {
     plugins: PluginAdminEntry[];
@@ -30,19 +32,61 @@
   let activeContextWidget = $state<GridWidget | null>(null);
   let activeResizeWidget = $state<GridWidget | null>(null);
   let localWidgets = $state<GridWidget[]>([]);
+  let savedLayout = $state<GridWidget[] | null>(null);
   let history = $state(createEditHistory([]));
 
   let initialWidgets = $derived(pluginsToGridWidgets(plugins));
 
-  $effect(() => {
-    // Sync from plugins whenever they change, unless user is actively editing
-    if (!editMode) {
-      localWidgets = [...initialWidgets];
-      history = createEditHistory(initialWidgets);
+  // Load saved layout from localStorage on mount
+  onMount(() => {
+    try {
+      const stored = localStorage.getItem(LAYOUT_KEY);
+      if (stored) savedLayout = JSON.parse(stored) as GridWidget[];
+    } catch {
+      // ignore corrupt storage
     }
   });
 
+  $effect(() => {
+    // Sync from plugins when they change, unless user is actively editing.
+    // If user has a saved layout, merge it with current plugins instead of
+    // resetting to defaults (preserves custom positions across reloads).
+    if (editMode) return;
+
+    const defaults = initialWidgets;
+    let widgets: GridWidget[];
+    if (savedLayout) {
+      const savedIds = new Set(savedLayout.map((w) => w.id));
+      // Keep all saved widgets (user explicitly placed them), plus any new
+      // defaults that weren't in the saved layout yet.
+      widgets = [
+        ...savedLayout,
+        ...defaults.filter((w) => !savedIds.has(w.id)),
+      ];
+    } else {
+      widgets = [...defaults];
+    }
+    localWidgets = widgets;
+    // Use the local variable (not localWidgets $state) to avoid read-after-write loop
+    history = createEditHistory(widgets);
+  });
+
   let gridWidgets = $derived(localWidgets);
+
+  // Derive reactive history flags — reading `localWidgets` forces re-evaluation
+  // since localWidgets is always updated alongside every history operation.
+  let canUndo = $derived.by(() => {
+    void localWidgets;
+    return history.canUndo();
+  });
+  let canRedo = $derived.by(() => {
+    void localWidgets;
+    return history.canRedo();
+  });
+  let isDirty = $derived.by(() => {
+    void localWidgets;
+    return history.isDirty();
+  });
 
   /** Map plugin_id to its PluginAdminEntry for quick lookup */
   let pluginMap = $derived(new Map(plugins.filter((p) => p.enabled).map((p) => [p.plugin_id, p])));
@@ -79,9 +123,10 @@
   }
 
   function handleCancel() {
-    // Revert to initial state when edit mode was entered
-    history.reset(initialWidgets);
-    localWidgets = [...initialWidgets];
+    // Revert to saved layout (or defaults if none saved)
+    const baseline = savedLayout ?? initialWidgets;
+    history.reset(baseline);
+    localWidgets = [...baseline];
     editMode = false;
     showPicker = false;
     activeContextWidget = null;
@@ -152,8 +197,14 @@
   }
 
   function handleSave() {
+    // Persist layout to localStorage and update saved baseline
+    savedLayout = [...gridWidgets];
+    try {
+      localStorage.setItem(LAYOUT_KEY, JSON.stringify(gridWidgets));
+    } catch {
+      // storage full or unavailable — layout still saved in memory
+    }
     onsave?.(gridWidgets);
-    // Reset history baseline so dirty state clears after save
     history.reset(gridWidgets);
     editMode = false;
     showPicker = false;
@@ -265,9 +316,9 @@
         oncancel={handleCancel}
         onundo={handleUndo}
         onredo={handleRedo}
-        canUndo={history.canUndo()}
-        canRedo={history.canRedo()}
-        dirty={history.isDirty()}
+        {canUndo}
+        {canRedo}
+        dirty={isDirty}
       />
     {:else}
       <button

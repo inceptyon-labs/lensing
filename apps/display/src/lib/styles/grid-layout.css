@@ -278,6 +278,12 @@
   color: var(--ember);
 }
 
+/* ── Edit Mode: pass pointer events through widget content to GridStack ── */
+
+.dashboard-edit-mode .gs-item-content .dashboard-widget-content {
+  pointer-events: none;
+}
+
 /* ── Dragging State ──────────────────────────────────────────────────────── */
 
 .dashboard-edit-mode .grid-stack-item.ui-draggable-dragging .grid-stack-item-content {
