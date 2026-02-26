@@ -28,6 +28,8 @@ export interface RestServerHandlers {
   installPlugin?: (zipBuffer: Buffer) => Promise<PluginAdminEntry>;
   // Module management
   restartModule?: (id: string) => Promise<{ ok: boolean; running: boolean }>;
+  /** Sync running modules with current grid layout widget IDs */
+  syncModules?: (layoutIds: string[]) => void;
 }
 
 /** Configuration options for the REST server */
@@ -185,14 +187,24 @@ export function createRestServer(
   });
 
   addRoute('/layout', 'PUT', async (_req, res, body) => {
-    let layout: ZoneConfig[];
+    let layout: unknown;
     try {
-      layout = JSON.parse(body) as ZoneConfig[];
+      layout = JSON.parse(body);
     } catch {
       writeJson(res, 400, { error: 'Invalid JSON' });
       return;
     }
-    await handlers.putLayout(layout);
+    await handlers.putLayout(layout as ZoneConfig[]);
+
+    // Sync modules with the new layout
+    if (handlers.syncModules) {
+      const parsed = layout as { widgets?: Array<{ id: string }> };
+      const widgetIds = Array.isArray(parsed.widgets)
+        ? parsed.widgets.map((w) => w.id)
+        : [];
+      handlers.syncModules(widgetIds);
+    }
+
     writeJson(res, 200, { ok: true });
   });
 

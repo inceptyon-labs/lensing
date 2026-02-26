@@ -102,8 +102,7 @@ function buildModuleEntry(db: DatabaseInstance, schema: ModuleSettingsSchema): P
   const entry: PluginAdminEntry = {
     plugin_id: schema.id,
     manifest,
-    status: config.enabled ? 'active' : 'disabled',
-    enabled: config.enabled,
+    status: 'active',
     config: redactedConfig,
     builtin: true,
     integration_status,
@@ -161,8 +160,7 @@ export function createPluginAdminHandlers(options: PluginAdminHandlersOptions) {
 
     async setPluginEnabled(id: string, enabled: boolean): Promise<void> {
       if (isModuleId(id)) {
-        db.setSetting(`${id}.enabled`, String(enabled));
-        onChange?.(id, 'enabled');
+        // Built-in modules are now grid-driven — ignore enabled toggle
         return;
       }
       const state = getPersistedState(db, id);

@@ -304,17 +304,19 @@ describe('rebootModule', () => {
     expect(modules[0]!.id).toBe('weather');
   });
 
-  it('should return null and remove old for disabled module', () => {
+  it('should reboot module regardless of enabled setting (grid-driven lifecycle)', () => {
     const oldClose = vi.fn();
     const modules: BootedModule[] = [{ id: 'weather', instance: { close: oldClose } }];
 
+    // Even with enabled=false, reboot should work (grid presence = should be running)
     db.setSetting('weather.enabled', 'false');
 
     const result = rebootModule('weather', modules, db, deps);
 
     expect(oldClose).toHaveBeenCalledOnce();
-    expect(result).toBeNull();
-    expect(modules).toHaveLength(0);
+    expect(result).not.toBeNull();
+    expect(result!.id).toBe('weather');
+    expect(modules).toHaveLength(1);
   });
 
   it('should return null for unknown module ID', () => {
@@ -360,6 +362,15 @@ describe('rebootModule', () => {
     expect(oldClose).toHaveBeenCalledOnce();
     // Old module removed even though new boot failed
     expect(modules).toHaveLength(0);
+  });
+
+  it('should reboot module without checking enabled flag', () => {
+    // No enabled setting set — module should still boot because grid presence is enough
+    const modules: BootedModule[] = [];
+    const result = rebootModule('crypto', modules, db, deps);
+    expect(result).not.toBeNull();
+    expect(result!.id).toBe('crypto');
+    expect(createCryptoServer).toHaveBeenCalledOnce();
   });
 });
 

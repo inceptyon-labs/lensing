@@ -56,7 +56,7 @@
 </svelte:head>
 
 <DashboardGrid
-  plugins={plugins.filter((p) => p.enabled)}
+  plugins={plugins}
   allPlugins={plugins}
   onconfigsaved={handleConfigSaved}
 />
