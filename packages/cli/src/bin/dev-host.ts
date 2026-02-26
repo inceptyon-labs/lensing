@@ -12,6 +12,7 @@ const host = createHostService({
   port: 3100,
   pluginsDir: resolve(root, 'plugins'),
   dbPath: resolve(dataDir, 'lensing.db'),
+  staticDir: resolve(root, 'apps/display/build'),
 });
 
 await host.ready;

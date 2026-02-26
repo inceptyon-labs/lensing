@@ -42,6 +42,8 @@ export interface RestServerOptions {
   logger?: (entry: LogEntry) => void;
   /** Directory to serve static photos from at /photos/* */
   photoDir?: string;
+  /** Directory containing pre-built static files (SPA) to serve as fallback */
+  staticDir?: string;
 }
 
 /** Public interface returned by createRestServer */
@@ -132,11 +134,67 @@ function readBody(req: http.IncomingMessage, maxBytes: number = 1024 * 100): Pro
 }
 
 /** Create a REST server with the factory pattern */
+/** MIME types for static file serving */
+const STATIC_MIME_TYPES: Record<string, string> = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'application/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.webp': 'image/webp',
+  '.gif': 'image/gif',
+  '.ico': 'image/x-icon',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.ttf': 'font/ttf',
+};
+
+/**
+ * Try to serve a static file from dir. Returns true if served, false if not found.
+ * For immutable hashed assets (_app/immutable/*), sets long cache headers.
+ */
+function tryServeStatic(
+  dir: string,
+  urlPath: string,
+  res: http.ServerResponse
+): boolean {
+  // Prevent directory traversal
+  const safePath = nodePath.normalize(urlPath).replace(/^(\.\.[/\\])+/, '');
+  const filePath = nodePath.join(dir, safePath);
+  if (!filePath.startsWith(nodePath.resolve(dir))) return false;
+
+  try {
+    const stat = fs.statSync(filePath);
+    if (!stat.isFile()) return false;
+
+    const ext = nodePath.extname(filePath).toLowerCase();
+    const contentType = STATIC_MIME_TYPES[ext] ?? 'application/octet-stream';
+    const headers: Record<string, string | number> = {
+      'Content-Type': contentType,
+      'Content-Length': stat.size,
+    };
+
+    // Immutable hashed assets get long-lived cache
+    if (urlPath.startsWith('/_app/immutable/')) {
+      headers['Cache-Control'] = 'public, max-age=31536000, immutable';
+    }
+
+    res.writeHead(200, headers);
+    fs.createReadStream(filePath).pipe(res);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function createRestServer(
   handlers: RestServerHandlers,
   options: RestServerOptions = {}
 ): RestServerInstance {
-  const { port = 0, corsOrigins, logger, photoDir } = options;
+  const { port = 0, corsOrigins, logger, photoDir, staticDir } = options;
   const startedAt = Date.now();
   let boundPort = 0;
   let closed = false;
@@ -567,7 +625,29 @@ export function createRestServer(
         }
 
         const pathRoutes = routes.get(cleanPath);
-        if (!pathRoutes) {
+        if (pathRoutes) {
+          const handler = pathRoutes.get(method);
+          if (!handler) {
+            writeJson(res, 405, { error: 'Method Not Allowed' });
+            try {
+              logger?.({ method, path, status: 405, duration_ms: Date.now() - start });
+            } catch {
+              // Ignore logger errors
+            }
+            return;
+          }
+
+          const body = await readBody(req);
+          await handler(req, res, body);
+        } else if (staticDir && method === 'GET') {
+          // No API route matched — try serving a static file, then SPA fallback
+          const served =
+            tryServeStatic(staticDir, cleanPath, res) ||
+            tryServeStatic(staticDir, 'index.html', res);
+          if (!served) {
+            writeJson(res, 404, { error: 'Not Found' });
+          }
+        } else {
           writeJson(res, 404, { error: 'Not Found' });
           try {
             logger?.({ method, path, status: 404, duration_ms: Date.now() - start });
@@ -576,20 +656,6 @@ export function createRestServer(
           }
           return;
         }
-
-        const handler = pathRoutes.get(method);
-        if (!handler) {
-          writeJson(res, 405, { error: 'Method Not Allowed' });
-          try {
-            logger?.({ method, path, status: 405, duration_ms: Date.now() - start });
-          } catch {
-            // Ignore logger errors
-          }
-          return;
-        }
-
-        const body = await readBody(req);
-        await handler(req, res, body);
 
         const status = res.statusCode;
         try {

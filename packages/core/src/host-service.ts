@@ -38,7 +38,7 @@ export interface HostServiceInstance {
 }
 
 export function createHostService(options: HostServiceOptions = {}): HostServiceInstance {
-  const { port = 0, pluginsDir = './plugins', dbPath = ':memory:', logger } = options;
+  const { port = 0, pluginsDir = './plugins', dbPath = ':memory:', logger, staticDir } = options;
 
   let _db: DatabaseInstance | undefined;
   let _rest: RestServerInstance | undefined;
@@ -149,7 +149,7 @@ export function createHostService(options: HostServiceOptions = {}): HostService
             return { ok: true, running: result !== null };
           },
         },
-        { port }
+        { port, staticDir }
       );
 
       await _rest.ready();

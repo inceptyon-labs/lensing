@@ -913,4 +913,6 @@ export interface HostServiceOptions {
   dbPath?: string;
   /** Logger for startup and errors. Defaults to console */
   logger?: HostServiceLogger;
+  /** Directory containing pre-built static display files to serve */
+  staticDir?: string;
 }
