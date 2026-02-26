@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { PluginAdminEntry } from '@lensing/types';
+  import { getIntegrationFields } from '@lensing/types';
   import NewsFeedPresets from './NewsFeedPresets.svelte';
 
   export let plugin: PluginAdminEntry;
@@ -7,7 +8,13 @@
 
   // Initialize local state from current plugin config
   $: schema = plugin.manifest.config_schema;
-  $: fields = schema?.fields ?? [];
+  // Show integration-category fields + uncategorized fields (backward compatibility)
+  $: fields = schema
+    ? [
+        ...getIntegrationFields(schema),
+        ...schema.fields.filter((f) => !f.category),
+      ]
+    : [];
 
   // Build local copy of config values — only re-init when the plugin identity changes
   let values: Record<string, string | number | boolean> = {};
