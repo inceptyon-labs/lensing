@@ -155,8 +155,6 @@ describe('Config field category helpers', () => {
     expect(integration.map((f) => f.key)).toEqual(
       expect.arrayContaining(['serverUrl', 'username', 'password'])
     );
-    expect(widget.map((f) => f.key)).toEqual(
-      expect.arrayContaining(['calendarPath', 'rangeDays'])
-    );
+    expect(widget.map((f) => f.key)).toEqual(expect.arrayContaining(['calendarPath', 'rangeDays']));
   });
 });
