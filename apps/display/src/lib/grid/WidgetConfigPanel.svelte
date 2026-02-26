@@ -13,8 +13,14 @@
   let { plugin, onclose, onsaved }: Props = $props();
 
   let allFields = $derived(plugin.manifest.config_schema?.fields ?? []);
-  // Show only widget-category fields in the per-widget config panel
-  let fields = $derived(getWidgetFields(allFields));
+  // Show only widget-category fields in the per-widget config panel (plus uncategorized for backward compatibility)
+  let fields = $derived.by(() => {
+    if (!plugin.manifest.config_schema) return [];
+    const widgetFields = getWidgetFields(plugin.manifest.config_schema);
+    // Also include uncategorized fields for backward compatibility with plugins that don't set category
+    const uncategorizedFields = allFields.filter((f) => !f.category);
+    return [...widgetFields, ...uncategorizedFields];
+  });
 
   // Local copy of config values for editing
   let values = $state<Record<string, string | number | boolean>>({});
