@@ -3,6 +3,8 @@
   import type { PluginAdminEntry } from '@lensing/types';
   import type { DataBusMessage, WsMessage } from '@lensing/types';
   import DashboardGrid from '../lib/grid/DashboardGrid.svelte';
+  import type { GridWidget } from '../lib/grid/types';
+  import { saveLayout } from '../lib/grid/layout-persistence';
   import { handlePluginData } from '../lib/stores/dataBusStore';
 
   let plugins: PluginAdminEntry[] = [];
@@ -21,6 +23,14 @@
    */
   function handleConfigSaved(): void {
     void loadPlugins();
+  }
+
+  /**
+   * After a layout save, sync to the server so it can boot/stop modules
+   * to match which widgets are on the grid.
+   */
+  function handleLayoutSave(widgets: GridWidget[]): void {
+    void saveLayout(widgets).then(() => loadPlugins());
   }
 
   onMount(() => {
@@ -55,7 +65,7 @@
   <title>Lensing Display</title>
 </svelte:head>
 
-<DashboardGrid {plugins} allPlugins={plugins} onconfigsaved={handleConfigSaved} />
+<DashboardGrid {plugins} allPlugins={plugins} onsave={handleLayoutSave} onconfigsaved={handleConfigSaved} />
 <a href="/admin" class="admin-link">Admin</a>
 
 <style>

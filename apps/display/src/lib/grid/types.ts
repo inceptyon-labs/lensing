@@ -20,6 +20,8 @@ export interface GridWidget {
   maxH?: number;
   /** Whether the widget is locked (cannot move/resize) */
   locked?: boolean;
+  /** Whether to show the header bar (default: true) */
+  showHeader?: boolean;
 }
 
 /** Grid layout policy / options */

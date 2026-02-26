@@ -31,7 +31,7 @@
 
 /* Widget content fills the grid cell — strip the widget's own card chrome
    since .grid-stack-item-content already provides background, border, radius. */
-.gs-item-content .dashboard-widget-content > * {
+.gs-item-content .dashboard-widget-content .widget-body > * {
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -301,7 +301,7 @@
 
 /* ── Edit Mode: pass pointer events through widget content to GridStack ── */
 
-.dashboard-edit-mode .gs-item-content .dashboard-widget-content {
+.dashboard-edit-mode .gs-item-content .dashboard-widget-content .widget-body {
   pointer-events: none;
 }
 

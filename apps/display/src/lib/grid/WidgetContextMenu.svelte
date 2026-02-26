@@ -1,27 +1,32 @@
 <script lang="ts">
   import Pencil from '@lucide/svelte/icons/pencil';
   import Move from '@lucide/svelte/icons/move';
+  import PanelTop from '@lucide/svelte/icons/panel-top';
   import Trash2 from '@lucide/svelte/icons/trash-2';
 
   interface Props {
     pluginId: string;
     pluginName: string;
+    showHeader?: boolean;
     x?: number;
     y?: number;
     onconfigure: () => void;
     ondelete: () => void;
     onresize: () => void;
+    ontoggleheader?: () => void;
     onclose: () => void;
   }
 
   let {
     pluginId,
     pluginName,
+    showHeader = true,
     x = 0,
     y = 0,
     onconfigure,
     ondelete,
     onresize,
+    ontoggleheader,
     onclose,
   }: Props = $props();
 
@@ -64,6 +69,13 @@
       <span class="context-menu__icon" aria-hidden="true"><Move size={14} /></span>
       Move &amp; Resize
     </button>
+
+    {#if ontoggleheader}
+      <button type="button" class="context-menu__item" role="menuitem" onclick={ontoggleheader}>
+        <span class="context-menu__icon" aria-hidden="true"><PanelTop size={14} /></span>
+        {showHeader ? 'Hide Header' : 'Show Header'}
+      </button>
+    {/if}
 
     <hr class="context-menu__divider" />
 

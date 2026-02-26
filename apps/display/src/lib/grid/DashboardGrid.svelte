@@ -195,6 +195,15 @@
     }
   }
 
+  function handleToggleHeader(widgetId: string) {
+    const updated = localWidgets.map((w) =>
+      w.id === widgetId ? { ...w, showHeader: w.showHeader === false ? true : false } : w
+    );
+    history.pushState(updated);
+    localWidgets = updated;
+    activeContextWidget = null;
+  }
+
   function handleResizeWidget(widget: GridWidget) {
     activeContextWidget = null;
     activeResizeWidget = widget;
@@ -324,9 +333,16 @@
             <Settings size={14} strokeWidth={2} />
           </button>
         {/if}
-        <ErrorBoundary name={plugin.manifest.name}>
-          <PluginRenderer {plugin} />
-        </ErrorBoundary>
+        {#if widget.showHeader !== false}
+          <div class="widget-header">
+            <span class="widget-header__title">{plugin.manifest.name}</span>
+          </div>
+        {/if}
+        <div class="widget-body" class:widget-body--no-header={widget.showHeader === false}>
+          <ErrorBoundary name={plugin.manifest.name}>
+            <PluginRenderer {plugin} />
+          </ErrorBoundary>
+        </div>
       </div>
     {/if}
   {/each}
@@ -372,11 +388,13 @@
     <WidgetContextMenu
       pluginId={activeContextWidget.id}
       pluginName={contextPlugin?.manifest.name ?? activeContextWidget.id}
+      showHeader={activeContextWidget.showHeader !== false}
       x={contextMenuPos?.x ?? 0}
       y={contextMenuPos?.y ?? 0}
       onconfigure={() => handleConfigureWidget(activeContextWidget!.id)}
       ondelete={() => handleDeleteWidget(activeContextWidget!.id)}
       onresize={() => handleResizeWidget(activeContextWidget!)}
+      ontoggleheader={() => handleToggleHeader(activeContextWidget!.id)}
       onclose={() => (activeContextWidget = null)}
     />
   {/if}
@@ -445,10 +463,41 @@
   }
 
   :global(.gs-item-content) .dashboard-widget-content {
-    display: block;
+    display: flex;
+    flex-direction: column;
     width: 100%;
     height: 100%;
     position: relative;
+  }
+
+  /* Widget header bar */
+  .widget-header {
+    height: 36px;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    padding: 0 var(--space-3);
+    border-bottom: 1px solid var(--edge);
+  }
+
+  .widget-header__title {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    color: var(--starlight);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Widget body fills remaining space */
+  .widget-body {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .widget-body--no-header {
+    /* No header — body gets full height */
   }
 
   /* Gear settings button — top-right of each widget in edit mode */
