@@ -14,8 +14,23 @@
     plugins = (await res.json()) as PluginAdminEntry[];
   }
 
-  /** Set up a WebSocket listener that handles layout_change and plugin_data messages */
-  function setupWsListener(ws: WebSocket): void {
+  /**
+   * After a widget config save, reload plugin metadata.
+   * Widget data updates arrive automatically via the data bus → WebSocket
+   * pipeline (the server broadcasts plugin_data when modules publish).
+   */
+  function handleConfigSaved(): void {
+    void loadPlugins();
+  }
+
+  onMount(() => {
+    void loadPlugins();
+
+    // eslint-disable-next-line no-undef
+    const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    // eslint-disable-next-line no-undef
+    const ws = new WebSocket(`${wsProto}//${location.host}/ws`);
+
     ws.addEventListener('message', (event) => {
       try {
         const msg = JSON.parse(String(event.data)) as WsMessage;
@@ -28,41 +43,9 @@
         // ignore malformed messages
       }
     });
-  }
-
-  let ws: WebSocket | null = null;
-  let cleanupWs: (() => void) | null = null;
-
-  function connectWs(): void {
-    // eslint-disable-next-line no-undef
-    const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    // eslint-disable-next-line no-undef
-    const newWs = new WebSocket(`${wsProto}//${location.host}/ws`);
-    setupWsListener(newWs);
-    ws = newWs;
-    cleanupWs = () => newWs.close();
-  }
-
-  /**
-   * After a widget config save, reconnect WebSocket so the server pushes
-   * the latest cached data bus state (which includes fresh module data).
-   */
-  function handleConfigSaved(): void {
-    void loadPlugins();
-    // Reconnect WebSocket to trigger server-side "connection" handler
-    // which sends all cached data bus messages to the new client
-    if (ws) {
-      ws.close();
-    }
-    connectWs();
-  }
-
-  onMount(() => {
-    void loadPlugins();
-    connectWs();
 
     return () => {
-      cleanupWs?.();
+      ws.close();
     };
   });
 </script>

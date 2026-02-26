@@ -14,7 +14,16 @@
     onclose: () => void;
   }
 
-  let { pluginId, pluginName, x = 0, y = 0, onconfigure, ondelete, onresize, onclose }: Props = $props();
+  let {
+    pluginId,
+    pluginName,
+    x = 0,
+    y = 0,
+    onconfigure,
+    ondelete,
+    onresize,
+    onclose,
+  }: Props = $props();
 
   // Clamp menu position so it doesn't overflow the viewport
   let menuStyle = $derived.by(() => {

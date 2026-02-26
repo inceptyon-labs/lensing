@@ -60,11 +60,12 @@
         }
       }
       saved = true;
-      // Give the module time to fetch fresh data before notifying
+      // Brief delay so user sees success message, then close.
+      // Widget data arrives asynchronously via the data bus → WebSocket pipeline.
       setTimeout(() => {
         onsaved?.();
         onclose();
-      }, plugin.builtin ? 1500 : 600);
+      }, 800);
     } catch (e) {
       error = e instanceof Error ? e.message : 'Save failed';
     } finally {
@@ -179,7 +180,9 @@
     {/if}
 
     {#if saved}
-      <div class="config-panel__saved" role="status">Settings saved{plugin.builtin ? ' — restarting module' : ''}</div>
+      <div class="config-panel__saved" role="status">
+        Settings saved{plugin.builtin ? ' — restarting module' : ''}
+      </div>
     {/if}
 
     <div class="config-panel__actions">

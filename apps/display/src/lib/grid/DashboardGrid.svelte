@@ -64,10 +64,7 @@
       const savedIds = new Set(savedLayout.map((w) => w.id));
       // Keep all saved widgets (user explicitly placed them), plus any new
       // defaults that weren't in the saved layout yet.
-      widgets = [
-        ...savedLayout,
-        ...defaults.filter((w) => !savedIds.has(w.id)),
-      ];
+      widgets = [...savedLayout, ...defaults.filter((w) => !savedIds.has(w.id))];
     } else {
       widgets = [...defaults];
     }
