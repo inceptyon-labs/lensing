@@ -5,7 +5,7 @@ import type {
   ModuleId,
   HostServiceLogger,
 } from '@lensing/types';
-import { MODULE_SCHEMAS } from '@lensing/types';
+import { MODULE_SCHEMAS, MODULE_IDS } from '@lensing/types';
 import { readModuleConfig } from './module-settings';
 import { createWeatherServer } from './weather-server';
 import { createCryptoServer } from './crypto-server';
@@ -136,6 +136,64 @@ export function bootEnabledModules(
 
   log?.info(`Built-in modules booted`, { count: booted.length });
   return booted;
+}
+
+/**
+ * Reconcile running modules with the grid layout.
+ * Boots modules that are in the layout but not running.
+ * Stops modules that are running but not in the layout.
+ * Ignores non-built-in module IDs (third-party plugins).
+ * Returns updated BootedModule array.
+ */
+export function syncModulesWithLayout(
+  layoutIds: string[],
+  modules: BootedModule[],
+  db: DatabaseInstance,
+  deps: BootDeps,
+  log?: HostServiceLogger
+): BootedModule[] {
+  const builtinIds = new Set(MODULE_IDS as readonly string[]);
+  const desiredIds = new Set(layoutIds.filter((id) => builtinIds.has(id)));
+  const runningIds = new Set(modules.map((m) => m.id));
+
+  // Stop modules that are running but not in layout
+  const kept: BootedModule[] = [];
+  for (const mod of modules) {
+    if (desiredIds.has(mod.id)) {
+      kept.push(mod);
+    } else {
+      if (mod.timer !== undefined) clearInterval(mod.timer);
+      try {
+        mod.instance.close();
+      } catch (err) {
+        log?.error(`Module close failed: ${mod.id}`, err);
+      }
+      log?.info(`Module stopped (removed from grid): ${mod.id}`);
+    }
+  }
+
+  // Boot modules in layout that are not running
+  for (const id of desiredIds) {
+    if (runningIds.has(id)) continue;
+
+    const schema = MODULE_SCHEMAS.find((s) => s.id === id);
+    if (!schema) continue;
+
+    try {
+      const config = readModuleConfig(db, schema);
+      const instance = bootModule(id as ModuleId, config.values, deps);
+      if (instance) {
+        const booted: BootedModule = { id: id as ModuleId, instance };
+        startPolling(booted, log);
+        kept.push(booted);
+        log?.info(`Module booted (added to grid): ${id}`);
+      }
+    } catch (err) {
+      log?.error(`Module boot failed: ${id}`, err);
+    }
+  }
+
+  return kept;
 }
 
 /** League ID → sport name for ESPN API */

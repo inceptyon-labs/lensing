@@ -37,13 +37,14 @@ vi.mock('../photo-slideshow-server', () => ({
   })),
 }));
 
-import { bootEnabledModules, rebootModule } from '../module-boot';
+import { bootEnabledModules, rebootModule, syncModulesWithLayout } from '../module-boot';
 import type { BootedModule } from '../module-boot';
 import { createWeatherServer } from '../weather-server';
 import { createCalendarServer } from '../caldav-client';
 import { createCryptoServer } from '../crypto-server';
 import { createPIRServer } from '../pir-server';
 import { createPhotoSlideshowServer } from '../photo-slideshow-server';
+import { createNewsServer } from '../news-server';
 
 /** Minimal in-memory DB stub for settings */
 function createMockDb(): DatabaseInstance {
@@ -359,5 +360,80 @@ describe('rebootModule', () => {
     expect(oldClose).toHaveBeenCalledOnce();
     // Old module removed even though new boot failed
     expect(modules).toHaveLength(0);
+  });
+});
+
+describe('syncModulesWithLayout', () => {
+  let db: DatabaseInstance;
+  let deps: ReturnType<typeof createMockDeps>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    db = createMockDb();
+    deps = createMockDeps();
+  });
+
+  it('should boot modules present in layout that are not running', () => {
+    const modules: BootedModule[] = [];
+    const result = syncModulesWithLayout(['crypto'], modules, db, deps);
+    expect(result).toHaveLength(1);
+    expect(result[0]!.id).toBe('crypto');
+    expect(createCryptoServer).toHaveBeenCalledOnce();
+  });
+
+  it('should stop modules running that are not in layout', () => {
+    const closeFn = vi.fn();
+    const modules: BootedModule[] = [
+      { id: 'crypto', instance: { close: closeFn, refresh: vi.fn(() => Promise.resolve()) } },
+    ];
+    const result = syncModulesWithLayout([], modules, db, deps);
+    expect(result).toHaveLength(0);
+    expect(closeFn).toHaveBeenCalledOnce();
+  });
+
+  it('should not restart modules already running that are still in layout', () => {
+    const existingInstance = { close: vi.fn(), refresh: vi.fn(() => Promise.resolve()) };
+    const modules: BootedModule[] = [{ id: 'crypto', instance: existingInstance }];
+    const result = syncModulesWithLayout(['crypto'], modules, db, deps);
+    expect(result).toHaveLength(1);
+    expect(result[0]!.instance).toBe(existingInstance); // same object, not rebooted
+    expect(existingInstance.close).not.toHaveBeenCalled();
+  });
+
+  it('should ignore unknown/non-builtin module IDs', () => {
+    const modules: BootedModule[] = [];
+    const result = syncModulesWithLayout(['my-custom-plugin', 'another-plugin'], modules, db, deps);
+    expect(result).toHaveLength(0);
+  });
+
+  it('should handle mixed: boot new, keep existing, stop removed', () => {
+    const weatherClose = vi.fn();
+    const cryptoInstance = { close: vi.fn(), refresh: vi.fn(() => Promise.resolve()) };
+    const modules: BootedModule[] = [
+      { id: 'weather', instance: { close: weatherClose, refresh: vi.fn(() => Promise.resolve()) } },
+      { id: 'crypto', instance: cryptoInstance },
+    ];
+    // Layout now has crypto and news (weather removed, news added)
+    const result = syncModulesWithLayout(['crypto', 'news'], modules, db, deps);
+    expect(result.map((m) => m.id).sort()).toEqual(['crypto', 'news']);
+    expect(weatherClose).toHaveBeenCalledOnce(); // weather stopped
+    expect(cryptoInstance.close).not.toHaveBeenCalled(); // crypto kept
+    expect(createNewsServer).toHaveBeenCalledOnce(); // news booted
+  });
+
+  it('should clear polling timers when stopping a module', () => {
+    const closeFn = vi.fn();
+    const timer = setInterval(() => {}, 999999);
+    const modules: BootedModule[] = [{ id: 'crypto', instance: { close: closeFn }, timer }];
+    syncModulesWithLayout([], modules, db, deps);
+    expect(closeFn).toHaveBeenCalledOnce();
+    clearInterval(timer); // cleanup just in case
+  });
+
+  it('should deduplicate module IDs from layout (multiple widgets same module)', () => {
+    const modules: BootedModule[] = [];
+    const result = syncModulesWithLayout(['crypto', 'crypto', 'crypto'], modules, db, deps);
+    expect(result).toHaveLength(1);
+    expect(createCryptoServer).toHaveBeenCalledOnce();
   });
 });
