@@ -7,7 +7,7 @@ Requires=lensing-host.service
 Type=simple
 User=pi
 Environment=DISPLAY=:0
-ExecStart=/usr/bin/chromium-browser --kiosk --disable-gpu --memory-pressure-off --noerrdialogs --disable-infobars --disable-session-crashed-bubble --disable-restore-session-state --autoplay-policy=no-user-gesture-required http://localhost:3100
+ExecStart=/bin/sh -c 'exec $(command -v chromium-browser || command -v chromium) --kiosk --disable-gpu --memory-pressure-off --noerrdialogs --disable-infobars --disable-session-crashed-bubble --disable-restore-session-state --autoplay-policy=no-user-gesture-required http://localhost:3100'
 Restart=on-failure
 RestartSec=5
 StandardOutput=journal
