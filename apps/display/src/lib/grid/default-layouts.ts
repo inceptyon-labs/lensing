@@ -67,7 +67,7 @@ export function pluginsToGridWidgets(plugins: PluginAdminEntry[]): GridWidget[] 
   _autoPlaceRow = 12;
 
   return plugins
-    .filter((p) => p.enabled)
+    .filter((p) => p.enabled !== false)
     .map((p) => {
       const layout = getWidgetLayout(p.plugin_id);
       return {

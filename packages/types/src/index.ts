@@ -270,7 +270,7 @@ export interface PluginAdminEntry {
   plugin_id: string;
   manifest: PluginManifestWithConfig;
   status: PluginStatus;
-  enabled: boolean;
+  enabled?: boolean;
   zone?: ZoneName;
   config: Record<string, string | number | boolean>;
   error?: string;

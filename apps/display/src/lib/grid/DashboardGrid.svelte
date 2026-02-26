@@ -91,7 +91,8 @@
   });
 
   /** Map plugin_id to its PluginAdminEntry for quick lookup */
-  let pluginMap = $derived(new Map(plugins.filter((p) => p.enabled).map((p) => [p.plugin_id, p])));
+  /** Map plugin_id → PluginAdminEntry for quick lookup (grid presence = enabled) */
+  let pluginMap = $derived(new Map(plugins.map((p) => [p.plugin_id, p])));
 
   /** Plugins from allPlugins not yet placed on the grid */
   let availablePlugins = $derived(
