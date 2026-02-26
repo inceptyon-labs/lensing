@@ -42,11 +42,17 @@
 
   let initialWidgets = $derived(pluginsToGridWidgets(plugins));
 
-  // Load saved layout from localStorage on mount
+  // Load saved layout from localStorage on mount, and sync to server
+  // so modules are booted for widgets on the grid.
   onMount(() => {
     try {
       const stored = localStorage.getItem(LAYOUT_KEY);
-      if (stored) savedLayout = JSON.parse(stored) as GridWidget[];
+      if (stored) {
+        const parsed = JSON.parse(stored) as GridWidget[];
+        savedLayout = parsed;
+        // Ensure server knows about the layout (boots modules)
+        onsave?.(parsed);
+      }
     } catch {
       // ignore corrupt storage
     }
@@ -54,20 +60,15 @@
 
   $effect(() => {
     // Sync from plugins when they change, unless user is actively editing.
-    // If user has a saved layout, merge it with current plugins instead of
-    // resetting to defaults (preserves custom positions across reloads).
+    // If a saved layout exists it is the user's explicit choice of which
+    // widgets to show — do NOT re-add defaults that were intentionally removed.
+    // New plugins can be added through the Widget Picker in edit mode.
     if (editMode) return;
 
+    // Touch initialWidgets so the effect re-runs when plugins change (keeps
+    // pluginMap in sync), but only use them when no saved layout exists.
     const defaults = initialWidgets;
-    let widgets: GridWidget[];
-    if (savedLayout) {
-      const savedIds = new Set(savedLayout.map((w) => w.id));
-      // Keep all saved widgets (user explicitly placed them), plus any new
-      // defaults that weren't in the saved layout yet.
-      widgets = [...savedLayout, ...defaults.filter((w) => !savedIds.has(w.id))];
-    } else {
-      widgets = [...defaults];
-    }
+    const widgets: GridWidget[] = savedLayout ? [...savedLayout] : [...defaults];
     localWidgets = widgets;
     // Use the local variable (not localWidgets $state) to avoid read-after-write loop
     history = createEditHistory(widgets);
@@ -100,8 +101,16 @@
   );
 
   function handleGridChange(updatedWidgets: GridWidget[]) {
-    history.pushState(updatedWidgets);
-    localWidgets = updatedWidgets;
+    // GridStack only reports positional fields (id, x, y, w, h).
+    // Merge custom properties (showHeader, etc.) from localWidgets so they
+    // aren't lost when the user drags or resizes.
+    const customProps = new Map(localWidgets.map((w) => [w.id, w]));
+    const merged = updatedWidgets.map((w) => {
+      const prev = customProps.get(w.id);
+      return prev ? { ...prev, ...w } : w;
+    });
+    history.pushState(merged);
+    localWidgets = merged;
   }
 
   function toggleEditMode() {
