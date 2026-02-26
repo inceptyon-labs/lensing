@@ -199,9 +199,7 @@ export function createRestServer(
     // Sync modules with the new layout
     if (handlers.syncModules) {
       const parsed = layout as { widgets?: Array<{ id: string }> };
-      const widgetIds = Array.isArray(parsed.widgets)
-        ? parsed.widgets.map((w) => w.id)
-        : [];
+      const widgetIds = Array.isArray(parsed.widgets) ? parsed.widgets.map((w) => w.id) : [];
       handlers.syncModules(widgetIds);
     }
 

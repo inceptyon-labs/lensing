@@ -1,13 +1,13 @@
 ---
 # lensing-zgdi
 title: Settings page integration management
-status: todo
+status: in-progress
 type: feature
 priority: normal
 tags:
   - area:frontend
 created_at: 2026-02-26T02:30:07Z
-updated_at: 2026-02-26T02:30:07Z
+updated_at: 2026-02-26T13:30:04Z
 parent: lensing-ht6n
 ---
 

@@ -123,7 +123,8 @@
       <div class="integration-status integration-status--missing" role="alert">
         <span class="integration-status__label">Integration required</span>
         <span class="integration-status__desc">Set credentials in</span>
-        <button class="integration-status__link" onclick={handleGoToSettings}>Go to Settings</button>
+        <button class="integration-status__link" onclick={handleGoToSettings}>Go to Settings</button
+        >
       </div>
     {:else if plugin.integration_status === 'ready'}
       <div class="integration-status integration-status--ready" role="status">

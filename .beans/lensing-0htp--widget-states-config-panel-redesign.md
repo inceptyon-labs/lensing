@@ -1,13 +1,13 @@
 ---
 # lensing-0htp
 title: Widget states + config panel redesign
-status: in-progress
+status: completed
 type: feature
 priority: high
 tags:
-    - area:frontend
+  - area:frontend
 created_at: 2026-02-26T02:30:07Z
-updated_at: 2026-02-26T03:30:06Z
+updated_at: 2026-02-26T03:30:37Z
 parent: lensing-ht6n
 ---
 

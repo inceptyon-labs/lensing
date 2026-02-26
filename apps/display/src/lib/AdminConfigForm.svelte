@@ -10,10 +10,7 @@
   $: schema = plugin.manifest.config_schema;
   // Show integration-category fields + uncategorized fields (backward compatibility)
   $: fields = schema
-    ? [
-        ...getIntegrationFields(schema),
-        ...schema.fields.filter((f) => !f.category),
-      ]
+    ? [...getIntegrationFields(schema), ...schema.fields.filter((f) => !f.category)]
     : [];
 
   // Build local copy of config values — only re-init when the plugin identity changes

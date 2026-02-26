@@ -1,12 +1,13 @@
 ---
 # lensing-2d2u
 title: Wire layout sync into host-service and remove enabled flag
-status: todo
+status: completed
 type: task
+priority: normal
 tags:
   - area:backend
 created_at: 2026-02-26T02:51:57Z
-updated_at: 2026-02-26T02:51:57Z
+updated_at: 2026-02-26T13:28:53Z
 parent: lensing-97w9
 blocked_by:
   - lensing-hqrt
