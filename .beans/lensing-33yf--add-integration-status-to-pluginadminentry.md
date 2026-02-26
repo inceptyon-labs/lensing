@@ -1,16 +1,16 @@
 ---
 # lensing-33yf
 title: Add integration_status to PluginAdminEntry
-status: in-progress
+status: completed
 type: task
 priority: high
 tags:
-  - area:backend
+    - area:backend
 created_at: 2026-02-26T02:30:26Z
-updated_at: 2026-02-26T02:39:29Z
+updated_at: 2026-02-26T02:46:10Z
 parent: lensing-wkqw
 blocked_by:
-  - lensing-b7ye
+    - lensing-b7ye
 ---
 
 Add `integration_status: 'ready' | 'missing' | 'not_needed'` to PluginAdminEntry. Compute it in buildModuleEntry based on whether required integration fields have values in the DB.
@@ -22,9 +22,13 @@ Add `integration_status: 'ready' | 'missing' | 'not_needed'` to PluginAdminEntry
 
 ## Acceptance Criteria
 
-- [ ] PluginAdminEntry has `integration_status` field
-- [ ] `not_needed` for modules with no integration fields (crypto, news, sports, pir)
-- [ ] `ready` when all required integration fields have non-empty values
-- [ ] `missing` when any required integration field is empty
-- [ ] GET /plugins response includes integration_status
-- [ ] Tests for status computation
+- [x] PluginAdminEntry has `integration_status` field
+- [x] `not_needed` for modules with no integration fields (crypto, news, sports, pir)
+- [x] `ready` when all required integration fields have non-empty values
+- [x] `missing` when any required integration field is empty
+- [x] GET /plugins response includes integration_status
+- [x] Tests for status computation
+
+## Summary of Changes
+
+Added `integration_status?: 'ready' | 'missing' | 'not_needed'` to `PluginAdminEntry` in `packages/types/src/index.ts`. Computed in `buildModuleEntry` in `packages/core/src/plugin-admin-handlers.ts` using `getIntegrationFields` helper. Also re-exported helper functions from `@lensing/types` index. Merged in fd5b070.
