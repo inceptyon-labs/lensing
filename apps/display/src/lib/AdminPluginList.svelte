@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import type { PluginAdminEntry } from '@lensing/types';
+  import { moduleNeedsIntegration } from '@lensing/types';
   import { ZONE_NAMES } from './config.ts';
   import { MODULE_GROUPS } from './admin-module-groups.ts';
   import AdminPluginCard from './AdminPluginCard.svelte';
@@ -16,7 +17,10 @@
   /** Track which plugins have been saved since last restart */
   let dirtyIds = new Set<string>();
 
-  $: builtins = plugins.filter((p) => p.builtin);
+  // Only show modules that have integration fields (API keys, credentials, server URLs)
+  $: builtins = plugins.filter(
+    (p) => p.builtin && p.manifest.config_schema && moduleNeedsIntegration(p.manifest.config_schema)
+  );
   $: thirdParty = plugins.filter((p) => !p.builtin);
 
   /** Group built-in plugins by MODULE_GROUPS; ungrouped go into "Other" */
