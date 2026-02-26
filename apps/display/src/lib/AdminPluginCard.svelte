@@ -9,7 +9,7 @@
   export let onConfigSave: (
     id: string,
     config: Record<string, string | number | boolean>
-  ) => void = () => {};
+  ) => void | Promise<void> = () => {};
   export let onRestart: ((id: string) => Promise<void>) | undefined = undefined;
   export let configDirty = false;
 
@@ -33,7 +33,7 @@
   }
 
   async function handleConfigSave(config: Record<string, string | number | boolean>) {
-    onConfigSave(plugin.plugin_id, config);
+    await onConfigSave(plugin.plugin_id, config);
     configOpen = false;
     // Auto-restart built-in modules after saving integration config so changes take effect immediately
     if (onRestart && plugin.builtin) {
