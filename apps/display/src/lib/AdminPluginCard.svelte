@@ -56,75 +56,101 @@
   }
 </script>
 
-<div class="plugin-card">
-  <div class="card-header">
-    <div class="card-info">
+{#if plugin.builtin}
+  <!-- Built-in module: clean integration card (Framerr-style) -->
+  <div class="plugin-card">
+    <div class="card-header">
       <h3 class="plugin-name">{plugin.manifest.name}</h3>
-      {#if plugin.builtin}
-        <p class="plugin-subtitle">Built-in module</p>
-      {:else}
-        <p class="plugin-subtitle">v{plugin.manifest.version}</p>
+      {#if plugin.integration_status === 'ready'}
+        <span class="integration-badge integration-badge--ready">Configured</span>
+      {:else if plugin.integration_status === 'missing'}
+        <span class="integration-badge integration-badge--missing">Setup Required</span>
       {/if}
     </div>
-    <span class="status status--{plugin.status}">{plugin.status}</span>
-  </div>
-
-  <div class="card-body">
-    <div class="field">
-      <label class="field-label" for="zone-{plugin.plugin_id}">Zone</label>
-      <select
-        id="zone-{plugin.plugin_id}"
-        class="zone-select"
-        value={plugin.zone ?? ''}
-        on:change={handleZoneChange}
-      >
-        <option value="">— unassigned —</option>
-        {#each ZONE_NAMES as zone (zone)}
-          <option value={zone}>{zone}</option>
-        {/each}
-      </select>
-    </div>
-  </div>
-
-  <div class="card-footer">
-    <button
-      class="toggle-btn toggle-btn--{plugin.enabled ? 'disable' : 'enable'}"
-      on:click={handleToggle}
-      aria-pressed={plugin.enabled ? 'true' : 'false'}
-    >
-      {plugin.enabled ? 'Disable' : 'Enable'}
-    </button>
 
     {#if hasConfig}
-      <button
-        class="configure-btn"
-        on:click={() => (configOpen = !configOpen)}
-        aria-expanded={configOpen ? 'true' : 'false'}
-      >
-        Configure
-      </button>
+      <AdminConfigForm {plugin} onSave={handleConfigSave} />
     {/if}
 
-    {#if showRestart}
-      {#if restartStatus === 'idle'}
-        <button class="restart-btn restart-btn--glow" on:click={handleRestart}>Restart</button>
-      {:else if restartStatus === 'restarting'}
-        <span class="restart-notice">Restarting…</span>
-      {:else if restartStatus === 'restarted'}
-        <span class="restarted-notice">Restarted</span>
-      {:else if restartStatus === 'error'}
+    {#if restartStatus === 'restarting'}
+      <span class="restart-notice">Restarting…</span>
+    {:else if restartStatus === 'restarted'}
+      <span class="restarted-notice">Restarted ✓</span>
+    {:else if restartStatus === 'error'}
+      <div class="restart-error-row">
         <span class="error-notice">{restartError}</span>
         <button class="restart-btn" on:click={handleRestart}>Retry</button>
-      {/if}
+      </div>
     {/if}
   </div>
-
-  {#if configOpen && hasConfig}
-    <div class="config-section">
-      <AdminConfigForm {plugin} onSave={handleConfigSave} />
+{:else}
+  <!-- Third-party plugin: full card with zone, enable/disable, configure -->
+  <div class="plugin-card">
+    <div class="card-header">
+      <div class="card-info">
+        <h3 class="plugin-name">{plugin.manifest.name}</h3>
+        <p class="plugin-subtitle">v{plugin.manifest.version}</p>
+      </div>
+      <span class="status status--{plugin.status}">{plugin.status}</span>
     </div>
-  {/if}
-</div>
+
+    <div class="card-body">
+      <div class="field">
+        <label class="field-label" for="zone-{plugin.plugin_id}">Zone</label>
+        <select
+          id="zone-{plugin.plugin_id}"
+          class="zone-select"
+          value={plugin.zone ?? ''}
+          on:change={handleZoneChange}
+        >
+          <option value="">— unassigned —</option>
+          {#each ZONE_NAMES as zone (zone)}
+            <option value={zone}>{zone}</option>
+          {/each}
+        </select>
+      </div>
+    </div>
+
+    <div class="card-footer">
+      <button
+        class="toggle-btn toggle-btn--{plugin.enabled ? 'disable' : 'enable'}"
+        on:click={handleToggle}
+        aria-pressed={plugin.enabled ? 'true' : 'false'}
+      >
+        {plugin.enabled ? 'Disable' : 'Enable'}
+      </button>
+
+      {#if hasConfig}
+        <button
+          class="configure-btn"
+          on:click={() => (configOpen = !configOpen)}
+          aria-expanded={configOpen ? 'true' : 'false'}
+        >
+          Configure
+        </button>
+      {/if}
+
+      {#if showRestart}
+        {#if restartStatus === 'idle'}
+          <button class="restart-btn restart-btn--glow" on:click={handleRestart}>Restart</button>
+        {:else if restartStatus === 'restarting'}
+          <span class="restart-notice">Restarting…</span>
+        {:else if restartStatus === 'restarted'}
+          <span class="restarted-notice">Restarted</span>
+        {:else if restartStatus === 'error'}
+          <span class="error-notice">{restartError}</span>
+          <button class="restart-btn" on:click={handleRestart}>Retry</button>
+        {/if}
+      {/if}
+    </div>
+
+    {#if configOpen && hasConfig}
+      <div class="config-section">
+        <AdminConfigForm {plugin} onSave={handleConfigSave} />
+      </div>
+    {/if}
+  </div>
+{/if}
 
 <style>
   .plugin-card {
@@ -171,6 +197,29 @@
     line-height: var(--leading-normal);
   }
 
+  /* Integration status badge (built-in modules) */
+  .integration-badge {
+    font-size: var(--text-xs);
+    font-family: var(--font-mono);
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    letter-spacing: var(--tracking-wide);
+    white-space: nowrap;
+  }
+
+  .integration-badge--ready {
+    background-color: color-mix(in srgb, var(--ember) 20%, transparent);
+    color: var(--ember);
+    border: 1px solid color-mix(in srgb, var(--ember) 40%, transparent);
+  }
+
+  .integration-badge--missing {
+    background-color: color-mix(in srgb, var(--dim-light) 20%, transparent);
+    color: var(--dim-light);
+    border: 1px solid color-mix(in srgb, var(--dim-light) 40%, transparent);
+  }
+
+  /* Plugin status badge (third-party plugins) */
   .status {
     font-size: var(--text-xs);
     font-family: var(--font-mono);
@@ -193,6 +242,7 @@
   }
 
   .status--inactive,
+  .status--disabled,
   .status--loading {
     background-color: color-mix(in srgb, var(--dim-light) 20%, transparent);
     color: var(--dim-light);
@@ -324,6 +374,12 @@
     font-size: var(--text-xs);
     color: var(--dim-light);
     font-family: var(--font-mono);
+  }
+
+  .restart-error-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
   }
 
   .error-notice {
