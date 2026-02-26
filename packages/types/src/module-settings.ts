@@ -45,6 +45,7 @@ export const MODULE_SCHEMAS: readonly ModuleSettingsSchema[] = [
         type: 'select',
         label: 'Provider',
         default: 'open-meteo',
+        category: 'integration',
         options: [
           { label: 'Open-Meteo (free, no key required)', value: 'open-meteo' },
           { label: 'OpenWeatherMap (requires API key)', value: 'openweathermap' },
@@ -55,14 +56,16 @@ export const MODULE_SCHEMAS: readonly ModuleSettingsSchema[] = [
         type: 'password',
         label: 'API Key',
         description: 'Required for OpenWeatherMap only',
+        category: 'integration',
       },
-      { key: 'lat', type: 'number', label: 'Latitude', required: true, min: -90, max: 90 },
-      { key: 'lon', type: 'number', label: 'Longitude', required: true, min: -180, max: 180 },
+      { key: 'lat', type: 'number', label: 'Latitude', required: true, min: -90, max: 90, category: 'widget' },
+      { key: 'lon', type: 'number', label: 'Longitude', required: true, min: -180, max: 180, category: 'widget' },
       {
         key: 'units',
         type: 'select',
         label: 'Units',
         default: 'imperial',
+        category: 'widget',
         options: [
           { label: 'Imperial (°F)', value: 'imperial' },
           { label: 'Metric (°C)', value: 'metric' },
@@ -81,6 +84,7 @@ export const MODULE_SCHEMAS: readonly ModuleSettingsSchema[] = [
         label: 'Watchlist',
         description: 'Comma-separated coin IDs (e.g. bitcoin,ethereum,solana)',
         default: 'bitcoin,ethereum',
+        category: 'widget',
       },
     ],
   },
@@ -95,8 +99,9 @@ export const MODULE_SCHEMAS: readonly ModuleSettingsSchema[] = [
         label: 'Feed URLs',
         description: 'Comma-separated RSS feed URLs',
         required: true,
+        category: 'widget',
       },
-      { key: 'maxItems', type: 'number', label: 'Max Items', default: 20, min: 1, max: 100 },
+      { key: 'maxItems', type: 'number', label: 'Max Items', default: 20, min: 1, max: 100, category: 'widget' },
     ],
   },
   {
@@ -110,6 +115,7 @@ export const MODULE_SCHEMAS: readonly ModuleSettingsSchema[] = [
         label: 'Leagues',
         description: 'Comma-separated league IDs (e.g. nfl,nba,mlb)',
         default: 'nfl,nba',
+        category: 'widget',
       },
     ],
   },
@@ -124,17 +130,19 @@ export const MODULE_SCHEMAS: readonly ModuleSettingsSchema[] = [
         label: 'Server URL',
         description: 'CalDAV server URL (e.g. https://caldav.icloud.com)',
         required: true,
+        category: 'integration',
       },
-      { key: 'username', type: 'string', label: 'Username', required: true },
-      { key: 'password', type: 'password', label: 'Password', required: true },
+      { key: 'username', type: 'string', label: 'Username', required: true, category: 'integration' },
+      { key: 'password', type: 'password', label: 'Password', required: true, category: 'integration' },
       {
         key: 'calendarPath',
         type: 'string',
         label: 'Calendar Path',
         description: 'Collection path (e.g. /calendars/user@icloud.com/calendar/)',
         required: true,
+        category: 'widget',
       },
-      { key: 'rangeDays', type: 'number', label: 'Days Ahead', default: 7, min: 1, max: 90 },
+      { key: 'rangeDays', type: 'number', label: 'Days Ahead', default: 7, min: 1, max: 90, category: 'widget' },
     ],
   },
   {
@@ -148,6 +156,7 @@ export const MODULE_SCHEMAS: readonly ModuleSettingsSchema[] = [
         label: 'URL',
         description: 'Home Assistant base URL (e.g. http://homeassistant.local:8123)',
         required: true,
+        category: 'integration',
       },
       {
         key: 'token',
@@ -155,6 +164,7 @@ export const MODULE_SCHEMAS: readonly ModuleSettingsSchema[] = [
         label: 'Access Token',
         description: 'Long-lived access token',
         required: true,
+        category: 'integration',
       },
       {
         key: 'domains',
@@ -162,6 +172,7 @@ export const MODULE_SCHEMAS: readonly ModuleSettingsSchema[] = [
         label: 'Domains',
         description: 'Comma-separated entity domains (e.g. light,switch,sensor)',
         default: 'light,switch,lock,climate,sensor,binary_sensor',
+        category: 'widget',
       },
     ],
   },
@@ -170,9 +181,9 @@ export const MODULE_SCHEMAS: readonly ModuleSettingsSchema[] = [
     name: 'Allergies / Pollen',
     description: 'Pollen and allergen index monitoring',
     fields: [
-      { key: 'apiKey', type: 'password', label: 'API Key', required: true },
-      { key: 'lat', type: 'number', label: 'Latitude', required: true, min: -90, max: 90 },
-      { key: 'lon', type: 'number', label: 'Longitude', required: true, min: -180, max: 180 },
+      { key: 'apiKey', type: 'password', label: 'API Key', required: true, category: 'integration' },
+      { key: 'lat', type: 'number', label: 'Latitude', required: true, min: -90, max: 90, category: 'widget' },
+      { key: 'lon', type: 'number', label: 'Longitude', required: true, min: -180, max: 180, category: 'widget' },
       {
         key: 'alertThreshold',
         type: 'number',
@@ -181,6 +192,7 @@ export const MODULE_SCHEMAS: readonly ModuleSettingsSchema[] = [
         default: 3,
         min: 0,
         max: 5,
+        category: 'widget',
       },
     ],
   },
@@ -196,6 +208,7 @@ export const MODULE_SCHEMAS: readonly ModuleSettingsSchema[] = [
         description: 'Milliseconds without motion before idle state',
         default: 300000,
         min: 1000,
+        category: 'widget',
       },
     ],
   },
@@ -210,7 +223,23 @@ export const MODULE_SCHEMAS: readonly ModuleSettingsSchema[] = [
         label: 'Photo Directory',
         description: 'Absolute path to the directory containing photos',
         required: true,
+        category: 'integration',
       },
     ],
   },
 ];
+
+/** Returns only the integration-category fields for a module schema */
+export function getIntegrationFields(schema: ModuleSettingsSchema): ConfigField[] {
+  return schema.fields.filter((f) => f.category === 'integration');
+}
+
+/** Returns only the widget-category fields for a module schema */
+export function getWidgetFields(schema: ModuleSettingsSchema): ConfigField[] {
+  return schema.fields.filter((f) => f.category === 'widget');
+}
+
+/** Returns true if the module has any integration fields (requires central service config) */
+export function moduleNeedsIntegration(schema: ModuleSettingsSchema): boolean {
+  return schema.fields.some((f) => f.category === 'integration');
+}

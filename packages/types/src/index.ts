@@ -237,6 +237,9 @@ export type ConnectionStatus = 'connected' | 'disconnecting' | 'disconnected' | 
  * but rendered as <input type="password"> in the admin UI. */
 export type ConfigFieldType = 'string' | 'number' | 'boolean' | 'select' | 'password';
 
+/** Whether a config field belongs to an integration (central service) or a widget instance */
+export type ConfigFieldCategory = 'integration' | 'widget';
+
 /** A single field in a plugin config schema */
 export interface ConfigField {
   key: string;
@@ -248,6 +251,8 @@ export interface ConfigField {
   options?: Array<{ label: string; value: string | number }>; // for 'select' type
   min?: number; // for 'number' type
   max?: number; // for 'number' type
+  /** Whether this field is part of an integration (credentials, server URLs) or widget display config */
+  category?: ConfigFieldCategory;
 }
 
 /** Plugin config schema declared in manifest */
