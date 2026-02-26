@@ -154,7 +154,7 @@ export function syncModulesWithLayout(
 ): BootedModule[] {
   const builtinIds = new Set(MODULE_IDS as readonly string[]);
   const desiredIds = new Set(layoutIds.filter((id) => builtinIds.has(id)));
-  const runningIds = new Set(modules.map((m) => m.id));
+  const runningIds = new Set<string>(modules.map((m) => m.id));
 
   // Stop modules that are running but not in layout
   const kept: BootedModule[] = [];
