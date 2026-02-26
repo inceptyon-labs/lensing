@@ -5,12 +5,12 @@ status: completed
 type: task
 priority: high
 tags:
-    - area:backend
+  - area:backend
 created_at: 2026-02-26T02:30:26Z
 updated_at: 2026-02-26T02:46:10Z
 parent: lensing-wkqw
 blocked_by:
-    - lensing-b7ye
+  - lensing-b7ye
 ---
 
 Add `integration_status: 'ready' | 'missing' | 'not_needed'` to PluginAdminEntry. Compute it in buildModuleEntry based on whether required integration fields have values in the DB.

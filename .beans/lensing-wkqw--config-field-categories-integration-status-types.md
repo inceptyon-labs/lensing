@@ -5,7 +5,7 @@ status: completed
 type: feature
 priority: high
 tags:
-    - area:backend
+  - area:backend
 created_at: 2026-02-26T02:30:07Z
 updated_at: 2026-02-26T02:47:06Z
 parent: lensing-ht6n
@@ -24,5 +24,6 @@ Split MODULE_SCHEMAS fields into integration vs widget categories. Add integrati
 ## Summary
 
 Both tasks completed:
+
 - lensing-b7ye: Added category field + helpers to @lensing/types
 - lensing-33yf: Added integration_status to PluginAdminEntry, computed in buildModuleEntry
