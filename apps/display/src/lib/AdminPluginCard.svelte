@@ -2,6 +2,7 @@
   import type { PluginAdminEntry } from '@lensing/types';
   import { ZONE_NAMES } from './config.ts';
   import AdminConfigForm from './AdminConfigForm.svelte';
+  import ChevronRight from '@lucide/svelte/icons/chevron-right';
 
   export let plugin: PluginAdminEntry;
   export let onToggleEnabled: (id: string, enabled: boolean) => void = () => {};
@@ -11,6 +12,7 @@
     config: Record<string, string | number | boolean>
   ) => void | Promise<void> = () => {};
   export let onRestart: ((id: string) => Promise<void>) | undefined = undefined;
+  export let onConfigure: ((plugin: PluginAdminEntry) => void) | undefined = undefined;
   export let configDirty = false;
 
   let configOpen = false;
@@ -54,35 +56,30 @@
       restartStatus = 'error';
     }
   }
+
+  function handleCardClick() {
+    if (onConfigure) onConfigure(plugin);
+  }
 </script>
 
 {#if plugin.builtin}
-  <!-- Built-in module: clean integration card (Framerr-style) -->
-  <div class="plugin-card">
-    <div class="card-header">
-      <h3 class="plugin-name">{plugin.manifest.name}</h3>
-      {#if plugin.integration_status === 'ready'}
-        <span class="integration-badge integration-badge--ready">Configured</span>
-      {:else if plugin.integration_status === 'missing'}
-        <span class="integration-badge integration-badge--missing">Setup Required</span>
+  <!-- Built-in module: clickable row card — opens config modal -->
+  <button class="plugin-row" type="button" on:click={handleCardClick}>
+    <div class="plugin-row__info">
+      <span class="plugin-row__name">{plugin.manifest.name}</span>
+      {#if plugin.manifest.description}
+        <span class="plugin-row__desc">{plugin.manifest.description}</span>
       {/if}
     </div>
-
-    {#if hasConfig}
-      <AdminConfigForm {plugin} onSave={handleConfigSave} />
-    {/if}
-
-    {#if restartStatus === 'restarting'}
-      <span class="restart-notice">Restarting…</span>
-    {:else if restartStatus === 'restarted'}
-      <span class="restarted-notice">Restarted ✓</span>
-    {:else if restartStatus === 'error'}
-      <div class="restart-error-row">
-        <span class="error-notice">{restartError}</span>
-        <button class="restart-btn" on:click={handleRestart}>Retry</button>
-      </div>
-    {/if}
-  </div>
+    <div class="plugin-row__end">
+      {#if plugin.integration_status === 'ready'}
+        <span class="badge badge--ready">Configured</span>
+      {:else if plugin.integration_status === 'missing'}
+        <span class="badge badge--missing">Setup Required</span>
+      {/if}
+      <ChevronRight size={18} class="plugin-row__chevron" />
+    </div>
+  </button>
 {:else}
   <!-- Third-party plugin: full card with zone, enable/disable, configure -->
   <div class="plugin-card">
@@ -153,6 +150,94 @@
 {/if}
 
 <style>
+  /* ── Built-in module: clickable row ─────────────────────────── */
+
+  .plugin-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    background-color: var(--event-horizon);
+    border: 1px solid var(--edge);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition:
+      background-color var(--duration-fast) var(--ease-out),
+      border-color var(--duration-fast) var(--ease-out);
+    text-align: left;
+    color: inherit;
+    font: inherit;
+  }
+
+  .plugin-row:hover {
+    background-color: color-mix(in srgb, var(--event-horizon) 80%, var(--accretion));
+    border-color: color-mix(in srgb, var(--ember) 30%, transparent);
+  }
+
+  .plugin-row__info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .plugin-row__name {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    color: var(--starlight);
+  }
+
+  .plugin-row__desc {
+    font-size: var(--text-xs);
+    color: var(--faint-light);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .plugin-row__end {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-shrink: 0;
+  }
+
+  .plugin-row :global(.plugin-row__chevron) {
+    color: var(--faint-light);
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+
+  .plugin-row:hover :global(.plugin-row__chevron) {
+    color: var(--ember);
+  }
+
+  .badge {
+    font-size: 10px;
+    font-family: var(--font-mono);
+    font-weight: var(--weight-semibold);
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .badge--ready {
+    background-color: color-mix(in srgb, var(--alert-success) 20%, transparent);
+    color: var(--alert-success);
+    border: 1px solid color-mix(in srgb, var(--alert-success) 30%, transparent);
+  }
+
+  .badge--missing {
+    background-color: color-mix(in srgb, var(--dim-light) 20%, transparent);
+    color: var(--dim-light);
+    border: 1px solid color-mix(in srgb, var(--dim-light) 30%, transparent);
+  }
+
+  /* ── Third-party plugin: full card ─────────────────────────── */
+
   .plugin-card {
     background-color: var(--event-horizon);
     border: 1px solid var(--edge);
@@ -197,29 +282,6 @@
     line-height: var(--leading-normal);
   }
 
-  /* Integration status badge (built-in modules) */
-  .integration-badge {
-    font-size: var(--text-xs);
-    font-family: var(--font-mono);
-    padding: 2px 8px;
-    border-radius: var(--radius-sm);
-    letter-spacing: var(--tracking-wide);
-    white-space: nowrap;
-  }
-
-  .integration-badge--ready {
-    background-color: color-mix(in srgb, var(--ember) 20%, transparent);
-    color: var(--ember);
-    border: 1px solid color-mix(in srgb, var(--ember) 40%, transparent);
-  }
-
-  .integration-badge--missing {
-    background-color: color-mix(in srgb, var(--dim-light) 20%, transparent);
-    color: var(--dim-light);
-    border: 1px solid color-mix(in srgb, var(--dim-light) 40%, transparent);
-  }
-
-  /* Plugin status badge (third-party plugins) */
   .status {
     font-size: var(--text-xs);
     font-family: var(--font-mono);
@@ -374,12 +436,6 @@
     font-size: var(--text-xs);
     color: var(--dim-light);
     font-family: var(--font-mono);
-  }
-
-  .restart-error-row {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
   }
 
   .error-notice {

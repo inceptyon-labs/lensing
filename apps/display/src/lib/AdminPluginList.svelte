@@ -5,6 +5,7 @@
   import { ZONE_NAMES } from './config.ts';
   import { MODULE_GROUPS } from './admin-module-groups.ts';
   import AdminPluginCard from './AdminPluginCard.svelte';
+  import AdminConfigModal from './AdminConfigModal.svelte';
   import AdminPluginUpload from './AdminPluginUpload.svelte';
   import AdminTabBar from './AdminTabBar.svelte';
   import AdminModuleSection from './AdminModuleSection.svelte';
@@ -16,6 +17,9 @@
 
   /** Track which plugins have been saved since last restart */
   let dirtyIds = new Set<string>();
+
+  /** Plugin currently being configured in the modal */
+  let configPlugin: PluginAdminEntry | null = null;
 
   // Only show modules that have integration fields (API keys, credentials, server URLs)
   $: builtins = plugins.filter(
@@ -128,6 +132,16 @@
     }
     dirtyIds = new Set([...dirtyIds].filter((d) => d !== id));
   }
+
+  /** Save config + auto-restart for the modal flow */
+  async function handleModalSave(config: Record<string, string | number | boolean>) {
+    if (!configPlugin) return;
+    const id = configPlugin.plugin_id;
+    await handleConfigSave(id, config);
+    await handleRestart(id);
+    // Refresh the plugin list so the badge updates
+    await refreshPlugins();
+  }
 </script>
 
 <div class="plugin-list">
@@ -151,6 +165,7 @@
                 onZoneChange={handleZoneChange}
                 onConfigSave={handleConfigSave}
                 onRestart={plugin.builtin ? handleRestart : undefined}
+                onConfigure={(p) => (configPlugin = p)}
                 configDirty={dirtyIds.has(plugin.plugin_id)}
               />
             {/each}
@@ -175,6 +190,14 @@
         {/each}
       </div>
     {/if}
+  {/if}
+
+  {#if configPlugin}
+    <AdminConfigModal
+      plugin={configPlugin}
+      onSave={handleModalSave}
+      onClose={() => (configPlugin = null)}
+    />
   {/if}
 </div>
 
