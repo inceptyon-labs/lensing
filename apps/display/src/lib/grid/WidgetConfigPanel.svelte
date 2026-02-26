@@ -1,5 +1,8 @@
 <script lang="ts">
-  import type { PluginAdminEntry, ConfigField } from '@lensing/types';
+  import { base } from '$app/paths';
+  import { goto } from '$app/navigation';
+  import type { PluginAdminEntry } from '@lensing/types';
+  import { getWidgetFields } from '@lensing/types';
 
   interface Props {
     plugin: PluginAdminEntry;
@@ -9,7 +12,9 @@
 
   let { plugin, onclose, onsaved }: Props = $props();
 
-  let fields = $derived(plugin.manifest.config_schema?.fields ?? []);
+  let allFields = $derived(plugin.manifest.config_schema?.fields ?? []);
+  // Show only widget-category fields in the per-widget config panel
+  let fields = $derived(getWidgetFields(allFields));
 
   // Local copy of config values for editing
   let values = $state<Record<string, string | number | boolean>>({});
@@ -40,6 +45,7 @@
     error = '';
     saved = false;
     try {
+      // eslint-disable-next-line no-undef
       const res = await fetch(`/plugins/${encodeURIComponent(plugin.plugin_id)}/config`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -51,6 +57,7 @@
       }
       // Restart built-in modules so config takes effect immediately
       if (plugin.builtin) {
+        // eslint-disable-next-line no-undef
         const restartRes = await fetch(`/modules/${encodeURIComponent(plugin.plugin_id)}/restart`, {
           method: 'POST',
         });
@@ -62,6 +69,7 @@
       saved = true;
       // Brief delay so user sees success message, then close.
       // Widget data arrives asynchronously via the data bus → WebSocket pipeline.
+      // eslint-disable-next-line no-undef
       setTimeout(() => {
         onsaved?.();
         onclose();
@@ -73,8 +81,14 @@
     }
   }
 
+  // eslint-disable-next-line no-undef
   function handleKeydown(event: KeyboardEvent) {
     if (event.key === 'Escape') onclose();
+  }
+
+  function handleGoToSettings() {
+    // eslint-disable-next-line svelte/no-navigation-without-resolve
+    return goto(`${base}/admin`);
   }
 
   function updateValue(key: string, value: string | number | boolean) {
@@ -86,7 +100,6 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="config-backdrop" onmousedown={onclose}>
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     class="config-panel"
     role="dialog"
@@ -99,6 +112,18 @@
       <h2 class="config-panel__title">{plugin.manifest.name}</h2>
       <span class="config-panel__subtitle">Settings</span>
     </div>
+
+    {#if plugin.integration_status === 'missing'}
+      <div class="integration-status integration-status--missing" role="alert">
+        <span class="integration-status__label">Integration required</span>
+        <span class="integration-status__desc">Set credentials in</span>
+        <button class="integration-status__link" onclick={handleGoToSettings}>Go to Settings</button>
+      </div>
+    {:else if plugin.integration_status === 'ready'}
+      <div class="integration-status integration-status--ready" role="status">
+        <span class="integration-status__label">Integration connected</span>
+      </div>
+    {/if}
 
     {#if fields.length === 0}
       <p class="config-panel__empty">No configuration options available for this widget.</p>
@@ -247,6 +272,57 @@
     font-size: var(--text-xs);
     color: var(--dim-light);
     letter-spacing: var(--tracking-wide);
+  }
+
+  .integration-status {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    border: 1px solid var(--edge-bright);
+    flex-wrap: wrap;
+  }
+
+  .integration-status--missing {
+    background: hsla(0, 60%, 55%, 0.06);
+    border-color: hsla(0, 60%, 55%, 0.2);
+    color: var(--alert-urgent);
+  }
+
+  .integration-status--ready {
+    background: hsla(160, 45%, 45%, 0.06);
+    border-color: hsla(160, 45%, 45%, 0.2);
+    color: var(--alert-success);
+  }
+
+  .integration-status__label {
+    font-weight: var(--weight-semi);
+    letter-spacing: var(--tracking-wide);
+  }
+
+  .integration-status__desc {
+    color: var(--faint-light);
+  }
+
+  .integration-status__link {
+    color: var(--ember);
+    background: none;
+    border: none;
+    text-decoration: none;
+    letter-spacing: var(--tracking-wide);
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    font-family: inherit;
+    font-size: inherit;
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+
+  .integration-status__link:hover {
+    color: var(--starlight);
   }
 
   .config-panel__empty {
