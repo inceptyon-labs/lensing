@@ -32,9 +32,13 @@
     onZoneChange(plugin.plugin_id, val === '' ? undefined : val);
   }
 
-  function handleConfigSave(config: Record<string, string | number | boolean>) {
+  async function handleConfigSave(config: Record<string, string | number | boolean>) {
     onConfigSave(plugin.plugin_id, config);
     configOpen = false;
+    // Auto-restart built-in modules after saving integration config so changes take effect immediately
+    if (onRestart && plugin.builtin) {
+      await handleRestart();
+    }
   }
 
   async function handleRestart() {
