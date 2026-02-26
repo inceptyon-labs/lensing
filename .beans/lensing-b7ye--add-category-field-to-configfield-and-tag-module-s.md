@@ -5,9 +5,9 @@ status: in-progress
 type: task
 priority: high
 tags:
-  - area:backend
+    - area:backend
 created_at: 2026-02-26T02:30:20Z
-updated_at: 2026-02-26T02:30:54Z
+updated_at: 2026-02-26T02:38:14Z
 parent: lensing-wkqw
 ---
 
@@ -23,8 +23,8 @@ Widget fields: display preferences, per-instance settings
 
 ## Acceptance Criteria
 
-- [ ] ConfigField has optional `category` field typed `'integration' | 'widget'`
-- [ ] All MODULE_SCHEMAS fields tagged correctly
-- [ ] Helper function: `getIntegrationFields(schema)` and `getWidgetFields(schema)`
-- [ ] Helper function: `moduleNeedsIntegration(schema)` — true if any field is 'integration'
-- [ ] Tests for helpers
+- [x] ConfigField has optional `category` field typed `'integration' | 'widget'`
+- [x] All MODULE_SCHEMAS fields tagged correctly
+- [x] Helper function: `getIntegrationFields(schema)` and `getWidgetFields(schema)`
+- [x] Helper function: `moduleNeedsIntegration(schema)` — true if any field is 'integration'
+- [x] Tests for helpers
