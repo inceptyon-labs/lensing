@@ -887,7 +887,13 @@ export { DEFAULT_PIR_IDLE_TIMEOUT_MS, DEFAULT_PIR_GPIO_PIN } from './pir-sensor'
 
 // ── Module Settings ─────────────────────────────────────────────────────────
 export type { ModuleId, ModuleSettingsSchema } from './module-settings';
-export { MODULE_IDS, MODULE_SCHEMAS, getIntegrationFields, getWidgetFields, moduleNeedsIntegration } from './module-settings';
+export {
+  MODULE_IDS,
+  MODULE_SCHEMAS,
+  getIntegrationFields,
+  getWidgetFields,
+  moduleNeedsIntegration,
+} from './module-settings';
 
 // ── Host Service (unified boot sequence) ────────────────────────────────────
 /** Logger interface for host service */

@@ -1,13 +1,13 @@
 ---
 # lensing-b7ye
 title: Add category field to ConfigField and tag MODULE_SCHEMAS
-status: in-progress
+status: completed
 type: task
 priority: high
 tags:
-    - area:backend
+  - area:backend
 created_at: 2026-02-26T02:30:20Z
-updated_at: 2026-02-26T02:38:14Z
+updated_at: 2026-02-26T02:39:07Z
 parent: lensing-wkqw
 ---
 
@@ -28,3 +28,7 @@ Widget fields: display preferences, per-instance settings
 - [x] Helper function: `getIntegrationFields(schema)` and `getWidgetFields(schema)`
 - [x] Helper function: `moduleNeedsIntegration(schema)` — true if any field is 'integration'
 - [x] Tests for helpers
+
+## Summary of Changes
+
+Added `ConfigFieldCategory = 'integration' | 'widget'` type to `packages/types/src/index.ts` and tagged all MODULE_SCHEMAS fields. Added three helpers: `getIntegrationFields`, `getWidgetFields`, `moduleNeedsIntegration`. 16 tests added. Merged in b14f645.

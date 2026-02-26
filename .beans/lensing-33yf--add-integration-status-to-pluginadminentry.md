@@ -1,13 +1,13 @@
 ---
 # lensing-33yf
 title: Add integration_status to PluginAdminEntry
-status: todo
+status: in-progress
 type: task
 priority: high
 tags:
   - area:backend
 created_at: 2026-02-26T02:30:26Z
-updated_at: 2026-02-26T02:30:26Z
+updated_at: 2026-02-26T02:39:29Z
 parent: lensing-wkqw
 blocked_by:
   - lensing-b7ye

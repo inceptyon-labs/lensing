@@ -504,7 +504,10 @@ describe('PluginAdminHandlers (plugin-admin-handlers.ts)', () => {
     // For open-meteo (default provider), no apiKey required — so just having provider set = ready
     // Actually: provider has a default, apiKey is NOT required by default. The only required integration
     // fields matter for "missing" vs "ready". Let's use home-assistant which has required url + token.
-    await handlers.updatePluginConfig!('home-assistant', { url: 'http://ha.local:8123', token: 'mytoken' });
+    await handlers.updatePluginConfig!('home-assistant', {
+      url: 'http://ha.local:8123',
+      token: 'mytoken',
+    });
 
     const entry = await handlers.getPlugin!('home-assistant');
     expect(entry).toBeDefined();
