@@ -42,37 +42,37 @@ describe('CSS Tokens', () => {
 
   describe('text tokens', () => {
     it('should define --starlight text color', () => {
-      expect(getTokens()).toMatch(/--starlight\s*:\s*hsl\(220,\s*15%,\s*90%\)/);
+      expect(getTokens()).toMatch(/--starlight\s*:\s*hsl\(0,\s*0%,\s*100%\)/);
     });
 
     it('should define --dim-light text color', () => {
-      expect(getTokens()).toMatch(/--dim-light\s*:\s*hsl\(220,\s*10%,\s*62%\)/);
+      expect(getTokens()).toMatch(/--dim-light\s*:\s*hsl\(220,\s*8%,\s*78%\)/);
     });
 
     it('should define --faint-light text color', () => {
-      expect(getTokens()).toMatch(/--faint-light\s*:\s*hsl\(220,\s*8%,\s*42%\)/);
+      expect(getTokens()).toMatch(/--faint-light\s*:\s*hsl\(220,\s*6%,\s*58%\)/);
     });
 
     it('should define --ghost-light text color', () => {
-      expect(getTokens()).toMatch(/--ghost-light\s*:\s*hsl\(220,\s*6%,\s*28%\)/);
+      expect(getTokens()).toMatch(/--ghost-light\s*:\s*hsl\(220,\s*5%,\s*40%\)/);
     });
   });
 
   describe('accent tokens', () => {
     it('should define --ember accent', () => {
-      expect(getTokens()).toMatch(/--ember\s*:\s*hsl\(28,\s*85%,\s*55%\)/);
+      expect(getTokens()).toMatch(/--ember\s*:\s*hsl\(28,\s*90%,\s*60%\)/);
     });
 
     it('should define --ember-dim', () => {
-      expect(getTokens()).toMatch(/--ember-dim\s*:\s*hsl\(28,\s*70%,\s*40%\)/);
+      expect(getTokens()).toMatch(/--ember-dim\s*:\s*hsl\(28,\s*75%,\s*45%\)/);
     });
 
     it('should define --ember-glow', () => {
-      expect(getTokens()).toMatch(/--ember-glow\s*:\s*hsla\(28,\s*85%,\s*55%,\s*0\.12\)/);
+      expect(getTokens()).toMatch(/--ember-glow\s*:\s*hsla\(28,\s*90%,\s*60%,\s*0\.12\)/);
     });
 
     it('should define --ember-trace', () => {
-      expect(getTokens()).toMatch(/--ember-trace\s*:\s*hsla\(28,\s*85%,\s*55%,\s*0\.06\)/);
+      expect(getTokens()).toMatch(/--ember-trace\s*:\s*hsla\(28,\s*90%,\s*60%,\s*0\.06\)/);
     });
   });
 

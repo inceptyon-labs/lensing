@@ -17,17 +17,17 @@
 
   /* ── Text ──────────────────────────────────────────────────────────────── */
 
-  --starlight: hsl(220, 15%, 90%); /* primary text — cool white, not pure */
-  --dim-light: hsl(220, 10%, 62%); /* secondary text — labels, metadata */
-  --faint-light: hsl(220, 8%, 42%); /* tertiary — timestamps, captions */
-  --ghost-light: hsl(220, 6%, 28%); /* muted — disabled, placeholder */
+  --starlight: hsl(0, 0%, 100%); /* primary text — pure white for kiosk readability */
+  --dim-light: hsl(220, 8%, 78%); /* secondary text — labels, metadata */
+  --faint-light: hsl(220, 6%, 58%); /* tertiary — timestamps, captions */
+  --ghost-light: hsl(220, 5%, 40%); /* muted — disabled, placeholder */
 
   /* ── Accent ────────────────────────────────────────────────────────────── */
 
-  --ember: hsl(28, 85%, 55%); /* primary accent — warm gold-orange */
-  --ember-dim: hsl(28, 70%, 40%); /* accent hover/pressed */
-  --ember-glow: hsla(28, 85%, 55%, 0.12); /* accent background tint */
-  --ember-trace: hsla(28, 85%, 55%, 0.06); /* subtle accent hint */
+  --ember: hsl(28, 90%, 60%); /* primary accent — warm gold-orange */
+  --ember-dim: hsl(28, 75%, 45%); /* accent hover/pressed */
+  --ember-glow: hsla(28, 90%, 60%, 0.12); /* accent background tint */
+  --ember-trace: hsla(28, 90%, 60%, 0.06); /* subtle accent hint */
 
   /* ── Borders ───────────────────────────────────────────────────────────── */
 
