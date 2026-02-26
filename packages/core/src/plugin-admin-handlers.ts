@@ -7,7 +7,7 @@ import type {
   ModuleSettingsSchema,
   ConfigField,
 } from '@lensing/types';
-import { MODULE_SCHEMAS, MODULE_IDS } from '@lensing/types';
+import { MODULE_SCHEMAS, MODULE_IDS, getIntegrationFields } from '@lensing/types';
 import { readModuleConfig } from './module-settings';
 import { installPluginFromZip } from './plugin-install';
 
@@ -85,6 +85,20 @@ function buildModuleEntry(db: DatabaseInstance, schema: ModuleSettingsSchema): P
     }
   }
 
+  // Compute integration_status
+  const integrationFields = getIntegrationFields(schema);
+  let integration_status: PluginAdminEntry['integration_status'];
+  if (integrationFields.length === 0) {
+    integration_status = 'not_needed';
+  } else {
+    const requiredFields = integrationFields.filter((f) => f.required);
+    const allSet = requiredFields.every((f) => {
+      const val = config.values[f.key];
+      return val !== undefined && val !== '';
+    });
+    integration_status = allSet ? 'ready' : 'missing';
+  }
+
   const entry: PluginAdminEntry = {
     plugin_id: schema.id,
     manifest,
@@ -92,6 +106,7 @@ function buildModuleEntry(db: DatabaseInstance, schema: ModuleSettingsSchema): P
     enabled: config.enabled,
     config: redactedConfig,
     builtin: true,
+    integration_status,
   };
 
   if (zoneState?.zone !== undefined) entry.zone = zoneState.zone;

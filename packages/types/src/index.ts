@@ -276,6 +276,8 @@ export interface PluginAdminEntry {
   error?: string;
   /** True for built-in modules synthesized from MODULE_SCHEMAS */
   builtin?: boolean;
+  /** Integration readiness for built-in modules */
+  integration_status?: 'ready' | 'missing' | 'not_needed';
 }
 
 /** Zone assignment: which plugin is in which zone */
@@ -885,7 +887,7 @@ export { DEFAULT_PIR_IDLE_TIMEOUT_MS, DEFAULT_PIR_GPIO_PIN } from './pir-sensor'
 
 // ── Module Settings ─────────────────────────────────────────────────────────
 export type { ModuleId, ModuleSettingsSchema } from './module-settings';
-export { MODULE_IDS, MODULE_SCHEMAS } from './module-settings';
+export { MODULE_IDS, MODULE_SCHEMAS, getIntegrationFields, getWidgetFields, moduleNeedsIntegration } from './module-settings';
 
 // ── Host Service (unified boot sequence) ────────────────────────────────────
 /** Logger interface for host service */

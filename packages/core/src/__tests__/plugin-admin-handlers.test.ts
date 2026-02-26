@@ -458,4 +458,92 @@ describe('PluginAdminHandlers (plugin-admin-handlers.ts)', () => {
 
     db.close();
   });
+
+  // ── integration_status ────────────────────────────────────────────────────
+
+  it('should return integration_status: not_needed for modules with no integration fields', async () => {
+    const db = createDatabase({ path: ':memory:' });
+    const loader = createPluginLoader({ pluginsDir });
+    await loader.load();
+
+    const handlers = createPluginAdminHandlers({ pluginLoader: loader, db });
+
+    // crypto, news, sports, pir have no integration fields
+    for (const moduleId of ['crypto', 'news', 'sports', 'pir'] as const) {
+      const entry = await handlers.getPlugin!(moduleId);
+      expect(entry).toBeDefined();
+      expect(entry!.integration_status).toBe('not_needed');
+    }
+
+    db.close();
+  });
+
+  it('should return integration_status: missing when required integration fields are not set', async () => {
+    const db = createDatabase({ path: ':memory:' });
+    const loader = createPluginLoader({ pluginsDir });
+    await loader.load();
+
+    const handlers = createPluginAdminHandlers({ pluginLoader: loader, db });
+
+    // home-assistant has required integration fields (url, token) — fresh DB has none
+    const entry = await handlers.getPlugin!('home-assistant');
+    expect(entry).toBeDefined();
+    expect(entry!.integration_status).toBe('missing');
+
+    db.close();
+  });
+
+  it('should return integration_status: ready when all required integration fields are set', async () => {
+    const db = createDatabase({ path: ':memory:' });
+    const loader = createPluginLoader({ pluginsDir });
+    await loader.load();
+
+    const handlers = createPluginAdminHandlers({ pluginLoader: loader, db });
+
+    // Set the required integration field for weather (provider has a default, only apiKey is required when using openweathermap)
+    // For open-meteo (default provider), no apiKey required — so just having provider set = ready
+    // Actually: provider has a default, apiKey is NOT required by default. The only required integration
+    // fields matter for "missing" vs "ready". Let's use home-assistant which has required url + token.
+    await handlers.updatePluginConfig!('home-assistant', { url: 'http://ha.local:8123', token: 'mytoken' });
+
+    const entry = await handlers.getPlugin!('home-assistant');
+    expect(entry).toBeDefined();
+    expect(entry!.integration_status).toBe('ready');
+
+    db.close();
+  });
+
+  it('should include integration_status in getPlugins response', async () => {
+    const db = createDatabase({ path: ':memory:' });
+    const loader = createPluginLoader({ pluginsDir });
+    await loader.load();
+
+    const handlers = createPluginAdminHandlers({ pluginLoader: loader, db });
+    const plugins = await handlers.getPlugins!();
+
+    const builtins = plugins.filter((p) => p.builtin);
+    for (const entry of builtins) {
+      expect(entry.integration_status).toBeDefined();
+      expect(['ready', 'missing', 'not_needed']).toContain(entry.integration_status);
+    }
+
+    db.close();
+  });
+
+  it('should return integration_status: missing if only some required integration fields are set', async () => {
+    const db = createDatabase({ path: ':memory:' });
+    const loader = createPluginLoader({ pluginsDir });
+    await loader.load();
+
+    const handlers = createPluginAdminHandlers({ pluginLoader: loader, db });
+
+    // Set only url, not token (both required for home-assistant)
+    await handlers.updatePluginConfig!('home-assistant', { url: 'http://ha.local:8123' });
+
+    const entry = await handlers.getPlugin!('home-assistant');
+    expect(entry).toBeDefined();
+    expect(entry!.integration_status).toBe('missing');
+
+    db.close();
+  });
 });
