@@ -352,18 +352,19 @@ describe('PluginAdminHandlers (plugin-admin-handlers.ts)', () => {
     db.close();
   });
 
-  it('should write module enabled state to flat DB settings', async () => {
+  it('should ignore setPluginEnabled for built-in modules (grid-driven lifecycle)', async () => {
     const db = createDatabase({ path: ':memory:' });
     const loader = createPluginLoader({ pluginsDir });
     await loader.load();
 
     const handlers = createPluginAdminHandlers({ pluginLoader: loader, db });
 
+    // setPluginEnabled is a no-op for built-in modules
     await handlers.setPluginEnabled!('weather', true);
-    expect(db.getSetting('weather.enabled')).toBe('true');
+    expect(db.getSetting('weather.enabled')).toBeUndefined();
 
     await handlers.setPluginEnabled!('weather', false);
-    expect(db.getSetting('weather.enabled')).toBe('false');
+    expect(db.getSetting('weather.enabled')).toBeUndefined();
 
     db.close();
   });
@@ -438,23 +439,17 @@ describe('PluginAdminHandlers (plugin-admin-handlers.ts)', () => {
     db.close();
   });
 
-  it('should show module as enabled after setPluginEnabled for module', async () => {
+  it('should always show built-in modules as active (grid-driven lifecycle)', async () => {
     const db = createDatabase({ path: ':memory:' });
     const loader = createPluginLoader({ pluginsDir });
     await loader.load();
 
     const handlers = createPluginAdminHandlers({ pluginLoader: loader, db });
 
-    // Initially disabled
-    let entry = await handlers.getPlugin!('crypto');
-    expect(entry!.enabled).toBe(false);
-    expect(entry!.status).toBe('disabled');
-
-    // Enable
-    await handlers.setPluginEnabled!('crypto', true);
-    entry = await handlers.getPlugin!('crypto');
-    expect(entry!.enabled).toBe(true);
+    // Built-in modules are always active — no enabled field
+    const entry = await handlers.getPlugin!('crypto');
     expect(entry!.status).toBe('active');
+    expect(entry).not.toHaveProperty('enabled');
 
     db.close();
   });

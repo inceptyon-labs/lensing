@@ -339,7 +339,7 @@ describe('HostService (host-service.ts)', () => {
     expect(weather!.manifest.version).toBe('built-in');
   });
 
-  it('should persist module enabled state via PUT /plugins/weather/enabled', async () => {
+  it('should ignore setPluginEnabled for built-in modules (grid-driven lifecycle)', async () => {
     hostService = createHostService({
       port: 0,
       dbPath: path.join(tempDir, 'test.db'),
@@ -356,8 +356,8 @@ describe('HostService (host-service.ts)', () => {
     });
     expect(res.status).toBe(200);
 
-    // Verify it was written to flat settings
-    expect(hostService.db.getSetting('weather.enabled')).toBe('true');
+    // Built-in modules: setPluginEnabled is a no-op, no DB write
+    expect(hostService.db.getSetting('weather.enabled')).toBeUndefined();
   });
 
   it('should expose dataBus instance after ready', async () => {
@@ -440,5 +440,74 @@ describe('HostService (host-service.ts)', () => {
     // Verify zone was persisted in plugin state
     const state = hostService.db.getPluginState<{ zone?: string }>('weather');
     expect(state?.zone).toBe('right-col');
+  });
+
+  // ── Grid-driven Module Lifecycle ──────────────────────────────────────────
+
+  it('should sync modules when layout is saved via PUT /layout', async () => {
+    hostService = createHostService({
+      port: 0,
+      dbPath: path.join(tempDir, 'test.db'),
+      pluginsDir: path.join(tempDir, 'plugins'),
+    });
+    await hostService.ready;
+    const port = hostService.port;
+
+    // Initially no modules should be booted (no layout saved yet)
+    expect(hostService.modules).toHaveLength(0);
+
+    // Save a layout with crypto widget
+    const res = await fetch(`http://127.0.0.1:${port}/layout`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ widgets: [{ id: 'crypto', x: 0, y: 0, w: 4, h: 3 }] }),
+    });
+    expect(res.status).toBe(200);
+
+    // Crypto module should now be booted
+    expect(hostService.modules.some((m) => m.id === 'crypto')).toBe(true);
+  });
+
+  it('should stop modules when their widget is removed from layout', async () => {
+    hostService = createHostService({
+      port: 0,
+      dbPath: path.join(tempDir, 'test.db'),
+      pluginsDir: path.join(tempDir, 'plugins'),
+    });
+    await hostService.ready;
+    const port = hostService.port;
+
+    // Save layout with crypto
+    await fetch(`http://127.0.0.1:${port}/layout`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ widgets: [{ id: 'crypto', x: 0, y: 0, w: 4, h: 3 }] }),
+    });
+    expect(hostService.modules.some((m) => m.id === 'crypto')).toBe(true);
+
+    // Save empty layout (remove crypto)
+    await fetch(`http://127.0.0.1:${port}/layout`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ widgets: [] }),
+    });
+    expect(hostService.modules).toHaveLength(0);
+  });
+
+  it('should not include enabled field on built-in module entries', async () => {
+    hostService = createHostService({
+      port: 0,
+      dbPath: path.join(tempDir, 'test.db'),
+      pluginsDir: path.join(tempDir, 'plugins'),
+    });
+    await hostService.ready;
+    const port = hostService.port;
+
+    const res = await fetch(`http://127.0.0.1:${port}/plugins/crypto`);
+    expect(res.status).toBe(200);
+    const entry = await res.json();
+    expect(entry.builtin).toBe(true);
+    // enabled field should not exist on built-in modules
+    expect(entry).not.toHaveProperty('enabled');
   });
 });

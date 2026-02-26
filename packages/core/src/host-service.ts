@@ -6,7 +6,7 @@ import { createWsServer } from './ws-server';
 import { createPluginScheduler } from './plugin-scheduler';
 import { createPluginAdminHandlers } from './plugin-admin-handlers';
 import { createNotificationQueue } from './notification-queue';
-import { bootEnabledModules, rebootModule } from './module-boot';
+import { bootEnabledModules, rebootModule, syncModulesWithLayout } from './module-boot';
 import type { BootedModule } from './module-boot';
 import type { HostServiceOptions, DatabaseInstance, PluginLoader, ModuleId } from '@lensing/types';
 import { MODULE_SCHEMAS } from '@lensing/types';
@@ -113,6 +113,21 @@ export function createHostService(options: HostServiceOptions = {}): HostService
           putLayout: async (layout) => {
             _db!.setLayout('default', layout);
           },
+          syncModules: (layoutIds: string[]) => {
+            _modules = syncModulesWithLayout(
+              layoutIds,
+              _modules,
+              _db!,
+              { dataBus, notifications: _notificationQueue! },
+              logger
+            );
+            // Notify connected clients about layout change
+            _ws?.broadcast({
+              type: 'layout_change',
+              payload: null,
+              timestamp: new Date().toISOString(),
+            });
+          },
           postAsk: async (question) => ({
             id: crypto.randomUUID(),
             question,
@@ -169,9 +184,23 @@ export function createHostService(options: HostServiceOptions = {}): HostService
       // 6. Plugin scheduler (no-op — plugins can register themselves)
       createPluginScheduler();
 
-      // 7. Boot enabled built-in modules from DB settings
+      // 7. Boot built-in modules based on saved grid layout
       _notificationQueue = createNotificationQueue();
-      _modules = bootEnabledModules(_db!, { dataBus, notifications: _notificationQueue }, logger);
+      const savedLayout = _db!.getLayout('default');
+      if (savedLayout) {
+        // Extract widget IDs from the saved layout
+        const parsed = savedLayout as unknown as { widgets?: Array<{ id: string }> };
+        const layoutIds = Array.isArray(parsed.widgets)
+          ? parsed.widgets.map((w: { id: string }) => w.id)
+          : [];
+        _modules = syncModulesWithLayout(
+          layoutIds,
+          [],
+          _db!,
+          { dataBus, notifications: _notificationQueue },
+          logger
+        );
+      }
 
       log.info('Host service boot complete');
     } catch (err) {

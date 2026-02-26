@@ -76,10 +76,6 @@ export function rebootModule(
 
   // Re-read config from DB
   const config = readModuleConfig(db, schema);
-  if (!config.enabled) {
-    log?.info(`Module disabled, removed: ${id}`);
-    return null;
-  }
 
   // Boot new instance (let errors propagate after old is already closed)
   const instance = bootModule(id, config.values, deps);
