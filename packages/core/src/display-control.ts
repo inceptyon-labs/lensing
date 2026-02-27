@@ -33,9 +33,12 @@ export function createDisplayControl(options: DisplayControlOptions): { close():
     });
   }
 
-  // Enable DPMS so xset force on/off works
-  exec(`DISPLAY=${display} xset +dpms`, (err) => {
-    if (err) logger?.error('Failed to enable DPMS', err);
+  // Enable DPMS but disable auto-timeout — only PIR controls the display.
+  // Without "dpms 0 0 0", the default timeouts (600s) would turn the screen
+  // off independently of the PIR sensor.
+  exec(`DISPLAY=${display} xset +dpms dpms 0 0 0 s off`, (err) => {
+    if (err) logger?.error('Failed to configure DPMS', err);
+    else logger?.info('DPMS configured (auto-timeout disabled, PIR-only control)');
   });
 
   const unsubscribe = dataBus.onMessage((msg) => {
