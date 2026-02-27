@@ -7,7 +7,7 @@ import type {
 } from '@lensing/types';
 import { DEFAULT_PIR_IDLE_TIMEOUT_MS, DEFAULT_PIR_GPIO_PIN } from '@lensing/types';
 
-const PLUGIN_ID = 'pir-sensor';
+const PLUGIN_ID = 'pir';
 const DATA_BUS_CHANNEL = 'presence.pir';
 
 export function createPIRServer(options: PIRServerOptions): PIRServerInstance {

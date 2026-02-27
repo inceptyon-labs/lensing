@@ -17,7 +17,7 @@ describe('PIR Sensor Plugin Integration', () => {
   it('should have plugin.json for pir-sensor plugin', () => {
     const manifestPath = join(__dirname, '../../src/plugins/pir-sensor/plugin.json');
     const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
-    expect(manifest.id).toBe('pir-sensor');
+    expect(manifest.id).toBe('pir');
     expect(manifest.version).toBeTruthy();
   });
 
