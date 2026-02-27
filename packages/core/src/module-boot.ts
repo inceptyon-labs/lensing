@@ -2,6 +2,7 @@ import type {
   DatabaseInstance,
   DataBusInstance,
   NotificationQueueInstance,
+  GpioWatcherFactory,
   ModuleId,
   HostServiceLogger,
 } from '@lensing/types';
@@ -21,6 +22,7 @@ import { createPhotoSlideshowServer } from './photo-slideshow-server';
 export interface BootDeps {
   dataBus: DataBusInstance;
   notifications: NotificationQueueInstance;
+  gpioFactory?: GpioWatcherFactory;
 }
 
 /** A successfully booted module */
@@ -217,7 +219,7 @@ function bootModule(
   values: Record<string, string | number | boolean>,
   deps: BootDeps
 ): { close(): void } | null {
-  const { dataBus, notifications } = deps;
+  const { dataBus, notifications, gpioFactory } = deps;
 
   switch (id) {
     case 'weather':
@@ -291,6 +293,7 @@ function bootModule(
       return createPIRServer({
         idleTimeout_ms:
           values['idleTimeout_ms'] != null ? Number(values['idleTimeout_ms']) : undefined,
+        gpioFactory,
         dataBus,
       });
 

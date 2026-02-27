@@ -896,6 +896,7 @@ export {
 } from './module-settings';
 
 // ── Host Service (unified boot sequence) ────────────────────────────────────
+import type { GpioWatcherFactory } from './pir-sensor';
 /** Logger interface for host service */
 export interface HostServiceLogger {
   debug(msg: string, data?: unknown): void;
@@ -915,4 +916,8 @@ export interface HostServiceOptions {
   logger?: HostServiceLogger;
   /** Directory containing pre-built static display files to serve */
   staticDir?: string;
+  /** GPIO watcher factory for PIR sensor (auto-detected on Linux if omitted) */
+  gpioFactory?: GpioWatcherFactory;
+  /** Enable display DPMS control via PIR presence (default: false) */
+  displayControl?: boolean;
 }

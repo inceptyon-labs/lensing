@@ -7,6 +7,7 @@ import { createPluginScheduler } from './plugin-scheduler';
 import { createPluginAdminHandlers } from './plugin-admin-handlers';
 import { createNotificationQueue } from './notification-queue';
 import { bootEnabledModules, rebootModule, syncModulesWithLayout } from './module-boot';
+import { createDisplayControl } from './display-control';
 import type { BootedModule } from './module-boot';
 import type { HostServiceOptions, DatabaseInstance, PluginLoader, ModuleId } from '@lensing/types';
 import { MODULE_SCHEMAS } from '@lensing/types';
@@ -38,7 +39,15 @@ export interface HostServiceInstance {
 }
 
 export function createHostService(options: HostServiceOptions = {}): HostServiceInstance {
-  const { port = 0, pluginsDir = './plugins', dbPath = ':memory:', logger, staticDir } = options;
+  const {
+    port = 0,
+    pluginsDir = './plugins',
+    dbPath = ':memory:',
+    logger,
+    staticDir,
+    gpioFactory,
+    displayControl: enableDisplayControl,
+  } = options;
 
   let _db: DatabaseInstance | undefined;
   let _rest: RestServerInstance | undefined;
@@ -48,6 +57,7 @@ export function createHostService(options: HostServiceOptions = {}): HostService
   let _notificationQueue: NotificationQueueInstance | undefined;
   let _port = 0;
   let _dataBus: DataBusInstance | undefined;
+  let _displayControl: { close(): void } | undefined;
 
   const log = {
     info: (msg: string, data?: unknown) => logger?.info(msg, data),
@@ -118,7 +128,7 @@ export function createHostService(options: HostServiceOptions = {}): HostService
               layoutIds,
               _modules,
               _db!,
-              { dataBus, notifications: _notificationQueue! },
+              { dataBus, notifications: _notificationQueue!, gpioFactory },
               logger
             );
             // Notify connected clients about layout change
@@ -143,7 +153,7 @@ export function createHostService(options: HostServiceOptions = {}): HostService
               id as ModuleId,
               _modules,
               _db!,
-              { dataBus, notifications: _notificationQueue! },
+              { dataBus, notifications: _notificationQueue!, gpioFactory },
               logger
             );
             return { ok: true, running: result !== null };
@@ -197,9 +207,15 @@ export function createHostService(options: HostServiceOptions = {}): HostService
           layoutIds,
           [],
           _db!,
-          { dataBus, notifications: _notificationQueue },
+          { dataBus, notifications: _notificationQueue, gpioFactory },
           logger
         );
+      }
+
+      // 8. Display DPMS control via PIR presence
+      if (enableDisplayControl) {
+        _displayControl = createDisplayControl({ dataBus, logger });
+        log.info('Display control enabled (DPMS via PIR)');
       }
 
       log.info('Host service boot complete');
@@ -213,6 +229,11 @@ export function createHostService(options: HostServiceOptions = {}): HostService
         } catch {
           /* ignore */
         }
+      }
+      try {
+        _displayControl?.close();
+      } catch {
+        /* ignore cleanup errors */
       }
       try {
         _notificationQueue?.close();
@@ -250,6 +271,7 @@ export function createHostService(options: HostServiceOptions = {}): HostService
             /* ignore */
           }
         }
+        _displayControl?.close();
         _notificationQueue?.close();
         await _ws?.close();
         await _rest?.close();
@@ -280,6 +302,7 @@ export function createHostService(options: HostServiceOptions = {}): HostService
           /* ignore */
         }
       }
+      _displayControl?.close();
       _notificationQueue?.close();
       await _ws?.close();
       await _rest?.close();

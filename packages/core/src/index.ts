@@ -169,6 +169,11 @@ export type {
 } from '@lensing/types';
 export { DEFAULT_PIR_IDLE_TIMEOUT_MS, DEFAULT_PIR_GPIO_PIN } from '@lensing/types';
 
+// ── GPIO / Display Control ───────────────────────────────────────────────────
+export { createGpiomonFactory } from './gpio-linux';
+export { createDisplayControl } from './display-control';
+export type { DisplayControlOptions } from './display-control';
+
 // ── Module Settings ─────────────────────────────────────────────────────────
 export { readModuleConfig, writeModuleConfig } from './module-settings';
 export type { ModuleConfig } from './module-settings';

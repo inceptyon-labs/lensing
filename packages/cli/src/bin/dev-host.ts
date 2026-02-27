@@ -1,18 +1,30 @@
 import { fileURLToPath } from 'node:url';
 import { resolve, dirname } from 'node:path';
-import { mkdirSync } from 'node:fs';
-import { createHostService } from '@lensing/core';
+import { mkdirSync, existsSync } from 'node:fs';
+import { platform } from 'node:os';
+import { createHostService, createGpiomonFactory } from '@lensing/core';
+import type { GpioWatcherFactory } from '@lensing/types';
 
 // Resolve paths relative to monorepo root (../../.. from packages/cli/src/bin/)
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..');
 const dataDir = resolve(root, 'data');
 mkdirSync(dataDir, { recursive: true });
 
+// Auto-detect GPIO on Linux (Raspberry Pi)
+let gpioFactory: GpioWatcherFactory | undefined;
+const isLinux = platform() === 'linux';
+if (isLinux && existsSync('/dev/gpiochip0')) {
+  gpioFactory = createGpiomonFactory();
+  console.log('GPIO detected (/dev/gpiochip0) — PIR sensor enabled');
+}
+
 const host = createHostService({
   port: 3100,
   pluginsDir: resolve(root, 'plugins'),
   dbPath: resolve(dataDir, 'lensing.db'),
   staticDir: resolve(root, 'apps/display/build'),
+  gpioFactory,
+  displayControl: isLinux,
 });
 
 await host.ready;
