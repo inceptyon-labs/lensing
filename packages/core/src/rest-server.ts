@@ -693,7 +693,7 @@ export function createRestServer(
     onError = reject;
   });
 
-  server.listen(port, '127.0.0.1', () => {
+  server.listen(port, '0.0.0.0', () => {
     const addr = server.address();
     if (typeof addr === 'object' && addr) {
       boundPort = addr.port;
