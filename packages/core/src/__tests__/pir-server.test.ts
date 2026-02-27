@@ -333,7 +333,7 @@ describe('PIR Server', () => {
     const factoryFn = vi.fn(() => createMockGpioWatcher()) as unknown as GpioWatcherFactory;
     const server = createPIRServer({ dataBus, gpioFactory: factoryFn });
 
-    expect(factoryFn).toHaveBeenCalledWith(17);
+    expect(factoryFn).toHaveBeenCalledWith(4);
     server.close();
   });
 

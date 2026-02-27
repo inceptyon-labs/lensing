@@ -291,6 +291,7 @@ function bootModule(
 
     case 'pir':
       return createPIRServer({
+        gpioPin: values['gpioPin'] != null ? Number(values['gpioPin']) : undefined,
         idleTimeout_ms:
           values['idleTimeout_ms'] != null ? Number(values['idleTimeout_ms']) : undefined,
         gpioFactory,

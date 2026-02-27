@@ -463,8 +463,8 @@ describe('PluginAdminHandlers (plugin-admin-handlers.ts)', () => {
 
     const handlers = createPluginAdminHandlers({ pluginLoader: loader, db });
 
-    // crypto, news, sports, pir have no integration fields
-    for (const moduleId of ['crypto', 'news', 'sports', 'pir'] as const) {
+    // crypto, news, sports have no integration fields
+    for (const moduleId of ['crypto', 'news', 'sports'] as const) {
       const entry = await handlers.getPlugin!(moduleId);
       expect(entry).toBeDefined();
       expect(entry!.integration_status).toBe('not_needed');

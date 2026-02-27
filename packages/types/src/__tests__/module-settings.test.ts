@@ -120,24 +120,24 @@ describe('Config field category helpers', () => {
     const ha = MODULE_SCHEMAS.find((s) => s.id === 'home-assistant')!;
     const allergies = MODULE_SCHEMAS.find((s) => s.id === 'allergies')!;
     const photoSlideshow = MODULE_SCHEMAS.find((s) => s.id === 'photo-slideshow')!;
+    const pir = MODULE_SCHEMAS.find((s) => s.id === 'pir')!;
 
     expect(moduleNeedsIntegration(weather)).toBe(true);
     expect(moduleNeedsIntegration(calendar)).toBe(true);
     expect(moduleNeedsIntegration(ha)).toBe(true);
     expect(moduleNeedsIntegration(allergies)).toBe(true);
     expect(moduleNeedsIntegration(photoSlideshow)).toBe(true);
+    expect(moduleNeedsIntegration(pir)).toBe(true);
   });
 
   it('moduleNeedsIntegration returns false for modules with only widget fields', () => {
     const crypto = MODULE_SCHEMAS.find((s) => s.id === 'crypto')!;
     const news = MODULE_SCHEMAS.find((s) => s.id === 'news')!;
     const sports = MODULE_SCHEMAS.find((s) => s.id === 'sports')!;
-    const pir = MODULE_SCHEMAS.find((s) => s.id === 'pir')!;
 
     expect(moduleNeedsIntegration(crypto)).toBe(false);
     expect(moduleNeedsIntegration(news)).toBe(false);
     expect(moduleNeedsIntegration(sports)).toBe(false);
-    expect(moduleNeedsIntegration(pir)).toBe(false);
   });
 
   it('crypto has no integration fields and all widget fields', () => {

@@ -268,6 +268,16 @@ export const MODULE_SCHEMAS: readonly ModuleSettingsSchema[] = [
     description: 'Motion detection via GPIO PIR sensor',
     fields: [
       {
+        key: 'gpioPin',
+        type: 'number',
+        label: 'GPIO Pin',
+        description: 'BCM GPIO pin number the PIR sensor is connected to',
+        default: 4,
+        min: 0,
+        max: 27,
+        category: 'integration',
+      },
+      {
         key: 'idleTimeout_ms',
         type: 'number',
         label: 'Idle Timeout (ms)',

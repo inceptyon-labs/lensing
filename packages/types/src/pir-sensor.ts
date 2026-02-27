@@ -4,7 +4,7 @@ import type { DataBusInstance } from './index';
 export const DEFAULT_PIR_IDLE_TIMEOUT_MS = 5 * 60_000;
 
 /** Default GPIO pin for PIR sensor */
-export const DEFAULT_PIR_GPIO_PIN = 17;
+export const DEFAULT_PIR_GPIO_PIN = 4;
 
 /** Presence state published by the PIR server */
 export interface PresenceData {
