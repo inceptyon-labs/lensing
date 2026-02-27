@@ -4,10 +4,11 @@
   import type { DataBusMessage, WsMessage } from '@lensing/types';
   import DashboardGrid from '../lib/grid/DashboardGrid.svelte';
   import type { GridWidget } from '../lib/grid/types';
-  import { saveLayout } from '../lib/grid/layout-persistence';
+  import { saveLayout, loadLayout } from '../lib/grid/layout-persistence';
   import { handlePluginData } from '../lib/stores/dataBusStore';
 
-  let plugins: PluginAdminEntry[] = [];
+  let plugins: PluginAdminEntry[] = $state([]);
+  let serverLayout: GridWidget[] | null = $state(null);
 
   async function loadPlugins() {
     // eslint-disable-next-line no-undef
@@ -46,6 +47,9 @@
         const msg = JSON.parse(String(event.data)) as WsMessage;
         if (msg.type === 'layout_change') {
           void loadPlugins();
+          void loadLayout().then((layout) => {
+            if (layout) serverLayout = layout;
+          });
         } else if (msg.type === 'plugin_data') {
           handlePluginData(msg.payload as DataBusMessage);
         }
@@ -65,7 +69,7 @@
   <title>Lensing Display</title>
 </svelte:head>
 
-<DashboardGrid {plugins} allPlugins={plugins} onsave={handleLayoutSave} onconfigsaved={handleConfigSaved} />
+<DashboardGrid {plugins} allPlugins={plugins} {serverLayout} onsave={handleLayoutSave} onconfigsaved={handleConfigSaved} />
 <a href="/admin" class="admin-link">Admin</a>
 
 <style>

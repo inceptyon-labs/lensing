@@ -23,11 +23,12 @@
   interface Props {
     plugins: PluginAdminEntry[];
     allPlugins?: PluginAdminEntry[];
+    serverLayout?: GridWidget[] | null;
     onsave?: (widgets: GridWidget[]) => void;
     onconfigsaved?: () => void;
   }
 
-  let { plugins, allPlugins = [], onsave, onconfigsaved }: Props = $props();
+  let { plugins, allPlugins = [], serverLayout = null, onsave, onconfigsaved }: Props = $props();
 
   let dashboardRef: HTMLDivElement;
   let editMode = $state(false);
@@ -55,6 +56,19 @@
       }
     } catch {
       // ignore corrupt storage
+    }
+  });
+
+  // When a remote client saves a layout, the server broadcasts layout_change
+  // and +page.svelte fetches the new layout into serverLayout.  Sync it into
+  // savedLayout + localStorage so the grid repositions without a page reload.
+  $effect(() => {
+    if (!serverLayout || editMode) return;
+    savedLayout = [...serverLayout];
+    try {
+      localStorage.setItem(LAYOUT_KEY, JSON.stringify(serverLayout));
+    } catch {
+      // storage full or unavailable
     }
   });
 
