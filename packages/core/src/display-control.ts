@@ -42,6 +42,7 @@ export function createDisplayControl(options: DisplayControlOptions): { close():
     if (msg.channel !== 'presence.pir') return;
 
     const data = msg.data as PresenceData;
+    logger?.info(`PIR event: detected=${data.detected}`);
     if (data.detected) {
       setDisplay(true);
     } else {
