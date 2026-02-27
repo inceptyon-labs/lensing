@@ -33,6 +33,11 @@ export function createDisplayControl(options: DisplayControlOptions): { close():
     });
   }
 
+  // Enable DPMS so xset force on/off works
+  exec(`DISPLAY=${display} xset +dpms`, (err) => {
+    if (err) logger?.error('Failed to enable DPMS', err);
+  });
+
   const unsubscribe = dataBus.onMessage((msg) => {
     if (msg.channel !== 'presence.pir') return;
 
@@ -43,6 +48,12 @@ export function createDisplayControl(options: DisplayControlOptions): { close():
       setDisplay(false);
     }
   });
+
+  // Check if PIR already published before we subscribed
+  const cached = dataBus.getLatest<PresenceData>('presence.pir');
+  if (cached && !cached.data.detected) {
+    setDisplay(false);
+  }
 
   return {
     close() {
