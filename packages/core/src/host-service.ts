@@ -10,7 +10,7 @@ import { bootEnabledModules, rebootModule, syncModulesWithLayout } from './modul
 import { createDisplayControl } from './display-control';
 import type { BootedModule } from './module-boot';
 import type { HostServiceOptions, DatabaseInstance, PluginLoader, ModuleId } from '@lensing/types';
-import { MODULE_SCHEMAS } from '@lensing/types';
+import { MODULE_SCHEMAS, SYSTEM_MODULE_IDS } from '@lensing/types';
 import type { DataBusInstance } from '@lensing/types';
 import type { NotificationQueueInstance } from './notification-queue';
 import type { RestServerInstance } from './rest-server';
@@ -124,8 +124,10 @@ export function createHostService(options: HostServiceOptions = {}): HostService
             _db!.setLayout('default', layout);
           },
           syncModules: (layoutIds: string[]) => {
+            // Always keep system modules running regardless of grid contents
+            const ids = [...new Set([...layoutIds, ...SYSTEM_MODULE_IDS])];
             _modules = syncModulesWithLayout(
-              layoutIds,
+              ids,
               _modules,
               _db!,
               { dataBus, notifications: _notificationQueue!, gpioFactory },
@@ -195,22 +197,22 @@ export function createHostService(options: HostServiceOptions = {}): HostService
       createPluginScheduler();
 
       // 7. Boot built-in modules based on saved grid layout
+      //    System modules (like PIR) always boot regardless of grid placement.
       _notificationQueue = createNotificationQueue();
       const savedLayout = _db!.getLayout('default');
-      if (savedLayout) {
-        // Extract widget IDs from the saved layout
-        const parsed = savedLayout as unknown as { widgets?: Array<{ id: string }> };
-        const layoutIds = Array.isArray(parsed.widgets)
-          ? parsed.widgets.map((w: { id: string }) => w.id)
-          : [];
-        _modules = syncModulesWithLayout(
-          layoutIds,
-          [],
-          _db!,
-          { dataBus, notifications: _notificationQueue, gpioFactory },
-          logger
-        );
-      }
+      const parsed = savedLayout as unknown as { widgets?: Array<{ id: string }> } | null;
+      const layoutIds = Array.isArray(parsed?.widgets)
+        ? parsed!.widgets.map((w: { id: string }) => w.id)
+        : [];
+      // Always include system modules so they boot even if not on the grid
+      const allIds = [...new Set([...layoutIds, ...SYSTEM_MODULE_IDS])];
+      _modules = syncModulesWithLayout(
+        allIds,
+        [],
+        _db!,
+        { dataBus, notifications: _notificationQueue, gpioFactory },
+        logger
+      );
 
       // 8. Display DPMS control via PIR presence
       if (enableDisplayControl) {

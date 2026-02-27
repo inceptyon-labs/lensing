@@ -62,6 +62,13 @@
     </div>
 
     <div class="modal-body">
+      {#if plugin.manifest.config_schema?.setupGuide}
+        <div class="setup-guide">
+          {#each plugin.manifest.config_schema.setupGuide.split('\n\n') as paragraph}
+            <p class="setup-guide__p">{paragraph}</p>
+          {/each}
+        </div>
+      {/if}
       <AdminConfigForm {plugin} onSave={handleSave} />
     </div>
 
@@ -158,6 +165,26 @@
 
   .modal-body {
     padding: 0 var(--space-5) var(--space-5);
+  }
+
+  .setup-guide {
+    background: var(--event-horizon);
+    border: 1px solid var(--edge-soft);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    margin-bottom: var(--space-4);
+  }
+
+  .setup-guide__p {
+    font-size: var(--text-xs);
+    color: var(--dim-light);
+    line-height: var(--leading-loose);
+    margin: 0;
+    white-space: pre-line;
+  }
+
+  .setup-guide__p + .setup-guide__p {
+    margin-top: var(--space-3);
   }
 
   .modal-footer {

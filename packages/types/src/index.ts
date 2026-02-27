@@ -12,6 +12,7 @@ export type WidgetSize = 'small' | 'medium' | 'large';
 export interface PluginManifest {
   id: string;
   name: string;
+  description?: string;
   version: string;
   ui_entry?: string;
   server_entry?: string;
@@ -258,6 +259,8 @@ export interface ConfigField {
 /** Plugin config schema declared in manifest */
 export interface PluginConfigSchema {
   fields: ConfigField[];
+  /** User-facing setup instructions shown in the admin config modal */
+  setupGuide?: string;
 }
 
 /** Extended manifest with optional config schema */
@@ -890,6 +893,7 @@ export type { ModuleId, ModuleSettingsSchema } from './module-settings';
 export {
   MODULE_IDS,
   MODULE_SCHEMAS,
+  SYSTEM_MODULE_IDS,
   getIntegrationFields,
   getWidgetFields,
   moduleNeedsIntegration,

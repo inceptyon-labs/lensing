@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import type { PluginAdminEntry } from '@lensing/types';
   import type { DataBusMessage, WsMessage } from '@lensing/types';
+  import { SYSTEM_MODULE_IDS } from '@lensing/types';
   import DashboardGrid from '../lib/grid/DashboardGrid.svelte';
   import type { GridWidget } from '../lib/grid/types';
   import { saveLayout, loadLayout } from '../lib/grid/layout-persistence';
@@ -9,6 +10,10 @@
 
   let plugins: PluginAdminEntry[] = $state([]);
   let serverLayout: GridWidget[] | null = $state(null);
+
+  const systemIds = new Set<string>(SYSTEM_MODULE_IDS);
+  /** Plugins available for dashboard widgets (excludes system modules like PIR) */
+  let widgetPlugins = $derived(plugins.filter((p) => !systemIds.has(p.plugin_id)));
 
   async function loadPlugins() {
     // eslint-disable-next-line no-undef
@@ -69,7 +74,7 @@
   <title>Lensing Display</title>
 </svelte:head>
 
-<DashboardGrid {plugins} allPlugins={plugins} {serverLayout} onsave={handleLayoutSave} onconfigsaved={handleConfigSaved} />
+<DashboardGrid plugins={widgetPlugins} allPlugins={widgetPlugins} {serverLayout} onsave={handleLayoutSave} onconfigsaved={handleConfigSaved} />
 <a href="/admin" class="admin-link">Admin</a>
 
 <style>

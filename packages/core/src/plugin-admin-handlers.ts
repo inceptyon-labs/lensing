@@ -70,8 +70,12 @@ function buildModuleEntry(db: DatabaseInstance, schema: ModuleSettingsSchema): P
   const manifest: PluginManifestWithConfig = {
     id: schema.id,
     name: schema.name,
+    description: schema.description,
     version: 'built-in',
-    config_schema: { fields: schema.fields as ConfigField[] },
+    config_schema: {
+      fields: schema.fields as ConfigField[],
+      ...(schema.setupGuide ? { setupGuide: schema.setupGuide } : {}),
+    },
   };
 
   // Redact password-typed fields

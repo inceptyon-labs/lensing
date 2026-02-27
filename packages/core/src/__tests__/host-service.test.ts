@@ -5,7 +5,8 @@ import path from 'node:path';
 import os from 'node:os';
 import fs from 'node:fs';
 import { WebSocket } from 'ws';
-import type { WsMessage, DataBusMessage } from '@lensing/types';
+import type { WsMessage, DataBusMessage, ModuleId } from '@lensing/types';
+import { SYSTEM_MODULE_IDS } from '@lensing/types';
 
 describe('HostService (host-service.ts)', () => {
   let hostService: HostServiceInstance | null = null;
@@ -302,7 +303,7 @@ describe('HostService (host-service.ts)', () => {
     expect(body.error).toContain('Unknown module');
   });
 
-  it('should boot with 0 modules when no module settings exist', async () => {
+  it('should boot with only system modules when no layout exists', async () => {
     hostService = createHostService({
       port: 0,
       dbPath: path.join(tempDir, 'test.db'),
@@ -310,7 +311,10 @@ describe('HostService (host-service.ts)', () => {
     });
 
     await hostService.ready;
-    expect(hostService.modules).toHaveLength(0);
+    // Only system modules (e.g. PIR) should boot — no widget modules
+    expect(hostService.modules.every((m) => SYSTEM_MODULE_IDS.includes(m.id as ModuleId))).toBe(
+      true
+    );
   });
 
   it('should return built-in module entries in GET /plugins', async () => {
@@ -453,8 +457,10 @@ describe('HostService (host-service.ts)', () => {
     await hostService.ready;
     const port = hostService.port;
 
-    // Initially no modules should be booted (no layout saved yet)
-    expect(hostService.modules).toHaveLength(0);
+    // Initially only system modules should be booted (no layout saved yet)
+    expect(hostService.modules.every((m) => SYSTEM_MODULE_IDS.includes(m.id as ModuleId))).toBe(
+      true
+    );
 
     // Save a layout with crypto widget
     const res = await fetch(`http://127.0.0.1:${port}/layout`, {
@@ -491,7 +497,11 @@ describe('HostService (host-service.ts)', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ widgets: [] }),
     });
-    expect(hostService.modules).toHaveLength(0);
+    // Only system modules should remain
+    expect(hostService.modules.every((m) => SYSTEM_MODULE_IDS.includes(m.id as ModuleId))).toBe(
+      true
+    );
+    expect(hostService.modules.some((m) => m.id === 'crypto')).toBe(false);
   });
 
   it('should not include enabled field on built-in module entries', async () => {
