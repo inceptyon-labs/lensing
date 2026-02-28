@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validateNetworkDomain, createPermissionEnforcer } from '../plugin-permissions';
+import { validateNetworkDomain, createPermissionEnforcer, type PermissionViolation } from '../plugin-permissions';
 import type { PluginManifest } from '@lensing/types';
 
 describe('validateNetworkDomain with URL blocklist', () => {
@@ -118,7 +118,7 @@ describe('PluginEnforcer fetch proxy with blocklist', () => {
   });
 
   it('should record violation when blocklist blocks URL', async () => {
-    let violations: any[] = [];
+    const violations: PermissionViolation[] = [];
     const manifest: PluginManifest = {
       id: 'test-plugin',
       name: 'Test',
