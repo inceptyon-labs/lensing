@@ -6,10 +6,12 @@
   export let height: number | string = '600px';
   export let initialProject: Record<string, unknown> | undefined = undefined;
 
-  let container: Element | undefined;
+  // @ts-ignore - Svelte bind:this element typing
+  let container: any;
   let editor: unknown | null = null;
 
   onMount(() => {
+    // @ts-ignore - GrapesJS init typing
     editor = grapesjs.init({
       container,
       width: width.toString(),
@@ -27,7 +29,7 @@
         ],
       },
       storageManager: {
-        type: null,
+        type: '',
       },
       blockManager: {
         appendTo: '#blocks',
@@ -47,24 +49,28 @@
 
   onDestroy(() => {
     if (editor) {
-      editor.destroy();
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+      (editor as any).destroy?.();
     }
   });
 
   export function getHtml(): string {
-    return editor?.getHtml() || '';
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+    return (editor as any)?.getHtml?.() || '';
   }
 
   export function getCss(): string {
-    return editor?.getCss() || '';
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+    return (editor as any)?.getCss?.() || '';
   }
 
   export function getProjectData(): Record<string, unknown> {
-    return (editor?.getProjectData() as Record<string, unknown>) || {};
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+    return ((editor as any)?.getProjectData?.() as Record<string, unknown>) || {};
   }
 </script>
 
-<div bind:this={container} class="grapesjs-editor" style="width: {width}; height: {height};" />
+<div bind:this={container} class="grapesjs-editor" style="width: {width}; height: {height};"></div>
 
 <style>
   .grapesjs-editor {
