@@ -35,8 +35,7 @@
   }
 
   $: pluginId = slugify(name);
-  $: isValid =
-    pluginId !== '' && description.trim() !== '' && category !== '';
+  $: isValid = pluginId !== '' && description.trim() !== '' && category !== '';
 
   function setName(e: Event) {
     name = (e.target as HTMLInputElement).value;
