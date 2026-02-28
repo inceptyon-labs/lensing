@@ -15,6 +15,7 @@
 
 {#each types as type (type.id)}
   <button
+    type="button"
     aria-selected={selected === type.id ? 'true' : 'false'}
     on:click={() => onSelect(type.id)}
   >

@@ -23,7 +23,7 @@
 {#if selectedType}
   <div>
     <label for="refresh-interval">Refresh Interval</label>
-    <input id="refresh-interval" type="number" bind:value={refreshInterval} />
+    <input id="refresh-interval" type="number" bind:value={refreshInterval} min="1" />
   </div>
 
   <button type="button">Test Connection</button>
@@ -47,14 +47,14 @@
     <div>
       <span>Headers</span>
       {#each headers as header, i (i)}
-        <input bind:value={header.key} placeholder="Header Name" />
-        <input bind:value={header.value} placeholder="Header Value" />
+        <input bind:value={header.key} placeholder="Header Name" aria-label="Header key" />
+        <input bind:value={header.value} placeholder="Header Value" aria-label="Header value" />
       {/each}
     </div>
 
     <div>
       <label for="auth-token">Auth Token</label>
-      <input id="auth-token" type="text" />
+      <input id="auth-token" type="text" autocomplete="off" />
     </div>
   {:else if selectedType === 'rss_feed'}
     <div>
