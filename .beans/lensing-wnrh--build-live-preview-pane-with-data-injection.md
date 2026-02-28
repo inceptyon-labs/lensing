@@ -1,11 +1,11 @@
 ---
 # lensing-wnrh
 title: Build live preview pane with data injection
-status: todo
+status: in-progress
 type: task
 priority: high
 created_at: 2026-02-28T15:46:16Z
-updated_at: 2026-02-28T15:46:16Z
+updated_at: 2026-02-28T23:33:32Z
 parent: lensing-rq0o
 ---
 
