@@ -27,6 +27,12 @@
   /** Per-control save feedback */
   let savedFeedback: Record<string, boolean> = {};
 
+  /** Marketplace settings */
+  let marketplaceRepoUrl = 'lensing-marketplace';
+  let gitHubToken = '';
+  let marketplaceLoading = false;
+  let marketplaceError: string | null = null;
+
   /** Plugin currently being configured in the modal */
   let configPlugin: PluginAdminEntry | null = null;
 
@@ -34,15 +40,20 @@
 
   onMount(async () => {
     try {
-      const [capsRes, settingsRes] = await Promise.all([
+      const [capsRes, settingsRes, marketplaceRes] = await Promise.all([
         fetch('/display/capabilities'),
         fetch('/display/settings'),
+        fetch('/api/admin/marketplace'),
       ]);
       if (capsRes.ok) {
         capabilities = (await capsRes.json()) as DisplayCapabilities;
       }
       if (settingsRes.ok) {
         settings = (await settingsRes.json()) as DisplaySettings;
+      }
+      if (marketplaceRes.ok) {
+        const marketplaceData = (await marketplaceRes.json()) as { marketplaceRepoUrl: string };
+        marketplaceRepoUrl = marketplaceData.marketplaceRepoUrl;
       }
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to load display settings';
@@ -114,6 +125,35 @@
     await onConfigSave(id, config);
     if (onRestart) await onRestart(id);
     await onRefreshPlugins();
+  }
+
+  async function handleMarketplaceSave() {
+    if (!gitHubToken.trim() || !marketplaceRepoUrl.trim()) {
+      marketplaceError = 'Both GitHub token and repository URL are required';
+      return;
+    }
+    marketplaceLoading = true;
+    marketplaceError = null;
+    try {
+      const res = await fetch('/api/admin/marketplace', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          gitHubToken,
+          marketplaceRepoUrl,
+        }),
+      });
+      if (!res.ok) {
+        const errorData = await res.json() as { error?: string };
+        throw new Error(errorData.error || `Server returned ${res.status}`);
+      }
+      showSaved('marketplace');
+      gitHubToken = '';
+    } catch (err) {
+      marketplaceError = err instanceof Error ? err.message : 'Failed to save marketplace settings';
+    } finally {
+      marketplaceLoading = false;
+    }
   }
 </script>
 
@@ -239,6 +279,66 @@
         </div>
       </section>
     {/if}
+
+    <section class="settings-section">
+      <h3 class="section-title">Marketplace</h3>
+
+      <p class="section-description">
+        Configure your GitHub token to publish plugins to the marketplace.
+        <a href="https://github.com/settings/tokens" target="_blank" rel="noopener">
+          Create a token at github.com/settings/tokens
+        </a>
+        with <code>public_repo</code> scope.
+      </p>
+
+      {#if marketplaceError}
+        <div class="error-message">{marketplaceError}</div>
+      {/if}
+
+      <div class="control-row">
+        <div class="control-label">
+          <span>GitHub Token</span>
+        </div>
+        <div class="control-input">
+          <input
+            type="password"
+            bind:value={gitHubToken}
+            placeholder="ghp_..."
+            class="marketplace-input"
+            disabled={marketplaceLoading}
+          />
+        </div>
+      </div>
+
+      <div class="control-row">
+        <div class="control-label">
+          <span>Marketplace Repository</span>
+        </div>
+        <div class="control-input">
+          <input
+            type="text"
+            bind:value={marketplaceRepoUrl}
+            placeholder="lensing-marketplace"
+            class="marketplace-input"
+            disabled={marketplaceLoading}
+          />
+          <span class="control-hint">Default: lensing-marketplace</span>
+        </div>
+      </div>
+
+      <div class="control-row">
+        <button
+          on:click={handleMarketplaceSave}
+          disabled={marketplaceLoading || !gitHubToken.trim() || !marketplaceRepoUrl.trim()}
+          class="save-button"
+        >
+          {marketplaceLoading ? 'Saving...' : 'Save'}
+        </button>
+        {#if savedFeedback['marketplace']}
+          <span class="saved-badge">Saved</span>
+        {/if}
+      </div>
+    </section>
   {/if}
 
   {#if configPlugin}

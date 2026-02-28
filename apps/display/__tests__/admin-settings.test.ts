@@ -82,6 +82,54 @@ describe('AdminSettingsPanel: Display controls', () => {
   });
 });
 
+describe('AdminSettingsPanel: Marketplace settings', () => {
+  const panelPath = join(__dirname, '../src/lib/AdminSettingsPanel.svelte');
+
+  it('should include Marketplace section heading', () => {
+    const source = readFileSync(panelPath, 'utf-8');
+    expect(source).toContain('Marketplace');
+  });
+
+  it('should include GitHub token input field', () => {
+    const source = readFileSync(panelPath, 'utf-8');
+    expect(source).toContain('gitHubToken');
+    expect(source).toMatch(/type="password"/);
+  });
+
+  it('should include marketplace repo URL input field', () => {
+    const source = readFileSync(panelPath, 'utf-8');
+    expect(source).toContain('marketplaceRepoUrl');
+    expect(source).toContain('lensing-marketplace');
+  });
+
+  it('should include instructions for token creation', () => {
+    const source = readFileSync(panelPath, 'utf-8');
+    expect(source).toMatch(/github\.com.*token/i);
+    expect(source).toMatch(/public_repo/i);
+  });
+
+  it('should fetch marketplace settings on mount', () => {
+    const source = readFileSync(panelPath, 'utf-8');
+    expect(source).toContain('/api/admin/marketplace');
+  });
+
+  it('should POST to marketplace endpoint on save', () => {
+    const source = readFileSync(panelPath, 'utf-8');
+    expect(source).toContain("method: 'POST'");
+    expect(source).toContain('/api/admin/marketplace');
+  });
+
+  it('should show save button', () => {
+    const source = readFileSync(panelPath, 'utf-8');
+    expect(source).toMatch(/Save|submit/i);
+  });
+
+  it('should display success/error messages', () => {
+    const source = readFileSync(panelPath, 'utf-8');
+    expect(source).toMatch(/error|success/i);
+  });
+});
+
 describe('AdminPluginList: Settings tab integration', () => {
   const listPath = join(__dirname, '../src/lib/AdminPluginList.svelte');
 

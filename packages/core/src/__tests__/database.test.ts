@@ -221,4 +221,53 @@ describe('Database', () => {
       // queries would fail on corrupted data. Test verifies the code doesn't handle it silently.
     });
   });
+
+  describe('marketplace settings', () => {
+    it('should store and retrieve marketplace settings via settings store', () => {
+      const settings = JSON.stringify({
+        gitHubToken: 'ghp_encrypted_token_xyz',
+        marketplaceRepoUrl: 'lensing-marketplace',
+      });
+      db.setSetting('marketplace_settings', settings);
+      const retrieved = db.getSetting('marketplace_settings');
+      expect(retrieved).toBe(settings);
+      const parsed = JSON.parse(retrieved!);
+      expect(parsed.marketplaceRepoUrl).toBe('lensing-marketplace');
+    });
+
+    it('should return undefined when marketplace settings not set', () => {
+      expect(db.getSetting('marketplace_settings')).toBeUndefined();
+    });
+
+    it('should update marketplace settings', () => {
+      const settings1 = JSON.stringify({
+        gitHubToken: 'token_1',
+        marketplaceRepoUrl: 'repo_1',
+      });
+      db.setSetting('marketplace_settings', settings1);
+
+      const settings2 = JSON.stringify({
+        gitHubToken: 'token_2',
+        marketplaceRepoUrl: 'repo_2',
+      });
+      db.setSetting('marketplace_settings', settings2);
+
+      const retrieved = JSON.parse(db.getSetting('marketplace_settings')!);
+      expect(retrieved.gitHubToken).toBe('token_2');
+      expect(retrieved.marketplaceRepoUrl).toBe('repo_2');
+    });
+
+    it('should delete marketplace settings', () => {
+      const settings = JSON.stringify({
+        gitHubToken: 'test_token',
+        marketplaceRepoUrl: 'test_repo',
+      });
+      db.setSetting('marketplace_settings', settings);
+      expect(db.getSetting('marketplace_settings')).toBeDefined();
+
+      const deleted = db.deleteSetting('marketplace_settings');
+      expect(deleted).toBe(true);
+      expect(db.getSetting('marketplace_settings')).toBeUndefined();
+    });
+  });
 });
