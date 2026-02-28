@@ -1,4 +1,5 @@
 import type { PluginManifest, PluginPermissions } from '@lensing/types';
+import { isBlockedUrl } from './url-blocklist';
 
 /** Permission violation record for audit trail */
 export interface PermissionViolation {
@@ -23,6 +24,11 @@ export interface RefreshValidation {
  * Validates that a network URL is in the plugin's allowed domains list
  */
 export function validateNetworkDomain(url: string, permissions: PluginPermissions): boolean {
+  // Blocklist check: always block SSRF-prone addresses regardless of allowed_domains
+  if (isBlockedUrl(url)) {
+    return false;
+  }
+
   // If no domain restrictions, allow all
   if (!permissions.allowed_domains || permissions.allowed_domains.length === 0) {
     return true;
