@@ -87,10 +87,7 @@ describe('JsonTreeViewer', () => {
       });
 
       const nameValue = screen.getByText('"Test"');
-      expect(nameValue.closest('[data-selected]')).toHaveAttribute(
-        'data-selected',
-        'true',
-      );
+      expect(nameValue.closest('[data-selected]')).toHaveAttribute('data-selected', 'true');
     });
   });
 

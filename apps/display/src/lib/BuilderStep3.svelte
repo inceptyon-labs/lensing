@@ -57,11 +57,7 @@
     {/each}
   </div>
 
-  <JsonTreeViewer
-    data={sampleData}
-    onSelect={handleFieldSelect}
-    selectedPath={activeSlotPath}
-  />
+  <JsonTreeViewer data={sampleData} onSelect={handleFieldSelect} selectedPath={activeSlotPath} />
 
   <div data-testid="mapping-summary">
     {#each slots as slot (slot.id)}

@@ -68,12 +68,7 @@
           {expanded[String(entry.key)] ? '▼' : '►'}
         </button>
         {#if expanded[String(entry.key)]}
-          <svelte:self
-            data={entry.value}
-            {onSelect}
-            {selectedPath}
-            _path={entry.path}
-          />
+          <svelte:self data={entry.value} {onSelect} {selectedPath} _path={entry.path} />
         {/if}
       {:else}
         <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
