@@ -38,9 +38,7 @@ export interface RestServerHandlers {
     marketplaceRepoUrl: string;
   }) => Promise<void>;
   // Marketplace browse (optional — omit to disable marketplace browse endpoints)
-  getMarketplacePlugins?: (
-    params?: Record<string, string>
-  ) => Promise<MarketplaceListResponse>;
+  getMarketplacePlugins?: (params?: Record<string, string>) => Promise<MarketplaceListResponse>;
   getMarketplacePlugin?: (id: string) => Promise<MarketplacePlugin | undefined>;
   getMarketplaceCategories?: () => Promise<MarketplaceCategory[]>;
   // Plugin management (optional — omit to disable plugin endpoints)

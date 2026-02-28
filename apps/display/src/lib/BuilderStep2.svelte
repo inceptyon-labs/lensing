@@ -46,7 +46,7 @@
 
     <div>
       <span>Headers</span>
-      {#each headers as header}
+      {#each headers as header, i (i)}
         <input bind:value={header.key} placeholder="Header Name" />
         <input bind:value={header.value} placeholder="Header Value" />
       {/each}

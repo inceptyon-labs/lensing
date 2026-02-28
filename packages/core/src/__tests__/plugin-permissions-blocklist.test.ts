@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { validateNetworkDomain, createPermissionEnforcer, type PermissionViolation } from '../plugin-permissions';
+import {
+  validateNetworkDomain,
+  createPermissionEnforcer,
+  type PermissionViolation,
+} from '../plugin-permissions';
 import type { PluginManifest } from '@lensing/types';
 
 describe('validateNetworkDomain with URL blocklist', () => {

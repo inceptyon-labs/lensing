@@ -77,9 +77,7 @@ function isBlockedIPv6(hostname: string): boolean {
 }
 
 /** Well-known metadata hostnames that must always be blocked */
-const BLOCKED_HOSTNAMES = new Set([
-  'metadata.google.internal',
-]);
+const BLOCKED_HOSTNAMES = new Set(['metadata.google.internal']);
 
 /**
  * Returns the reason a URL is blocked, or null if the URL is allowed.

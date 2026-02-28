@@ -1,6 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createRestServer, type RestServerInstance, type RestServerHandlers } from '../rest-server';
-import type { MarketplacePlugin, MarketplaceCategory, MarketplaceListResponse } from '@lensing/types';
+import type {
+  MarketplacePlugin,
+  MarketplaceCategory,
+  MarketplaceListResponse,
+} from '@lensing/types';
 import http from 'node:http';
 
 /** Helper to make HTTP requests to the test server */
@@ -90,9 +94,7 @@ const SAMPLE_CATEGORIES: MarketplaceCategory[] = [
 ];
 
 /** Create stub handlers with marketplace support */
-function createStubHandlers(
-  overrides?: Partial<RestServerHandlers>
-): RestServerHandlers {
+function createStubHandlers(overrides?: Partial<RestServerHandlers>): RestServerHandlers {
   return {
     getSettings: async () => ({}),
     putSettings: async () => {},
@@ -220,8 +222,7 @@ describe('Marketplace REST Endpoints', () => {
     beforeEach(async () => {
       server = createRestServer(
         createStubHandlers({
-          getMarketplacePlugin: async (id) =>
-            SAMPLE_PLUGINS.find((p) => p.id === id),
+          getMarketplacePlugin: async (id) => SAMPLE_PLUGINS.find((p) => p.id === id),
         })
       );
       await server.ready();
