@@ -49,23 +49,19 @@
 
   onDestroy(() => {
     if (editor) {
-       
       (editor as any).destroy?.();
     }
   });
 
   export function getHtml(): string {
-     
     return (editor as any)?.getHtml?.() || '';
   }
 
   export function getCss(): string {
-     
     return (editor as any)?.getCss?.() || '';
   }
 
   export function getProjectData(): Record<string, unknown> {
-     
     return ((editor as any)?.getProjectData?.() as Record<string, unknown>) || {};
   }
 </script>

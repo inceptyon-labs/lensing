@@ -31,7 +31,7 @@ Create the multi-step wizard component that hosts the plugin builder flow: Metad
 **Files changed:**
 
 - apps/display/src/lib/BuilderWizard.svelte (new)
-- apps/display/src/__tests__/builder-wizard.test.ts (new)
+- apps/display/src/**tests**/builder-wizard.test.ts (new)
 - .beans/lensing-vy04--create-builder-wizard-shell-with-step-navigation.md (updated)
 
 **Key decisions:**

@@ -64,7 +64,10 @@ describe('testConnector', () => {
     });
 
     it('should reject unsupported connector type', async () => {
-      const result = await testConnector({ type: 'static_data' as 'json_api', url: 'https://example.com' });
+      const result = await testConnector({
+        type: 'static_data' as 'json_api',
+        url: 'https://example.com',
+      });
       expect(result.success).toBe(false);
       expect(result.error).toMatch(/type/i);
     });
@@ -84,7 +87,10 @@ describe('testConnector', () => {
     });
 
     it('should block metadata endpoints', async () => {
-      const result = await testConnector({ type: 'json_api', url: 'http://169.254.169.254/latest/meta-data/' });
+      const result = await testConnector({
+        type: 'json_api',
+        url: 'http://169.254.169.254/latest/meta-data/',
+      });
       expect(result.success).toBe(false);
       expect(result.error).toMatch(/blocked/i);
     });
@@ -139,7 +145,12 @@ describe('testConnector', () => {
     });
 
     it('should extract field paths from array items', async () => {
-      const data = { items: [{ name: 'A', value: 1 }, { name: 'B', value: 2 }] };
+      const data = {
+        items: [
+          { name: 'A', value: 1 },
+          { name: 'B', value: 2 },
+        ],
+      };
       const fetchFn = mockJsonFetch(data);
       const result = await testConnector(
         { type: 'json_api', url: 'https://api.example.com/list' },
@@ -173,10 +184,7 @@ describe('testConnector', () => {
 
     it('should default method to GET', async () => {
       const fetchFn = mockJsonFetch({ ok: true });
-      await testConnector(
-        { type: 'json_api', url: 'https://api.example.com/data' },
-        { fetchFn }
-      );
+      await testConnector({ type: 'json_api', url: 'https://api.example.com/data' }, { fetchFn });
 
       expect(fetchFn).toHaveBeenCalledWith(
         'https://api.example.com/data',
