@@ -1,7 +1,8 @@
 <script lang="ts">
   export let activeTab: 'modules' | 'plugins' | 'marketplace' | 'settings';
-  export let onTabChange: (tab: 'modules' | 'plugins' | 'marketplace' | 'settings') => void =
-    () => {};
+  export let onTabChange: (
+    tab: 'modules' | 'plugins' | 'marketplace' | 'settings'
+  ) => void = () => {};
   export let marketplaceCount: number = 0;
 </script>
 
