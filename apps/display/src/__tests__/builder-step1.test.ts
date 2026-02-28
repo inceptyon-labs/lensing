@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/svelte';
+import { render, screen, fireEvent } from '@testing-library/svelte';
 import BuilderStep1 from '../lib/BuilderStep1.svelte';
 
 const ICON_OPTIONS = [
@@ -231,7 +231,7 @@ describe('BuilderStep1 (Metadata Form)', () => {
           name: '',
           description: '',
           category: '',
-        }),
+        })
       );
     });
 
@@ -280,7 +280,7 @@ describe('BuilderStep1 (Metadata Form)', () => {
           description: 'A great plugin',
           category: 'finance',
           id: 'my-plugin',
-        }),
+        })
       );
     });
 
@@ -304,7 +304,7 @@ describe('BuilderStep1 (Metadata Form)', () => {
         expect.objectContaining({
           name: 'My Plugin',
           icon: 'weather',
-        }),
+        })
       );
     });
   });
