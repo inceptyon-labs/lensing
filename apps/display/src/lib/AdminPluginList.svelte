@@ -13,7 +13,8 @@
   let plugins: PluginAdminEntry[] = [];
   let loading = true;
   let error: string | null = null;
-  let activeTab: 'modules' | 'plugins' | 'settings' = 'modules';
+  let activeTab: 'modules' | 'plugins' | 'marketplace' | 'settings' = 'modules';
+  let marketplaceCount: number = 0;
 
   /** Track which plugins have been saved since last restart */
   let dirtyIds = new Set<string>();
@@ -146,7 +147,7 @@
 </script>
 
 <div class="plugin-list">
-  <AdminTabBar {activeTab} onTabChange={(tab) => (activeTab = tab)} />
+  <AdminTabBar {activeTab} onTabChange={(tab) => (activeTab = tab)} {marketplaceCount} />
 
   {#if loading}
     <p class="state-message">Loading plugins…</p>
@@ -191,6 +192,10 @@
         {/each}
       </div>
     {/if}
+  {:else if activeTab === 'marketplace'}
+    <div class="marketplace-placeholder">
+      <p class="state-message">Marketplace coming soon.</p>
+    </div>
   {:else if activeTab === 'settings'}
     <AdminSettingsPanel
       {plugins}

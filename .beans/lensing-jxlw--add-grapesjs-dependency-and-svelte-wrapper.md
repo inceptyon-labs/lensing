@@ -1,11 +1,11 @@
 ---
 # lensing-jxlw
 title: Add GrapesJS dependency and Svelte wrapper
-status: in-progress
+status: completed
 type: task
 priority: high
 created_at: 2026-02-28T15:45:51Z
-updated_at: 2026-02-28T16:18:22Z
+updated_at: 2026-02-28T16:21:50Z
 parent: lensing-alyh
 ---
 

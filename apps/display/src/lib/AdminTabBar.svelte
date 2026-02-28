@@ -1,6 +1,8 @@
 <script lang="ts">
-  export let activeTab: 'modules' | 'plugins' | 'settings';
-  export let onTabChange: (tab: 'modules' | 'plugins' | 'settings') => void = () => {};
+  export let activeTab: 'modules' | 'plugins' | 'marketplace' | 'settings';
+  export let onTabChange: (tab: 'modules' | 'plugins' | 'marketplace' | 'settings') => void =
+    () => {};
+  export let marketplaceCount: number = 0;
 </script>
 
 <nav class="tab-bar" role="tablist">
@@ -21,6 +23,18 @@
     on:click={() => onTabChange('plugins')}
   >
     Plugins
+  </button>
+  <button
+    class="tab"
+    class:tab--active={activeTab === 'marketplace'}
+    role="tab"
+    aria-selected={activeTab === 'marketplace'}
+    on:click={() => onTabChange('marketplace')}
+  >
+    Marketplace
+    {#if marketplaceCount > 0}
+      <span class="badge">{marketplaceCount} plugins</span>
+    {/if}
   </button>
   <button
     class="tab"
@@ -61,5 +75,16 @@
   .tab--active {
     color: var(--ember);
     border-bottom-color: var(--ember);
+  }
+
+  .badge {
+    display: inline-block;
+    margin-left: var(--space-1);
+    padding: 1px var(--space-2);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
+    color: var(--dim-light);
+    background: var(--accretion);
+    border-radius: var(--radius-sm);
   }
 </style>

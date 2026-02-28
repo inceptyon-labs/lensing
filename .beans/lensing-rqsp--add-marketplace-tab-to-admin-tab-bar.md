@@ -1,11 +1,11 @@
 ---
 # lensing-rqsp
 title: Add Marketplace tab to admin tab bar
-status: todo
+status: in-progress
 type: task
 priority: high
 created_at: 2026-02-28T15:46:56Z
-updated_at: 2026-02-28T15:46:56Z
+updated_at: 2026-02-28T16:24:23Z
 parent: lensing-o1oh
 ---
 
