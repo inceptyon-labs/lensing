@@ -133,6 +133,22 @@ describe('BuilderStep1 (Metadata Form)', () => {
       const idInput = screen.getByDisplayValue('my-super-widget') as HTMLInputElement;
       expect(idInput).toBeInTheDocument();
     });
+
+    it('should keep Next disabled when name produces empty slug', async () => {
+      render(BuilderStep1, { props: { icons: ICON_OPTIONS } });
+
+      const nameInput = screen.getByLabelText('Plugin Name') as HTMLInputElement;
+      const descInput = screen.getByLabelText('Description') as HTMLTextAreaElement;
+      const catSelect = screen.getByLabelText('Category') as HTMLSelectElement;
+      const nextButton = screen.getByRole('button', { name: /next|continue/i });
+
+      // Name with only special characters slugifies to ''
+      await fireEvent.change(nameInput, { target: { value: '***' } });
+      await fireEvent.change(descInput, { target: { value: 'A description' } });
+      await fireEvent.change(catSelect, { target: { value: 'finance' } });
+
+      expect(nextButton).toBeDisabled();
+    });
   });
 
   describe('validation', () => {
