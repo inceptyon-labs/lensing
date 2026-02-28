@@ -832,24 +832,37 @@ export function createRestServer(
 
         // GET /marketplace/:id — parameterized; /marketplace/categories handled via route table
         const marketplaceItemMatch = cleanPath.match(/^\/marketplace\/([^/]+)$/);
-        if (marketplaceItemMatch && cleanPath !== '/marketplace/categories' && method === 'GET') {
-          if (!handlers.getMarketplacePlugin) {
-            writeJson(res, 404, { error: 'Not Found' });
+        if (marketplaceItemMatch && method === 'GET') {
+          let pluginId: string;
+          try {
+            pluginId = decodeURIComponent(marketplaceItemMatch[1]!);
+          } catch {
+            writeJson(res, 400, { error: 'Invalid plugin ID in URL' });
             return;
           }
-          try {
-            const pluginId = decodeURIComponent(marketplaceItemMatch[1]!);
-            const plugin = await handlers.getMarketplacePlugin(pluginId);
-            if (!plugin) {
-              writeJson(res, 404, { error: `Plugin '${pluginId}' not found` });
+
+          // Skip detail route if this is the reserved 'categories' path (handled via route table)
+          if (pluginId === 'categories') {
+            // Let route table handle this via exact match
+            // Fall through to route table check below
+          } else {
+            if (!handlers.getMarketplacePlugin) {
+              writeJson(res, 404, { error: 'Not Found' });
               return;
             }
-            writeJson(res, 200, plugin);
-          } catch (err) {
-            const msg = err instanceof Error ? err.message : 'Failed to fetch plugin';
-            writeJson(res, 500, { error: msg });
+            try {
+              const plugin = await handlers.getMarketplacePlugin(pluginId);
+              if (!plugin) {
+                writeJson(res, 404, { error: `Plugin '${pluginId}' not found` });
+                return;
+              }
+              writeJson(res, 200, plugin);
+            } catch (err) {
+              const msg = err instanceof Error ? err.message : 'Failed to fetch plugin';
+              writeJson(res, 500, { error: msg });
+            }
+            return;
           }
-          return;
         }
 
         const pathRoutes = routes.get(cleanPath);
