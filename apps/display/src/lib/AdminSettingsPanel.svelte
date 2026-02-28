@@ -144,7 +144,7 @@
         }),
       });
       if (!res.ok) {
-        const errorData = await res.json() as { error?: string };
+        const errorData = (await res.json()) as { error?: string };
         throw new Error(errorData.error || `Server returned ${res.status}`);
       }
       showSaved('marketplace');

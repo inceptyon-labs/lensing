@@ -12,6 +12,7 @@ parent: lensing-25mp
 Visual states for when widget data is loading, stale, or unavailable.
 
 ## Acceptance Criteria
+
 - [ ] Loading state: subtle shimmer/skeleton matching widget dimensions
 - [ ] Stale state: small indicator (e.g. dimmed clock icon) when data is older than 2x refresh interval
 - [ ] Error state: "Waiting for data..." placeholder when no data has ever been received
@@ -19,5 +20,6 @@ Visual states for when widget data is loading, stale, or unavailable.
 - [ ] Transitions between states are smooth (no jarring flicker)
 
 ---
+
 **Size:** S
 **Area:** frontend

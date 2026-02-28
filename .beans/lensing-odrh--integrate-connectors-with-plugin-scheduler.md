@@ -12,6 +12,7 @@ parent: lensing-r333
 Wire connector execution into the existing plugin scheduler for periodic data refresh.
 
 ## Acceptance Criteria
+
 - [ ] Register builder-created plugins with scheduler using connector.refresh_ms
 - [ ] Scheduler triggers connector fetch on interval
 - [ ] Connector results published to data bus for display clients
@@ -19,5 +20,6 @@ Wire connector execution into the existing plugin scheduler for periodic data re
 - [ ] Clean shutdown: stop connector polling on plugin disable/uninstall
 
 ---
+
 **Size:** M
 **Area:** backend

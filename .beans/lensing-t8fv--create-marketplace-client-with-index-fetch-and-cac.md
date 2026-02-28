@@ -12,6 +12,7 @@ parent: lensing-7nct
 Core service that fetches and caches the marketplace index.json from GitHub.
 
 ## Acceptance Criteria
+
 - [ ] Fetches index.json from raw.githubusercontent.com/<org>/<repo>/main/index.json
 - [ ] Caches locally on disk (pluginsDir/.marketplace-cache/index.json)
 - [ ] 15-minute refresh interval (configurable)
@@ -21,5 +22,6 @@ Core service that fetches and caches the marketplace index.json from GitHub.
 - [ ] Marketplace repo URL configurable in settings
 
 ---
+
 **Size:** M
 **Area:** backend

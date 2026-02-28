@@ -12,6 +12,7 @@ parent: lensing-mb8p
 Build the first wizard step: plugin metadata entry (name, description, category, icon).
 
 ## Acceptance Criteria
+
 - [ ] Text input for plugin name (required, validated for uniqueness against local plugins)
 - [ ] Textarea for description (required)
 - [ ] Category dropdown (finance, weather, news, sports, media, home, utility, other)
@@ -20,5 +21,6 @@ Build the first wizard step: plugin metadata entry (name, description, category,
 - [ ] Validation: name required, ID unique
 
 ---
+
 **Size:** S
 **Area:** frontend

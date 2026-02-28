@@ -12,6 +12,7 @@ parent: lensing-25mp
 Svelte component that renders builder-created plugin HTML/CSS inside a Shadow DOM for style isolation.
 
 ## Acceptance Criteria
+
 - [ ] Creates Shadow DOM root for each builder-created widget
 - [ ] Injects template.css as <style> inside shadow root
 - [ ] Injects template.html as content inside shadow root
@@ -20,5 +21,6 @@ Svelte component that renders builder-created plugin HTML/CSS inside a Shadow DO
 - [ ] Re-renders when new data arrives from connector via data bus
 
 ---
+
 **Size:** M
 **Area:** frontend

@@ -12,6 +12,7 @@ parent: lensing-7nct
 Download plugin ZIP from marketplace and install via existing plugin install flow.
 
 ## Acceptance Criteria
+
 - [ ] POST /marketplace/:id/install triggers download from download_url
 - [ ] Downloads ZIP to temp directory, validates size (<10MB)
 - [ ] Passes ZIP to existing installPluginFromZip() function
@@ -20,5 +21,6 @@ Download plugin ZIP from marketplace and install via existing plugin install flo
 - [ ] Conflict detection: warns if plugin ID already installed (offers replace)
 
 ---
+
 **Size:** S
 **Area:** backend

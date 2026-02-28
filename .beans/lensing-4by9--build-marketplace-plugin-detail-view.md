@@ -12,6 +12,7 @@ parent: lensing-o1oh
 Detail view shown when clicking a marketplace plugin card.
 
 ## Acceptance Criteria
+
 - [ ] Full description, thumbnail, author, version, category
 - [ ] Connector type indicator (JSON API, RSS, Static)
 - [ ] "Install" button (or "Installed" / "Update" if applicable)
@@ -20,5 +21,6 @@ Detail view shown when clicking a marketplace plugin card.
 - [ ] Error state if install fails
 
 ---
+
 **Size:** M
 **Area:** frontend

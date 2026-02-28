@@ -12,6 +12,7 @@ parent: lensing-lmnp
 Package a builder-created plugin into a ZIP file suitable for marketplace distribution.
 
 ## Acceptance Criteria
+
 - [ ] Creates ZIP containing plugin.json, template.html, template.css, connector.json
 - [ ] Auto-generates thumbnail.png from widget preview (screenshot or canvas export)
 - [ ] Validates total ZIP size < 10MB
@@ -19,5 +20,6 @@ Package a builder-created plugin into a ZIP file suitable for marketplace distri
 - [ ] ZIP structure matches marketplace expectations (flat, no wrapper folder)
 
 ---
+
 **Size:** M
 **Area:** backend

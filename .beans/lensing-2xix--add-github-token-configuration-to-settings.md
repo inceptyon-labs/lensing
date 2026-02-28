@@ -12,6 +12,7 @@ parent: lensing-lmnp
 GitHub personal access token configuration in admin Settings tab for marketplace publishing.
 
 ## Acceptance Criteria
+
 - [ ] New "Marketplace" section in Settings tab
 - [ ] GitHub token input field (password type, redacted display)
 - [ ] Token stored encrypted in database
@@ -20,16 +21,16 @@ GitHub personal access token configuration in admin Settings tab for marketplace
 - [ ] Clear instructions: "Create a token at github.com/settings/tokens with public_repo scope"
 
 ---
+
 **Size:** S
 **Area:** frontend, backend
-
-
 
 ## Completed
 
 Marketplace settings configuration successfully implemented and merged to main.
 
 **Implementation:**
+
 - MarketplaceSettings type added to @lensing/types
 - REST API endpoints (/api/admin/marketplace GET/POST) implemented with validation
 - AdminSettingsPanel.svelte extended with marketplace form section
@@ -38,6 +39,7 @@ Marketplace settings configuration successfully implemented and merged to main.
 - Form submission with API calls, validation, and error handling
 
 **Testing:**
+
 - 1,293+ tests passing across all packages
 - REST API tests validating endpoints and error handling
 - Database tests for settings persistence
@@ -46,9 +48,10 @@ Marketplace settings configuration successfully implemented and merged to main.
 - Build successful across all packages
 
 **Files Changed:**
+
 - packages/types/src/index.ts
-- packages/core/src/rest-server.ts  
+- packages/core/src/rest-server.ts
 - apps/display/src/lib/AdminSettingsPanel.svelte
-- apps/display/__tests__/admin-settings.test.ts
-- packages/core/src/__tests__/rest-server.test.ts
-- packages/core/src/__tests__/database.test.ts
+- apps/display/**tests**/admin-settings.test.ts
+- packages/core/src/**tests**/rest-server.test.ts
+- packages/core/src/**tests**/database.test.ts

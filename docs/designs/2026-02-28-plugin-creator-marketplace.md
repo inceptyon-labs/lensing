@@ -120,6 +120,7 @@ Defines the data source for a builder-created plugin:
 ```
 
 **Connector types (v1):**
+
 - `json-api` — fetch JSON, map fields via JSONPath
 - `rss` — fetch RSS/Atom feed, map title/description/image/date
 - `static` — no data fetching, display static content only

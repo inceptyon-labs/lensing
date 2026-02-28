@@ -12,6 +12,7 @@ parent: lensing-r333
 Define the ConnectorConfig TypeScript types in @lensing/types for JSON API, RSS, and static connector configurations.
 
 ## Acceptance Criteria
+
 - [ ] ConnectorConfig union type with discriminated `type` field
 - [ ] JsonApiConnectorConfig: url, method, headers, refresh_ms, mapping (Record<string, string> using JSONPath)
 - [ ] RssConnectorConfig: url, refresh_ms, mapping for title/description/image/date/link
@@ -20,5 +21,6 @@ Define the ConnectorConfig TypeScript types in @lensing/types for JSON API, RSS,
 - [ ] Validation function for ConnectorConfig (url format, required fields)
 
 ---
+
 **Size:** S
 **Area:** backend

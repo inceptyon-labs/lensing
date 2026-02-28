@@ -12,6 +12,7 @@ parent: lensing-7nct
 REST API endpoints that expose marketplace data to the admin UI.
 
 ## Acceptance Criteria
+
 - [ ] GET /marketplace — list all plugins (supports ?category, ?search, ?page query params)
 - [ ] GET /marketplace/:id — single plugin detail
 - [ ] GET /marketplace/categories — list available categories with counts
@@ -20,5 +21,6 @@ REST API endpoints that expose marketplace data to the admin UI.
 - [ ] Returns offline banner flag when serving from cache
 
 ---
+
 **Size:** M
 **Area:** backend

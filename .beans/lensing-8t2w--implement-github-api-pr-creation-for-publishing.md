@@ -12,6 +12,7 @@ parent: lensing-lmnp
 Create a PR on the marketplace GitHub repo containing the plugin ZIP, thumbnail, and updated index.json.
 
 ## Acceptance Criteria
+
 - [ ] Fork marketplace repo if not already forked (or use direct push if owner)
 - [ ] Create branch: plugin/<plugin-id>-<version>
 - [ ] Commit: add plugins/<id>/<id>-<version>.zip and plugins/<id>/thumbnail.png
@@ -21,5 +22,6 @@ Create a PR on the marketplace GitHub repo containing the plugin ZIP, thumbnail,
 - [ ] Handle errors: auth failure, rate limit, conflict (ID exists)
 
 ---
+
 **Size:** M
 **Area:** backend

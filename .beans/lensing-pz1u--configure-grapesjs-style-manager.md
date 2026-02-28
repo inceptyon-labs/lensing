@@ -12,6 +12,7 @@ parent: lensing-alyh
 Set up the GrapesJS style manager with controls appropriate for widget customization.
 
 ## Acceptance Criteria
+
 - [ ] Color pickers for text color, background color
 - [ ] Font family selector (constrained to display-friendly fonts)
 - [ ] Font size, weight, alignment controls
@@ -21,5 +22,6 @@ Set up the GrapesJS style manager with controls appropriate for widget customiza
 - [ ] Default styles match the lensing dark display theme
 
 ---
+
 **Size:** S
 **Area:** frontend

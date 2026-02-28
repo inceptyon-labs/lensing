@@ -12,6 +12,7 @@ parent: lensing-25mp
 Integrate the Shadow DOM / iframe widget renderer with the existing zone-based grid layout.
 
 ## Acceptance Criteria
+
 - [ ] Builder-created plugins render in their assigned zone (same as built-in modules)
 - [ ] Widget container receives zone dimensions and adapts
 - [ ] Data bus subscription: widget listens for connector data on its plugin channel
@@ -19,5 +20,6 @@ Integrate the Shadow DOM / iframe widget renderer with the existing zone-based g
 - [ ] Works alongside existing built-in module widgets without conflict
 
 ---
+
 **Size:** S
 **Area:** frontend

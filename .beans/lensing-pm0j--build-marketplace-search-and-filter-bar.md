@@ -12,6 +12,7 @@ parent: lensing-o1oh
 Search input and category filter for the marketplace browser.
 
 ## Acceptance Criteria
+
 - [ ] Search input with debounced filtering (300ms)
 - [ ] Searches name, description, and tags
 - [ ] Category filter chips/dropdown (finance, weather, news, etc.)
@@ -20,5 +21,6 @@ Search input and category filter for the marketplace browser.
 - [ ] Result count displayed ("12 plugins")
 
 ---
+
 **Size:** S
 **Area:** frontend

@@ -12,6 +12,7 @@ parent: lensing-o1oh
 Visual indicators and flow for updating outdated plugins.
 
 ## Acceptance Criteria
+
 - [ ] "Update available" badge on marketplace cards and installed plugin cards
 - [ ] Version comparison shown (e.g. "1.0.0 → 1.1.0")
 - [ ] One-click update button with progress feedback
@@ -19,5 +20,6 @@ Visual indicators and flow for updating outdated plugins.
 - [ ] Success/error feedback after update
 
 ---
+
 **Size:** S
 **Area:** frontend

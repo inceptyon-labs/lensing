@@ -12,6 +12,7 @@ parent: lensing-lmnp
 UI for the publish flow: button, progress, status display, and PR link.
 
 ## Acceptance Criteria
+
 - [ ] "Publish to Marketplace" button on builder-created plugins
 - [ ] Pre-publish validation check (all fields filled, connector tested)
 - [ ] Progress states: "Packaging...", "Uploading...", "Creating PR..."
@@ -20,5 +21,6 @@ UI for the publish flow: button, progress, status display, and PR link.
 - [ ] Disabled state if no GitHub token configured (with link to Settings)
 
 ---
+
 **Size:** S
 **Area:** frontend

@@ -12,10 +12,12 @@ parent: lensing-r333
 Implement the static connector that passes through user-defined data without fetching.
 
 ## Acceptance Criteria
+
 - [ ] Accepts a static data object in connector config
 - [ ] Returns data as-is (no fetching, no transformation)
 - [ ] Useful for widgets displaying fixed content (welcome messages, labels)
 
 ---
+
 **Size:** S
 **Area:** backend

@@ -12,6 +12,7 @@ parent: lensing-rq0o
 Package builder output into a standard plugin directory structure that the existing PluginLoader can load.
 
 ## Acceptance Criteria
+
 - [ ] Generates plugin.json manifest from wizard metadata + connector permissions
 - [ ] Writes template.html and template.css from GrapesJS output
 - [ ] Writes connector.json from wizard data source config
@@ -20,5 +21,6 @@ Package builder output into a standard plugin directory structure that the exist
 - [ ] POST /builder/save endpoint accepts all builder state and packages it
 
 ---
+
 **Size:** M
 **Area:** backend

@@ -12,6 +12,7 @@ parent: lensing-alyh
 Add data-bound blocks to GrapesJS that display {{placeholder}} values from connector field mappings.
 
 ## Acceptance Criteria
+
 - [ ] "Data Text" block type that renders {{slot_name}} placeholder
 - [ ] "Data Image" block type with src bound to {{slot_name}}
 - [ ] "Data List" block type that iterates over array data
@@ -21,5 +22,6 @@ Add data-bound blocks to GrapesJS that display {{placeholder}} values from conne
 - [ ] Unmapped placeholders flagged with warning indicator
 
 ---
+
 **Size:** M
 **Area:** frontend

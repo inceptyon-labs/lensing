@@ -12,6 +12,7 @@ parent: lensing-r333
 Implement the RSS/Atom connector that fetches feeds and maps standard fields to named slots.
 
 ## Acceptance Criteria
+
 - [ ] Fetches and parses RSS 2.0 and Atom feeds
 - [ ] Maps standard fields: title, description, image, date, link, author
 - [ ] Returns array of items (configurable limit, default 10)
@@ -19,5 +20,6 @@ Implement the RSS/Atom connector that fetches feeds and maps standard fields to 
 - [ ] Caches last successful response for stale data fallback
 
 ---
+
 **Size:** M
 **Area:** backend

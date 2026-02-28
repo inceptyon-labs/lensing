@@ -4,10 +4,10 @@
 
   export let width: number | string = '100%';
   export let height: number | string = '600px';
-  export let initialProject: Record<string, any> | undefined = undefined;
+  export let initialProject: Record<string, unknown> | undefined = undefined;
 
-  let container: HTMLDivElement;
-  let editor: any = null;
+  let container: Element | undefined;
+  let editor: unknown | null = null;
 
   onMount(() => {
     editor = grapesjs.init({
@@ -21,27 +21,27 @@
             name: 'Page 1',
             component: {
               type: 'wrapper',
-              components: []
-            }
-          }
-        ]
+              components: [],
+            },
+          },
+        ],
       },
       storageManager: {
-        type: null
+        type: null,
       },
       blockManager: {
         appendTo: '#blocks',
-        blocks: []
+        blocks: [],
       },
       styleManager: {
-        appendTo: '#styles'
+        appendTo: '#styles',
       },
       layerManager: {
-        appendTo: '#layers'
+        appendTo: '#layers',
       },
       traitManager: {
-        appendTo: '#traits'
-      }
+        appendTo: '#traits',
+      },
     });
   });
 
@@ -59,16 +59,12 @@
     return editor?.getCss() || '';
   }
 
-  export function getProjectData(): Record<string, any> {
-    return editor?.getProjectData() || {};
+  export function getProjectData(): Record<string, unknown> {
+    return (editor?.getProjectData() as Record<string, unknown>) || {};
   }
 </script>
 
-<div
-  bind:this={container}
-  class="grapesjs-editor"
-  style="width: {width}; height: {height};"
-/>
+<div bind:this={container} class="grapesjs-editor" style="width: {width}; height: {height};" />
 
 <style>
   .grapesjs-editor {

@@ -12,6 +12,7 @@ parent: lensing-25mp
 Sandboxed iframe renderer for plugins that contain custom JavaScript (future-proofing for v2).
 
 ## Acceptance Criteria
+
 - [ ] Detect if plugin contains custom JS (server_entry or <script> in template)
 - [ ] Render in iframe with sandbox="allow-scripts" (no allow-same-origin)
 - [ ] Inject HTML/CSS/JS into iframe via srcdoc
@@ -20,5 +21,6 @@ Sandboxed iframe renderer for plugins that contain custom JavaScript (future-pro
 - [ ] Communication protocol: parent sends data, iframe sends height adjustments
 
 ---
+
 **Size:** M
 **Area:** frontend

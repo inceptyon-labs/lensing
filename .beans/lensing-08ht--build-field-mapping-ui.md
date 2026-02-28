@@ -12,6 +12,7 @@ parent: lensing-mb8p
 UI for mapping API response fields to named template slots that GrapesJS data blocks consume.
 
 ## Acceptance Criteria
+
 - [ ] Shows sample response data from test fetch as a navigable tree
 - [ ] User clicks a field in the response to select it
 - [ ] Maps selected field to a named slot (title, value, image, subtitle, etc.)
@@ -20,5 +21,6 @@ UI for mapping API response fields to named template slots that GrapesJS data bl
 - [ ] At least one mapping required before advancing to design step
 
 ---
+
 **Size:** M
 **Area:** frontend

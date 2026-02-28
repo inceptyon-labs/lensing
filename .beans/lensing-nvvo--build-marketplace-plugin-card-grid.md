@@ -12,6 +12,7 @@ parent: lensing-o1oh
 Grid layout of marketplace plugin cards with thumbnails, names, and category badges.
 
 ## Acceptance Criteria
+
 - [ ] Responsive grid of plugin cards (2-3 columns depending on width)
 - [ ] Each card shows: thumbnail image, plugin name, author, category badge
 - [ ] "Installed" badge on already-installed plugins
@@ -21,5 +22,6 @@ Grid layout of marketplace plugin cards with thumbnails, names, and category bad
 - [ ] Empty state: "No plugins found" with illustration
 
 ---
+
 **Size:** M
 **Area:** frontend

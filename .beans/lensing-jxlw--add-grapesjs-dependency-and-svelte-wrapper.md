@@ -12,6 +12,7 @@ parent: lensing-alyh
 Install GrapesJS and create a Svelte wrapper component that mounts the editor on a DOM element.
 
 ## Acceptance Criteria
+
 - [ ] Add grapesjs package to apps/display dependencies
 - [ ] Svelte wrapper component mounts GrapesJS in onMount, destroys on unmount
 - [ ] Editor initializes with empty canvas at widget dimensions
@@ -20,5 +21,6 @@ Install GrapesJS and create a Svelte wrapper component that mounts the editor on
 - [ ] Editor container styled to match admin UI design system
 
 ---
+
 **Size:** M
 **Area:** frontend

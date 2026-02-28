@@ -12,6 +12,7 @@ parent: lensing-25mp
 Replace {{placeholder}} variables in template HTML with live data from connector results.
 
 ## Acceptance Criteria
+
 - [ ] Parse template HTML for {{slot_name}} placeholders
 - [ ] Replace with corresponding values from connector data
 - [ ] Support nested paths ({{items[0].title}})
@@ -20,5 +21,6 @@ Replace {{placeholder}} variables in template HTML with live data from connector
 - [ ] Re-inject on every connector data update
 
 ---
+
 **Size:** S
 **Area:** frontend

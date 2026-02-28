@@ -11,9 +11,11 @@ updated_at: 2026-02-28T15:43:59Z
 The no-code visual plugin builder — a GrapesJS-powered editor embedded in the admin UI that lets users create display widgets through a guided wizard: metadata → data source → visual design → preview → save.
 
 ## Vision
+
 Make plugin creation accessible to non-technical users. The builder handles manifest generation, connector configuration, and visual layout — producing a standard plugin package identical to hand-crafted plugins.
 
 ## Features
+
 - Step-by-step builder wizard (metadata, data source, design, preview)
 - GrapesJS visual editor with constrained widget blocks
 - Layout templates (single value, list, grid, etc.)
@@ -22,6 +24,7 @@ Make plugin creation accessible to non-technical users. The builder handles mani
 - Local save and auto-recovery
 
 ## Success Criteria
+
 - [ ] Builder wizard guides user through all steps
 - [ ] GrapesJS editor renders with widget-appropriate blocks
 - [ ] Layout templates provide starting points

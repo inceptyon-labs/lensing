@@ -12,6 +12,7 @@ parent: lensing-7nct
 Graceful degradation when the device has no internet or GitHub is unreachable.
 
 ## Acceptance Criteria
+
 - [ ] Marketplace endpoints serve cached data when fetch fails
 - [ ] Response includes `offline: true` flag for UI to show banner
 - [ ] Cached data includes timestamp for "Last updated X ago" display
@@ -19,5 +20,6 @@ Graceful degradation when the device has no internet or GitHub is unreachable.
 - [ ] Manual ZIP install still works when offline
 
 ---
+
 **Size:** S
 **Area:** backend

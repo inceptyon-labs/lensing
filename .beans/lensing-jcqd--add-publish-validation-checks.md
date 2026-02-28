@@ -12,6 +12,7 @@ parent: lensing-lmnp
 Validate plugin before allowing marketplace publish.
 
 ## Acceptance Criteria
+
 - [ ] Check plugin ID uniqueness against marketplace index
 - [ ] Validate all required manifest fields present
 - [ ] Validate connector config is complete and tested
@@ -21,5 +22,6 @@ Validate plugin before allowing marketplace publish.
 - [ ] Return clear validation errors to UI
 
 ---
+
 **Size:** S
 **Area:** backend

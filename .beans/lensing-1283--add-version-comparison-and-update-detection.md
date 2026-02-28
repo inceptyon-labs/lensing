@@ -12,6 +12,7 @@ parent: lensing-7nct
 Compare installed plugin versions against marketplace to detect available updates.
 
 ## Acceptance Criteria
+
 - [ ] Compare installed plugin version against marketplace index version (semver)
 - [ ] GET /marketplace/updates — list plugins with available updates
 - [ ] POST /marketplace/:id/update — download and install newer version
@@ -19,5 +20,6 @@ Compare installed plugin versions against marketplace to detect available update
 - [ ] Update flow validates new version > installed version
 
 ---
+
 **Size:** S
 **Area:** backend

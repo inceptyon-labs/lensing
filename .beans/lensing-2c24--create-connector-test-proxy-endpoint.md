@@ -12,6 +12,7 @@ parent: lensing-mb8p
 REST endpoint that proxies a test fetch through the connector engine and returns sample data for the builder UI.
 
 ## Acceptance Criteria
+
 - [ ] POST /builder/test-connector accepts ConnectorConfig body
 - [ ] Executes a single connector fetch (JSON API or RSS)
 - [ ] Returns sample response data and extracted field mapping preview
@@ -20,5 +21,6 @@ REST endpoint that proxies a test fetch through the connector engine and returns
 - [ ] 10s timeout to prevent hanging
 
 ---
+
 **Size:** S
 **Area:** backend

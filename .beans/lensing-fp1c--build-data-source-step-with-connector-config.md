@@ -12,6 +12,7 @@ parent: lensing-mb8p
 Build the second wizard step: connector type selection and configuration.
 
 ## Acceptance Criteria
+
 - [ ] Connector type picker: JSON API, RSS Feed, Static (card-based selection)
 - [ ] JSON API form: URL, HTTP method dropdown, headers key-value editor, auth token field
 - [ ] RSS form: feed URL
@@ -20,5 +21,6 @@ Build the second wizard step: connector type selection and configuration.
 - [ ] "Test Connection" button that hits the proxy endpoint and shows sample data
 
 ---
+
 **Size:** M
 **Area:** frontend

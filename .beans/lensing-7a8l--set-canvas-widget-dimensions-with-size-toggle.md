@@ -12,6 +12,7 @@ parent: lensing-alyh
 Configure the GrapesJS canvas to render at actual widget dimensions with a size toggle.
 
 ## Acceptance Criteria
+
 - [ ] Canvas renders at widget size (not full-page)
 - [ ] Size toggle: small, medium, large (matching existing widget_sizes)
 - [ ] Dimensions match the actual grid zone sizes on the display
@@ -19,5 +20,6 @@ Configure the GrapesJS canvas to render at actual widget dimensions with a size 
 - [ ] Size selection saved as part of plugin manifest widget_sizes
 
 ---
+
 **Size:** S
 **Area:** frontend

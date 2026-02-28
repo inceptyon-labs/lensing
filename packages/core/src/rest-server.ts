@@ -27,8 +27,13 @@ export interface RestServerHandlers {
   putLayout: (layout: ZoneConfig[]) => Promise<void>;
   postAsk: (question: string) => Promise<ConversationEntry>;
   // Marketplace settings (optional — omit to disable marketplace endpoints)
-  getMarketplaceSettings?: () => Promise<{ marketplaceRepoUrl: string; hasToken: boolean } | undefined>;
-  setMarketplaceSettings?: (settings: { gitHubToken: string; marketplaceRepoUrl: string }) => Promise<void>;
+  getMarketplaceSettings?: () => Promise<
+    { marketplaceRepoUrl: string; hasToken: boolean } | undefined
+  >;
+  setMarketplaceSettings?: (settings: {
+    gitHubToken: string;
+    marketplaceRepoUrl: string;
+  }) => Promise<void>;
   // Plugin management (optional — omit to disable plugin endpoints)
   getPlugins?: () => Promise<PluginAdminEntry[]>;
   getPlugin?: (id: string) => Promise<PluginAdminEntry | undefined>;

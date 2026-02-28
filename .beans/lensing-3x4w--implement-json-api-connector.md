@@ -12,6 +12,7 @@ parent: lensing-r333
 Implement the JSON API connector that fetches data from a URL and maps response fields to named slots via JSONPath expressions.
 
 ## Acceptance Criteria
+
 - [ ] Fetches JSON from configured URL with method/headers
 - [ ] Parses response and extracts fields using JSONPath mapping
 - [ ] Returns flat Record<string, unknown> of mapped slot values
@@ -21,5 +22,6 @@ Implement the JSON API connector that fetches data from a URL and maps response 
 - [ ] Caches last successful response for stale data fallback
 
 ---
+
 **Size:** M
 **Area:** backend

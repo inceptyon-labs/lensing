@@ -12,6 +12,7 @@ parent: lensing-mb8p
 Create the multi-step wizard component that hosts the plugin builder flow: Metadata → Data Source → Design → Preview.
 
 ## Acceptance Criteria
+
 - [ ] Wizard shell component with step indicator (numbered steps with labels)
 - [ ] Forward/back navigation with step validation (can't advance without required fields)
 - [ ] Step state preserved when navigating back
@@ -19,5 +20,6 @@ Create the multi-step wizard component that hosts the plugin builder flow: Metad
 - [ ] Responsive layout matching admin UI design system
 
 ---
+
 **Size:** M
 **Area:** frontend

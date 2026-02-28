@@ -12,6 +12,7 @@ parent: lensing-r333
 Validate connector URLs against a blocklist to prevent SSRF attacks.
 
 ## Acceptance Criteria
+
 - [ ] Block localhost, 127.0.0.1, ::1, 0.0.0.0
 - [ ] Block private IP ranges (10.x, 172.16-31.x, 192.168.x) by default
 - [ ] Block link-local (169.254.x)
@@ -20,5 +21,6 @@ Validate connector URLs against a blocklist to prevent SSRF attacks.
 - [ ] Clear error messages when URL is blocked
 
 ---
+
 **Size:** S
 **Area:** backend

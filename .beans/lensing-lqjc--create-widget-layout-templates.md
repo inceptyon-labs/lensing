@@ -12,6 +12,7 @@ parent: lensing-alyh
 Pre-built layout templates users can start from instead of a blank canvas.
 
 ## Acceptance Criteria
+
 - [ ] "Single Value" template: large centered number/text with label and icon
 - [ ] "List" template: vertical list of items with title + subtitle
 - [ ] "Key-Value Grid" template: 2-column grid of label-value pairs
@@ -21,5 +22,6 @@ Pre-built layout templates users can start from instead of a blank canvas.
 - [ ] Each template uses data binding placeholders
 
 ---
+
 **Size:** M
 **Area:** frontend

@@ -12,6 +12,7 @@ parent: lensing-rq0o
 Live preview that renders the widget at actual display size with real data from the connector test fetch.
 
 ## Acceptance Criteria
+
 - [ ] Preview pane alongside or below GrapesJS editor
 - [ ] Renders HTML/CSS output with {{placeholders}} replaced by real data
 - [ ] Updates live as user edits in GrapesJS
@@ -20,5 +21,6 @@ Live preview that renders the widget at actual display size with real data from 
 - [ ] Shows "No data" state when connector hasn't been tested yet
 
 ---
+
 **Size:** M
 **Area:** frontend
