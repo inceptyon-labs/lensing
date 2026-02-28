@@ -9,6 +9,9 @@ import type {
   DisplayCapabilities,
   DisplaySettings,
   RotationValue,
+  MarketplacePlugin,
+  MarketplaceCategory,
+  MarketplaceListResponse,
 } from '@lensing/types';
 
 /** Log entry emitted after each request */
@@ -34,6 +37,12 @@ export interface RestServerHandlers {
     gitHubToken: string;
     marketplaceRepoUrl: string;
   }) => Promise<void>;
+  // Marketplace browse (optional — omit to disable marketplace browse endpoints)
+  getMarketplacePlugins?: (
+    params?: Record<string, string>
+  ) => Promise<MarketplaceListResponse>;
+  getMarketplacePlugin?: (id: string) => Promise<MarketplacePlugin | undefined>;
+  getMarketplaceCategories?: () => Promise<MarketplaceCategory[]>;
   // Plugin management (optional — omit to disable plugin endpoints)
   getPlugins?: () => Promise<PluginAdminEntry[]>;
   getPlugin?: (id: string) => Promise<PluginAdminEntry | undefined>;
@@ -341,6 +350,32 @@ export function createRestServer(
       const msg = err instanceof Error ? err.message : 'Failed to save settings';
       writeJson(res, 400, { error: msg });
     }
+  });
+
+  // ── Marketplace browse routes ─────────────────────────────────────────────
+  addRoute('/marketplace', 'GET', async (req, res) => {
+    if (!handlers.getMarketplacePlugins) {
+      writeJson(res, 404, { error: 'Not Found' });
+      return;
+    }
+    const url = new URL(req.url ?? '/', 'http://localhost');
+    const params: Record<string, string> = {};
+    for (const [key, value] of url.searchParams.entries()) {
+      params[key] = value;
+    }
+    const result = await handlers.getMarketplacePlugins(
+      Object.keys(params).length > 0 ? params : undefined
+    );
+    writeJson(res, 200, result);
+  });
+
+  addRoute('/marketplace/categories', 'GET', async (_req, res) => {
+    if (!handlers.getMarketplaceCategories) {
+      writeJson(res, 404, { error: 'Not Found' });
+      return;
+    }
+    const categories = await handlers.getMarketplaceCategories();
+    writeJson(res, 200, categories);
   });
 
   // ── Display hardware routes ───────────────────────────────────────────────
@@ -782,6 +817,23 @@ export function createRestServer(
           } catch {
             // Ignore logger errors
           }
+          return;
+        }
+
+        // GET /marketplace/:id — parameterized; /marketplace/categories handled via route table
+        const marketplaceItemMatch = cleanPath.match(/^\/marketplace\/([^/]+)$/);
+        if (marketplaceItemMatch && cleanPath !== '/marketplace/categories' && method === 'GET') {
+          if (!handlers.getMarketplacePlugin) {
+            writeJson(res, 404, { error: 'Not Found' });
+            return;
+          }
+          const pluginId = decodeURIComponent(marketplaceItemMatch[1]!);
+          const plugin = await handlers.getMarketplacePlugin(pluginId);
+          if (!plugin) {
+            writeJson(res, 404, { error: `Plugin '${pluginId}' not found` });
+            return;
+          }
+          writeJson(res, 200, plugin);
           return;
         }
 

@@ -1,11 +1,11 @@
 ---
 # lensing-1zar
 title: Add REST endpoints for marketplace browse/search
-status: todo
+status: in-progress
 type: task
 priority: high
 created_at: 2026-02-28T15:46:39Z
-updated_at: 2026-02-28T15:46:39Z
+updated_at: 2026-02-28T16:36:49Z
 parent: lensing-7nct
 ---
 

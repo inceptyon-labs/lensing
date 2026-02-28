@@ -910,6 +910,40 @@ export {
   moduleNeedsIntegration,
 } from './module-settings';
 
+// ── Marketplace Browse Types ─────────────────────────────────────────────────
+
+/** A plugin entry in the marketplace catalog */
+export interface MarketplacePlugin {
+  id: string;
+  name: string;
+  description: string;
+  version: string;
+  author: string;
+  category: string;
+  tags: string[];
+  downloadUrl: string;
+  /** Whether this plugin is currently installed on the device */
+  installed: boolean;
+  /** Whether an update is available for an installed plugin */
+  updateAvailable: boolean;
+}
+
+/** A category in the marketplace with plugin count */
+export interface MarketplaceCategory {
+  name: string;
+  count: number;
+}
+
+/** Paginated response from GET /marketplace */
+export interface MarketplaceListResponse {
+  plugins: MarketplacePlugin[];
+  total: number;
+  page: number;
+  pageSize: number;
+  /** True when serving from local cache due to network unavailability */
+  offline: boolean;
+}
+
 // ── Marketplace Settings ────────────────────────────────────────────────────
 /** Marketplace configuration for publishing plugins */
 export interface MarketplaceSettings {
