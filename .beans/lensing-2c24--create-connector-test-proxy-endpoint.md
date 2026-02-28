@@ -1,11 +1,11 @@
 ---
 # lensing-2c24
 title: Create connector test proxy endpoint
-status: todo
+status: in-progress
 type: task
 priority: high
 created_at: 2026-02-28T15:45:40Z
-updated_at: 2026-02-28T15:45:40Z
+updated_at: 2026-02-28T23:05:11Z
 parent: lensing-mb8p
 ---
 

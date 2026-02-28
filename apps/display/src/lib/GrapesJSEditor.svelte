@@ -49,23 +49,23 @@
 
   onDestroy(() => {
     if (editor) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+       
       (editor as any).destroy?.();
     }
   });
 
   export function getHtml(): string {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+     
     return (editor as any)?.getHtml?.() || '';
   }
 
   export function getCss(): string {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+     
     return (editor as any)?.getCss?.() || '';
   }
 
   export function getProjectData(): Record<string, unknown> {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+     
     return ((editor as any)?.getProjectData?.() as Record<string, unknown>) || {};
   }
 </script>
