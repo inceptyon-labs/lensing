@@ -1,6 +1,6 @@
 <script lang="ts">
-  export let activeTab: 'modules' | 'plugins';
-  export let onTabChange: (tab: 'modules' | 'plugins') => void = () => {};
+  export let activeTab: 'modules' | 'plugins' | 'settings';
+  export let onTabChange: (tab: 'modules' | 'plugins' | 'settings') => void = () => {};
 </script>
 
 <nav class="tab-bar" role="tablist">
@@ -21,6 +21,15 @@
     on:click={() => onTabChange('plugins')}
   >
     Plugins
+  </button>
+  <button
+    class="tab"
+    class:tab--active={activeTab === 'settings'}
+    role="tab"
+    aria-selected={activeTab === 'settings'}
+    on:click={() => onTabChange('settings')}
+  >
+    Settings
   </button>
 </nav>
 

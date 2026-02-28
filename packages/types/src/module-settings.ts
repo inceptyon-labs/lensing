@@ -377,9 +377,9 @@ export const MODULE_SCHEMAS: readonly ModuleSettingsSchema[] = [
 ];
 
 /** IDs of system modules (infrastructure, not dashboard widgets) */
-export const SYSTEM_MODULE_IDS: readonly ModuleId[] = MODULE_SCHEMAS.filter(
-  (s) => s.system
-).map((s) => s.id);
+export const SYSTEM_MODULE_IDS: readonly ModuleId[] = MODULE_SCHEMAS.filter((s) => s.system).map(
+  (s) => s.id
+);
 
 /** Returns only the integration-category fields for a module schema */
 export function getIntegrationFields(schema: ModuleSettingsSchema): ConfigField[] {

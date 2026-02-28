@@ -1,7 +1,15 @@
 import http from 'node:http';
 import fs from 'node:fs';
 import nodePath from 'node:path';
-import type { ZoneConfig, ConversationEntry, PluginAdminEntry, ZoneName } from '@lensing/types';
+import type {
+  ZoneConfig,
+  ConversationEntry,
+  PluginAdminEntry,
+  ZoneName,
+  DisplayCapabilities,
+  DisplaySettings,
+  RotationValue,
+} from '@lensing/types';
 
 /** Log entry emitted after each request */
 export interface LogEntry {
@@ -18,6 +26,9 @@ export interface RestServerHandlers {
   getLayout: () => Promise<ZoneConfig[]>;
   putLayout: (layout: ZoneConfig[]) => Promise<void>;
   postAsk: (question: string) => Promise<ConversationEntry>;
+  // Marketplace settings (optional — omit to disable marketplace endpoints)
+  getMarketplaceSettings?: () => Promise<{ marketplaceRepoUrl: string; hasToken: boolean } | undefined>;
+  setMarketplaceSettings?: (settings: { gitHubToken: string; marketplaceRepoUrl: string }) => Promise<void>;
   // Plugin management (optional — omit to disable plugin endpoints)
   getPlugins?: () => Promise<PluginAdminEntry[]>;
   getPlugin?: (id: string) => Promise<PluginAdminEntry | undefined>;
@@ -30,6 +41,12 @@ export interface RestServerHandlers {
   restartModule?: (id: string) => Promise<{ ok: boolean; running: boolean }>;
   /** Sync running modules with current grid layout widget IDs */
   syncModules?: (layoutIds: string[]) => void;
+  // Display hardware
+  getDisplayCapabilities?: () => Promise<DisplayCapabilities>;
+  getDisplaySettings?: () => Promise<DisplaySettings>;
+  setDisplayBrightness?: (value: number) => Promise<void>;
+  setDisplayRotation?: (value: RotationValue, persistent?: boolean) => Promise<void>;
+  setDisplayContrast?: (value: number) => Promise<void>;
 }
 
 /** Configuration options for the REST server */
@@ -156,11 +173,7 @@ const STATIC_MIME_TYPES: Record<string, string> = {
  * Try to serve a static file from dir. Returns true if served, false if not found.
  * For immutable hashed assets (_app/immutable/*), sets long cache headers.
  */
-function tryServeStatic(
-  dir: string,
-  urlPath: string,
-  res: http.ServerResponse
-): boolean {
+function tryServeStatic(dir: string, urlPath: string, res: http.ServerResponse): boolean {
   // Prevent directory traversal
   const safePath = nodePath.normalize(urlPath).replace(/^(\.\.[/\\])+/, '');
   const filePath = nodePath.join(dir, safePath);
@@ -279,6 +292,149 @@ export function createRestServer(
     }
     const entry = await handlers.postAsk(question);
     writeJson(res, 200, entry);
+  });
+
+  // ── Marketplace settings routes ───────────────────────────────────────────
+  addRoute('/api/admin/marketplace', 'GET', async (_req, res) => {
+    if (!handlers.getMarketplaceSettings) {
+      writeJson(res, 404, { error: 'Marketplace not configured' });
+      return;
+    }
+    const settings = await handlers.getMarketplaceSettings();
+    if (!settings) {
+      writeJson(res, 404, { error: 'Marketplace not configured' });
+      return;
+    }
+    writeJson(res, 200, settings);
+  });
+
+  addRoute('/api/admin/marketplace', 'POST', async (_req, res, body) => {
+    if (!handlers.setMarketplaceSettings) {
+      writeJson(res, 404, { error: 'Marketplace not configured' });
+      return;
+    }
+    let parsed: Record<string, unknown>;
+    try {
+      parsed = JSON.parse(body) as Record<string, unknown>;
+    } catch {
+      writeJson(res, 400, { error: 'Invalid JSON' });
+      return;
+    }
+    const { gitHubToken, marketplaceRepoUrl } = parsed;
+    if (typeof gitHubToken !== 'string' || !gitHubToken.trim()) {
+      writeJson(res, 400, { error: 'gitHubToken is required' });
+      return;
+    }
+    if (typeof marketplaceRepoUrl !== 'string' || !marketplaceRepoUrl.trim()) {
+      writeJson(res, 400, { error: 'marketplaceRepoUrl is required' });
+      return;
+    }
+    try {
+      await handlers.setMarketplaceSettings({ gitHubToken, marketplaceRepoUrl });
+      writeJson(res, 200, { marketplaceRepoUrl });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to save settings';
+      writeJson(res, 400, { error: msg });
+    }
+  });
+
+  // ── Display hardware routes ───────────────────────────────────────────────
+  addRoute('/display/capabilities', 'GET', async (_req, res) => {
+    if (!handlers.getDisplayCapabilities) {
+      writeJson(res, 404, { error: 'Not Found' });
+      return;
+    }
+    const caps = await handlers.getDisplayCapabilities();
+    writeJson(res, 200, caps);
+  });
+
+  addRoute('/display/settings', 'GET', async (_req, res) => {
+    if (!handlers.getDisplaySettings) {
+      writeJson(res, 404, { error: 'Not Found' });
+      return;
+    }
+    const settings = await handlers.getDisplaySettings();
+    writeJson(res, 200, settings);
+  });
+
+  addRoute('/display/brightness', 'PUT', async (_req, res, body) => {
+    if (!handlers.setDisplayBrightness) {
+      writeJson(res, 501, { error: 'Brightness control not available' });
+      return;
+    }
+    let parsed: Record<string, unknown>;
+    try {
+      parsed = JSON.parse(body) as Record<string, unknown>;
+    } catch {
+      writeJson(res, 400, { error: 'Invalid JSON' });
+      return;
+    }
+    const value = parsed['value'];
+    if (typeof value !== 'number' || value < 0 || value > 100) {
+      writeJson(res, 400, { error: 'value must be a number 0–100' });
+      return;
+    }
+    try {
+      await handlers.setDisplayBrightness(value);
+      writeJson(res, 200, { ok: true });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to set brightness';
+      writeJson(res, 500, { error: msg });
+    }
+  });
+
+  addRoute('/display/rotation', 'PUT', async (_req, res, body) => {
+    if (!handlers.setDisplayRotation) {
+      writeJson(res, 501, { error: 'Rotation control not available' });
+      return;
+    }
+    let parsed: Record<string, unknown>;
+    try {
+      parsed = JSON.parse(body) as Record<string, unknown>;
+    } catch {
+      writeJson(res, 400, { error: 'Invalid JSON' });
+      return;
+    }
+    const value = parsed['value'];
+    const validRotations = [0, 90, 180, 270];
+    if (typeof value !== 'number' || !validRotations.includes(value)) {
+      writeJson(res, 400, { error: 'value must be 0, 90, 180, or 270' });
+      return;
+    }
+    const persistent = parsed['persistent'] === true;
+    try {
+      await handlers.setDisplayRotation(value as RotationValue, persistent);
+      writeJson(res, 200, { ok: true });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to set rotation';
+      writeJson(res, 500, { error: msg });
+    }
+  });
+
+  addRoute('/display/contrast', 'PUT', async (_req, res, body) => {
+    if (!handlers.setDisplayContrast) {
+      writeJson(res, 501, { error: 'Contrast control not available' });
+      return;
+    }
+    let parsed: Record<string, unknown>;
+    try {
+      parsed = JSON.parse(body) as Record<string, unknown>;
+    } catch {
+      writeJson(res, 400, { error: 'Invalid JSON' });
+      return;
+    }
+    const value = parsed['value'];
+    if (typeof value !== 'number' || value < 0 || value > 100) {
+      writeJson(res, 400, { error: 'value must be a number 0–100' });
+      return;
+    }
+    try {
+      await handlers.setDisplayContrast(value);
+      writeJson(res, 200, { ok: true });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to set contrast';
+      writeJson(res, 500, { error: msg });
+    }
   });
 
   const server = http.createServer((req, res) => {

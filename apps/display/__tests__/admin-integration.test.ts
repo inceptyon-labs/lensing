@@ -34,18 +34,13 @@ describe('AdminConfigForm: Integration fields only (lensing-zgdi)', () => {
   });
 });
 
-describe('AdminPluginList: Only modules with integration fields (lensing-zgdi)', () => {
+describe('AdminPluginList: All modules with config schemas (lensing-zgdi)', () => {
   const listPath = join(__dirname, '../src/lib/AdminPluginList.svelte');
 
-  it('should import moduleNeedsIntegration from @lensing/types', () => {
+  it('should show all builtin modules that have a config schema', () => {
     const source = readFileSync(listPath, 'utf-8');
-    expect(source).toContain('moduleNeedsIntegration');
-  });
-
-  it('should filter builtins to only modules that need integration', () => {
-    const source = readFileSync(listPath, 'utf-8');
-    // Should use moduleNeedsIntegration to filter the module list
-    expect(source).toMatch(/moduleNeedsIntegration|needsIntegration/);
+    // Should filter to builtins with config_schema (not limited to integration-only)
+    expect(source).toMatch(/p\.builtin\s*&&\s*p\.manifest\.config_schema/);
   });
 });
 

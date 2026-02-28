@@ -5,8 +5,8 @@ status: completed
 type: epic
 priority: high
 tags:
-    - area:frontend
-    - area:backend
+  - area:frontend
+  - area:backend
 created_at: 2026-02-26T02:22:34Z
 updated_at: 2026-02-26T13:50:06Z
 ---

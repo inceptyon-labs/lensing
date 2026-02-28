@@ -23,19 +23,20 @@ Keep existing behavior for third-party plugins (they still need zone/enable/conf
 Redesigned AdminPluginCard with two layouts:
 
 **Built-in modules (integration card):**
+
 - Module name + integration status badge (Configured / Setup Required)
 - Integration fields shown directly (always visible)
 - Auto-restart status inline
 - No zone, no enable/disable, no Configure button
 
 **Third-party plugins (unchanged):**
+
 - Zone selector, enable/disable toggle, Configure button preserved
 
 Files: apps/display/src/lib/AdminPluginCard.svelte
 
-
-
 Updated to list + modal pattern (second iteration):
+
 - AdminPluginCard: clickable row cards for built-in modules (name, desc, badge, chevron)
 - AdminConfigModal: new modal component (header, form, save+restart footer)
 - AdminPluginList: manages modal state, passes onConfigure callback

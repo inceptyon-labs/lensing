@@ -174,6 +174,18 @@ export { createGpiomonFactory } from './gpio-linux';
 export { createDisplayControl } from './display-control';
 export type { DisplayControlOptions } from './display-control';
 
+// ── Display Hardware (brightness, contrast, rotation) ────────────────────────
+export { createDisplayHardware } from './display-hardware';
+export type {
+  DisplayCapabilities,
+  DisplayCapability,
+  DisplaySettings,
+  DisplayMethod,
+  RotationValue,
+  DisplayHardwareOptions,
+  DisplayHardwareInstance,
+} from '@lensing/types';
+
 // ── Module Settings ─────────────────────────────────────────────────────────
 export { readModuleConfig, writeModuleConfig } from './module-settings';
 export type { ModuleConfig } from './module-settings';

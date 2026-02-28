@@ -3,8 +3,9 @@
   import AdminConfigForm from './AdminConfigForm.svelte';
 
   export let plugin: PluginAdminEntry;
-  export let onSave: (config: Record<string, string | number | boolean>) => void | Promise<void> =
-    () => {};
+  export let onSave: (
+    config: Record<string, string | number | boolean>
+  ) => void | Promise<void> = () => {};
   export let onClose: () => void = () => {};
 
   let saving = false;

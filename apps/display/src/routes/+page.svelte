@@ -74,7 +74,13 @@
   <title>Lensing Display</title>
 </svelte:head>
 
-<DashboardGrid plugins={widgetPlugins} allPlugins={widgetPlugins} {serverLayout} onsave={handleLayoutSave} onconfigsaved={handleConfigSaved} />
+<DashboardGrid
+  plugins={widgetPlugins}
+  allPlugins={widgetPlugins}
+  {serverLayout}
+  onsave={handleLayoutSave}
+  onconfigsaved={handleConfigSaved}
+/>
 <a href="/admin" class="admin-link">Admin</a>
 
 <style>

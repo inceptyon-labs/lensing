@@ -888,6 +888,17 @@ export type {
 } from './pir-sensor';
 export { DEFAULT_PIR_IDLE_TIMEOUT_MS, DEFAULT_PIR_GPIO_PIN } from './pir-sensor';
 
+// ── Display Hardware Settings ────────────────────────────────────────────────
+export type {
+  DisplayMethod,
+  DisplayCapability,
+  DisplayCapabilities,
+  DisplaySettings,
+  RotationValue,
+  DisplayHardwareOptions,
+  DisplayHardwareInstance,
+} from './display-settings';
+
 // ── Module Settings ─────────────────────────────────────────────────────────
 export type { ModuleId, ModuleSettingsSchema } from './module-settings';
 export {
@@ -898,6 +909,15 @@ export {
   getWidgetFields,
   moduleNeedsIntegration,
 } from './module-settings';
+
+// ── Marketplace Settings ────────────────────────────────────────────────────
+/** Marketplace configuration for publishing plugins */
+export interface MarketplaceSettings {
+  /** GitHub personal access token (encrypted at rest) */
+  gitHubToken?: string;
+  /** GitHub repository URL for the marketplace (default: lensing-marketplace) */
+  marketplaceRepoUrl: string;
+}
 
 // ── Host Service (unified boot sequence) ────────────────────────────────────
 import type { GpioWatcherFactory } from './pir-sensor';

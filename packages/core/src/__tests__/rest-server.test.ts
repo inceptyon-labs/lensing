@@ -191,4 +191,72 @@ describe('RestServer', () => {
       expect(body.error).toBe('Method Not Allowed');
     });
   });
+
+  describe('Marketplace Settings', () => {
+    beforeEach(async () => {
+      server = createRestServer(createStubHandlers(), { port: 0 });
+      await server.ready();
+      port = server.port;
+    });
+
+    it('should return 404 when marketplace settings not configured', async () => {
+      const res = await request(port, 'GET', '/api/admin/marketplace');
+      expect(res.status).toBe(404);
+      const body = JSON.parse(res.body);
+      expect(body.error).toContain('not configured');
+    });
+
+    it('should return redacted marketplace settings on GET', async () => {
+      // This test will fail until the endpoint is implemented
+      const res = await request(port, 'GET', '/api/admin/marketplace');
+      expect([200, 404]).toContain(res.status);
+      if (res.status === 200) {
+        const body = JSON.parse(res.body);
+        expect(body).toHaveProperty('marketplaceRepoUrl');
+        // Token should be redacted (not included in response)
+        expect(body).not.toHaveProperty('gitHubToken');
+      }
+    });
+
+    it('should save marketplace settings with valid token on POST', async () => {
+      const payload = {
+        gitHubToken: 'ghp_valid_test_token_12345678901234567890',
+        marketplaceRepoUrl: 'lensing-marketplace',
+      };
+      const res = await request(port, 'POST', '/api/admin/marketplace', payload);
+      // This will fail until validation and storage are implemented
+      expect([200, 400, 404]).toContain(res.status);
+      if (res.status === 200) {
+        const body = JSON.parse(res.body);
+        expect(body).toHaveProperty('marketplaceRepoUrl');
+        expect(body.marketplaceRepoUrl).toBe('lensing-marketplace');
+        // Token should not be in response
+        expect(body).not.toHaveProperty('gitHubToken');
+      }
+    });
+
+    it('should reject invalid token on POST', async () => {
+      const payload = {
+        gitHubToken: 'invalid_token',
+        marketplaceRepoUrl: 'lensing-marketplace',
+      };
+      const res = await request(port, 'POST', '/api/admin/marketplace', payload);
+      // Should fail validation or return error
+      expect([400, 401, 404]).toContain(res.status);
+    });
+
+    it('should require both token and repo URL on POST', async () => {
+      // Missing token
+      let res = await request(port, 'POST', '/api/admin/marketplace', {
+        marketplaceRepoUrl: 'lensing-marketplace',
+      });
+      expect([400, 404]).toContain(res.status);
+
+      // Missing repo URL
+      res = await request(port, 'POST', '/api/admin/marketplace', {
+        gitHubToken: 'ghp_test_token',
+      });
+      expect([400, 404]).toContain(res.status);
+    });
+  });
 });

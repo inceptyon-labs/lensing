@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import type { PluginAdminEntry } from '@lensing/types';
-  import { moduleNeedsIntegration } from '@lensing/types';
   import { ZONE_NAMES } from './config.ts';
   import { MODULE_GROUPS } from './admin-module-groups.ts';
   import AdminPluginCard from './AdminPluginCard.svelte';
@@ -9,11 +8,12 @@
   import AdminPluginUpload from './AdminPluginUpload.svelte';
   import AdminTabBar from './AdminTabBar.svelte';
   import AdminModuleSection from './AdminModuleSection.svelte';
+  import AdminSettingsPanel from './AdminSettingsPanel.svelte';
 
   let plugins: PluginAdminEntry[] = [];
   let loading = true;
   let error: string | null = null;
-  let activeTab: 'modules' | 'plugins' = 'modules';
+  let activeTab: 'modules' | 'plugins' | 'settings' = 'modules';
 
   /** Track which plugins have been saved since last restart */
   let dirtyIds = new Set<string>();
@@ -21,9 +21,10 @@
   /** Plugin currently being configured in the modal */
   let configPlugin: PluginAdminEntry | null = null;
 
-  // Only show modules that have integration fields (API keys, credentials, server URLs)
+  /** PIR lives in the Settings tab, not Modules */
+  const SETTINGS_ONLY_IDS = new Set(['pir']);
   $: builtins = plugins.filter(
-    (p) => p.builtin && p.manifest.config_schema && moduleNeedsIntegration(p.manifest.config_schema)
+    (p) => p.builtin && p.manifest.config_schema && !SETTINGS_ONLY_IDS.has(p.plugin_id)
   );
   $: thirdParty = plugins.filter((p) => !p.builtin);
 
@@ -173,7 +174,7 @@
         {/each}
       </div>
     {/if}
-  {:else}
+  {:else if activeTab === 'plugins'}
     <AdminPluginUpload onInstalled={refreshPlugins} />
 
     {#if thirdParty.length === 0}
@@ -190,6 +191,15 @@
         {/each}
       </div>
     {/if}
+  {:else if activeTab === 'settings'}
+    <AdminSettingsPanel
+      {plugins}
+      onConfigSave={handleConfigSave}
+      onToggleEnabled={handleToggleEnabled}
+      onRestart={handleRestart}
+      onRefreshPlugins={refreshPlugins}
+      {dirtyIds}
+    />
   {/if}
 
   {#if configPlugin}

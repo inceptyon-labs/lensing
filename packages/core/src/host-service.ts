@@ -8,8 +8,15 @@ import { createPluginAdminHandlers } from './plugin-admin-handlers';
 import { createNotificationQueue } from './notification-queue';
 import { bootEnabledModules, rebootModule, syncModulesWithLayout } from './module-boot';
 import { createDisplayControl } from './display-control';
+import { createDisplayHardware } from './display-hardware';
 import type { BootedModule } from './module-boot';
-import type { HostServiceOptions, DatabaseInstance, PluginLoader, ModuleId } from '@lensing/types';
+import type {
+  HostServiceOptions,
+  DatabaseInstance,
+  PluginLoader,
+  ModuleId,
+  DisplayHardwareInstance,
+} from '@lensing/types';
 import { MODULE_SCHEMAS, SYSTEM_MODULE_IDS } from '@lensing/types';
 import type { DataBusInstance } from '@lensing/types';
 import type { NotificationQueueInstance } from './notification-queue';
@@ -58,6 +65,7 @@ export function createHostService(options: HostServiceOptions = {}): HostService
   let _port = 0;
   let _dataBus: DataBusInstance | undefined;
   let _displayControl: { close(): void } | undefined;
+  let _displayHardware: DisplayHardwareInstance | undefined;
 
   const log = {
     info: (msg: string, data?: unknown) => logger?.info(msg, data),
@@ -79,7 +87,10 @@ export function createHostService(options: HostServiceOptions = {}): HostService
       const dataBus = createDataBus();
       _dataBus = dataBus;
 
-      // 4. REST server (wired to database + plugins)
+      // 4. Display hardware (probes available controls)
+      _displayHardware = createDisplayHardware({ logger });
+
+      // 5. REST server (wired to database + plugins)
       const pluginHandlers = createPluginAdminHandlers({
         pluginLoader: _plugins,
         db: _db!,
@@ -160,6 +171,31 @@ export function createHostService(options: HostServiceOptions = {}): HostService
             );
             return { ok: true, running: result !== null };
           },
+          // Display hardware handlers
+          getDisplayCapabilities: async () => _displayHardware!.capabilities,
+          getDisplaySettings: async () => ({
+            brightness: _displayHardware!.getBrightness() ?? undefined,
+            contrast: _displayHardware!.getContrast() ?? undefined,
+            rotation: _displayHardware!.getRotation() ?? undefined,
+          }),
+          setDisplayBrightness: _displayHardware!.capabilities.brightness.available
+            ? async (value: number) => {
+                _displayHardware!.setBrightness(value);
+                _db!.setSetting('display.brightness', String(value));
+              }
+            : undefined,
+          setDisplayContrast: _displayHardware!.capabilities.contrast.available
+            ? async (value: number) => {
+                _displayHardware!.setContrast(value);
+                _db!.setSetting('display.contrast', String(value));
+              }
+            : undefined,
+          setDisplayRotation: _displayHardware!.capabilities.rotation.available
+            ? async (value, persistent) => {
+                _displayHardware!.setRotation(value, persistent);
+                _db!.setSetting('display.rotation', String(value));
+              }
+            : undefined,
         },
         { port, staticDir }
       );
@@ -214,10 +250,42 @@ export function createHostService(options: HostServiceOptions = {}): HostService
         logger
       );
 
-      // 8. Display DPMS control via PIR presence
+      // 9. Display DPMS control via PIR presence
       if (enableDisplayControl) {
         _displayControl = createDisplayControl({ dataBus, logger });
         log.info('Display control enabled (DPMS via PIR)');
+      }
+
+      // 10. Restore persisted display settings
+      if (_displayHardware) {
+        try {
+          const savedBrightness = _db!.getSetting('display.brightness');
+          if (savedBrightness != null && _displayHardware.capabilities.brightness.available) {
+            const v = parseInt(savedBrightness, 10);
+            if (Number.isFinite(v) && v >= 0 && v <= 100) {
+              _displayHardware.setBrightness(v);
+              log.info('Restored display brightness', { value: v });
+            }
+          }
+          const savedContrast = _db!.getSetting('display.contrast');
+          if (savedContrast != null && _displayHardware.capabilities.contrast.available) {
+            const v = parseInt(savedContrast, 10);
+            if (Number.isFinite(v) && v >= 0 && v <= 100) {
+              _displayHardware.setContrast(v);
+              log.info('Restored display contrast', { value: v });
+            }
+          }
+          const savedRotation = _db!.getSetting('display.rotation');
+          if (savedRotation != null && _displayHardware.capabilities.rotation.available) {
+            const v = parseInt(savedRotation, 10) as 0 | 90 | 180 | 270;
+            if ([0, 90, 180, 270].includes(v)) {
+              _displayHardware.setRotation(v);
+              log.info('Restored display rotation', { value: v });
+            }
+          }
+        } catch (err) {
+          log.error('Failed to restore display settings', err);
+        }
       }
 
       log.info('Host service boot complete');
