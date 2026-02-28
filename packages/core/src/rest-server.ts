@@ -358,15 +358,20 @@ export function createRestServer(
       writeJson(res, 404, { error: 'Not Found' });
       return;
     }
-    const url = new URL(req.url ?? '/', 'http://localhost');
-    const params: Record<string, string> = {};
-    for (const [key, value] of url.searchParams.entries()) {
-      params[key] = value;
+    try {
+      const url = new URL(req.url ?? '/', 'http://localhost');
+      const params: Record<string, string> = {};
+      for (const [key, value] of url.searchParams.entries()) {
+        params[key] = value;
+      }
+      const result = await handlers.getMarketplacePlugins(
+        Object.keys(params).length > 0 ? params : undefined
+      );
+      writeJson(res, 200, result);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to fetch marketplace plugins';
+      writeJson(res, 500, { error: msg });
     }
-    const result = await handlers.getMarketplacePlugins(
-      Object.keys(params).length > 0 ? params : undefined
-    );
-    writeJson(res, 200, result);
   });
 
   addRoute('/marketplace/categories', 'GET', async (_req, res) => {
@@ -374,8 +379,13 @@ export function createRestServer(
       writeJson(res, 404, { error: 'Not Found' });
       return;
     }
-    const categories = await handlers.getMarketplaceCategories();
-    writeJson(res, 200, categories);
+    try {
+      const categories = await handlers.getMarketplaceCategories();
+      writeJson(res, 200, categories);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to fetch categories';
+      writeJson(res, 500, { error: msg });
+    }
   });
 
   // ── Display hardware routes ───────────────────────────────────────────────
@@ -827,13 +837,18 @@ export function createRestServer(
             writeJson(res, 404, { error: 'Not Found' });
             return;
           }
-          const pluginId = decodeURIComponent(marketplaceItemMatch[1]!);
-          const plugin = await handlers.getMarketplacePlugin(pluginId);
-          if (!plugin) {
-            writeJson(res, 404, { error: `Plugin '${pluginId}' not found` });
-            return;
+          try {
+            const pluginId = decodeURIComponent(marketplaceItemMatch[1]!);
+            const plugin = await handlers.getMarketplacePlugin(pluginId);
+            if (!plugin) {
+              writeJson(res, 404, { error: `Plugin '${pluginId}' not found` });
+              return;
+            }
+            writeJson(res, 200, plugin);
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : 'Failed to fetch plugin';
+            writeJson(res, 500, { error: msg });
           }
-          writeJson(res, 200, plugin);
           return;
         }
 
