@@ -1,11 +1,11 @@
 ---
 # lensing-r333
 title: 'Feature: Connector Types & Runtime'
-status: todo
+status: in-progress
 type: feature
 priority: high
 created_at: 2026-02-28T15:44:19Z
-updated_at: 2026-02-28T15:44:19Z
+updated_at: 2026-02-28T18:05:00Z
 parent: lensing-ugku
 ---
 

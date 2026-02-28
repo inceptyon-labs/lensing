@@ -1,11 +1,11 @@
 ---
 # lensing-m1w0
 title: Add SSRF protection URL blocklist
-status: todo
+status: in-progress
 type: task
 priority: high
 created_at: 2026-02-28T15:45:17Z
-updated_at: 2026-02-28T15:45:17Z
+updated_at: 2026-02-28T18:04:53Z
 parent: lensing-r333
 ---
 
