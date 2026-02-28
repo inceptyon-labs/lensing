@@ -153,7 +153,10 @@ export function createPermissionEnforcer(manifest: PluginManifest, options?: Enf
           throw new Error('Permission denied: domain not allowed');
         }
 
-        return originalFetch(url, init);
+        // Force redirect:error to prevent redirect-based SSRF bypasses
+        // (a public URL could otherwise 302 to a private/loopback address)
+        const safeInit: RequestInit = { ...init, redirect: 'error' };
+        return originalFetch(url, safeInit);
       };
     },
 

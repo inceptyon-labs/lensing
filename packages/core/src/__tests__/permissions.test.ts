@@ -33,12 +33,12 @@ describe('Permission Validators', () => {
       expect(validateNetworkDomain('https://any.domain.com/data', permissions)).toBe(true);
     });
 
-    it('should handle localhost and relative URLs', () => {
+    it('should block localhost even when declared in allowed_domains (SSRF protection)', () => {
       const permissions: PluginPermissions = {
         allowed_domains: ['localhost'],
       };
-      expect(validateNetworkDomain('http://localhost:3000/api', permissions)).toBe(true);
-      expect(validateNetworkDomain('http://localhost/api', permissions)).toBe(true);
+      expect(validateNetworkDomain('http://localhost:3000/api', permissions)).toBe(false);
+      expect(validateNetworkDomain('http://localhost/api', permissions)).toBe(false);
     });
   });
 

@@ -43,6 +43,39 @@ function isLinkLocalIpv4(hostname: string): boolean {
   return parts[0] === '169' && parts[1] === '254';
 }
 
+/** Checks if an IPv6 hostname (with brackets) is in a blocked range */
+function isBlockedIPv6(hostname: string): boolean {
+  if (!hostname.startsWith('[') || !hostname.endsWith(']')) return false;
+  const addr = hostname.slice(1, -1).toLowerCase();
+
+  // Loopback ::1
+  if (addr === '::1') return true;
+
+  // Unspecified address ::
+  if (addr === '::') return true;
+
+  // Link-local fe80::/10 (fe80–febf)
+  if (/^fe[89ab]/i.test(addr)) return true;
+
+  // Unique-local fc00::/7 (fc00–fdff)
+  if (/^f[cd]/i.test(addr)) return true;
+
+  // IPv4-mapped ::ffff:w.x.y.z — check embedded dotted-decimal address
+  if (addr.startsWith('::ffff:')) {
+    const embedded = addr.slice(7);
+    if (
+      isLoopbackIpv4(embedded) ||
+      isLinkLocalIpv4(embedded) ||
+      isPrivateIpv4(embedded) ||
+      embedded === '0.0.0.0'
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 /** Well-known metadata hostnames that must always be blocked */
 const BLOCKED_HOSTNAMES = new Set([
   'metadata.google.internal',
@@ -54,7 +87,8 @@ const BLOCKED_HOSTNAMES = new Set([
 export function getBlockReason(urlString: string, options: BlocklistOptions = {}): string | null {
   let hostname: string;
   try {
-    hostname = new URL(urlString).hostname.toLowerCase();
+    // Strip trailing dot (FQDN form: "localhost." is equivalent to "localhost")
+    hostname = new URL(urlString).hostname.toLowerCase().replace(/\.$/, '');
   } catch {
     return 'Invalid URL';
   }
@@ -74,9 +108,13 @@ export function getBlockReason(urlString: string, options: BlocklistOptions = {}
     return 'Blocked: 0.0.0.0';
   }
 
-  // IPv6 loopback — URL.hostname includes brackets: "[::1]"
-  if (hostname === '[::1]') {
-    return 'Blocked: IPv6 loopback ::1';
+  // IPv6 addresses (includes loopback ::1, link-local fe80::/10, unique-local fc00::/7, etc.)
+  if (hostname.startsWith('[')) {
+    if (isBlockedIPv6(hostname)) {
+      return `Blocked: IPv6 address ${hostname}`;
+    }
+    // Non-blocked IPv6 addresses are allowed (or handled by allowPrivate above)
+    return null;
   }
 
   // 127.x.x.x loopback range
