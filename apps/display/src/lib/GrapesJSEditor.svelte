@@ -5,6 +5,8 @@
   export let width: number | string = '100%';
   export let height: number | string = '600px';
   export let initialProject: Record<string, unknown> | undefined = undefined;
+  /** Called with (html, css) whenever editor content changes */
+  export let onChange: ((html: string, css: string) => void) | undefined = undefined;
 
   // @ts-ignore - Svelte bind:this element typing
   let container: any;
@@ -45,6 +47,17 @@
         appendTo: '#traits',
       },
     });
+
+    if (onChange) {
+      const notify = () => {
+        onChange!(
+          (editor as any)?.getHtml?.() ?? '',
+          (editor as any)?.getCss?.() ?? ''
+        );
+      };
+      (editor as any).on('component:update', notify);
+      (editor as any).on('style:property:update', notify);
+    }
   });
 
   onDestroy(() => {
@@ -66,23 +79,7 @@
   }
 </script>
 
-<div bind:this={container} class="grapesjs-editor" style="width: {width}; height: {height};"></div>
-
-<style>
-  .grapesjs-editor {
-    background: var(--event-horizon);
-    border: 1px solid var(--edge);
-    border-radius: var(--radius-md);
-    padding: var(--space-4);
-    color: var(--dim-light);
-    overflow: hidden;
-  }
-
-  :global(.grapesjs-editor) {
-    --gjs-base-bg: var(--event-horizon);
-    --gjs-base-border-color: var(--edge);
-    --gjs-primary-color: var(--ember);
-    --gjs-text-color: var(--starlight);
-    --gjs-text-color-secondary: var(--dim-light);
-  }
-</style>
+<div
+  bind:this={container}
+  style="width: {width}; height: {height}; background: var(--event-horizon); border: 1px solid var(--edge); border-radius: var(--radius-md); padding: var(--space-4); color: var(--dim-light); overflow: hidden;"
+></div>
