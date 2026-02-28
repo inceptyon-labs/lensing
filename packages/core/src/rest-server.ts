@@ -59,6 +59,10 @@ export interface RestServerHandlers {
   setDisplayBrightness?: (value: number) => Promise<void>;
   setDisplayRotation?: (value: RotationValue, persistent?: boolean) => Promise<void>;
   setDisplayContrast?: (value: number) => Promise<void>;
+  // Builder
+  testConnector?: (
+    config: import('./connector-proxy').ConnectorTestConfig
+  ) => Promise<import('./connector-proxy').ConnectorTestResult>;
 }
 
 /** Configuration options for the REST server */
@@ -481,6 +485,27 @@ export function createRestServer(
       writeJson(res, 200, { ok: true });
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to set contrast';
+      writeJson(res, 500, { error: msg });
+    }
+  });
+
+  addRoute('/api/admin/builder/test-connector', 'POST', async (_req, res, body) => {
+    if (!handlers.testConnector) {
+      writeJson(res, 404, { error: 'Not Found' });
+      return;
+    }
+    let config: import('./connector-proxy').ConnectorTestConfig;
+    try {
+      config = JSON.parse(body) as import('./connector-proxy').ConnectorTestConfig;
+    } catch {
+      writeJson(res, 400, { error: 'Invalid JSON' });
+      return;
+    }
+    try {
+      const result = await handlers.testConnector(config);
+      writeJson(res, 200, result);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Internal error';
       writeJson(res, 500, { error: msg });
     }
   });
