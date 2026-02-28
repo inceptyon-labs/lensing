@@ -8,6 +8,11 @@
 
   let currentStep = 0;
   let showConfirm = false;
+  let isPending = false;
+
+  $: if (currentStep >= steps.length) {
+    currentStep = Math.max(0, steps.length - 1);
+  }
 
   $: isLastStep = currentStep === steps.length - 1;
   $: currentValid = stepValid[currentStep] ?? false;
@@ -37,18 +42,23 @@
 
   function confirmDiscard() {
     showConfirm = false;
+    isPending = true;
     onCancel();
   }
 
   function dismissConfirm() {
     showConfirm = false;
+    isPending = false;
   }
 
   function handleFinish() {
     if (currentValid) {
+      isPending = true;
       onFinish();
     }
   }
+
+  $: isPending = false;
 </script>
 
 <div>
@@ -74,19 +84,26 @@
       <button type="button" on:click={goBack}>Back</button>
     {/if}
 
-    <button type="button" on:click={handleCancel}>Cancel</button>
+    <button type="button" disabled={isPending} on:click={handleCancel}>Cancel</button>
 
     {#if isLastStep}
-      <button type="button" disabled={!currentValid} on:click={handleFinish}>Finish</button>
+      <button type="button" disabled={!currentValid || isPending} on:click={handleFinish}
+        >Finish</button
+      >
     {:else}
       <button type="button" disabled={!currentValid} on:click={goNext}>Next</button>
     {/if}
   </div>
 
   {#if showConfirm}
-    <div data-testid="confirm-dialog">
-      <p>You have unsaved changes. Are you sure you want to discard them?</p>
-      <button type="button" on:click={confirmDiscard}>Discard</button>
+    <div
+      data-testid="confirm-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="confirm-title"
+    >
+      <p id="confirm-title">You have unsaved changes. Are you sure you want to discard them?</p>
+      <button type="button" disabled={isPending} on:click={confirmDiscard}>Discard</button>
       <button type="button" on:click={dismissConfirm}>Keep editing</button>
     </div>
   {/if}
