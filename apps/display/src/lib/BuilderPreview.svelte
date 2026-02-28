@@ -43,9 +43,7 @@
 
   $: hasData = sampleData !== null && sampleData !== undefined;
 
-  $: processedHtml = hasData
-    ? interpolate(html, sampleData as Record<string, unknown>)
-    : html;
+  $: processedHtml = hasData ? interpolate(html, sampleData as Record<string, unknown>) : html;
 
   function buildSrcdoc(h: string, c: string): string {
     return (
@@ -71,7 +69,8 @@
   <div style="display: flex; align-items: center; justify-content: space-between;">
     <span
       style="font-size: var(--text-sm, 0.875rem); color: var(--dim-light, hsl(220, 10%, 62%)); font-weight: var(--weight-medium, 500); letter-spacing: 0.04em; text-transform: uppercase;"
-    >Preview</span>
+      >Preview</span
+    >
     <div role="group" aria-label="Preview size" style="display: flex; gap: var(--space-1, 4px);">
       {#each SIZE_KEYS as size}
         <button
@@ -95,7 +94,8 @@
       >
         <span
           style="color: var(--ghost-light, hsl(220, 6%, 28%)); font-size: var(--text-sm, 0.875rem); text-align: center; padding: var(--space-4, 16px);"
-        >No data — test a connector in Step 2 to see live data</span>
+          >No data — test a connector in Step 2 to see live data</span
+        >
       </div>
     {/if}
     <iframe

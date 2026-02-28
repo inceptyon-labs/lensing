@@ -8,7 +8,7 @@ created_at: 2026-02-28T15:44:23Z
 updated_at: 2026-02-28T23:27:15Z
 parent: lensing-jwka
 blocked_by:
-    - lensing-r333
+  - lensing-r333
 ---
 
 The step-by-step wizard that guides users through plugin creation: metadata → data source → design → preview. Handles the non-visual parts of the builder flow.

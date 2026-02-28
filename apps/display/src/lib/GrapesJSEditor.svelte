@@ -50,10 +50,7 @@
 
     if (onChange) {
       const notify = () => {
-        onChange!(
-          (editor as any)?.getHtml?.() ?? '',
-          (editor as any)?.getCss?.() ?? ''
-        );
+        onChange!((editor as any)?.getHtml?.() ?? '', (editor as any)?.getCss?.() ?? '');
       };
       (editor as any).on('component:update', notify);
       (editor as any).on('style:property:update', notify);
