@@ -1,11 +1,11 @@
 ---
 # lensing-fp1c
 title: Build data source step with connector config
-status: todo
+status: in-progress
 type: task
 priority: high
 created_at: 2026-02-28T15:45:36Z
-updated_at: 2026-02-28T15:45:36Z
+updated_at: 2026-02-28T19:07:33Z
 parent: lensing-mb8p
 ---
 
