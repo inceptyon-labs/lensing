@@ -1,11 +1,11 @@
 ---
 # lensing-8orl
 title: Build metadata step form
-status: in-progress
+status: completed
 type: task
 priority: normal
 created_at: 2026-02-28T15:45:33Z
-updated_at: 2026-02-28T22:43:16Z
+updated_at: 2026-02-28T22:43:41Z
 parent: lensing-mb8p
 ---
 

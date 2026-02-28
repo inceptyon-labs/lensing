@@ -1,11 +1,11 @@
 ---
 # lensing-vy04
 title: Create builder wizard shell with step navigation
-status: todo
+status: in-progress
 type: task
 priority: high
 created_at: 2026-02-28T15:45:28Z
-updated_at: 2026-02-28T15:45:28Z
+updated_at: 2026-02-28T22:44:56Z
 parent: lensing-mb8p
 ---
 
