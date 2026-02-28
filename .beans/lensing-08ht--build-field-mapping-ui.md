@@ -1,11 +1,11 @@
 ---
 # lensing-08ht
 title: Build field mapping UI
-status: todo
+status: in-progress
 type: task
 priority: high
 created_at: 2026-02-28T15:45:44Z
-updated_at: 2026-02-28T15:45:44Z
+updated_at: 2026-02-28T19:42:34Z
 parent: lensing-mb8p
 ---
 
