@@ -1,6 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import type { PluginAdminEntry, MarketplacePlugin, MarketplaceListResponse } from '@lensing/types';
+  import type {
+    PluginAdminEntry,
+    MarketplacePlugin,
+    MarketplaceListResponse,
+  } from '@lensing/types';
   import { ZONE_NAMES } from './config.ts';
   import { MODULE_GROUPS } from './admin-module-groups.ts';
   import AdminPluginCard from './AdminPluginCard.svelte';
@@ -19,6 +23,7 @@
 
   let marketplacePlugins: MarketplacePlugin[] | null = null;
   let marketplaceLoading = false;
+  let marketplaceLoadFailed = false;
 
   /** Track which plugins have been saved since last restart */
   let dirtyIds = new Set<string>();
@@ -64,8 +69,9 @@
   });
 
   async function fetchMarketplace() {
-    if (marketplacePlugins !== null) return; // already loaded
+    if (marketplacePlugins !== null || marketplaceLoading) return; // already loaded or in progress
     marketplaceLoading = true;
+    marketplaceLoadFailed = false;
     try {
       // eslint-disable-next-line no-undef
       const res = await fetch('/marketplace');
@@ -74,7 +80,7 @@
       marketplacePlugins = data.plugins;
       marketplaceCount = data.total;
     } catch {
-      marketplacePlugins = [];
+      marketplaceLoadFailed = true; // allow retry on next tab visit
     } finally {
       marketplaceLoading = false;
     }

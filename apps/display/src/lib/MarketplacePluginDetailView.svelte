@@ -15,6 +15,14 @@
   let installStatus: InstallStatus = 'idle';
   let installError = '';
 
+  // Reset install state when plugin changes (component reuse)
+  let _trackedId = plugin.id;
+  $: if (plugin.id !== _trackedId) {
+    _trackedId = plugin.id;
+    installStatus = 'idle';
+    installError = '';
+  }
+
   async function handleInstall() {
     if (!onInstall || installStatus === 'installing') return;
     installStatus = 'installing';
