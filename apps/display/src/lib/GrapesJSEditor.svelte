@@ -1,11 +1,12 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import grapesjs from 'grapesjs';
-  import { registerWidgetBlocks } from './grapes-blocks';
+  import { registerWidgetBlocks, registerDataBlocks } from './grapes-blocks';
 
   export let width: number | string = '100%';
   export let height: number | string = '600px';
   export let initialProject: Record<string, unknown> | undefined = undefined;
+  export let slots: Array<{ id: string; label: string }> = [];
   /** Called with (html, css) whenever editor content changes */
   export let onChange: ((html: string, css: string) => void) | undefined = undefined;
 
@@ -50,6 +51,7 @@
     });
 
     registerWidgetBlocks(editor);
+    registerDataBlocks(editor, slots);
 
     if (onChange) {
       const notify = () => {

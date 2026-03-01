@@ -94,12 +94,12 @@ describe('GrapesJSEditor block registration', () => {
     vi.clearAllMocks();
   });
 
-  it('registers exactly 7 custom widget blocks on init', async () => {
+  it('registers 7 custom widget blocks and data-list block on init', async () => {
     await renderEditor({});
-    expect(mockEditor._blocks).toHaveLength(7);
+    expect(mockEditor._blocks).toHaveLength(8);
   });
 
-  it('registers all required widget block IDs', async () => {
+  it('registers all required widget and data block IDs', async () => {
     await renderEditor({});
     expect(mockEditor._blocks).toContain('widget-text');
     expect(mockEditor._blocks).toContain('widget-heading');
@@ -108,5 +108,6 @@ describe('GrapesJSEditor block registration', () => {
     expect(mockEditor._blocks).toContain('widget-list');
     expect(mockEditor._blocks).toContain('widget-divider');
     expect(mockEditor._blocks).toContain('widget-icon');
+    expect(mockEditor._blocks).toContain('data-list');
   });
 });
