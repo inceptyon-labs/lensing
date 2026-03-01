@@ -218,3 +218,7 @@ export type { PublisherConfig, PublisherResult } from './publisher';
 // ── JSON API Connector ─────────────────────────────────────────────────────────
 export { createJsonApiConnector } from './json-api-connector';
 export type { JsonApiConnector, JsonApiConnectorOptions } from './json-api-connector';
+
+// ── Marketplace Plugin Installation ────────────────────────────────────────────
+export { downloadAndInstallPlugin } from './marketplace-install';
+export type { MarketplaceInstallResult, MarketplaceInstallOptions } from './marketplace-install';

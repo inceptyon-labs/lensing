@@ -41,6 +41,8 @@ export interface RestServerHandlers {
   getMarketplacePlugins?: (params?: Record<string, string>) => Promise<MarketplaceListResponse>;
   getMarketplacePlugin?: (id: string) => Promise<MarketplacePlugin | undefined>;
   getMarketplaceCategories?: () => Promise<MarketplaceCategory[]>;
+  // Marketplace install (optional — omit to disable marketplace install endpoint)
+  installMarketplacePlugin?: (id: string) => Promise<PluginAdminEntry>;
   // Plugin management (optional — omit to disable plugin endpoints)
   getPlugins?: () => Promise<PluginAdminEntry[]>;
   getPlugin?: (id: string) => Promise<PluginAdminEntry | undefined>;
@@ -886,6 +888,52 @@ export function createRestServer(
             }
             return;
           }
+        }
+
+        // POST /marketplace/:id/install — install a marketplace plugin
+        const marketplaceInstallMatch = cleanPath.match(/^\/marketplace\/([^/]+)\/install$/);
+        if (marketplaceInstallMatch && method === 'POST') {
+          let pluginId: string;
+          try {
+            pluginId = decodeURIComponent(marketplaceInstallMatch[1]!);
+          } catch {
+            writeJson(res, 400, { error: 'Invalid plugin ID in URL' });
+            try {
+              logger?.({ method, path, status: 400, duration_ms: Date.now() - start });
+            } catch {
+              // Ignore logger errors
+            }
+            return;
+          }
+
+          if (!handlers.installMarketplacePlugin) {
+            writeJson(res, 404, { error: 'Not Found' });
+            try {
+              logger?.({ method, path, status: 404, duration_ms: Date.now() - start });
+            } catch {
+              // Ignore logger errors
+            }
+            return;
+          }
+
+          try {
+            const plugin = await handlers.installMarketplacePlugin(pluginId);
+            writeJson(res, 201, { ok: true, plugin });
+            try {
+              logger?.({ method, path, status: 201, duration_ms: Date.now() - start });
+            } catch {
+              // Ignore logger errors
+            }
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : 'Install failed';
+            writeJson(res, 400, { error: msg });
+            try {
+              logger?.({ method, path, status: 400, duration_ms: Date.now() - start });
+            } catch {
+              // Ignore logger errors
+            }
+          }
+          return;
         }
 
         const pathRoutes = routes.get(cleanPath);
