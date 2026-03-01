@@ -544,4 +544,146 @@ describe('PluginAdminHandlers (plugin-admin-handlers.ts)', () => {
 
     db.close();
   });
+
+  // ── saveBuiltPlugin ──────────────────────────────────────────────────────
+
+  describe('saveBuiltPlugin', () => {
+    function builderInput(overrides: Partial<import('../plugin-package').PackageInput> = {}) {
+      return {
+        id: 'my-widget',
+        name: 'My Widget',
+        version: '1.0.0',
+        html: '<div>{{title}}</div>',
+        css: '.widget { color: white; }',
+        connector: {
+          type: 'json_api',
+          url: 'https://api.example.com/data',
+          refreshInterval: 60,
+        },
+        ...overrides,
+      } satisfies import('../plugin-package').PackageInput;
+    }
+
+    it('should save plugin and reload so it appears in plugin list', async () => {
+      const db = createDatabase({ path: ':memory:' });
+      const loader = createPluginLoader({ pluginsDir });
+      await loader.load();
+
+      const handlers = createPluginAdminHandlers({ pluginLoader: loader, db, pluginsDir });
+
+      // Initially no third-party plugins
+      const before = await handlers.getPlugins!();
+      expect(before.filter((p) => !p.builtin).length).toBe(0);
+
+      // Save a builder plugin
+      const entry = await handlers.saveBuiltPlugin!(builderInput());
+
+      expect(entry.plugin_id).toBe('my-widget');
+      expect(entry.manifest.name).toBe('My Widget');
+      expect(entry.status).toBe('active');
+      expect(entry.enabled).toBe(true);
+
+      // Plugin now appears in list
+      const after = await handlers.getPlugins!();
+      expect(after.filter((p) => !p.builtin).length).toBe(1);
+
+      db.close();
+    });
+
+    it('should make saved plugin discoverable via getPlugin', async () => {
+      const db = createDatabase({ path: ':memory:' });
+      const loader = createPluginLoader({ pluginsDir });
+      await loader.load();
+
+      const handlers = createPluginAdminHandlers({ pluginLoader: loader, db, pluginsDir });
+
+      await handlers.saveBuiltPlugin!(builderInput());
+
+      const plugin = await handlers.getPlugin!('my-widget');
+      expect(plugin).toBeDefined();
+      expect(plugin!.plugin_id).toBe('my-widget');
+      expect(plugin!.manifest.version).toBe('1.0.0');
+
+      db.close();
+    });
+
+    it('should overwrite existing plugin when same ID saved again', async () => {
+      const db = createDatabase({ path: ':memory:' });
+      const loader = createPluginLoader({ pluginsDir });
+      await loader.load();
+
+      const handlers = createPluginAdminHandlers({ pluginLoader: loader, db, pluginsDir });
+
+      // Save v1
+      await handlers.saveBuiltPlugin!(builderInput({ version: '1.0.0' }));
+      const v1 = await handlers.getPlugin!('my-widget');
+      expect(v1!.manifest.version).toBe('1.0.0');
+
+      // Save v2 (overwrite)
+      await handlers.saveBuiltPlugin!(builderInput({ version: '2.0.0' }));
+      const v2 = await handlers.getPlugin!('my-widget');
+      expect(v2!.manifest.version).toBe('2.0.0');
+
+      // Still only one third-party plugin
+      const plugins = await handlers.getPlugins!();
+      expect(plugins.filter((p) => !p.builtin).length).toBe(1);
+
+      db.close();
+    });
+
+    it('should fire onChange callback with saved action', async () => {
+      const db = createDatabase({ path: ':memory:' });
+      const loader = createPluginLoader({ pluginsDir });
+      await loader.load();
+
+      const changes: Array<{ pluginId: string; action: string }> = [];
+      const handlers = createPluginAdminHandlers({
+        pluginLoader: loader,
+        db,
+        pluginsDir,
+        onChange: (pluginId, action) => {
+          changes.push({ pluginId, action });
+        },
+      });
+
+      await handlers.saveBuiltPlugin!(builderInput());
+
+      expect(changes).toContainEqual({ pluginId: 'my-widget', action: 'saved' });
+
+      db.close();
+    });
+
+    it('should throw when pluginsDir not configured', async () => {
+      const db = createDatabase({ path: ':memory:' });
+      const loader = createPluginLoader({ pluginsDir });
+      await loader.load();
+
+      // No pluginsDir passed
+      const handlers = createPluginAdminHandlers({ pluginLoader: loader, db });
+
+      await expect(handlers.saveBuiltPlugin!(builderInput())).rejects.toThrow(/not configured/i);
+
+      db.close();
+    });
+
+    it('should write plugin files to disk', async () => {
+      const db = createDatabase({ path: ':memory:' });
+      const loader = createPluginLoader({ pluginsDir });
+      await loader.load();
+
+      const handlers = createPluginAdminHandlers({ pluginLoader: loader, db, pluginsDir });
+
+      await handlers.saveBuiltPlugin!(builderInput());
+
+      // Plugin directory should exist with manifest
+      const manifestPath = path.join(pluginsDir, 'my-widget', 'plugin.json');
+      expect(fs.existsSync(manifestPath)).toBe(true);
+
+      const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+      expect(manifest.id).toBe('my-widget');
+      expect(manifest.name).toBe('My Widget');
+
+      db.close();
+    });
+  });
 });

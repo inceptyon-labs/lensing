@@ -10,6 +10,7 @@ import type {
 import { MODULE_SCHEMAS, MODULE_IDS, getIntegrationFields } from '@lensing/types';
 import { readModuleConfig } from './module-settings';
 import { installPluginFromZip } from './plugin-install';
+import { savePluginFromBuilder, type BuilderSaveInput } from './plugin-save';
 
 export interface PluginAdminHandlersOptions {
   pluginLoader: PluginLoader;
@@ -216,6 +217,19 @@ export function createPluginAdminHandlers(options: PluginAdminHandlersOptions) {
       const { pluginId, manifest } = installPluginFromZip(zipBuffer, pluginsDir);
       await pluginLoader.reload();
       onChange?.(pluginId, 'installed');
+      const state = getPersistedState(db, pluginId);
+      return buildEntry(pluginId, manifest as PluginManifestWithConfig, 'loaded', undefined, state);
+    },
+
+    async saveBuiltPlugin(input: BuilderSaveInput): Promise<PluginAdminEntry> {
+      if (!pluginsDir) {
+        throw new Error('Plugin save not configured (no pluginsDir)');
+      }
+      const { pluginId, manifest } = await savePluginFromBuilder(input, pluginsDir, {
+        overwrite: true,
+      });
+      await pluginLoader.reload();
+      onChange?.(pluginId, 'saved');
       const state = getPersistedState(db, pluginId);
       return buildEntry(pluginId, manifest as PluginManifestWithConfig, 'loaded', undefined, state);
     },
