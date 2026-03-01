@@ -111,3 +111,79 @@ describe('MarketplacePluginDetailView', () => {
     expect(container.querySelector('.detail-view')).toBeInTheDocument();
   });
 });
+
+describe('MarketplacePluginDetailView: install progress', () => {
+  it('calls onInstall when Install button clicked', async () => {
+    const user = userEvent.setup();
+    const onInstallMock = vi.fn().mockResolvedValue(undefined);
+    render(MarketplacePluginDetailView, {
+      props: { plugin: mockPlugin, onBack: () => {}, onInstall: onInstallMock },
+    });
+    await user.click(screen.getByRole('button', { name: /install/i }));
+    expect(onInstallMock).toHaveBeenCalledWith(mockPlugin);
+  });
+
+  it('shows downloading state during install', async () => {
+    const user = userEvent.setup();
+    let resolveInstall: () => void;
+    const onInstallMock = vi.fn().mockReturnValue(
+      new Promise<void>((res) => {
+        resolveInstall = res;
+      })
+    );
+    render(MarketplacePluginDetailView, {
+      props: { plugin: mockPlugin, onBack: () => {}, onInstall: onInstallMock },
+    });
+    await user.click(screen.getByRole('button', { name: /install/i }));
+    expect(screen.getByText(/installing/i)).toBeInTheDocument();
+    resolveInstall!();
+  });
+
+  it('disables install button during install', async () => {
+    const user = userEvent.setup();
+    let resolveInstall: () => void;
+    const onInstallMock = vi.fn().mockReturnValue(
+      new Promise<void>((res) => {
+        resolveInstall = res;
+      })
+    );
+    render(MarketplacePluginDetailView, {
+      props: { plugin: mockPlugin, onBack: () => {}, onInstall: onInstallMock },
+    });
+    await user.click(screen.getByRole('button', { name: /install/i }));
+    expect(screen.getByRole('button', { name: /installing/i })).toBeDisabled();
+    resolveInstall!();
+  });
+
+  it('shows done message after successful install', async () => {
+    const user = userEvent.setup();
+    const onInstallMock = vi.fn().mockResolvedValue(undefined);
+    render(MarketplacePluginDetailView, {
+      props: { plugin: mockPlugin, onBack: () => {}, onInstall: onInstallMock },
+    });
+    await user.click(screen.getByRole('button', { name: /install/i }));
+    expect(screen.getByText(/installed/i)).toBeInTheDocument();
+  });
+});
+
+describe('MarketplacePluginDetailView: error state', () => {
+  it('shows error message when install fails', async () => {
+    const user = userEvent.setup();
+    const onInstallMock = vi.fn().mockRejectedValue(new Error('Network error'));
+    render(MarketplacePluginDetailView, {
+      props: { plugin: mockPlugin, onBack: () => {}, onInstall: onInstallMock },
+    });
+    await user.click(screen.getByRole('button', { name: /install/i }));
+    expect(screen.getByText(/network error/i)).toBeInTheDocument();
+  });
+
+  it('shows Install button again after failed install (recoverable)', async () => {
+    const user = userEvent.setup();
+    const onInstallMock = vi.fn().mockRejectedValue(new Error('Network error'));
+    render(MarketplacePluginDetailView, {
+      props: { plugin: mockPlugin, onBack: () => {}, onInstall: onInstallMock },
+    });
+    await user.click(screen.getByRole('button', { name: /install/i }));
+    expect(screen.getByRole('button', { name: /install/i })).toBeInTheDocument();
+  });
+});

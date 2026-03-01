@@ -10,6 +10,23 @@
     rss: 'RSS',
     static: 'Static',
   };
+
+  type InstallStatus = 'idle' | 'installing' | 'done' | 'error';
+  let installStatus: InstallStatus = 'idle';
+  let installError = '';
+
+  async function handleInstall() {
+    if (!onInstall || installStatus === 'installing') return;
+    installStatus = 'installing';
+    installError = '';
+    try {
+      await onInstall(plugin);
+      installStatus = 'done';
+    } catch (err) {
+      installError = err instanceof Error ? err.message : 'Install failed';
+      installStatus = 'error';
+    }
+  }
 </script>
 
 <div class="detail-view">
@@ -56,16 +73,26 @@
       <p class="plugin-description">{plugin.description}</p>
 
       <div class="install-area">
-        {#if plugin.installed && !plugin.updateAvailable}
+        {#if plugin.installed && !plugin.updateAvailable && installStatus === 'idle'}
           <span class="installed-badge">Installed</span>
-        {:else if plugin.installed && plugin.updateAvailable}
-          <button class="install-btn install-btn--update" on:click={() => onInstall?.(plugin)} aria-label="Update">
+        {:else if plugin.installed && plugin.updateAvailable && installStatus === 'idle'}
+          <button class="install-btn install-btn--update" on:click={handleInstall} aria-label="Update">
             Update
           </button>
+        {:else if installStatus === 'installing'}
+          <button class="install-btn install-btn--progress" disabled aria-label="Installing">
+            Installing…
+          </button>
+        {:else if installStatus === 'done'}
+          <span class="installed-badge">Installed</span>
         {:else}
-          <button class="install-btn" on:click={() => onInstall?.(plugin)} aria-label="Install">
+          <button class="install-btn" on:click={handleInstall} aria-label="Install">
             Install
           </button>
+        {/if}
+
+        {#if installStatus === 'error' && installError}
+          <p class="install-error">{installError}</p>
         {/if}
       </div>
     </div>
