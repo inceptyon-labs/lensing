@@ -50,9 +50,7 @@ describe('packagePlugin', () => {
   it('generates correct plugin.json manifest fields', () => {
     const result = packagePlugin(validInput());
     const zip = readZip(result.buffer);
-    const manifest = JSON.parse(
-      zip.getEntry('plugin.json')!.getData().toString('utf-8')
-    );
+    const manifest = JSON.parse(zip.getEntry('plugin.json')!.getData().toString('utf-8'));
 
     expect(manifest.id).toBe('test-plugin');
     expect(manifest.name).toBe('Test Plugin');
@@ -63,21 +61,19 @@ describe('packagePlugin', () => {
   it('derives allowed_domains from connector URL', () => {
     const result = packagePlugin(validInput());
     const zip = readZip(result.buffer);
-    const manifest = JSON.parse(
-      zip.getEntry('plugin.json')!.getData().toString('utf-8')
-    );
+    const manifest = JSON.parse(zip.getEntry('plugin.json')!.getData().toString('utf-8'));
 
     expect(manifest.permissions.allowed_domains).toEqual(['api.example.com']);
   });
 
   it('derives max_refresh_ms from connector refreshInterval', () => {
     const result = packagePlugin(
-      validInput({ connector: { type: 'json_api', url: 'https://api.example.com', refreshInterval: 60 } })
+      validInput({
+        connector: { type: 'json_api', url: 'https://api.example.com', refreshInterval: 60 },
+      })
     );
     const zip = readZip(result.buffer);
-    const manifest = JSON.parse(
-      zip.getEntry('plugin.json')!.getData().toString('utf-8')
-    );
+    const manifest = JSON.parse(zip.getEntry('plugin.json')!.getData().toString('utf-8'));
 
     expect(manifest.permissions.max_refresh_ms).toBe(60_000);
   });
@@ -108,9 +104,7 @@ describe('packagePlugin', () => {
     };
     const result = packagePlugin(validInput({ connector }));
     const zip = readZip(result.buffer);
-    const stored = JSON.parse(
-      zip.getEntry('connector.json')!.getData().toString('utf-8')
-    );
+    const stored = JSON.parse(zip.getEntry('connector.json')!.getData().toString('utf-8'));
 
     expect(stored.type).toBe('rss_feed');
     expect(stored.url).toBe('https://feeds.example.com/rss');
@@ -176,9 +170,7 @@ describe('packagePlugin', () => {
     };
     const result = packagePlugin(validInput({ connector }));
     const zip = readZip(result.buffer);
-    const stored = JSON.parse(
-      zip.getEntry('connector.json')!.getData().toString('utf-8')
-    );
+    const stored = JSON.parse(zip.getEntry('connector.json')!.getData().toString('utf-8'));
 
     expect(stored.headers).toEqual({ Authorization: 'Bearer secret123' });
   });
@@ -194,9 +186,7 @@ describe('packagePlugin', () => {
       })
     );
     const zip = readZip(result.buffer);
-    const manifest = JSON.parse(
-      zip.getEntry('plugin.json')!.getData().toString('utf-8')
-    );
+    const manifest = JSON.parse(zip.getEntry('plugin.json')!.getData().toString('utf-8'));
 
     expect(manifest.permissions.allowed_domains).toEqual(['api.example.com']);
   });
@@ -208,9 +198,7 @@ describe('packagePlugin', () => {
       })
     );
     const zip = readZip(result.buffer);
-    const manifest = JSON.parse(
-      zip.getEntry('plugin.json')!.getData().toString('utf-8')
-    );
+    const manifest = JSON.parse(zip.getEntry('plugin.json')!.getData().toString('utf-8'));
 
     expect(manifest.permissions.max_refresh_ms).toBeUndefined();
   });
