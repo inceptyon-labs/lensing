@@ -222,3 +222,7 @@ export type { JsonApiConnector, JsonApiConnectorOptions } from './json-api-conne
 // ── Marketplace Plugin Installation ────────────────────────────────────────────
 export { downloadAndInstallPlugin } from './marketplace-install';
 export type { MarketplaceInstallResult, MarketplaceInstallOptions } from './marketplace-install';
+
+// ── Plugin Packaging Service ─────────────────────────────────────────────────────
+export { savePluginFromBuilder } from './plugin-save';
+export type { BuilderSaveInput, SaveOptions, SaveResult } from './plugin-save';

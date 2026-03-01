@@ -28,15 +28,18 @@ Download plugin ZIP from marketplace and install via existing plugin install flo
 ## Summary of Changes
 
 **Files created:**
+
 - packages/core/src/marketplace-install.ts (119 lines) - Core download and install logic
-- packages/core/src/__tests__/marketplace-install.test.ts (232 lines) - Comprehensive test suite
+- packages/core/src/**tests**/marketplace-install.test.ts (232 lines) - Comprehensive test suite
 
 **Files modified:**
+
 - packages/core/src/connector-proxy.ts - Added arrayBuffer() to ConnectorFetchFn type
 - packages/core/src/rest-server.ts - Added POST /marketplace/:id/install endpoint
 - packages/core/src/index.ts - Added exports for marketplace install module
 
 **Key implementation details:**
+
 - SSRF protection via getBlockReason() before any network activity
 - AbortController timeout management (default 30s)
 - Download size validation (default 10MB limit)
@@ -45,6 +48,7 @@ Download plugin ZIP from marketplace and install via existing plugin install flo
 - REST endpoint follows project patterns with 201 Created response
 
 **Test coverage:** 11 comprehensive tests covering:
+
 - Successful install and fetch validation
 - Size validation (default and custom limits)
 - Download error handling (HTTP, network, timeout)
