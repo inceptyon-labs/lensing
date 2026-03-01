@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import type { PluginAdminEntry } from '@lensing/types';
+  import type { PluginAdminEntry, MarketplacePlugin, MarketplaceListResponse } from '@lensing/types';
   import { ZONE_NAMES } from './config.ts';
   import { MODULE_GROUPS } from './admin-module-groups.ts';
   import AdminPluginCard from './AdminPluginCard.svelte';
@@ -9,12 +9,16 @@
   import AdminTabBar from './AdminTabBar.svelte';
   import AdminModuleSection from './AdminModuleSection.svelte';
   import AdminSettingsPanel from './AdminSettingsPanel.svelte';
+  import MarketplacePluginBrowser from './MarketplacePluginBrowser.svelte';
 
   let plugins: PluginAdminEntry[] = [];
   let loading = true;
   let error: string | null = null;
   let activeTab: 'modules' | 'plugins' | 'marketplace' | 'settings' = 'modules';
   let marketplaceCount: number = 0;
+
+  let marketplacePlugins: MarketplacePlugin[] | null = null;
+  let marketplaceLoading = false;
 
   /** Track which plugins have been saved since last restart */
   let dirtyIds = new Set<string>();
@@ -58,6 +62,39 @@
       loading = false;
     }
   });
+
+  async function fetchMarketplace() {
+    if (marketplacePlugins !== null) return; // already loaded
+    marketplaceLoading = true;
+    try {
+      // eslint-disable-next-line no-undef
+      const res = await fetch('/marketplace');
+      if (!res.ok) throw new Error(`Failed to load marketplace (${res.status})`);
+      const data = (await res.json()) as MarketplaceListResponse;
+      marketplacePlugins = data.plugins;
+      marketplaceCount = data.total;
+    } catch {
+      marketplacePlugins = [];
+    } finally {
+      marketplaceLoading = false;
+    }
+  }
+
+  async function handleMarketplaceInstall(plugin: MarketplacePlugin) {
+    // eslint-disable-next-line no-undef
+    const res = await fetch(`/marketplace/${encodeURIComponent(plugin.id)}/install`, {
+      method: 'POST',
+    });
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      throw new Error(body.error ?? `Install failed (${res.status})`);
+    }
+    await refreshPlugins();
+  }
+
+  $: if (activeTab === 'marketplace') {
+    fetchMarketplace();
+  }
 
   async function handleToggleEnabled(id: string, enabled: boolean) {
     try {
@@ -193,9 +230,11 @@
       </div>
     {/if}
   {:else if activeTab === 'marketplace'}
-    <div class="marketplace-placeholder">
-      <p class="state-message">Marketplace coming soon.</p>
-    </div>
+    <MarketplacePluginBrowser
+      plugins={marketplacePlugins}
+      loading={marketplaceLoading}
+      onInstall={handleMarketplaceInstall}
+    />
   {:else if activeTab === 'settings'}
     <AdminSettingsPanel
       {plugins}
