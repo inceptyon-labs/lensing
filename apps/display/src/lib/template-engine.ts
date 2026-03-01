@@ -81,7 +81,7 @@ export function renderTemplate(
   const tokens = parseTemplate(template);
 
   return tokens
-    .map(token => {
+    .map((token) => {
       switch (token.type) {
         case 'text':
           return token.value;
@@ -95,7 +95,7 @@ export function renderTemplate(
           const items = resolvePath(data, token.variable);
           if (!Array.isArray(items) || items.length === 0) return '';
           return items
-            .map(item => {
+            .map((item) => {
               if (typeof item === 'object' && item !== null) {
                 return renderTemplate(token.content, item as Record<string, unknown>);
               }

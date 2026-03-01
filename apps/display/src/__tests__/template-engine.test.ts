@@ -72,18 +72,20 @@ describe('Template Engine', () => {
 
     it('parses array index {{items[0]}}', () => {
       const tokens = parseTemplate('{{items[0]}}');
-      expect(tokens.some(t => t.type === 'placeholder' && t.path === 'items[0]')).toBe(true);
+      expect(tokens.some((t) => t.type === 'placeholder' && t.path === 'items[0]')).toBe(true);
     });
 
     it('parses array index with nested path {{items[0].title}}', () => {
       const tokens = parseTemplate('{{items[0].title}}');
-      expect(tokens.some(t => t.type === 'placeholder' && t.path === 'items[0].title')).toBe(true);
+      expect(tokens.some((t) => t.type === 'placeholder' && t.path === 'items[0].title')).toBe(
+        true
+      );
     });
 
     it('parses {{#each items}}...{{/each}} block', () => {
       const tokens = parseTemplate('{{#each items}}<div>{{name}}</div>{{/each}}');
-      expect(tokens.some(t => t.type === 'block')).toBe(true);
-      const block = tokens.find(t => t.type === 'block') as any;
+      expect(tokens.some((t) => t.type === 'block')).toBe(true);
+      const block = tokens.find((t) => t.type === 'block') as any;
       expect(block.variable).toBe('items');
       expect(block.content).toContain('{{name}}');
     });
@@ -91,9 +93,9 @@ describe('Template Engine', () => {
     it('parses mixed content with text, placeholders, and blocks', () => {
       const template = 'Header {{#each items}}<li>{{this}}</li>{{/each}} Footer';
       const tokens = parseTemplate(template);
-      expect(tokens.some(t => t.type === 'text' && t.value.includes('Header'))).toBe(true);
-      expect(tokens.some(t => t.type === 'block')).toBe(true);
-      expect(tokens.some(t => t.type === 'text' && t.value.includes('Footer'))).toBe(true);
+      expect(tokens.some((t) => t.type === 'text' && t.value.includes('Header'))).toBe(true);
+      expect(tokens.some((t) => t.type === 'block')).toBe(true);
+      expect(tokens.some((t) => t.type === 'text' && t.value.includes('Footer'))).toBe(true);
     });
   });
 

@@ -32,14 +32,17 @@ Package builder output into a standard plugin directory structure that the exist
 Created a comprehensive plugin packaging service that transforms builder output into installable plugin packages.
 
 **Files created:**
+
 - packages/core/src/plugin-save.ts (42 lines) - Core save service logic
-- packages/core/src/__tests__/plugin-save.test.ts (150 lines) - Comprehensive test suite
+- packages/core/src/**tests**/plugin-save.test.ts (150 lines) - Comprehensive test suite
 
 **Files modified:**
+
 - packages/core/src/rest-server.ts - Added POST /api/admin/builder/save endpoint
 - packages/core/src/index.ts - Added exports for save service
 
 **Key Features:**
+
 - ✓ Reuses existing packagePlugin() for ZIP creation with validation
 - ✓ Reuses existing installPluginFromZip() for filesystem operations
 - ✓ Proper conflict detection with optional overwrite support
@@ -47,12 +50,14 @@ Created a comprehensive plugin packaging service that transforms builder output 
 - ✓ Type-safe implementation with proper error handling
 
 **Test Coverage:**
+
 - 12 passing tests covering all acceptance criteria
 - Tests validate: manifest generation, file writes, conflicts, overwrites
 - Integration with packagePlugin and installPluginFromZip verified
 - All 956 core tests passing
 
 **Acceptance Criteria Fulfilled:**
+
 - ✓ Generates plugin.json manifest from wizard metadata + connector permissions (packagePlugin handles this)
 - ✓ Writes template.html and template.css from GrapesJS output (packagePlugin → ZIP → installPluginFromZip)
 - ✓ Writes connector.json from wizard data source config (packagePlugin handles)

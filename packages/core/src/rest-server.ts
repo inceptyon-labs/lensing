@@ -52,9 +52,7 @@ export interface RestServerHandlers {
   reloadPlugins?: () => Promise<void>;
   installPlugin?: (zipBuffer: Buffer) => Promise<PluginAdminEntry>;
   // Plugin builder (optional — omit to disable plugin builder endpoints)
-  saveBuiltPlugin?: (
-    input: import('./plugin-save').BuilderSaveInput
-  ) => Promise<PluginAdminEntry>;
+  saveBuiltPlugin?: (input: import('./plugin-save').BuilderSaveInput) => Promise<PluginAdminEntry>;
   // Module management
   restartModule?: (id: string) => Promise<{ ok: boolean; running: boolean }>;
   /** Sync running modules with current grid layout widget IDs */
