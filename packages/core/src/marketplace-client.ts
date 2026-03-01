@@ -48,15 +48,11 @@ export function createMarketplaceClient(
   async function fetchFromGitHub(): Promise<MarketplaceIndex> {
     const response = await fetch(url);
     if (!response.ok) {
-      throw new Error(
-        `Marketplace fetch failed: ${response.status} ${response.statusText}`
-      );
+      throw new Error(`Marketplace fetch failed: ${response.status} ${response.statusText}`);
     }
     const data = (await response.json()) as unknown;
     if (!isValidIndex(data)) {
-      throw new Error(
-        'Invalid marketplace index schema: missing version or plugins array'
-      );
+      throw new Error('Invalid marketplace index schema: missing version or plugins array');
     }
     return data;
   }

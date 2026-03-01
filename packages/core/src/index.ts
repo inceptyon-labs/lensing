@@ -208,8 +208,5 @@ export type { PackageInput, PackageResult, ConnectorInput } from './plugin-packa
 
 // ── Marketplace Client ────────────────────────────────────────────────────────
 export { createMarketplaceClient } from './marketplace-client';
-export type {
-  MarketplaceClientOptions,
-  MarketplaceClientInstance,
-} from './marketplace-client';
+export type { MarketplaceClientOptions, MarketplaceClientInstance } from './marketplace-client';
 export type { MarketplaceIndex } from '@lensing/types';

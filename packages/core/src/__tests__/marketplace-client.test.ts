@@ -40,7 +40,9 @@ describe('MarketplaceClient', () => {
 
     const result = await client.getIndex();
     expect(result).toEqual(mockIndex);
-    expect(mockFetch).toHaveBeenCalledWith('https://raw.githubusercontent.com/owner/repo/main/index.json');
+    expect(mockFetch).toHaveBeenCalledWith(
+      'https://raw.githubusercontent.com/owner/repo/main/index.json'
+    );
   });
 
   it('caches to disk at correct path', async () => {
@@ -208,7 +210,7 @@ describe('MarketplaceClient', () => {
     expect(result1).toEqual(mockIndex1);
 
     // Wait for refresh interval to expire
-    await new Promise(resolve => setTimeout(resolve, 20));
+    await new Promise((resolve) => setTimeout(resolve, 20));
 
     mockFetch.mockResolvedValueOnce({
       ok: true,
