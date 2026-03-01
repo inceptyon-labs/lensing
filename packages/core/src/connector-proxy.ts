@@ -14,6 +14,7 @@ export type ConnectorFetchFn = (
   statusText: string;
   json: () => Promise<unknown>;
   text: () => Promise<string>;
+  arrayBuffer?: () => Promise<ArrayBuffer>;
 }>;
 
 /** Input config for testing a connector */
