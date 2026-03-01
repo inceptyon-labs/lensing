@@ -1,11 +1,11 @@
 ---
 # lensing-3niu
 title: Implement template variable injection
-status: todo
+status: in-progress
 type: task
 priority: high
 created_at: 2026-02-28T15:47:41Z
-updated_at: 2026-02-28T15:47:41Z
+updated_at: 2026-03-01T23:12:09Z
 parent: lensing-25mp
 ---
 
