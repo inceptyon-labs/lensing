@@ -78,3 +78,40 @@ export function registerWidgetBlocks(editor: unknown): void {
     attributes: { class: 'fa fa-star' },
   });
 }
+
+/**
+ * Register data-bound blocks for each connector slot.
+ * Creates text, image, and list blocks that use {{slot_id}} template placeholders.
+ */
+export function registerDataBlocks(
+  editor: unknown,
+  slots: Array<{ id: string; label: string }>
+): void {
+  const ed = editor as GrapesEditor;
+
+  for (const slot of slots) {
+    if (slot.id.includes('image')) {
+      ed.BlockManager.add(`data-image-${slot.id}`, {
+        label: `${slot.label} (Image)`,
+        category: 'Data',
+        content: `<img data-slot="${slot.id}" src="{{${slot.id}}}" alt="${slot.label}" style="max-width: 100%; height: auto; display: block;" />`,
+        attributes: { class: 'fa fa-image' },
+      });
+    } else {
+      ed.BlockManager.add(`data-text-${slot.id}`, {
+        label: `${slot.label} (Text)`,
+        category: 'Data',
+        content: `<span data-slot="${slot.id}" style="color: var(--starlight, #e2e4ed); font-size: 16px; background: rgba(99,179,237,0.15); padding: 2px 4px; border-radius: 3px; display: inline-block;">{{${slot.id}}}</span>`,
+        attributes: { class: 'fa fa-database' },
+      });
+    }
+  }
+
+  ed.BlockManager.add('data-list', {
+    label: 'Data List',
+    category: 'Data',
+    content:
+      '<ul style="color: var(--starlight, #e2e4ed); font-size: 16px; margin: 0; padding-left: 20px; list-style-type: disc;"><li style="background: rgba(99,179,237,0.15);">{{item}}</li></ul>',
+    attributes: { class: 'fa fa-list' },
+  });
+}

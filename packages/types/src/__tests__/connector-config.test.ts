@@ -192,9 +192,9 @@ describe('ConnectorConfig Types', () => {
       expect((config.data as Record<string, unknown>).boolean).toBe(true);
       expect((config.data as Record<string, unknown>).null).toBeNull();
       expect(Array.isArray((config.data as Record<string, unknown>).array)).toBe(true);
-      expect(((config.data as Record<string, unknown>).object as Record<string, unknown>).nested).toBe(
-        'value'
-      );
+      expect(
+        ((config.data as Record<string, unknown>).object as Record<string, unknown>).nested
+      ).toBe('value');
     });
   });
 

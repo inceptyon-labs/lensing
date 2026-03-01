@@ -1,11 +1,11 @@
 ---
 # lensing-dx6s
 title: Implement data block binding
-status: todo
+status: in-progress
 type: task
 priority: high
 created_at: 2026-02-28T15:46:03Z
-updated_at: 2026-02-28T15:46:03Z
+updated_at: 2026-03-01T02:26:28Z
 parent: lensing-alyh
 ---
 

@@ -175,3 +175,137 @@ describe('registerWidgetBlocks', () => {
     }
   });
 });
+
+// ── Data Block Registration ─────────────────────────────────────────────────
+
+let registerDataBlocks: (editor: unknown, slots: Array<{ id: string; label: string }>) => void;
+
+beforeEach(async () => {
+  vi.resetModules();
+  const mod = await import('../lib/grapes-blocks');
+  registerWidgetBlocks = mod.registerWidgetBlocks;
+  registerDataBlocks = mod.registerDataBlocks;
+});
+
+describe('registerDataBlocks', () => {
+  let mockEditor: ReturnType<typeof createMockEditor>;
+
+  const testSlots = [
+    { id: 'title', label: 'Title' },
+    { id: 'value', label: 'Value' },
+    { id: 'image', label: 'Image' },
+    { id: 'subtitle', label: 'Subtitle' },
+  ];
+
+  beforeEach(() => {
+    mockEditor = createMockEditor();
+  });
+
+  it('registers a data text block for each text-compatible slot', () => {
+    registerDataBlocks(mockEditor, testSlots);
+    const ids = mockEditor._blocks.map((b) => b.id);
+
+    expect(ids).toContain('data-text-title');
+    expect(ids).toContain('data-text-value');
+    expect(ids).toContain('data-text-subtitle');
+  });
+
+  it('registers a data image block for image slot', () => {
+    registerDataBlocks(mockEditor, testSlots);
+    const ids = mockEditor._blocks.map((b) => b.id);
+
+    expect(ids).toContain('data-image-image');
+  });
+
+  it('registers a data list block', () => {
+    registerDataBlocks(mockEditor, testSlots);
+    const ids = mockEditor._blocks.map((b) => b.id);
+
+    expect(ids).toContain('data-list');
+  });
+
+  it('data text blocks contain {{slot_id}} template placeholder', () => {
+    registerDataBlocks(mockEditor, testSlots);
+    const titleBlock = mockEditor._blocks.find((b) => b.id === 'data-text-title');
+
+    expect(titleBlock).toBeDefined();
+    expect(titleBlock!.content).toContain('{{title}}');
+  });
+
+  it('data image block has src with {{slot_id}} template', () => {
+    registerDataBlocks(mockEditor, testSlots);
+    const imageBlock = mockEditor._blocks.find((b) => b.id === 'data-image-image');
+
+    expect(imageBlock).toBeDefined();
+    expect(imageBlock!.content).toContain('{{image}}');
+    expect(imageBlock!.content).toContain('<img');
+  });
+
+  it('data list block contains list template', () => {
+    registerDataBlocks(mockEditor, testSlots);
+    const listBlock = mockEditor._blocks.find((b) => b.id === 'data-list');
+
+    expect(listBlock).toBeDefined();
+    expect(listBlock!.content).toContain('<ul');
+    expect(listBlock!.content).toContain('<li');
+    expect(listBlock!.content).toContain('{{item}}');
+  });
+
+  it('all data blocks are categorized under "Data"', () => {
+    registerDataBlocks(mockEditor, testSlots);
+
+    for (const block of mockEditor._blocks) {
+      expect(block.category).toBe('Data');
+    }
+  });
+
+  it('data blocks include data-slot attribute for binding', () => {
+    registerDataBlocks(mockEditor, testSlots);
+    const titleBlock = mockEditor._blocks.find((b) => b.id === 'data-text-title');
+
+    expect(titleBlock!.content).toContain('data-slot="title"');
+  });
+
+  it('data text placeholders have visually distinct styling', () => {
+    registerDataBlocks(mockEditor, testSlots);
+    const titleBlock = mockEditor._blocks.find((b) => b.id === 'data-text-title');
+
+    // Should have highlighted background for visual distinction
+    expect(titleBlock!.content).toContain('background');
+  });
+
+  it('each data block has a descriptive label', () => {
+    registerDataBlocks(mockEditor, testSlots);
+
+    const titleBlock = mockEditor._blocks.find((b) => b.id === 'data-text-title');
+    expect(titleBlock!.label).toContain('Title');
+
+    const imageBlock = mockEditor._blocks.find((b) => b.id === 'data-image-image');
+    expect(imageBlock!.label).toContain('Image');
+  });
+
+  it('each data block has an attributes object with a class', () => {
+    registerDataBlocks(mockEditor, testSlots);
+
+    for (const block of mockEditor._blocks) {
+      expect(block.attributes).toBeDefined();
+      expect(block.attributes!.class).toBeTruthy();
+    }
+  });
+
+  it('handles empty slots array gracefully', () => {
+    registerDataBlocks(mockEditor, []);
+    // Should still have the data-list block
+    expect(mockEditor._blocks).toHaveLength(1);
+    expect(mockEditor._blocks[0].id).toBe('data-list');
+  });
+
+  it('handles single slot correctly', () => {
+    registerDataBlocks(mockEditor, [{ id: 'name', label: 'Name' }]);
+    const ids = mockEditor._blocks.map((b) => b.id);
+
+    expect(ids).toContain('data-text-name');
+    expect(ids).toContain('data-list');
+    expect(mockEditor._blocks).toHaveLength(2);
+  });
+});

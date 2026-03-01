@@ -1,11 +1,11 @@
 ---
 # lensing-alyh
 title: 'Feature: GrapesJS Visual Editor'
-status: todo
+status: in-progress
 type: feature
 priority: high
 created_at: 2026-02-28T15:44:28Z
-updated_at: 2026-02-28T15:48:00Z
+updated_at: 2026-03-01T01:33:04Z
 parent: lensing-jwka
 blocked_by:
   - lensing-mb8p

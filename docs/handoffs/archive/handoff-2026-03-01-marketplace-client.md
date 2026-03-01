@@ -12,7 +12,7 @@ Parent Feature: lensing-7nct - Feature: Marketplace Client
 ## Files Changed
 
 - packages/core/src/marketplace-client.ts (86 lines, new) — factory function
-- packages/core/src/__tests__/marketplace-client.test.ts (220 lines, new) — 9 tests
+- packages/core/src/**tests**/marketplace-client.test.ts (220 lines, new) — 9 tests
 - packages/types/src/index.ts — added MarketplaceIndex interface
 - packages/core/src/index.ts — exports added
 
@@ -47,4 +47,4 @@ createMarketplaceClient({
 
 - packages/core/src/marketplace-client.ts
 - packages/types/src/index.ts (MarketplaceIndex, MarketplacePlugin types)
-- .beans/lensing-7nct*.md (parent feature)
+- .beans/lensing-7nct\*.md (parent feature)
