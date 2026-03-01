@@ -1,11 +1,11 @@
 ---
 # lensing-qecs
 title: Build Shadow DOM widget container
-status: in-progress
+status: completed
 type: task
 priority: high
 created_at: 2026-02-28T15:47:37Z
-updated_at: 2026-03-01T01:14:02Z
+updated_at: 2026-03-01T01:14:24Z
 parent: lensing-25mp
 ---
 
@@ -30,17 +30,21 @@ Svelte component that renders builder-created plugin HTML/CSS inside a Shadow DO
 **Implementation completed and merged to main.**
 
 **Component Created:**
+
 - ShadowWidget.svelte — Shadow DOM container with CSS and HTML injection, template interpolation
 
 **Files Created:**
+
 - apps/display/src/lib/ShadowWidget.svelte (34 lines)
-- apps/display/src/__tests__/shadow-widget.test.ts (114 lines)
+- apps/display/src/**tests**/shadow-widget.test.ts (114 lines)
 
 **Test Coverage:**
+
 - 9 tests covering: shadow root creation, CSS/HTML injection, template interpolation (simple + dot-path), null data handling, missing fields, data-testid, CSS isolation
 - All tests passing (exit 0)
 
 **Key Features:**
+
 - Attaches Shadow DOM with `attachShadow({ mode: 'open' })` for CSS isolation
 - Injects `<style>` and HTML content into shadow root
 - Template interpolation: `{{placeholder}}` with dot-path support (`{{nested.field}}`)
@@ -48,6 +52,7 @@ Svelte component that renders builder-created plugin HTML/CSS inside a Shadow DO
 - Workaround for vite@6 CSS preprocessing bug: string concatenation `'<' + 'style>'` instead of template literal
 
 **Verification:**
+
 - Tests: 1,141 passed (all packages)
 - Build: All packages compiled (exit 0)
 - Ready for integration with data bus and grid layout

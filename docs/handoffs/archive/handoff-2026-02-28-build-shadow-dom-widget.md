@@ -13,17 +13,19 @@ Parent Feature: lensing-25mp - Feature: Template Widget Renderer
 ## Files Changed
 
 - apps/display/src/lib/ShadowWidget.svelte (34 lines) — Shadow DOM container with CSS/HTML injection
-- apps/display/src/__tests__/shadow-widget.test.ts (114 lines) — 9 comprehensive tests
+- apps/display/src/**tests**/shadow-widget.test.ts (114 lines) — 9 comprehensive tests
 
 ## Critical Patterns to Know
 
 **Shadow DOM in tested Svelte components:**
+
 - Use `bind:this={hostEl}` to get reference for `attachShadow({ mode: 'open' })`
 - Reactive `$: if (hostEl)` updates `shadowRoot.innerHTML` when props change
 - DO NOT use `<style>` blocks in Svelte components in apps/display (vite@6 bug)
 - Workaround: split `<style>` tag in template literals: `'<' + 'style>'` instead of backtick
 
 **Template interpolation:**
+
 - Regex: `/\{\{([^}]+)\}\}/g` for `{{placeholder}}` syntax
 - Dot-path support: `{{weather.current.temp}}` resolves nested objects
 - Null data: shows raw templates (`{{field}}` stays)
