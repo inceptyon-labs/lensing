@@ -19,11 +19,7 @@
 
 <div class="marketplace-browser">
   {#if selectedPlugin}
-    <MarketplacePluginDetailView
-      plugin={selectedPlugin}
-      onBack={closeDetail}
-      {onInstall}
-    />
+    <MarketplacePluginDetailView plugin={selectedPlugin} onBack={closeDetail} {onInstall} />
   {:else if loading}
     <p class="mp-state">Loading…</p>
   {:else if !plugins || plugins.length === 0}

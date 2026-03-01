@@ -31,9 +31,7 @@
 
 <div class="detail-view">
   <div class="detail-header">
-    <button class="back-btn" on:click={onBack} aria-label="Back">
-      ← Back
-    </button>
+    <button class="back-btn" on:click={onBack} aria-label="Back"> ← Back </button>
   </div>
 
   <div class="detail-body">
@@ -65,7 +63,9 @@
         {#if plugin.connectorType}
           <div class="meta-row">
             <span class="meta-label">Connector</span>
-            <span class="connector-badge">{CONNECTOR_LABELS[plugin.connectorType] ?? plugin.connectorType}</span>
+            <span class="connector-badge"
+              >{CONNECTOR_LABELS[plugin.connectorType] ?? plugin.connectorType}</span
+            >
           </div>
         {/if}
       </div>
@@ -76,7 +76,11 @@
         {#if plugin.installed && !plugin.updateAvailable && installStatus === 'idle'}
           <span class="installed-badge">Installed</span>
         {:else if plugin.installed && plugin.updateAvailable && installStatus === 'idle'}
-          <button class="install-btn install-btn--update" on:click={handleInstall} aria-label="Update">
+          <button
+            class="install-btn install-btn--update"
+            on:click={handleInstall}
+            aria-label="Update"
+          >
             Update
           </button>
         {:else if installStatus === 'installing'}
