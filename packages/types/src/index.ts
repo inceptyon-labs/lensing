@@ -913,6 +913,8 @@ export {
 // ── Marketplace Browse Types ─────────────────────────────────────────────────
 
 /** A plugin entry in the marketplace catalog */
+export type MarketplaceConnectorType = 'json-api' | 'rss' | 'static';
+
 export interface MarketplacePlugin {
   id: string;
   name: string;
@@ -922,6 +924,10 @@ export interface MarketplacePlugin {
   category: string;
   tags: string[];
   downloadUrl: string;
+  /** Optional thumbnail image URL */
+  thumbnail?: string;
+  /** API connector type used by this plugin */
+  connectorType?: MarketplaceConnectorType;
   /** Whether this plugin is currently installed on the device */
   installed: boolean;
   /** Whether an update is available for an installed plugin */
