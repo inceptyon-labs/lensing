@@ -1,11 +1,11 @@
 ---
 # lensing-8t2w
 title: Implement GitHub API PR creation for publishing
-status: todo
+status: in-progress
 type: task
 priority: high
 created_at: 2026-02-28T15:47:24Z
-updated_at: 2026-02-28T15:47:24Z
+updated_at: 2026-03-01T02:35:37Z
 parent: lensing-lmnp
 ---
 
