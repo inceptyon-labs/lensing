@@ -1,11 +1,11 @@
 ---
 # lensing-wogk
 title: Wire local save to PluginLoader install flow
-status: in-progress
+status: completed
 type: task
 priority: high
 created_at: 2026-02-28T15:46:25Z
-updated_at: 2026-03-01T23:39:39Z
+updated_at: 2026-03-01T23:39:50Z
 parent: lensing-rq0o
 ---
 
