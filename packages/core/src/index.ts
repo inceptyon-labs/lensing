@@ -226,3 +226,11 @@ export type { MarketplaceInstallResult, MarketplaceInstallOptions } from './mark
 // ── Plugin Packaging Service ─────────────────────────────────────────────────────
 export { savePluginFromBuilder } from './plugin-save';
 export type { BuilderSaveInput, SaveOptions, SaveResult } from './plugin-save';
+
+// ── Connector Runner ──────────────────────────────────────────────────────────────
+export { createConnectorRunner } from './connector-runner';
+export type {
+  ConnectorRunnerConfig,
+  ConnectorRunnerOptions,
+  ConnectorRunnerInstance,
+} from './connector-runner';
