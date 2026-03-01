@@ -214,3 +214,7 @@ export type { MarketplaceIndex } from '@lensing/types';
 // ── Publisher ─────────────────────────────────────────────────────────────────
 export { createPublisherPr } from './publisher';
 export type { PublisherConfig, PublisherResult } from './publisher';
+
+// ── JSON API Connector ─────────────────────────────────────────────────────────
+export { createJsonApiConnector } from './json-api-connector';
+export type { JsonApiConnector, JsonApiConnectorOptions } from './json-api-connector';
