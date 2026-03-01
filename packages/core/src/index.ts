@@ -205,3 +205,11 @@ export type { PluginAdminHandlersOptions } from './plugin-admin-handlers';
 // ── Plugin Packaging ─────────────────────────────────────────────────────────
 export { packagePlugin } from './plugin-package';
 export type { PackageInput, PackageResult, ConnectorInput } from './plugin-package';
+
+// ── Marketplace Client ────────────────────────────────────────────────────────
+export { createMarketplaceClient } from './marketplace-client';
+export type {
+  MarketplaceClientOptions,
+  MarketplaceClientInstance,
+} from './marketplace-client';
+export type { MarketplaceIndex } from '@lensing/types';

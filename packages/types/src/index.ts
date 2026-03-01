@@ -950,6 +950,12 @@ export interface MarketplaceListResponse {
   offline: boolean;
 }
 
+/** Marketplace index from remote repository (index.json) */
+export interface MarketplaceIndex {
+  version: string;
+  plugins: MarketplacePlugin[];
+}
+
 // ── Marketplace Settings ────────────────────────────────────────────────────
 /** Marketplace configuration for publishing plugins */
 export interface MarketplaceSettings {
