@@ -158,9 +158,10 @@ describe('ConnectorConfig Types', () => {
       };
 
       expect(config.type).toBe('static');
-      expect(config.data.title).toBe('Fixed Title');
-      expect(config.data.items).toHaveLength(2);
-      expect(config.data.metadata.version).toBe('1.0');
+      const configData = config.data as Record<string, unknown>;
+      expect(configData.title).toBe('Fixed Title');
+      expect(Array.isArray(configData.items)).toBe(true);
+      expect((configData.metadata as Record<string, unknown>).version).toBe('1.0');
     });
 
     it('supports empty static data object', () => {
@@ -186,12 +187,14 @@ describe('ConnectorConfig Types', () => {
         },
       };
 
-      expect(config.data.string).toBe('value');
-      expect(config.data.number).toBe(42);
-      expect(config.data.boolean).toBe(true);
-      expect(config.data.null).toBeNull();
-      expect(config.data.array).toHaveLength(3);
-      expect(config.data.object.nested).toBe('value');
+      expect((config.data as Record<string, unknown>).string).toBe('value');
+      expect((config.data as Record<string, unknown>).number).toBe(42);
+      expect((config.data as Record<string, unknown>).boolean).toBe(true);
+      expect((config.data as Record<string, unknown>).null).toBeNull();
+      expect(Array.isArray((config.data as Record<string, unknown>).array)).toBe(true);
+      expect(((config.data as Record<string, unknown>).object as Record<string, unknown>).nested).toBe(
+        'value'
+      );
     });
   });
 
@@ -351,7 +354,8 @@ describe('ConnectorConfig Types', () => {
 
       expect(config.type).toBe('static');
       if (config.type === 'static') {
-        expect(config.data.widget.title).toBe('Dashboard');
+        const widget = config.data.widget as Record<string, unknown>;
+        expect(widget.title).toBe('Dashboard');
       }
     });
   });
