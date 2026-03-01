@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import grapesjs from 'grapesjs';
+  import { registerWidgetBlocks } from './grapes-blocks';
 
   export let width: number | string = '100%';
   export let height: number | string = '600px';
@@ -47,6 +48,8 @@
         appendTo: '#traits',
       },
     });
+
+    registerWidgetBlocks(editor);
 
     if (onChange) {
       const notify = () => {
