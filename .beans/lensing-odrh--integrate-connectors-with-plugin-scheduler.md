@@ -1,11 +1,11 @@
 ---
 # lensing-odrh
 title: Integrate connectors with plugin scheduler
-status: in-progress
+status: completed
 type: task
 priority: high
 created_at: 2026-02-28T15:45:21Z
-updated_at: 2026-03-01T23:30:20Z
+updated_at: 2026-03-01T23:30:30Z
 parent: lensing-r333
 ---
 
@@ -29,13 +29,16 @@ Wire connector execution into the existing plugin scheduler for periodic data re
 **Implementation completed and merged to main.**
 
 **Files Created:**
+
 - packages/core/src/connector-runner.ts (123 lines)
-- packages/core/src/__tests__/connector-runner.test.ts (338 lines, 17 tests)
+- packages/core/src/**tests**/connector-runner.test.ts (338 lines, 17 tests)
 
 **Files Modified:**
+
 - packages/core/src/index.ts (exports added)
 
 **Key Decisions:**
+
 - SSRF check runs on every handler invocation (not just registration) — protects against URL changes
 - Channel naming convention: `plugin:<pluginId>` for data bus
 - Static connectors publish immediately, skip scheduler
@@ -44,6 +47,7 @@ Wire connector execution into the existing plugin scheduler for periodic data re
 - Handler propagates errors to scheduler for burst/error tracking
 
 **Notes for Next Task:**
+
 - Use `createConnectorRunner({ dataBus, scheduler })` to wire connectors
 - Call `register(pluginId, manifest, connectorConfig)` after loading a plugin
 - Call `unregister(pluginId)` on plugin disable/uninstall
