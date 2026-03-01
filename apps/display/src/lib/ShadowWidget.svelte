@@ -6,11 +6,13 @@
   let hostEl: HTMLDivElement;
 
   function resolvePath(obj: Record<string, unknown>, path: string): unknown {
-    return path.split('.').reduce(
-      (acc, key) =>
-        acc && typeof acc === 'object' ? (acc as Record<string, unknown>)[key] : undefined,
-      obj as unknown
-    );
+    return path
+      .split('.')
+      .reduce(
+        (acc, key) =>
+          acc && typeof acc === 'object' ? (acc as Record<string, unknown>)[key] : undefined,
+        obj as unknown
+      );
   }
 
   function interpolate(template: string, values: Record<string, unknown>): string {

@@ -8,7 +8,7 @@ created_at: 2026-02-28T15:44:45Z
 updated_at: 2026-03-01T00:57:45Z
 parent: lensing-z3aj
 blocked_by:
-    - lensing-r333
+  - lensing-r333
 ---
 
 Renders builder-created plugins on the display with hybrid sandboxing: Shadow DOM for template-only widgets, iframe for custom JS.
