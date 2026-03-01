@@ -1,11 +1,11 @@
 ---
 # lensing-odrh
 title: Integrate connectors with plugin scheduler
-status: todo
+status: in-progress
 type: task
 priority: high
 created_at: 2026-02-28T15:45:21Z
-updated_at: 2026-02-28T15:45:21Z
+updated_at: 2026-03-01T23:26:07Z
 parent: lensing-r333
 ---
 

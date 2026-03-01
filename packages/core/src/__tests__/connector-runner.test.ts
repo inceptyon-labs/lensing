@@ -237,11 +237,7 @@ describe('createConnectorRunner', () => {
 
   describe('SSRF protection', () => {
     it('blocks private URLs in handler', async () => {
-      runner.register(
-        'evil',
-        stubManifest(),
-        jsonApiConfig({ url: 'http://192.168.1.1/admin' })
-      );
+      runner.register('evil', stubManifest(), jsonApiConfig({ url: 'http://192.168.1.1/admin' }));
 
       const handler = scheduler._handlers.get('evil')!;
       await expect(handler()).rejects.toThrow(/blocked|private/i);
