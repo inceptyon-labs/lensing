@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import AdmZip from 'adm-zip';
-import { packagePlugin, type PackageInput, type PackageResult } from '../plugin-package';
+import { packagePlugin, type PackageInput } from '../plugin-package';
 
 /** Minimal valid input for packaging */
 function validInput(overrides: Partial<PackageInput> = {}): PackageInput {
