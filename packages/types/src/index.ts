@@ -991,3 +991,110 @@ export interface HostServiceOptions {
   /** Enable display DPMS control via PIR presence (default: false) */
   displayControl?: boolean;
 }
+
+// ── Connector Configuration ──────────────────────────────────────────────────
+/** Field name to JSONPath/selector mapping for field extraction */
+export interface ConnectorMapping {
+  [fieldName: string]: string; // e.g., { title: '$.data.title', link: '$.url' }
+}
+
+/** JSON API connector configuration for REST API data sources */
+export interface JsonApiConnectorConfig {
+  type: 'json-api';
+  /** URL to fetch JSON data from (must be http/https) */
+  url: string;
+  /** HTTP method (GET, POST, PUT, DELETE, PATCH) */
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+  /** Optional HTTP headers to send with request */
+  headers?: Record<string, string>;
+  /** Refresh interval in milliseconds */
+  refresh_ms: number;
+  /** Map field names to JSONPath expressions for extracting data */
+  mapping: ConnectorMapping;
+}
+
+/** RSS/Atom connector configuration for feed data sources */
+export interface RssConnectorConfig {
+  type: 'rss';
+  /** URL to fetch RSS/Atom feed from (must be http/https) */
+  url: string;
+  /** Refresh interval in milliseconds */
+  refresh_ms: number;
+  /** Map field names to CSS selectors or standard feed field names (title, description, link, date, image) */
+  mapping: ConnectorMapping;
+}
+
+/** Static data connector configuration for hardcoded/passthrough data */
+export interface StaticConnectorConfig {
+  type: 'static';
+  /** Static data object to provide as-is (no fetching) */
+  data: Record<string, unknown>;
+}
+
+/** Union type for all connector configurations (discriminated by type field) */
+export type ConnectorConfig = JsonApiConnectorConfig | RssConnectorConfig | StaticConnectorConfig;
+
+/**
+ * Type guard for ConnectorConfig validation
+ * Ensures URL format for JSON API and RSS connectors
+ */
+export function isValidConnectorConfig(value: unknown): value is ConnectorConfig {
+  if (!value || typeof value !== 'object') return false;
+  const obj = value as Record<string, unknown>;
+
+  // Must have a type field
+  if (!obj.type || typeof obj.type !== 'string') return false;
+
+  const type = obj.type as string;
+
+  if (type === 'json-api') {
+    const config = obj as Record<string, unknown>;
+    // Check required fields
+    if (typeof config.url !== 'string' || !isValidHttpUrl(config.url)) return false;
+    if (
+      typeof config.method !== 'string' ||
+      !['GET', 'POST', 'PUT', 'DELETE', 'PATCH'].includes(config.method)
+    ) {
+      return false;
+    }
+    if (typeof config.refresh_ms !== 'number' || config.refresh_ms <= 0) return false;
+    if (typeof config.mapping !== 'object' || config.mapping === null) return false;
+    // Optional headers must be Record<string, string>
+    if (config.headers !== undefined) {
+      if (typeof config.headers !== 'object' || config.headers === null) return false;
+      const headers = config.headers as Record<string, unknown>;
+      if (!Object.values(headers).every((v) => typeof v === 'string')) return false;
+    }
+    return true;
+  }
+
+  if (type === 'rss') {
+    const config = obj as Record<string, unknown>;
+    // Check required fields
+    if (typeof config.url !== 'string' || !isValidHttpUrl(config.url)) return false;
+    if (typeof config.refresh_ms !== 'number' || config.refresh_ms <= 0) return false;
+    if (typeof config.mapping !== 'object' || config.mapping === null) return false;
+    return true;
+  }
+
+  if (type === 'static') {
+    const config = obj as Record<string, unknown>;
+    // Static just needs a data object
+    if (typeof config.data !== 'object' || config.data === null) return false;
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Validate that a URL is http or https
+ */
+function isValidHttpUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
