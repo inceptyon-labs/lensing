@@ -1,11 +1,11 @@
 ---
 # lensing-qecs
 title: Build Shadow DOM widget container
-status: todo
+status: in-progress
 type: task
 priority: high
 created_at: 2026-02-28T15:47:37Z
-updated_at: 2026-02-28T15:47:37Z
+updated_at: 2026-03-01T00:57:38Z
 parent: lensing-25mp
 ---
 

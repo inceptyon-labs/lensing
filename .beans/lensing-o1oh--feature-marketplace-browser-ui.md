@@ -1,11 +1,11 @@
 ---
 # lensing-o1oh
 title: 'Feature: Marketplace Browser UI'
-status: todo
+status: in-progress
 type: feature
 priority: high
 created_at: 2026-02-28T15:44:38Z
-updated_at: 2026-02-28T15:48:01Z
+updated_at: 2026-02-28T23:47:36Z
 parent: lensing-023a
 blocked_by:
   - lensing-7nct

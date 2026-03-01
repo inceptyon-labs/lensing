@@ -1,11 +1,11 @@
 ---
 # lensing-lmnp
 title: 'Feature: Publish to Marketplace'
-status: todo
+status: in-progress
 type: feature
 priority: high
 created_at: 2026-02-28T15:44:42Z
-updated_at: 2026-02-28T15:48:01Z
+updated_at: 2026-03-01T00:40:56Z
 parent: lensing-023a
 blocked_by:
   - lensing-rq0o

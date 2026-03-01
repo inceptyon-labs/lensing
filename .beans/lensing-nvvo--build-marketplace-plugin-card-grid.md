@@ -1,11 +1,11 @@
 ---
 # lensing-nvvo
 title: Build marketplace plugin card grid
-status: todo
+status: in-progress
 type: task
 priority: high
 created_at: 2026-02-28T15:46:59Z
-updated_at: 2026-02-28T15:46:59Z
+updated_at: 2026-02-28T23:47:34Z
 parent: lensing-o1oh
 ---
 
