@@ -27,19 +27,22 @@ Configure GrapesJS with a constrained set of blocks appropriate for display widg
 ## Completed
 
 **Files changed:**
+
 - apps/display/src/lib/grapes-blocks.ts (new, 80 lines) — registerWidgetBlocks() with 7 block definitions
-- apps/display/src/__tests__/grapes-blocks.test.ts (new, 177 lines) — 14 unit tests
+- apps/display/src/**tests**/grapes-blocks.test.ts (new, 177 lines) — 14 unit tests
 - apps/display/src/lib/GrapesJSEditor.svelte (2 lines) — import + call registerWidgetBlocks()
-- apps/display/src/__tests__/grapesjs-editor.test.ts (23 lines) — 2 integration tests
+- apps/display/src/**tests**/grapesjs-editor.test.ts (23 lines) — 2 integration tests
 
 **Key decisions:**
-- Block IDs use widget-* prefix to avoid collision with GrapesJS built-ins
+
+- Block IDs use widget-\* prefix to avoid collision with GrapesJS built-ins
 - All blocks categorized under 'Widget' for grouped sidebar display
-- FontAwesome classes on attributes.class for sidebar icons (fa fa-*)
+- FontAwesome classes on attributes.class for sidebar icons (fa fa-\*)
 - Inline CSS with CSS variable + fallback value pattern (var(--starlight, #e2e4ed))
 - registerWidgetBlocks() called after grapesjs.init() but before event subscription
 
 **Notes for next task:**
+
 - All 7 blocks available in editor: widget-text, widget-heading, widget-image, widget-value, widget-list, widget-divider, widget-icon
 - Blocks produce semantic HTML that template rendering and data binding can target
 - Next: lensing-dx6s (data block binding) can reference block HTML structure

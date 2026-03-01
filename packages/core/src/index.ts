@@ -211,7 +211,6 @@ export { createMarketplaceClient } from './marketplace-client';
 export type { MarketplaceClientOptions, MarketplaceClientInstance } from './marketplace-client';
 export type { MarketplaceIndex } from '@lensing/types';
 
-
 // ── Publisher ─────────────────────────────────────────────────────────────────
 export { createPublisherPr } from './publisher';
 export type { PublisherConfig, PublisherResult } from './publisher';

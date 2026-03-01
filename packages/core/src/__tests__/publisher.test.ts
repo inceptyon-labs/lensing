@@ -146,9 +146,9 @@ describe('createPublisherPr', () => {
   });
 
   it('should validate required config fields', async () => {
-    await expect(
-      createPublisherPr({ ...defaultConfig, githubToken: '' })
-    ).rejects.toThrow(/required|missing|token/i);
+    await expect(createPublisherPr({ ...defaultConfig, githubToken: '' })).rejects.toThrow(
+      /required|missing|token/i
+    );
   });
 
   it('should return PR URL on success', async () => {

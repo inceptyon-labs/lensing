@@ -29,6 +29,7 @@ Add data-bound blocks to GrapesJS that display {{placeholder}} values from conne
 ## Completion Summary
 
 **Implemented:**
+
 - registerDataBlocks() function that creates data-bound blocks for each connector slot
 - Text slots → data-text-{id} blocks with {{slot_id}} template placeholders
 - Image slots → data-image-{id} blocks with {{slot_id}} in src attribute
@@ -38,11 +39,13 @@ Add data-bound blocks to GrapesJS that display {{placeholder}} values from conne
 - GrapesJSEditor.svelte now accepts slots prop and registers data blocks
 
 **Tests:**
+
 - 13 new tests for registerDataBlocks (all passing)
 - Updated 2 integration tests for slot count
 - All 173 display tests passing
 
 **Code Quality:**
+
 - Clean TDD implementation (RED → GREEN → REFACTOR → COMMIT)
 - No lint/type errors in new code
 - Build passes, verification gate ✓

@@ -12,15 +12,15 @@ Parent Feature: lensing-alyh - Feature: GrapesJS Visual Editor
 ## Files Changed
 
 - apps/display/src/lib/grapes-blocks.ts (new, 80 lines) — registerWidgetBlocks() function
-- apps/display/src/__tests__/grapes-blocks.test.ts (new, 177 lines) — 14 unit tests
+- apps/display/src/**tests**/grapes-blocks.test.ts (new, 177 lines) — 14 unit tests
 - apps/display/src/lib/GrapesJSEditor.svelte (+3 lines) — import + call registerWidgetBlocks()
-- apps/display/src/__tests__/grapesjs-editor.test.ts (+23 lines) — 2 block integration tests
+- apps/display/src/**tests**/grapesjs-editor.test.ts (+23 lines) — 2 block integration tests
 
 ## API Surface Created
 
 ```ts
 // apps/display/src/lib/grapes-blocks.ts
-export function registerWidgetBlocks(editor: unknown): void
+export function registerWidgetBlocks(editor: unknown): void;
 
 // Registers 7 blocks on BlockManager:
 // widget-text    → <p> with --starlight, 16px
@@ -44,6 +44,7 @@ export function registerWidgetBlocks(editor: unknown): void
 ## Critical Warning
 
 **DO NOT add `<style>` blocks to Svelte components in apps/display/**
+
 - vite@6 + @sveltejs/vite-plugin-svelte@5 bug: "Cannot create proxy" error
 - Use inline styles or string concatenation `'<' + 'style>'` workaround
 
@@ -58,5 +59,5 @@ export function registerWidgetBlocks(editor: unknown): void
 
 - apps/display/src/lib/GrapesJSEditor.svelte (main editor component)
 - apps/display/src/lib/grapes-blocks.ts (block definitions — just completed)
-- apps/display/src/__tests__/grapesjs-editor.test.ts (mock pattern reference)
-- .beans/lensing-alyh*.md (parent feature)
+- apps/display/src/**tests**/grapesjs-editor.test.ts (mock pattern reference)
+- .beans/lensing-alyh\*.md (parent feature)
