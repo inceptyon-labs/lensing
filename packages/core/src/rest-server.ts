@@ -51,6 +51,10 @@ export interface RestServerHandlers {
   assignPluginZone?: (id: string, zone: ZoneName | undefined) => Promise<void>;
   reloadPlugins?: () => Promise<void>;
   installPlugin?: (zipBuffer: Buffer) => Promise<PluginAdminEntry>;
+  // Plugin builder (optional — omit to disable plugin builder endpoints)
+  saveBuiltPlugin?: (
+    input: import('./plugin-save').BuilderSaveInput
+  ) => Promise<PluginAdminEntry>;
   // Module management
   restartModule?: (id: string) => Promise<{ ok: boolean; running: boolean }>;
   /** Sync running modules with current grid layout widget IDs */
@@ -509,6 +513,27 @@ export function createRestServer(
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Internal error';
       writeJson(res, 500, { error: msg });
+    }
+  });
+
+  addRoute('/api/admin/builder/save', 'POST', async (_req, res, body) => {
+    if (!handlers.saveBuiltPlugin) {
+      writeJson(res, 404, { error: 'Not Found' });
+      return;
+    }
+    let input: import('./plugin-save').BuilderSaveInput;
+    try {
+      input = JSON.parse(body) as import('./plugin-save').BuilderSaveInput;
+    } catch {
+      writeJson(res, 400, { error: 'Invalid JSON' });
+      return;
+    }
+    try {
+      const plugin = await handlers.saveBuiltPlugin(input);
+      writeJson(res, 201, { ok: true, plugin });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Save failed';
+      writeJson(res, 400, { error: msg });
     }
   });
 

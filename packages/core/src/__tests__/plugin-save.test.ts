@@ -56,8 +56,8 @@ describe('savePluginFromBuilder', () => {
     expect(result.manifest.name).toBe('Test Plugin');
     expect(result.manifest.version).toBe('1.0.0');
     expect(result.manifest.description).toBe('A test plugin');
-    expect(result.manifest.permissions.allowed_domains).toEqual(['api.example.com']);
-    expect(result.manifest.permissions.max_refresh_ms).toBe(300_000);
+    expect(result.manifest.permissions!.allowed_domains).toEqual(['api.example.com']);
+    expect(result.manifest.permissions!.max_refresh_ms).toBe(300_000);
   });
 
   it('includes thumbnail when provided', async () => {
