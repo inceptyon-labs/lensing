@@ -73,9 +73,7 @@ export async function downloadAndInstallPlugin(
   // Validate download size
   if (arrayBuffer.byteLength > maxSizeBytes) {
     const maxMB = Math.round(maxSizeBytes / 1024 / 1024);
-    throw new Error(
-      `Download too large: ${arrayBuffer.byteLength} bytes exceeds ${maxMB}MB limit`
-    );
+    throw new Error(`Download too large: ${arrayBuffer.byteLength} bytes exceeds ${maxMB}MB limit`);
   }
 
   const zipBuffer = Buffer.from(arrayBuffer);
@@ -104,9 +102,7 @@ export async function downloadAndInstallPlugin(
     const targetDir = path.join(pluginsDir, pluginId);
     if (fs.existsSync(targetDir)) {
       if (!replace) {
-        throw new Error(
-          `Plugin '${pluginId}' already installed — use replace option to overwrite`
-        );
+        throw new Error(`Plugin '${pluginId}' already installed — use replace option to overwrite`);
       }
       fs.rmSync(targetDir, { recursive: true, force: true });
       replaced = true;

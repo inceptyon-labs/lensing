@@ -38,10 +38,8 @@ describe('downloadAndInstallPlugin', () => {
       ok: true,
       status: 200,
       statusText: 'OK',
-      arrayBuffer: async () => zipBuffer.buffer.slice(
-        zipBuffer.byteOffset,
-        zipBuffer.byteOffset + zipBuffer.byteLength
-      ),
+      arrayBuffer: async () =>
+        zipBuffer.buffer.slice(zipBuffer.byteOffset, zipBuffer.byteOffset + zipBuffer.byteLength),
     });
   }
 
@@ -66,11 +64,9 @@ describe('downloadAndInstallPlugin', () => {
       const zipBuffer = makeZip({ 'plugin.json': VALID_MANIFEST });
       mockZipResponse(zipBuffer);
 
-      await downloadAndInstallPlugin(
-        'https://cdn.example.com/my-plugin.zip',
-        tmpDir,
-        { fetchFn: mockFetch }
-      );
+      await downloadAndInstallPlugin('https://cdn.example.com/my-plugin.zip', tmpDir, {
+        fetchFn: mockFetch,
+      });
 
       expect(mockFetch).toHaveBeenCalledWith(
         'https://cdn.example.com/my-plugin.zip',
@@ -91,10 +87,11 @@ describe('downloadAndInstallPlugin', () => {
         ok: true,
         status: 200,
         statusText: 'OK',
-        arrayBuffer: async () => largeBuffer.buffer.slice(
-          largeBuffer.byteOffset,
-          largeBuffer.byteOffset + largeBuffer.byteLength
-        ),
+        arrayBuffer: async () =>
+          largeBuffer.buffer.slice(
+            largeBuffer.byteOffset,
+            largeBuffer.byteOffset + largeBuffer.byteLength
+          ),
       });
 
       await expect(
@@ -110,10 +107,11 @@ describe('downloadAndInstallPlugin', () => {
         ok: true,
         status: 200,
         statusText: 'OK',
-        arrayBuffer: async () => mediumBuffer.buffer.slice(
-          mediumBuffer.byteOffset,
-          mediumBuffer.byteOffset + mediumBuffer.byteLength
-        ),
+        arrayBuffer: async () =>
+          mediumBuffer.buffer.slice(
+            mediumBuffer.byteOffset,
+            mediumBuffer.byteOffset + mediumBuffer.byteLength
+          ),
       });
 
       await expect(

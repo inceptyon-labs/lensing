@@ -10,7 +10,7 @@ describe('JSON API Connector', () => {
     type: 'json-api',
     url: 'https://api.example.com/data',
     method: 'GET',
-    headers: { 'Accept': 'application/json' },
+    headers: { Accept: 'application/json' },
     refresh_ms: 5000,
     mapping: {
       temperature: '$.temp',
@@ -202,7 +202,10 @@ describe('JSON API Connector', () => {
           })
       );
 
-      const connector = createJsonApiConnector(defaultConfig, { fetchFn: mockFetch, timeoutMs: 50 });
+      const connector = createJsonApiConnector(defaultConfig, {
+        fetchFn: mockFetch,
+        timeoutMs: 50,
+      });
       await expect(connector.fetch()).rejects.toThrow(/timeout|abort/i);
     });
 
@@ -262,7 +265,7 @@ describe('JSON API Connector', () => {
 
       const config: JsonApiConnectorConfig = {
         ...defaultConfig,
-        headers: { 'Authorization': 'Bearer {{AUTH_TOKEN}}' },
+        headers: { Authorization: 'Bearer {{AUTH_TOKEN}}' },
       };
 
       const connector = createJsonApiConnector(config, {

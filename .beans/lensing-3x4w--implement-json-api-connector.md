@@ -29,11 +29,13 @@ Implement the JSON API connector that fetches data from a URL and maps response 
 ## Completion Summary
 
 **Files changed:**
+
 - packages/core/src/json-api-connector.ts (193 lines, new)
-- packages/core/src/__tests__/json-api-connector.test.ts (472 lines, new)
+- packages/core/src/**tests**/json-api-connector.test.ts (472 lines, new)
 - packages/core/src/index.ts (exports added)
 
 **Key decisions:**
+
 - Custom JSONPath resolver to avoid external dependencies (handles dot notation, array access, nested paths)
 - Cache only updated on successful response; HTTP errors fall back to cache if available
 - Placeholder substitution via {{SECRET_NAME}} patterns with async resolver
@@ -42,6 +44,7 @@ Implement the JSON API connector that fetches data from a URL and maps response 
 - Error classification for specific handling: HTTP, JSON parse, network, timeout, JSONPath, SSRF
 
 **Notes for next task:**
+
 - createJsonApiConnector() factory returns JsonApiConnector interface
 - Config: url, method, headers, refresh_ms, mapping (JSONPath expressions)
 - Supports secret resolution for URL/header placeholders
