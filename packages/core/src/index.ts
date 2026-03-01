@@ -201,3 +201,7 @@ export type { HostServiceOptions, HostServiceLogger } from '@lensing/types';
 
 export { createPluginAdminHandlers } from './plugin-admin-handlers';
 export type { PluginAdminHandlersOptions } from './plugin-admin-handlers';
+
+// ── Plugin Packaging ─────────────────────────────────────────────────────────
+export { packagePlugin } from './plugin-package';
+export type { PackageInput, PackageResult, ConnectorInput } from './plugin-package';
