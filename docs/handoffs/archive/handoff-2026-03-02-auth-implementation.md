@@ -55,12 +55,14 @@ Implemented complete Bearer token authentication system for REST and WebSocket s
 ### Files Changed
 
 **Created:**
+
 - `packages/core/src/auth-middleware.ts` - Core auth logic (38 lines)
 - `packages/core/src/__tests__/auth-middleware.test.ts` - 27 tests
 - `packages/core/src/__tests__/rest-server-auth.test.ts` - 12 tests
 - `packages/core/src/__tests__/ws-server-auth.test.ts` - 4 tests
 
 **Modified:**
+
 - `packages/core/src/rest-server.ts` - Auth check + bind address
 - `packages/core/src/ws-server.ts` - verifyClient callback
 - `packages/core/src/host-service.ts` - Wire auth through
@@ -80,11 +82,13 @@ Implemented complete Bearer token authentication system for REST and WebSocket s
 All tracked in parent epic `lensing-umpl` (Feature: Security Hardening):
 
 **High Priority (next):**
+
 - **lensing-l1nv** - Eliminate shell injection in display-control.ts (MEDIUM finding M-3)
 - **lensing-xmpl** - Move API keys from query strings to headers (MEDIUM-HIGH finding MH-2)
 - **lensing-uvbq** - Update dependencies with known CVEs (4 HIGH transitive CVEs)
 
 **Normal Priority:**
+
 - lensing-g8js - Add SRI hashes to CDN assets (MEDIUM finding M-1)
 - lensing-gbv2 - Validate postMessage event.source on IframeWidget (MEDIUM-HIGH finding MH-3)
 - lensing-mtn6 - Validate GitHub owner/repo path segments (MEDIUM-HIGH finding MH-4)
@@ -92,6 +96,7 @@ All tracked in parent epic `lensing-umpl` (Feature: Security Hardening):
 - lensing-u5gq - Add plugin download domain allowlist (MEDIUM finding M-6, blocked by lensing-05qz)
 
 **Known Issues (separate work):**
+
 - Path traversal vulnerability in `/plugins/:id/template` via URL-encoded slashes (pre-existing, not in scope)
 
 ## Files to Load Next Session
@@ -111,24 +116,28 @@ All tracked in parent epic `lensing-umpl` (Feature: Security Hardening):
 ## Architecture Notes
 
 **Auth Flow:**
+
 ```
 REST Request → CORS headers → OPTIONS bypass? → Auth check (if authToken set) → Route handler
 WS Upgrade Request → verifyClient callback → Check Bearer token → Allow/reject
 ```
 
 **Public Routes (no auth required):**
+
 - GET /health
 - GET /marketplace, /marketplace/categories, /marketplace/updates
 - GET /marketplace/:id (plugin details)
 - GET /plugins/:id/template (widget template)
-- OPTIONS * (CORS preflight)
+- OPTIONS \* (CORS preflight)
 
 **Error Response Format:**
+
 ```json
-{ "error": "Unauthorized" }  // HTTP 401
+{ "error": "Unauthorized" } // HTTP 401
 ```
 
 All protected routes (settings, layout, plugins admin, modules, display, ask) return 401 if:
+
 - authToken is configured AND
 - No valid Bearer token provided
 

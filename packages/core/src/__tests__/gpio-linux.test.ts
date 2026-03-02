@@ -43,7 +43,11 @@ describe('createGpiomonFactory', () => {
       watcher.watch(() => {});
 
       // Should use v2 syntax: -c gpiochip0 17
-      expect(mockSpawn).toHaveBeenCalledWith('gpiomon', ['-c', 'gpiochip0', '17'], expect.any(Object));
+      expect(mockSpawn).toHaveBeenCalledWith(
+        'gpiomon',
+        ['-c', 'gpiochip0', '17'],
+        expect.any(Object)
+      );
     });
 
     it('should detect gpiomon v1 correctly', () => {
@@ -117,7 +121,11 @@ describe('createGpiomonFactory', () => {
 
       watcher.watch(() => {});
 
-      expect(mockSpawn).toHaveBeenCalledWith('gpiomon', ['-c', 'gpiochip1', '23'], expect.any(Object));
+      expect(mockSpawn).toHaveBeenCalledWith(
+        'gpiomon',
+        ['-c', 'gpiochip1', '23'],
+        expect.any(Object)
+      );
     });
   });
 });
