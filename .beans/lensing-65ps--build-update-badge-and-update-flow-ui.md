@@ -1,11 +1,11 @@
 ---
 # lensing-65ps
 title: Build update badge and update flow UI
-status: in-progress
+status: completed
 type: task
 priority: normal
 created_at: 2026-02-28T15:47:08Z
-updated_at: 2026-03-02T03:39:34Z
+updated_at: 2026-03-02T03:39:44Z
 parent: lensing-o1oh
 ---
 
