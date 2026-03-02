@@ -6,6 +6,8 @@
   $: wrapperStyle = [
     width !== undefined ? `width: ${width}px` : '',
     height !== undefined ? `height: ${height}px` : '',
+    'position: relative',
+    'overflow: hidden',
     'transition: opacity 200ms ease',
   ]
     .filter(Boolean)
