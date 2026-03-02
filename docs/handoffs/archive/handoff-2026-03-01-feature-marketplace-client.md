@@ -1,4 +1,5 @@
 # Session Handoff: Feature: Marketplace Client
+
 Date: 2026-03-01
 Issue: lensing-7nct - Feature: Marketplace Client
 Branch: feature/lensing-1283
@@ -8,6 +9,7 @@ Branch: feature/lensing-1283
 This session completed **lensing-1283** (Add version comparison and update detection):
 
 ### Task: lensing-1283
+
 - Created `marketplace-updates.ts` with:
   - `compareSemver(a, b)`: Pure function for semantic version comparison (-1, 0, 1)
   - `checkForUpdates(installed, marketplace)`: Detect which installed plugins have updates available
@@ -25,22 +27,26 @@ This session completed **lensing-1283** (Add version comparison and update detec
 ### Key Implementation Details
 
 **Version Comparison Logic:**
+
 - Extracts numeric parts (major.minor.patch) from version strings
 - Ignores prerelease/metadata (treats `1.0.0-alpha` same as `1.0.0`)
 - No external semver dependency — pure TypeScript
 
 **Update Detection:**
+
 - Compares installed plugin versions against marketplace index
 - Only returns plugins where marketplace version > installed version
 - Skips plugins not in marketplace
 - Config preservation is automatic (config stored in DB, not filesystem)
 
 **Routes:**
+
 - `/marketplace/updates` via route table (exact match)
 - `/marketplace/:id/update` via regex matching in request handler
 - Both require corresponding handler to be configured (optional)
 
 ### Files Changed
+
 - `packages/core/src/marketplace-updates.ts` (new, 52 lines)
 - `packages/core/src/__tests__/marketplace-updates.test.ts` (new, 111 lines)
 - `packages/core/src/rest-server.ts` (modified: added handler interfaces + 2 route handlers)
@@ -48,6 +54,7 @@ This session completed **lensing-1283** (Add version comparison and update detec
 - `packages/core/src/index.ts` (exports)
 
 ### Commits
+
 - `eb1bb2b` feat: add marketplace update detection and update endpoint
 - `e77652b` style: format and lint
 
@@ -74,11 +81,12 @@ This session completed **lensing-1283** (Add version comparison and update detec
 ## Open Questions
 
 None — this task is self-contained. Update flow uses existing patterns:
+
 - Config preserved by design (DB storage)
 - Version validation simple semver comparison
 - REST handlers are optional (graceful 404 if not configured)
 
 ---
 
-*Session ended at Step 2.5 (task creation) + Step 3 (TDD implementation) + Step 3.25 (format/lint)*
-*Ready to resume at Step 4: Code Review (O tier)*
+_Session ended at Step 2.5 (task creation) + Step 3 (TDD implementation) + Step 3.25 (format/lint)_
+_Ready to resume at Step 4: Code Review (O tier)_

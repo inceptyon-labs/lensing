@@ -29,6 +29,7 @@ Compare installed plugin versions against marketplace to detect available update
 Created marketplace version comparison and update detection functionality.
 
 **Features:**
+
 - compareSemver() pure function for semantic version comparison
 - checkForUpdates() to detect plugins with available updates in marketplace
 - REST endpoints: GET /marketplace/updates and POST /marketplace/:id/update
@@ -37,19 +38,22 @@ Created marketplace version comparison and update detection functionality.
 - Proper route handling to distinguish reserved paths (categories, updates) from parameterized routes
 
 **Files:**
+
 - packages/core/src/marketplace-updates.ts (new, 62 lines)
-- packages/core/src/__tests__/marketplace-updates.test.ts (new, 133 lines)
+- packages/core/src/**tests**/marketplace-updates.test.ts (new, 133 lines)
 - packages/core/src/rest-server.ts (modified, +34 lines)
-- packages/core/src/__tests__/rest-server-marketplace.test.ts (modified, +69 lines)
+- packages/core/src/**tests**/rest-server-marketplace.test.ts (modified, +69 lines)
 - packages/core/src/index.ts (exports)
 
 **Key Decisions:**
+
 - Pure TypeScript semver comparison without external dependency
 - Map-based lookup for O(n+m) performance in update detection
 - Optional handlers on RestServerHandlers (graceful 404 if not configured)
 - Reserved path guard to prevent route precedence issues
 
 **Commits:**
+
 - eb1bb2b feat: add marketplace update detection and update endpoint
 - e77652b style: format and lint
 - 7c47ba5 fix: remove unused import from marketplace-updates.test.ts
