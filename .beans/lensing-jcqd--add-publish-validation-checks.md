@@ -1,11 +1,11 @@
 ---
 # lensing-jcqd
 title: Add publish validation checks
-status: todo
+status: in-progress
 type: task
 priority: normal
 created_at: 2026-02-28T15:47:31Z
-updated_at: 2026-02-28T15:47:31Z
+updated_at: 2026-03-02T00:43:52Z
 parent: lensing-lmnp
 ---
 

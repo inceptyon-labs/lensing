@@ -234,3 +234,11 @@ export type {
   ConnectorRunnerOptions,
   ConnectorRunnerInstance,
 } from './connector-runner';
+
+// ── Publish Validation ────────────────────────────────────────────────────────────
+export { validatePublish } from './publish-validation';
+export type {
+  ValidatePublishInput,
+  ValidatePublishResult,
+  PublishValidationError,
+} from './publish-validation';
