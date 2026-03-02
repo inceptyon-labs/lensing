@@ -932,6 +932,8 @@ export interface MarketplacePlugin {
   installed: boolean;
   /** Whether an update is available for an installed plugin */
   updateAvailable: boolean;
+  /** Currently installed version (set when installed + update available) */
+  installedVersion?: string;
 }
 
 /** A category in the marketplace with plugin count */

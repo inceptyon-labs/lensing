@@ -31,6 +31,23 @@ const mockPlugins: MarketplacePlugin[] = [
   },
 ];
 
+const mockPluginsWithUpdate: MarketplacePlugin[] = [
+  ...mockPlugins,
+  {
+    id: 'plugin-3',
+    name: 'Plugin Three',
+    version: '2.0.0',
+    author: 'Author Three',
+    description: 'Third plugin with update',
+    category: 'Weather',
+    tags: ['weather'],
+    downloadUrl: 'https://example.com/plugin3.zip',
+    installed: true,
+    updateAvailable: true,
+    installedVersion: '1.0.0',
+  },
+];
+
 afterEach(() => {
   vi.useRealTimers();
 });
@@ -221,6 +238,23 @@ describe('MarketplacePluginBrowser', () => {
       await user.type(searchInput, 'Plugin One');
       await vi.advanceTimersByTimeAsync(300);
       expect(screen.getByText(/1 plugin/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('Update badge', () => {
+    it('should show update badge on cards with updateAvailable', () => {
+      render(MarketplacePluginBrowser, {
+        props: { plugins: mockPluginsWithUpdate, loading: false },
+      });
+      const badges = screen.getAllByText('Update');
+      expect(badges.length).toBe(1);
+    });
+
+    it('should not show update badge on cards without updateAvailable', () => {
+      render(MarketplacePluginBrowser, {
+        props: { plugins: mockPlugins, loading: false },
+      });
+      expect(screen.queryByText('Update')).not.toBeInTheDocument();
     });
   });
 });

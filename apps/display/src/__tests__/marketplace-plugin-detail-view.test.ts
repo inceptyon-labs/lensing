@@ -166,6 +166,53 @@ describe('MarketplacePluginDetailView: install progress', () => {
   });
 });
 
+describe('MarketplacePluginDetailView: version comparison', () => {
+  it('shows version comparison when installedVersion is available', () => {
+    const plugin = { ...mockPlugin, installed: true, updateAvailable: true, installedVersion: '1.0.0', version: '1.1.0' };
+    render(MarketplacePluginDetailView, {
+      props: { plugin, onBack: () => {} },
+    });
+    expect(screen.getByText(/1\.0\.0.*→.*1\.1\.0/)).toBeInTheDocument();
+  });
+});
+
+describe('MarketplacePluginDetailView: update confirmation', () => {
+  it('shows confirmation dialog when Update is clicked', async () => {
+    const user = userEvent.setup();
+    const plugin = { ...mockPlugin, installed: true, updateAvailable: true };
+    const onInstallMock = vi.fn().mockResolvedValue(undefined);
+    render(MarketplacePluginDetailView, {
+      props: { plugin, onBack: () => {}, onInstall: onInstallMock },
+    });
+    await user.click(screen.getByRole('button', { name: /update/i }));
+    expect(screen.getByText(/replace widget template/i)).toBeInTheDocument();
+  });
+
+  it('triggers onInstall when confirmation is accepted', async () => {
+    const user = userEvent.setup();
+    const plugin = { ...mockPlugin, installed: true, updateAvailable: true };
+    const onInstallMock = vi.fn().mockResolvedValue(undefined);
+    render(MarketplacePluginDetailView, {
+      props: { plugin, onBack: () => {}, onInstall: onInstallMock },
+    });
+    await user.click(screen.getByRole('button', { name: /update/i }));
+    await user.click(screen.getByRole('button', { name: /confirm/i }));
+    expect(onInstallMock).toHaveBeenCalledWith(plugin);
+  });
+
+  it('does not trigger onInstall when confirmation is canceled', async () => {
+    const user = userEvent.setup();
+    const plugin = { ...mockPlugin, installed: true, updateAvailable: true };
+    const onInstallMock = vi.fn().mockResolvedValue(undefined);
+    render(MarketplacePluginDetailView, {
+      props: { plugin, onBack: () => {}, onInstall: onInstallMock },
+    });
+    await user.click(screen.getByRole('button', { name: /update/i }));
+    await user.click(screen.getByRole('button', { name: /cancel/i }));
+    expect(onInstallMock).not.toHaveBeenCalled();
+  });
+});
+
 describe('MarketplacePluginDetailView: error state', () => {
   it('shows error message when install fails', async () => {
     const user = userEvent.setup();

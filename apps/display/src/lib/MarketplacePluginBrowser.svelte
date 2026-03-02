@@ -100,6 +100,9 @@
             <span class="plugin-card-name">{plugin.name}</span>
             <span class="plugin-card-author">{plugin.author}</span>
             <span class="plugin-card-category">{plugin.category}</span>
+            {#if plugin.updateAvailable}
+              <span class="plugin-card-badge">Update</span>
+            {/if}
           </button>
         {/each}
       </div>
