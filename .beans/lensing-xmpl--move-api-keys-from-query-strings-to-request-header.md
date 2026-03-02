@@ -1,11 +1,11 @@
 ---
 # lensing-xmpl
 title: Move API keys from query strings to request headers
-status: todo
+status: completed
 type: task
 priority: high
 created_at: 2026-03-02T16:49:22Z
-updated_at: 2026-03-02T22:57:48Z
+updated_at: 2026-03-02T22:58:24Z
 parent: lensing-umpl
 ---
 

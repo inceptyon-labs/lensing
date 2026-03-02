@@ -1,11 +1,11 @@
 ---
 # lensing-uvbq
 title: Update dependencies with known CVEs
-status: todo
+status: in-progress
 type: task
 priority: high
 created_at: 2026-03-02T16:50:17Z
-updated_at: 2026-03-02T16:50:17Z
+updated_at: 2026-03-02T23:01:22Z
 parent: lensing-umpl
 ---
 
