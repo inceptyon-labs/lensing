@@ -1,11 +1,11 @@
 ---
 # lensing-4jsy
 title: Implement RSS/Atom feed connector
-status: todo
+status: in-progress
 type: task
 priority: normal
 created_at: 2026-02-28T15:45:12Z
-updated_at: 2026-02-28T15:45:12Z
+updated_at: 2026-03-02T13:39:42Z
 parent: lensing-r333
 ---
 

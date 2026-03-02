@@ -29,12 +29,14 @@ Pre-built layout templates users can start from instead of a blank canvas.
 ## Completed
 
 **Files changed:**
+
 - apps/display/src/lib/grapes-templates.ts (new, 214 lines) — WidgetTemplate type + 5 template definitions
 - apps/display/src/lib/WidgetTemplatePicker.svelte (new, 19 lines) — grid picker with blank option
-- apps/display/src/__tests__/grapes-templates.test.ts (new, 128 lines) — 18 unit tests
-- apps/display/src/__tests__/widget-template-picker.test.ts (new, 49 lines) — 6 component tests
+- apps/display/src/**tests**/grapes-templates.test.ts (new, 128 lines) — 18 unit tests
+- apps/display/src/**tests**/widget-template-picker.test.ts (new, 49 lines) — 6 component tests
 
 **Key decisions:**
+
 - Templates are HTML+CSS string pairs, not GrapesJS projectData — simpler to author and preview
 - Each template uses data-slot attributes consistent with lensing-dx6s data binding
 - CSS classes use per-template prefixes (sv-, list-, kv-, ic-, card-) to avoid collisions
@@ -43,6 +45,7 @@ Pre-built layout templates users can start from instead of a blank canvas.
 - WidgetTemplatePicker imports WIDGET_TEMPLATES directly — no need to pass as prop
 
 **Notes for next task:**
+
 - Templates can be loaded into GrapesJS via editor.setComponents(html) + editor.setStyle(css)
 - WidgetTemplatePicker.onSelect returns WidgetTemplate | null
 - Template HTML uses data-slot attributes that align with registerDataBlocks() slot convention

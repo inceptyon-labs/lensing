@@ -219,6 +219,10 @@ export type { PublisherConfig, PublisherResult } from './publisher';
 export { createJsonApiConnector } from './json-api-connector';
 export type { JsonApiConnector, JsonApiConnectorOptions } from './json-api-connector';
 
+// ── RSS/Atom Feed Connector ────────────────────────────────────────────────────
+export { createRssConnector } from './rss-connector';
+export type { RssConnector, RssConnectorOptions } from './rss-connector';
+
 // ── Marketplace Plugin Installation ────────────────────────────────────────────
 export { downloadAndInstallPlugin } from './marketplace-install';
 export type { MarketplaceInstallResult, MarketplaceInstallOptions } from './marketplace-install';
