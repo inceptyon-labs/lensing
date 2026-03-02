@@ -14,6 +14,7 @@ const mockPlugins: MarketplacePlugin[] = [
     category: 'Weather',
     tags: ['weather'],
     downloadUrl: 'https://example.com/plugin1.zip',
+    thumbnail: 'https://example.com/thumb1.png',
     installed: false,
     updateAvailable: false,
   },
@@ -170,7 +171,7 @@ describe('MarketplacePluginBrowser', () => {
       render(MarketplacePluginBrowser, {
         props: { plugins: mockPlugins, loading: false },
       });
-      expect(screen.getByRole('button', { name: /category|all/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /^All$/i })).toBeInTheDocument();
     });
 
     it('should filter plugins by category', async () => {
@@ -238,6 +239,59 @@ describe('MarketplacePluginBrowser', () => {
       await user.type(searchInput, 'Plugin One');
       await vi.advanceTimersByTimeAsync(300);
       expect(screen.getByText(/1 plugin/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('Card thumbnail', () => {
+    it('should render thumbnail image when plugin has thumbnail', () => {
+      render(MarketplacePluginBrowser, {
+        props: { plugins: mockPlugins, loading: false },
+      });
+      const img = screen.getByAltText('Plugin One thumbnail');
+      expect(img).toBeInTheDocument();
+      expect(img.getAttribute('src')).toBe('https://example.com/thumb1.png');
+    });
+
+    it('should render thumbnail placeholder when plugin has no thumbnail', () => {
+      const { container } = render(MarketplacePluginBrowser, {
+        props: { plugins: mockPlugins, loading: false },
+      });
+      const placeholders = container.querySelectorAll('.card-thumbnail-placeholder');
+      expect(placeholders.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should apply card-thumbnail class to thumbnail image', () => {
+      const { container } = render(MarketplacePluginBrowser, {
+        props: { plugins: mockPlugins, loading: false },
+      });
+      const img = container.querySelector('.card-thumbnail');
+      expect(img).toBeInTheDocument();
+    });
+  });
+
+  describe('Installed badge on cards', () => {
+    it('should show "Installed" badge on installed plugin cards', () => {
+      render(MarketplacePluginBrowser, {
+        props: { plugins: mockPlugins, loading: false },
+      });
+      const badges = screen.getAllByText('Installed');
+      expect(badges.length).toBe(1);
+    });
+
+    it('should not show "Installed" badge on non-installed plugin cards', () => {
+      const uninstalledPlugins = mockPlugins.map((p) => ({ ...p, installed: false }));
+      render(MarketplacePluginBrowser, {
+        props: { plugins: uninstalledPlugins, loading: false },
+      });
+      expect(screen.queryByText('Installed')).not.toBeInTheDocument();
+    });
+
+    it('should not show "Installed" badge when updateAvailable is true', () => {
+      const pluginWithUpdate = mockPluginsWithUpdate.filter((p) => p.updateAvailable);
+      render(MarketplacePluginBrowser, {
+        props: { plugins: pluginWithUpdate, loading: false },
+      });
+      expect(screen.queryByText('Installed')).not.toBeInTheDocument();
     });
   });
 

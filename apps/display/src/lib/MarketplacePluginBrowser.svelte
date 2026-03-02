@@ -97,11 +97,18 @@
       <div class="plugin-grid">
         {#each filteredPlugins as plugin (plugin.id)}
           <button class="plugin-card" on:click={() => openDetail(plugin)}>
+            {#if plugin.thumbnail}
+              <img class="card-thumbnail" src={plugin.thumbnail} alt="{plugin.name} thumbnail" />
+            {:else}
+              <div class="card-thumbnail-placeholder">🔌</div>
+            {/if}
             <span class="plugin-card-name">{plugin.name}</span>
             <span class="plugin-card-author">{plugin.author}</span>
             <span class="plugin-card-category">{plugin.category}</span>
             {#if plugin.updateAvailable}
               <span class="plugin-card-badge">Update</span>
+            {:else if plugin.installed}
+              <span class="plugin-card-installed">Installed</span>
             {/if}
           </button>
         {/each}
