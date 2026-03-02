@@ -31,12 +31,17 @@ export function hasCustomJs(
  * Builds an iframe srcdoc string containing the plugin HTML, CSS, optional JS,
  * and a bootstrap script that handles postMessage data injection and resize reporting.
  */
-export function buildSandboxSrcdoc(html: string, css: string, js?: string): string {
+export function buildSandboxSrcdoc(
+  html: string,
+  css: string,
+  js?: string,
+  pluginId?: string
+): string {
   const bootstrapScript = `
 (function() {
   function reportHeight() {
     var h = document.body ? document.body.scrollHeight : 0;
-    window.parent.postMessage({ type: '${SANDBOX_MSG.RESIZE}', height: h }, '*');
+    window.parent.postMessage({ type: '${SANDBOX_MSG.RESIZE}', pluginId: '${pluginId || ''}', height: h }, '*');
   }
 
   window.addEventListener('message', function(event) {

@@ -70,6 +70,11 @@ describe('iframe-sandbox utility', () => {
       expect(srcdoc).toContain('postMessage');
     });
 
+    it('should include pluginId in resize message payload', () => {
+      const srcdoc = buildSandboxSrcdoc('<div></div>', '', undefined, 'test-plugin-id');
+      expect(srcdoc).toContain("pluginId: 'test-plugin-id'");
+    });
+
     it('should include optional custom JS when provided', () => {
       const srcdoc = buildSandboxSrcdoc('<div></div>', '', 'console.log("custom")');
       expect(srcdoc).toContain('console.log("custom")');

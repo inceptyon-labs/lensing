@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import { buildSandboxSrcdoc, SANDBOX_MSG } from './iframe-sandbox';
 
   export let pluginId: string;
@@ -13,7 +13,7 @@
   let iframeEl: HTMLIFrameElement;
   let iframeHeight: number | null = null;
 
-  $: srcdoc = buildSandboxSrcdoc(html, css, js);
+  $: srcdoc = buildSandboxSrcdoc(html, css, js, pluginId);
 
   $: if (data !== null && iframeEl?.contentWindow) {
     try {
@@ -26,14 +26,23 @@
   function onMessage(event: MessageEvent) {
     if (!event.data || event.data.type !== SANDBOX_MSG.RESIZE) return;
     if (event.data.pluginId !== pluginId) return;
-    const height = event.data.height as number;
-    iframeHeight = Math.min(Math.max(height, 0), MAX_IFRAME_HEIGHT);
+    // Validate height is a finite number before applying
+    const height = event.data.height;
+    if (!Number.isFinite(height)) return;
+    iframeHeight = Math.min(Math.max(height as number, 0), MAX_IFRAME_HEIGHT);
   }
 
-  window.addEventListener('message', onMessage);
+  // Register message listener on mount to avoid SSR issues
+  onMount(() => {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('message', onMessage);
+    }
+  });
 
   onDestroy(() => {
-    window.removeEventListener('message', onMessage);
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('message', onMessage);
+    }
   });
 </script>
 
