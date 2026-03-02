@@ -34,4 +34,5 @@ A zero-infrastructure marketplace powered by a GitHub repo. The full loop: creat
 - [ ] Offline mode serves cached data with banner
 
 ## Summary
+
 All 3 child features completed (Publish to Marketplace, Browser UI, Marketplace Client). Epic closed.

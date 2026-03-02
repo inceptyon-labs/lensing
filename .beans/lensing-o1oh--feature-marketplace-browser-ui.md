@@ -8,7 +8,7 @@ created_at: 2026-02-28T15:44:38Z
 updated_at: 2026-03-02T16:29:21Z
 parent: lensing-023a
 blocked_by:
-    - lensing-7nct
+  - lensing-7nct
 ---
 
 The admin UI tab for browsing, searching, and installing plugins from the marketplace.
@@ -26,10 +26,10 @@ The admin UI tab for browsing, searching, and installing plugins from the market
 **In Scope:** Browse tab, card grid, search, detail view, install button, update UI
 **Out of Scope:** Plugin ratings/reviews, author profiles
 
-
 ## Summary of Changes
 
 All child tasks completed:
+
 - lensing-rqsp: Add Marketplace tab to admin tab bar
 - lensing-4by9: Build marketplace plugin detail view
 - lensing-pm0j: Build marketplace search and filter bar

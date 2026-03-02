@@ -21,8 +21,10 @@ display-control.ts uses `exec()` with string interpolation for the `display` par
 - [ ] No `exec()` calls with string interpolation remain
 
 ## Files
+
 - `packages/core/src/display-control.ts:25-39`
 - `packages/core/src/gpio-linux.ts:10`
 
 ## Size: S
+
 ## Area: backend

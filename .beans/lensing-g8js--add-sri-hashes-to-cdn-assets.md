@@ -20,7 +20,9 @@ GridStack CSS and JS loaded from jsDelivr CDN without `integrity` and `crossorig
 - [ ] SRI hashes verified against current CDN content
 
 ## Files
+
 - `apps/display/src/app.html:10-12`
 
 ## Size: XS
+
 ## Area: frontend

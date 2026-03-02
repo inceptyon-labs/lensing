@@ -34,4 +34,5 @@ Make plugin creation accessible to non-technical users. The builder handles mani
 - [ ] Auto-save to localStorage for crash recovery
 
 ## Summary
+
 All 3 child features completed (Builder Wizard, Preview & Local Save, GrapesJS Visual Editor). Epic closed.

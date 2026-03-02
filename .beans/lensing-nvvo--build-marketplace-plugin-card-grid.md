@@ -26,10 +26,10 @@ Grid layout of marketplace plugin cards with thumbnails, names, and category bad
 **Size:** M
 **Area:** frontend
 
-
 ## Summary of Changes
 
 Enhanced the marketplace plugin card grid with:
+
 - **Thumbnail images** on plugin cards (with placeholder for plugins without thumbnails)
 - **"Installed" badge** on installed plugins (suppressed when update available)
 - **Loading skeleton** with shimmer animation replacing plain "Loading…" text
@@ -37,6 +37,7 @@ Enhanced the marketplace plugin card grid with:
 - **UX fix**: Result count hidden during loading state
 
 Files modified:
+
 - `apps/display/src/lib/MarketplacePluginBrowser.svelte` — card markup enhancements
 - `apps/display/src/lib/styles/marketplace.css` — new CSS classes for thumbnails, skeleton, empty state, installed badge
 - `apps/display/src/__tests__/marketplace-plugin-browser.test.ts` — 13 new tests (384 total passing)

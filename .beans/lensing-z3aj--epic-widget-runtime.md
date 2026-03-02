@@ -31,4 +31,5 @@ Render builder-created plugins safely and performantly on the display. Template-
 - [ ] Widgets integrate with existing zone/grid layout system
 
 ## Summary
+
 Child feature completed (Template Widget Renderer). Epic closed.

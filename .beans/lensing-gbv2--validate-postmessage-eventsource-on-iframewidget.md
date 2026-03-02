@@ -20,7 +20,9 @@ IframeWidget.svelte listens for postMessage resize events but does not validate 
 - [ ] Existing resize tests still pass
 
 ## Files
+
 - `apps/display/src/lib/IframeWidget.svelte:26-33`
 
 ## Size: XS
+
 ## Area: frontend

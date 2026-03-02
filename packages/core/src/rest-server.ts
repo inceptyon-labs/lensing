@@ -236,7 +236,15 @@ export function createRestServer(
   handlers: RestServerHandlers,
   options: RestServerOptions = {}
 ): RestServerInstance {
-  const { port = 0, corsOrigins, logger, photoDir, staticDir, authToken, bindAddress = '127.0.0.1' } = options;
+  const {
+    port = 0,
+    corsOrigins,
+    logger,
+    photoDir,
+    staticDir,
+    authToken,
+    bindAddress = '127.0.0.1',
+  } = options;
   const startedAt = Date.now();
   let boundPort = 0;
   let closed = false;

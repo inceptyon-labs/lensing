@@ -21,8 +21,10 @@ API keys are embedded in URL query parameters in allergies-server.ts and weather
 - [ ] No API keys appear in constructed URLs
 
 ## Files
+
 - `packages/core/src/allergies-server.ts:110`
 - `packages/core/src/weather-server.ts:284`
 
 ## Size: S
+
 ## Area: backend

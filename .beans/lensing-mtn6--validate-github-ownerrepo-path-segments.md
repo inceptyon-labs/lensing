@@ -21,8 +21,10 @@ publisher.ts and marketplace-client.ts construct GitHub API URLs from user-provi
 - [ ] Error thrown for malformed values
 
 ## Files
+
 - `packages/core/src/publisher.ts:42-45`
 - `packages/core/src/marketplace-client.ts:28`
 
 ## Size: XS
+
 ## Area: backend

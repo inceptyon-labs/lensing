@@ -33,4 +33,5 @@ Provide a simple, secure, template-based system for fetching and mapping externa
 - [ ] Connectors integrate with plugin scheduler for periodic refresh
 
 ## Summary
+
 All child features completed. Epic closed automatically — all work delivered.

@@ -20,7 +20,9 @@ CalDAV client makes HTTP requests without AbortController timeout. A slow or non
 - [ ] Pattern consistent with json-api-connector.ts and rss-connector.ts
 
 ## Files
+
 - `packages/core/src/caldav-client.ts:228`
 
 ## Size: XS
+
 ## Area: backend

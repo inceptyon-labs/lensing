@@ -12,6 +12,7 @@ parent: lensing-umpl
 **Scan finding:** Dependency audit
 
 Multiple transitive dependencies have known CVEs:
+
 - rollup >=4.0.0 <4.59.0 — arbitrary file write (HIGH)
 - minimatch — multiple ReDoS (HIGH)
 - svelte <=5.53.4 — multiple SSR XSS (MODERATE)
@@ -28,4 +29,5 @@ Multiple transitive dependencies have known CVEs:
 - [ ] All tests still pass after updates
 
 ## Size: S
+
 ## Area: infra

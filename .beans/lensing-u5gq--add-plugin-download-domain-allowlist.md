@@ -8,7 +8,7 @@ created_at: 2026-03-02T16:50:27Z
 updated_at: 2026-03-02T16:50:27Z
 parent: lensing-umpl
 blocked_by:
-    - lensing-05qz
+  - lensing-05qz
 ---
 
 **Scan finding:** M-6
@@ -24,10 +24,13 @@ marketplace-install.ts accepts any public URL for plugin downloads. The SSRF blo
 - [ ] Error message indicates domain not in allowlist
 
 ## Files
+
 - `packages/core/src/marketplace-install.ts`
 
 ## Size: S
+
 ## Area: backend
 
 ## Blocked by
+
 - lensing-05qz (auth must come first — this is defense-in-depth)

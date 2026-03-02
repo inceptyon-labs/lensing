@@ -6,8 +6,10 @@ import WebSocket from 'ws';
 const AUTH_TOKEN = 'test-secret-token-xyz789';
 
 describe('WebSocket server auth', () => {
-  const serverInstances: Array<{ restServer: http.Server; wsServer: ReturnType<typeof createWsServer> }> =
-    [];
+  const serverInstances: Array<{
+    restServer: http.Server;
+    wsServer: ReturnType<typeof createWsServer>;
+  }> = [];
 
   afterEach(async () => {
     for (const { restServer, wsServer } of serverInstances) {
@@ -23,7 +25,9 @@ describe('WebSocket server auth', () => {
    * Helper to create and start an HTTP server with WebSocket.
    * Returns the port and wsServer instance.
    */
-  async function startServer(options?: { authToken?: string }): Promise<{ port: number; wsServer: any }> {
+  async function startServer(options?: {
+    authToken?: string;
+  }): Promise<{ port: number; wsServer: any }> {
     const restServer = http.createServer();
     const wsServer = createWsServer({
       server: restServer,

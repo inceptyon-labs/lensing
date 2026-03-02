@@ -23,8 +23,10 @@ The REST server binds to `0.0.0.0` with no authentication. All admin endpoints (
 - [ ] Tests for auth middleware (reject unauthorized, allow authorized)
 
 ## Files
+
 - `packages/core/src/rest-server.ts`
 - New: auth middleware module
 
 ## Size: L
+
 ## Area: backend
