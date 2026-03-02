@@ -2,6 +2,7 @@
   import { onMount, onDestroy } from 'svelte';
   import grapesjs from 'grapesjs';
   import { registerWidgetBlocks, registerDataBlocks } from './grapes-blocks';
+  import { configureStyleManager } from './grapes-style-manager';
 
   export let width: number | string = '100%';
   export let height: number | string = '600px';
@@ -52,6 +53,7 @@
 
     registerWidgetBlocks(editor);
     registerDataBlocks(editor, slots);
+    configureStyleManager(editor);
 
     if (onChange) {
       const notify = () => {

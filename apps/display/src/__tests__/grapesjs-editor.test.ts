@@ -5,6 +5,8 @@ import { render } from '@testing-library/svelte';
 function createMockEditor(html = '<div></div>', css = 'div {}') {
   const listeners: Record<string, Array<() => void>> = {};
   const registeredBlocks: string[] = [];
+  const registeredProperties: Array<{ section: string; name: string }> = [];
+  const sectors: string[] = [];
 
   return {
     on: vi.fn((event: string, cb: () => void) => {
@@ -19,12 +21,22 @@ function createMockEditor(html = '<div></div>', css = 'div {}') {
         registeredBlocks.push(id);
       }),
     },
+    StyleManager: {
+      addSector: vi.fn((id: string) => {
+        sectors.push(id);
+      }),
+      addProperty: vi.fn((section: string, config: Record<string, unknown>) => {
+        registeredProperties.push({ section, name: config.name as string });
+      }),
+    },
     /** Test helper: emit a registered event */
     emit(event: string) {
       for (const cb of listeners[event] ?? []) cb();
     },
     _listeners: listeners,
     _blocks: registeredBlocks,
+    _properties: registeredProperties,
+    _sectors: sectors,
   };
 }
 
@@ -109,5 +121,19 @@ describe('GrapesJSEditor block registration', () => {
     expect(mockEditor._blocks).toContain('widget-divider');
     expect(mockEditor._blocks).toContain('widget-icon');
     expect(mockEditor._blocks).toContain('data-list');
+  });
+});
+
+describe('GrapesJSEditor style manager configuration', () => {
+  beforeEach(() => {
+    mockEditor = createMockEditor();
+    vi.clearAllMocks();
+  });
+
+  it('registers style properties including color and font-family on init', async () => {
+    await renderEditor({});
+    const names = mockEditor._properties.map((p) => p.name);
+    expect(names).toContain('color');
+    expect(names).toContain('font-family');
   });
 });
