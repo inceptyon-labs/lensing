@@ -20,7 +20,7 @@ export interface SandboxResizeMessage {
  */
 export function hasCustomJs(
   html: string,
-  manifest?: { server_entry?: string; [key: string]: unknown },
+  manifest?: { server_entry?: string; [key: string]: unknown }
 ): boolean {
   if (manifest?.server_entry) return true;
   // Match actual <script> or <SCRIPT> tags, not escaped HTML entities

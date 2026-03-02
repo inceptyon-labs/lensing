@@ -36,5 +36,7 @@
   title="Plugin Widget"
   {srcdoc}
   sandbox="allow-scripts"
-  style="border: none; display: block; width: 100%;{iframeHeight !== null ? ` height: ${iframeHeight}px;` : ''}"
+  style="border: none; display: block; width: 100%;{iframeHeight !== null
+    ? ` height: ${iframeHeight}px;`
+    : ''}"
 ></iframe>

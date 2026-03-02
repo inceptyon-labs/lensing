@@ -72,7 +72,7 @@ describe('IframeWidget', () => {
       expect(() =>
         render(IframeWidget, {
           props: { pluginId, html: sampleHtml, css: sampleCss, data: null },
-        }),
+        })
       ).not.toThrow();
     });
   });
@@ -96,7 +96,7 @@ describe('IframeWidget', () => {
       await waitFor(() => {
         expect(mockPostMessage).toHaveBeenCalledWith(
           { type: SANDBOX_MSG.DATA, pluginId, data: { value: 42 } },
-          '*',
+          '*'
         );
       });
     });
@@ -105,7 +105,7 @@ describe('IframeWidget', () => {
       expect(() =>
         render(IframeWidget, {
           props: { pluginId, html: sampleHtml, css: sampleCss, data: null },
-        }),
+        })
       ).not.toThrow();
     });
 
@@ -136,7 +136,7 @@ describe('IframeWidget', () => {
       window.dispatchEvent(
         new MessageEvent('message', {
           data: { type: SANDBOX_MSG.RESIZE, pluginId, height: 350 },
-        }),
+        })
       );
 
       await waitFor(() => {
@@ -153,7 +153,7 @@ describe('IframeWidget', () => {
       window.dispatchEvent(
         new MessageEvent('message', {
           data: { type: SANDBOX_MSG.RESIZE, pluginId: 'other-plugin', height: 999 },
-        }),
+        })
       );
 
       await new Promise((r) => setTimeout(r, 50));
@@ -169,7 +169,7 @@ describe('IframeWidget', () => {
       window.dispatchEvent(
         new MessageEvent('message', {
           data: { type: 'unknown-type', pluginId, height: 888 },
-        }),
+        })
       );
 
       await new Promise((r) => setTimeout(r, 50));
