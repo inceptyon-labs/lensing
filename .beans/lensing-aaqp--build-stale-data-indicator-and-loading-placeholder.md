@@ -1,11 +1,11 @@
 ---
 # lensing-aaqp
 title: Build stale data indicator and loading placeholder
-status: todo
+status: in-progress
 type: task
 priority: normal
 created_at: 2026-02-28T15:47:44Z
-updated_at: 2026-02-28T15:47:44Z
+updated_at: 2026-03-02T02:55:29Z
 parent: lensing-25mp
 ---
 

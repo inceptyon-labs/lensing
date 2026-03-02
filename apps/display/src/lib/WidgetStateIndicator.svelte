@@ -22,7 +22,8 @@
     <span
       class="widget-indicator__stale-icon"
       style="opacity: 0.4; color: hsl(220, 10%, 62%); position: absolute; bottom: 8px; right: 8px; font-size: 0.875rem;"
-    >🕐</span>
+      >🕐</span
+    >
   {:else if state === 'waiting'}
     <p
       class="widget-indicator__waiting"
