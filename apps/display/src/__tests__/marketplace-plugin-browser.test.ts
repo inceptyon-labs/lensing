@@ -61,6 +61,39 @@ describe('MarketplacePluginBrowser', () => {
     expect(screen.getByText(/loading/i)).toBeInTheDocument();
   });
 
+  describe('Loading skeleton', () => {
+    it('should render skeleton cards when loading', () => {
+      const { container } = render(MarketplacePluginBrowser, {
+        props: { plugins: null, loading: true },
+      });
+      const skeletons = container.querySelectorAll('.skeleton-card');
+      expect(skeletons.length).toBeGreaterThan(0);
+    });
+
+    it('should render skeleton thumbnail placeholder', () => {
+      const { container } = render(MarketplacePluginBrowser, {
+        props: { plugins: null, loading: true },
+      });
+      const thumbs = container.querySelectorAll('.skeleton-thumbnail');
+      expect(thumbs.length).toBeGreaterThan(0);
+    });
+
+    it('should render skeleton text lines', () => {
+      const { container } = render(MarketplacePluginBrowser, {
+        props: { plugins: null, loading: true },
+      });
+      const lines = container.querySelectorAll('.skeleton-line');
+      expect(lines.length).toBeGreaterThan(0);
+    });
+
+    it('should not render skeleton when not loading', () => {
+      const { container } = render(MarketplacePluginBrowser, {
+        props: { plugins: mockPlugins, loading: false },
+      });
+      expect(container.querySelector('.skeleton-card')).not.toBeInTheDocument();
+    });
+  });
+
   it('shows plugin cards when loaded', () => {
     render(MarketplacePluginBrowser, {
       props: { plugins: mockPlugins, loading: false },
@@ -74,6 +107,30 @@ describe('MarketplacePluginBrowser', () => {
       props: { plugins: [], loading: false },
     });
     expect(screen.getByText(/no plugins found/i)).toBeInTheDocument();
+  });
+
+  describe('Empty state illustration', () => {
+    it('should render empty state container with illustration class', () => {
+      const { container } = render(MarketplacePluginBrowser, {
+        props: { plugins: [], loading: false },
+      });
+      expect(container.querySelector('.mp-empty-state')).toBeInTheDocument();
+    });
+
+    it('should render an SVG illustration in empty state', () => {
+      const { container } = render(MarketplacePluginBrowser, {
+        props: { plugins: [], loading: false },
+      });
+      const svg = container.querySelector('.mp-empty-state svg');
+      expect(svg).toBeInTheDocument();
+    });
+
+    it('should not render empty state when plugins exist', () => {
+      const { container } = render(MarketplacePluginBrowser, {
+        props: { plugins: mockPlugins, loading: false },
+      });
+      expect(container.querySelector('.mp-empty-state')).not.toBeInTheDocument();
+    });
   });
 
   it('opens detail view when card clicked', async () => {

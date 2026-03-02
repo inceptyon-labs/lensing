@@ -91,8 +91,23 @@
     </div>
     {#if loading}
       <p class="mp-state">Loading…</p>
+      <div class="plugin-grid">
+        {#each [1, 2, 3, 4, 5, 6] as i (i)}
+          <div class="skeleton-card">
+            <div class="skeleton-thumbnail"></div>
+            <div class="skeleton-line skeleton-line--wide"></div>
+            <div class="skeleton-line skeleton-line--narrow"></div>
+          </div>
+        {/each}
+      </div>
     {:else if !plugins || filteredPlugins.length === 0}
-      <p class="mp-state">No plugins found</p>
+      <div class="mp-empty-state">
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+          <circle cx="32" cy="32" r="30" stroke="currentColor" stroke-width="2" opacity="0.2" />
+          <path d="M24 28h16M24 36h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.3" />
+        </svg>
+        <p class="mp-state">No plugins found</p>
+      </div>
     {:else}
       <div class="plugin-grid">
         {#each filteredPlugins as plugin (plugin.id)}
