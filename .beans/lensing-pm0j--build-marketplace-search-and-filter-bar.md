@@ -1,11 +1,11 @@
 ---
 # lensing-pm0j
 title: Build marketplace search and filter bar
-status: todo
+status: in-progress
 type: task
 priority: normal
 created_at: 2026-02-28T15:47:02Z
-updated_at: 2026-02-28T15:47:02Z
+updated_at: 2026-03-02T01:24:56Z
 parent: lensing-o1oh
 ---
 
