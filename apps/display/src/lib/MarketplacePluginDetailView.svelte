@@ -14,6 +14,7 @@
   type InstallStatus = 'idle' | 'installing' | 'done' | 'error';
   let installStatus: InstallStatus = 'idle';
   let installError = '';
+  let showConfirm = false;
 
   // Reset install state when plugin changes (component reuse)
   let _trackedId = plugin.id;
@@ -21,6 +22,7 @@
     _trackedId = plugin.id;
     installStatus = 'idle';
     installError = '';
+    showConfirm = false;
   }
 
   async function handleInstall() {
@@ -34,6 +36,19 @@
       installError = err instanceof Error ? err.message : 'Install failed';
       installStatus = 'error';
     }
+  }
+
+  function requestUpdate() {
+    showConfirm = true;
+  }
+
+  function cancelUpdate() {
+    showConfirm = false;
+  }
+
+  async function confirmUpdate() {
+    showConfirm = false;
+    await handleInstall();
   }
 </script>
 
@@ -83,14 +98,25 @@
       <div class="install-area">
         {#if plugin.installed && !plugin.updateAvailable && installStatus === 'idle'}
           <span class="installed-badge">Installed</span>
-        {:else if plugin.installed && plugin.updateAvailable && installStatus === 'idle'}
+        {:else if plugin.installed && plugin.updateAvailable && installStatus === 'idle' && !showConfirm}
+          {#if plugin.installedVersion}
+            <span class="version-comparison">{plugin.installedVersion} → {plugin.version}</span>
+          {/if}
           <button
             class="install-btn install-btn--update"
-            on:click={handleInstall}
+            on:click={requestUpdate}
             aria-label="Update"
           >
             Update
           </button>
+        {:else if plugin.installed && plugin.updateAvailable && installStatus === 'idle' && showConfirm}
+          <p class="update-confirm-msg">
+            Update will replace widget template. Config will be preserved.
+          </p>
+          <button class="install-btn" on:click={confirmUpdate} aria-label="Confirm">Confirm</button>
+          <button class="install-btn install-btn--cancel" on:click={cancelUpdate} aria-label="Cancel"
+            >Cancel</button
+          >
         {:else if installStatus === 'installing'}
           <button class="install-btn install-btn--progress" disabled aria-label="Installing">
             Installing…
