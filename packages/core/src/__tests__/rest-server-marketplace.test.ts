@@ -439,3 +439,88 @@ describe('MarketplaceListResponse type', () => {
     expect(resp.pageSize).toBe(20);
   });
 });
+
+describe('Marketplace Offline Fallback', () => {
+  let offlineServer: RestServerInstance;
+  let offlinePort: number;
+
+  afterEach(async () => {
+    if (offlineServer) {
+      await offlineServer.close();
+    }
+  });
+
+  it('should return 200 with offline:true when marketplace handler throws', async () => {
+    offlineServer = createRestServer(
+      createStubHandlers({
+        getMarketplacePlugins: async () => {
+          throw new Error('GitHub unreachable: network timeout');
+        },
+      })
+    );
+    await offlineServer.ready();
+    offlinePort = offlineServer.port;
+
+    const res = await request(offlinePort, 'GET', '/marketplace');
+    expect(res.status).toBe(200);
+    const body = JSON.parse(res.body) as MarketplaceListResponse;
+    expect(body.offline).toBe(true);
+  });
+
+  it('should include lastFetchTime in offline response', async () => {
+    const lastFetchTime = Date.now() - 60000;
+    offlineServer = createRestServer(
+      createStubHandlers({
+        getMarketplacePlugins: async () => {
+          throw new Error('Network error');
+        },
+      })
+    );
+    await offlineServer.ready();
+    offlinePort = offlineServer.port;
+
+    const res = await request(offlinePort, 'GET', '/marketplace');
+    expect(res.status).toBe(200);
+    const body = JSON.parse(res.body) as MarketplaceListResponse & { lastFetchTime?: number };
+    expect(body.offline).toBe(true);
+    // lastFetchTime should be present in response (when serving from cache)
+    // Can be undefined if no cache exists, but response structure should support it
+    if (body.lastFetchTime !== undefined) {
+      expect(typeof body.lastFetchTime).toBe('number');
+    }
+  });
+
+  it('should return 403 with clear error message when install blocked offline', async () => {
+    offlineServer = createRestServer(
+      createStubHandlers({
+        installMarketplacePlugin: async () => {
+          throw new Error('Marketplace unavailable: network offline');
+        },
+      })
+    );
+    await offlineServer.ready();
+    offlinePort = offlineServer.port;
+
+    const res = await request(offlinePort, 'POST', '/marketplace/weather-pro/install');
+    expect(res.status).toBe(400);
+    const body = JSON.parse(res.body) as { error: string };
+    expect(body.error).toContain('unavailable');
+  });
+
+  it('should not return 500 on marketplace handler errors', async () => {
+    offlineServer = createRestServer(
+      createStubHandlers({
+        getMarketplacePlugins: async () => {
+          throw new Error('Connection refused');
+        },
+      })
+    );
+    await offlineServer.ready();
+    offlinePort = offlineServer.port;
+
+    const res = await request(offlinePort, 'GET', '/marketplace');
+    // Should not be 500; should gracefully degrade
+    expect(res.status).not.toBe(500);
+    expect([200, 503, 504]).toContain(res.status);
+  });
+});

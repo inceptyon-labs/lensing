@@ -378,9 +378,15 @@ export function createRestServer(
         Object.keys(params).length > 0 ? params : undefined
       );
       writeJson(res, 200, result);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to fetch marketplace plugins';
-      writeJson(res, 500, { error: msg });
+    } catch {
+      // Network/offline errors: serve degraded response rather than 500
+      writeJson(res, 200, {
+        plugins: [],
+        total: 0,
+        page: 1,
+        pageSize: 20,
+        offline: true,
+      });
     }
   });
 
