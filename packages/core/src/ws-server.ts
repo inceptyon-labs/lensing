@@ -70,7 +70,9 @@ export function createWsServer(options: WsServerOptions = {}): WsServerInstance 
         },
         callback: (res: boolean, code?: number, message?: string) => void
       ) => {
-        const token = extractBearerToken(info.req.headers.authorization);
+        const authHeader = info.req.headers.authorization;
+        const headerStr = Array.isArray(authHeader) ? authHeader[0] : authHeader;
+        const token = extractBearerToken(headerStr);
         if (token !== authToken) {
           callback(false, 401, 'Unauthorized');
           return;
