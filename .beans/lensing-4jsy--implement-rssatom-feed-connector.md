@@ -1,11 +1,11 @@
 ---
 # lensing-4jsy
 title: Implement RSS/Atom feed connector
-status: in-progress
+status: completed
 type: task
 priority: normal
 created_at: 2026-02-28T15:45:12Z
-updated_at: 2026-03-02T13:45:47Z
+updated_at: 2026-03-02T13:46:17Z
 parent: lensing-r333
 ---
 
@@ -29,7 +29,7 @@ Implement the RSS/Atom connector that fetches feeds and maps standard fields to 
 **Files changed:**
 
 - packages/core/src/rss-connector.ts (308 lines, new) — RSS/Atom feed parser with flexible field mapping
-- packages/core/src/__tests__/rss-connector.test.ts (488 lines, new) — 24 comprehensive tests
+- packages/core/src/**tests**/rss-connector.test.ts (488 lines, new) — 24 comprehensive tests
 - packages/core/src/index.ts (2 lines added) — Exports for RssConnector interface
 - packages/types/src/index.ts (1 line added) — Optional limit field in RssConnectorConfig
 

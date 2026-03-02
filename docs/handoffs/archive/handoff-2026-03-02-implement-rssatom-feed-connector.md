@@ -16,7 +16,7 @@ Issue: lensing-4jsy - Implement RSS/Atom feed connector
 ## Files Changed
 
 - packages/core/src/rss-connector.ts (308 lines, new) — XML parser + field mapper + cache
-- packages/core/src/__tests__/rss-connector.test.ts (488 lines, new) — Full test suite
+- packages/core/src/**tests**/rss-connector.test.ts (488 lines, new) — Full test suite
 - packages/core/src/index.ts (2 lines added) — Exports RssConnector type and factory
 - packages/types/src/index.ts (1 line added) — Optional limit property on RssConnectorConfig
 
