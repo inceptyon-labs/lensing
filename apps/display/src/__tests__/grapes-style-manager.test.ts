@@ -41,9 +41,7 @@ describe('GrapesJS Style Manager Configuration', () => {
     });
 
     it('should have text color picker property', () => {
-      const textColor = properties.find(
-        (p) => p.name === 'color' && p.section === 'general'
-      );
+      const textColor = properties.find((p) => p.name === 'color' && p.section === 'general');
       expect(textColor).toBeDefined();
       expect(textColor?.type).toBe('color');
       expect(textColor?.label).toBe('Text Color');

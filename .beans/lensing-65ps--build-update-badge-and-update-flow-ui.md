@@ -27,13 +27,15 @@ Visual indicators and flow for updating outdated plugins.
 ## Completed
 
 **Files changed:**
+
 - packages/types/src/index.ts (added installedVersion?: string to MarketplacePlugin)
 - apps/display/src/lib/MarketplacePluginBrowser.svelte (update badge on cards)
 - apps/display/src/lib/MarketplacePluginDetailView.svelte (version comparison + confirmation dialog)
-- apps/display/src/__tests__/marketplace-plugin-browser.test.ts (2 new badge tests)
-- apps/display/src/__tests__/marketplace-plugin-detail-view.test.ts (5 new tests)
+- apps/display/src/**tests**/marketplace-plugin-browser.test.ts (2 new badge tests)
+- apps/display/src/**tests**/marketplace-plugin-detail-view.test.ts (5 new tests)
 
 **Key decisions:**
+
 - Badge is a span with text 'Update' inside the plugin card button — no additional component needed
 - Version comparison shown only when installedVersion is provided (graceful fallback)
 - Confirmation dialog replaces the Update button (shows inline, not modal) — install flow changed to requestUpdate() → showConfirm → confirmUpdate() → handleInstall()
@@ -41,6 +43,7 @@ Visual indicators and flow for updating outdated plugins.
 - installedVersion is optional on MarketplacePlugin type — backend can provide it or omit it
 
 **Notes for next task:**
+
 - Backend needs to populate installedVersion field on MarketplacePlugin for version comparison to display
 - Update badge on 'installed plugin cards' (AdminPluginCard) was not implemented — that card uses PluginAdminEntry, not MarketplacePlugin, and would need a separate mechanism
 - All existing install tests continue to pass (Install flow unchanged — only Update flow now has confirmation)

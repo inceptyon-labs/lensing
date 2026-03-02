@@ -1,11 +1,11 @@
 ---
 # lensing-pz1u
 title: Configure GrapesJS style manager
-status: todo
+status: in-progress
 type: task
 priority: normal
 created_at: 2026-02-28T15:46:06Z
-updated_at: 2026-02-28T15:46:06Z
+updated_at: 2026-03-02T03:47:57Z
 parent: lensing-alyh
 ---
 
