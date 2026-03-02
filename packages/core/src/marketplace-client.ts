@@ -45,6 +45,10 @@ export function createMarketplaceClient(
     await fs.writeFile(cacheFile, JSON.stringify(index), 'utf-8');
   }
 
+  function stampedIndex(index: MarketplaceIndex, timestamp: number): MarketplaceIndex {
+    return { ...index, lastFetchTime: timestamp };
+  }
+
   async function fetchFromGitHub(): Promise<MarketplaceIndex> {
     const response = await fetch(url);
     if (!response.ok) {
@@ -68,10 +72,11 @@ export function createMarketplaceClient(
 
     try {
       const freshData = await fetchFromGitHub();
-      await writeDiskCache(freshData);
-      inMemoryCache = freshData;
+      const stamped = stampedIndex(freshData, now);
+      await writeDiskCache(stamped);
+      inMemoryCache = stamped;
       lastFetchTime = now;
-      return freshData;
+      return stamped;
     } catch (fetchError) {
       // Fetch failed or returned invalid schema — fall back to best available cache
       const fallback = inMemoryCache ?? (await readDiskCache());

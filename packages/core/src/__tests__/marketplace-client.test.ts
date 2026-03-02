@@ -39,7 +39,7 @@ describe('MarketplaceClient', () => {
     });
 
     const result = await client.getIndex();
-    expect(result).toEqual(mockIndex);
+    expect(result).toMatchObject(mockIndex);
     expect(mockFetch).toHaveBeenCalledWith(
       'https://raw.githubusercontent.com/owner/repo/main/index.json'
     );
@@ -62,7 +62,7 @@ describe('MarketplaceClient', () => {
 
     const cachePath = path.join(tempCacheDir, 'index.json');
     const cached = JSON.parse(await fs.readFile(cachePath, 'utf-8'));
-    expect(cached).toEqual(mockIndex);
+    expect(cached).toMatchObject(mockIndex);
   });
 
   it('returns cached data if GitHub is unreachable', async () => {
@@ -86,7 +86,7 @@ describe('MarketplaceClient', () => {
     mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
     const result = await client.getIndex();
-    expect(result).toEqual(mockIndex);
+    expect(result).toMatchObject(mockIndex);
   });
 
   it('validates index schema has version and plugins array', async () => {
@@ -131,7 +131,7 @@ describe('MarketplaceClient', () => {
 
     // Should still return the good cached data
     const result = await client.getIndex();
-    expect(result).toEqual(goodIndex);
+    expect(result).toMatchObject(goodIndex);
   });
 
   it('respects configurable marketplace repo URL', async () => {
@@ -207,7 +207,7 @@ describe('MarketplaceClient', () => {
     });
 
     const result1 = await client.getIndex();
-    expect(result1).toEqual(mockIndex1);
+    expect(result1).toMatchObject(mockIndex1);
 
     // Wait for refresh interval to expire
     await new Promise((resolve) => setTimeout(resolve, 20));
@@ -218,6 +218,53 @@ describe('MarketplaceClient', () => {
     });
 
     const result2 = await client.getIndex();
-    expect(result2).toEqual(mockIndex2);
+    expect(result2).toMatchObject(mockIndex2);
+  });
+
+  it('includes lastFetchTime timestamp in cached data', async () => {
+    const mockIndex = { version: '1.0.0', plugins: [{ id: 'test' }] };
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => mockIndex,
+    });
+
+    const client = createMarketplaceClient({
+      cacheDir: tempCacheDir,
+      marketplaceRepo: 'owner/repo',
+    });
+
+    const before = Date.now();
+    const result = await client.getIndex();
+    const after = Date.now();
+
+    expect(result.lastFetchTime).toBeDefined();
+    expect(typeof result.lastFetchTime).toBe('number');
+    expect(result.lastFetchTime).toBeGreaterThanOrEqual(before);
+    expect(result.lastFetchTime).toBeLessThanOrEqual(after);
+  });
+
+  it('retrieves lastFetchTime from disk cache', async () => {
+    const mockIndex = { version: '1.0.0', plugins: [] };
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockIndex,
+    });
+
+    const client = createMarketplaceClient({
+      cacheDir: tempCacheDir,
+      marketplaceRepo: 'owner/repo',
+      refreshInterval: 900,
+    });
+
+    const result1 = await client.getIndex();
+    const fetchTime = result1.lastFetchTime!;
+    expect(fetchTime).toBeDefined();
+
+    // Second call should get from cache, not re-fetch
+    mockFetch.mockRejectedValueOnce(new Error('Network error'));
+    const result2 = await client.getIndex();
+
+    expect(result2.lastFetchTime).toBe(fetchTime);
+    expect(result2.version).toBe('1.0.0');
   });
 });
