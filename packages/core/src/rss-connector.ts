@@ -33,10 +33,7 @@ const DEFAULT_ITEM_LIMIT = 10;
  * Extract text content from an XML-like object
  * Handles paths like "author", "image > url", "enclosure @url", etc.
  */
-function extractValue(
-  element: Record<string, unknown>,
-  path: string
-): string | undefined {
+function extractValue(element: Record<string, unknown>, path: string): string | undefined {
   const parts = path.split('>').map((s) => s.trim());
   let current: unknown = element;
 
@@ -297,7 +294,9 @@ export function createRssConnector(
     }
   }
 
-  async function getCachedResponse(): Promise<{ items: Array<Record<string, unknown>> } | undefined> {
+  async function getCachedResponse(): Promise<
+    { items: Array<Record<string, unknown>> } | undefined
+  > {
     return cachedResponse;
   }
 
