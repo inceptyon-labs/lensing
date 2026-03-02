@@ -223,6 +223,10 @@ export type { JsonApiConnector, JsonApiConnectorOptions } from './json-api-conne
 export { createRssConnector } from './rss-connector';
 export type { RssConnector, RssConnectorOptions } from './rss-connector';
 
+// ── Static Content Connector ─────────────────────────────────────────────────
+export { createStaticConnector } from './static-connector';
+export type { StaticConnector } from './static-connector';
+
 // ── Marketplace Plugin Installation ────────────────────────────────────────────
 export { downloadAndInstallPlugin } from './marketplace-install';
 export type { MarketplaceInstallResult, MarketplaceInstallOptions } from './marketplace-install';
