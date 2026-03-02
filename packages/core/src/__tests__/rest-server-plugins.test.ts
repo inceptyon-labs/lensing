@@ -63,7 +63,7 @@ const MOCK_PLUGINS: PluginAdminEntry[] = [
 ];
 
 /** Create handlers with plugin callbacks for testing */
-function createPluginHandlers(): RestServerHandlers {
+function createPluginHandlers(overrides?: Partial<RestServerHandlers>): RestServerHandlers {
   const plugins = structuredClone(MOCK_PLUGINS);
 
   return {
@@ -80,10 +80,15 @@ function createPluginHandlers(): RestServerHandlers {
     }),
     getPlugins: async () => plugins,
     getPlugin: async (id: string) => plugins.find((p) => p.plugin_id === id),
+    getPluginTemplate: async (id: string) =>
+      id === 'weather'
+        ? { html: '<div>Weather: {{temp}}</div>', css: '.weather { color: blue; }' }
+        : undefined,
     setPluginEnabled: vi.fn(async () => {}),
     updatePluginConfig: vi.fn(async () => {}),
     assignPluginZone: vi.fn(async () => {}),
     reloadPlugins: vi.fn(async () => {}),
+    ...overrides,
   };
 }
 
@@ -130,6 +135,26 @@ describe('RestServer Plugin Endpoints', () => {
       expect(res.status).toBe(404);
       const body = JSON.parse(res.body) as { error: string };
       expect(body.error).toContain('not found');
+    });
+  });
+
+  describe('GET /plugins/:id/template', () => {
+    it('should return template html and css for builder-created plugins', async () => {
+      const res = await request(port, 'GET', '/plugins/weather/template');
+      expect(res.status).toBe(200);
+      const body = JSON.parse(res.body) as { html: string; css: string };
+      expect(body.html).toBe('<div>Weather: {{temp}}</div>');
+      expect(body.css).toBe('.weather { color: blue; }');
+    });
+
+    it('should return 404 when plugin has no template', async () => {
+      const res = await request(port, 'GET', '/plugins/clock/template');
+      expect(res.status).toBe(404);
+    });
+
+    it('should return 404 for unknown plugin ID', async () => {
+      const res = await request(port, 'GET', '/plugins/nonexistent/template');
+      expect(res.status).toBe(404);
     });
   });
 

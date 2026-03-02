@@ -46,6 +46,7 @@ export interface RestServerHandlers {
   // Plugin management (optional — omit to disable plugin endpoints)
   getPlugins?: () => Promise<PluginAdminEntry[]>;
   getPlugin?: (id: string) => Promise<PluginAdminEntry | undefined>;
+  getPluginTemplate?: (id: string) => Promise<{ html: string; css: string } | undefined>;
   setPluginEnabled?: (id: string, enabled: boolean) => Promise<void>;
   updatePluginConfig?: (id: string, config: Record<string, unknown>) => Promise<void>;
   assignPluginZone?: (id: string, zone: ZoneName | undefined) => Promise<void>;
@@ -669,6 +670,31 @@ export function createRestServer(
               writeJson(res, 404, { error: `Plugin '${pluginId}' not found` });
             } else {
               writeJson(res, 200, plugin);
+            }
+            try {
+              logger?.({ method, path, status: res.statusCode, duration_ms: Date.now() - start });
+            } catch {
+              // Ignore logger errors
+            }
+            return;
+          }
+
+          // GET /plugins/:id/template
+          if (action === 'template' && method === 'GET') {
+            if (!handlers.getPluginTemplate) {
+              writeJson(res, 404, { error: 'Not Found' });
+              try {
+                logger?.({ method, path, status: 404, duration_ms: Date.now() - start });
+              } catch {
+                // Ignore logger errors
+              }
+              return;
+            }
+            const template = await handlers.getPluginTemplate(pluginId);
+            if (!template) {
+              writeJson(res, 404, { error: `Template for plugin '${pluginId}' not found` });
+            } else {
+              writeJson(res, 200, template);
             }
             try {
               logger?.({ method, path, status: res.statusCode, duration_ms: Date.now() - start });
