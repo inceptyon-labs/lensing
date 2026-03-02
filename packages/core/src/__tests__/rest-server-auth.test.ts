@@ -147,6 +147,19 @@ describe('RestServer auth integration', () => {
       expect(res.status).toBe(204);
     });
 
+    it('should allow OPTIONS on protected routes without token', async () => {
+      server = createRestServer(createStubHandlers(), {
+        port: 0,
+        authToken: AUTH_TOKEN,
+      });
+      await server.ready();
+      port = server.port;
+
+      // OPTIONS should work on /settings even though GET /settings requires auth
+      const res = await request(port, 'OPTIONS', '/settings');
+      expect(res.status).toBe(204);
+    });
+
     it('should return 401 for POST /ask without token', async () => {
       server = createRestServer(createStubHandlers(), {
         port: 0,
