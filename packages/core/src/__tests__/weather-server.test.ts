@@ -335,9 +335,9 @@ describe('WeatherServer', () => {
       server.refresh();
       const calledUrl: string = (fetchFn as any).mock.calls[0][0];
       expect(calledUrl).toContain('appid=test-api-key');
-      // No request init/headers should be passed — OWM key is URL-only
+      // No request init should be passed — OWM key is URL-only
       const calledInit = (fetchFn as any).mock.calls[0][1];
-      expect(calledInit?.headers?.['Authorization']).toBeUndefined();
+      expect(calledInit).toBeUndefined();
     });
 
     it('should return null from getWeatherData before first refresh', () => {

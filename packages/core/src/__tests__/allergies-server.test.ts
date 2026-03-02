@@ -151,7 +151,6 @@ describe('Allergies Server', () => {
 
       expect(fetchFn).toHaveBeenCalled();
       const url = (fetchFn as any).mock.calls[0][0];
-      const init = (fetchFn as any).mock.calls[0][1];
       expect(url).toContain('37.7749');
       expect(url).toContain('-122.4194');
       expect(url).not.toContain('test-key');
