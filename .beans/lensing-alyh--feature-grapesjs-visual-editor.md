@@ -8,7 +8,7 @@ created_at: 2026-02-28T15:44:28Z
 updated_at: 2026-03-02T14:17:30Z
 parent: lensing-jwka
 blocked_by:
-    - lensing-mb8p
+  - lensing-mb8p
 ---
 
 The visual widget design step — GrapesJS mounted in a Svelte wrapper with a constrained block palette, layout templates, data binding, and style controls.

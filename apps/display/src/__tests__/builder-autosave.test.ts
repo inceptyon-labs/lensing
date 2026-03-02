@@ -57,7 +57,13 @@ describe('Builder Auto-Save Utility', () => {
     it('should overwrite previous state for same pluginId', () => {
       const pluginId = 'test-plugin-1';
       const state1: WizardState = {
-        metadata: { name: 'First', description: 'First plugin', category: 'data', icon: 'star', id: 'test-plugin-1' },
+        metadata: {
+          name: 'First',
+          description: 'First plugin',
+          category: 'data',
+          icon: 'star',
+          id: 'test-plugin-1',
+        },
         connectorConfig: null,
         fieldMappings: {},
         editorProject: null,
@@ -65,7 +71,13 @@ describe('Builder Auto-Save Utility', () => {
         canvasSize: 'medium',
       };
       const state2: WizardState = {
-        metadata: { name: 'Second', description: 'Second plugin', category: 'web', icon: 'globe', id: 'test-plugin-1' },
+        metadata: {
+          name: 'Second',
+          description: 'Second plugin',
+          category: 'web',
+          icon: 'globe',
+          id: 'test-plugin-1',
+        },
         connectorConfig: null,
         fieldMappings: {},
         editorProject: null,
@@ -84,7 +96,13 @@ describe('Builder Auto-Save Utility', () => {
     it('should include timestamp when saving', () => {
       const pluginId = 'test-plugin-1';
       const state: WizardState = {
-        metadata: { name: 'Test', description: 'Test', category: 'data', icon: 'star', id: 'test-plugin-1' },
+        metadata: {
+          name: 'Test',
+          description: 'Test',
+          category: 'data',
+          icon: 'star',
+          id: 'test-plugin-1',
+        },
         connectorConfig: null,
         fieldMappings: {},
         editorProject: null,
@@ -159,7 +177,13 @@ describe('Builder Auto-Save Utility', () => {
     it('should preserve optional null fields', () => {
       const pluginId = 'test-plugin-1';
       const state: WizardState = {
-        metadata: { name: 'Test', description: 'Test', category: 'data', icon: 'star', id: 'test-plugin-1' },
+        metadata: {
+          name: 'Test',
+          description: 'Test',
+          category: 'data',
+          icon: 'star',
+          id: 'test-plugin-1',
+        },
         connectorConfig: null,
         fieldMappings: {},
         editorProject: null,
@@ -180,7 +204,13 @@ describe('Builder Auto-Save Utility', () => {
     it('should remove saved state from localStorage', () => {
       const pluginId = 'test-plugin-1';
       const state: WizardState = {
-        metadata: { name: 'Test', description: 'Test', category: 'data', icon: 'star', id: 'test-plugin-1' },
+        metadata: {
+          name: 'Test',
+          description: 'Test',
+          category: 'data',
+          icon: 'star',
+          id: 'test-plugin-1',
+        },
         connectorConfig: null,
         fieldMappings: {},
         editorProject: null,
@@ -201,7 +231,13 @@ describe('Builder Auto-Save Utility', () => {
 
     it('should only clear state for specified pluginId', () => {
       const state: WizardState = {
-        metadata: { name: 'Test', description: 'Test', category: 'data', icon: 'star', id: 'test-plugin-1' },
+        metadata: {
+          name: 'Test',
+          description: 'Test',
+          category: 'data',
+          icon: 'star',
+          id: 'test-plugin-1',
+        },
         connectorConfig: null,
         fieldMappings: {},
         editorProject: null,
@@ -223,7 +259,13 @@ describe('Builder Auto-Save Utility', () => {
     it('should return true if saved state exists', () => {
       const pluginId = 'test-plugin-1';
       const state: WizardState = {
-        metadata: { name: 'Test', description: 'Test', category: 'data', icon: 'star', id: 'test-plugin-1' },
+        metadata: {
+          name: 'Test',
+          description: 'Test',
+          category: 'data',
+          icon: 'star',
+          id: 'test-plugin-1',
+        },
         connectorConfig: null,
         fieldMappings: {},
         editorProject: null,
@@ -242,7 +284,13 @@ describe('Builder Auto-Save Utility', () => {
     it('should return false if state was cleared', () => {
       const pluginId = 'test-plugin-1';
       const state: WizardState = {
-        metadata: { name: 'Test', description: 'Test', category: 'data', icon: 'star', id: 'test-plugin-1' },
+        metadata: {
+          name: 'Test',
+          description: 'Test',
+          category: 'data',
+          icon: 'star',
+          id: 'test-plugin-1',
+        },
         connectorConfig: null,
         fieldMappings: {},
         editorProject: null,
@@ -271,7 +319,13 @@ describe('Builder Auto-Save Utility', () => {
     it('should save and load state via factory methods', () => {
       const saver = createAutoSaver('test-plugin-1');
       const state: WizardState = {
-        metadata: { name: 'Test', description: 'Test', category: 'data', icon: 'star', id: 'test-plugin-1' },
+        metadata: {
+          name: 'Test',
+          description: 'Test',
+          category: 'data',
+          icon: 'star',
+          id: 'test-plugin-1',
+        },
         connectorConfig: null,
         fieldMappings: {},
         editorProject: null,
@@ -290,7 +344,13 @@ describe('Builder Auto-Save Utility', () => {
       const saver1 = createAutoSaver('plugin-1');
       const saver2 = createAutoSaver('plugin-2');
       const state1: WizardState = {
-        metadata: { name: 'Plugin 1', description: 'Plugin 1', category: 'data', icon: 'star', id: 'plugin-1' },
+        metadata: {
+          name: 'Plugin 1',
+          description: 'Plugin 1',
+          category: 'data',
+          icon: 'star',
+          id: 'plugin-1',
+        },
         connectorConfig: null,
         fieldMappings: {},
         editorProject: null,
@@ -298,7 +358,13 @@ describe('Builder Auto-Save Utility', () => {
         canvasSize: 'medium',
       };
       const state2: WizardState = {
-        metadata: { name: 'Plugin 2', description: 'Plugin 2', category: 'web', icon: 'globe', id: 'plugin-2' },
+        metadata: {
+          name: 'Plugin 2',
+          description: 'Plugin 2',
+          category: 'web',
+          icon: 'globe',
+          id: 'plugin-2',
+        },
         connectorConfig: null,
         fieldMappings: {},
         editorProject: null,
@@ -317,7 +383,13 @@ describe('Builder Auto-Save Utility', () => {
       vi.useFakeTimers();
       const saver = createAutoSaver('test-plugin-1');
       const state: WizardState = {
-        metadata: { name: 'Test', description: 'Test', category: 'data', icon: 'star', id: 'test-plugin-1' },
+        metadata: {
+          name: 'Test',
+          description: 'Test',
+          category: 'data',
+          icon: 'star',
+          id: 'test-plugin-1',
+        },
         connectorConfig: null,
         fieldMappings: {},
         editorProject: null,
@@ -345,7 +417,13 @@ describe('Builder Auto-Save Utility', () => {
       vi.useFakeTimers();
       const saver = createAutoSaver('test-plugin-1');
       let state: WizardState = {
-        metadata: { name: 'Initial', description: 'Test', category: 'data', icon: 'star', id: 'test-plugin-1' },
+        metadata: {
+          name: 'Initial',
+          description: 'Test',
+          category: 'data',
+          icon: 'star',
+          id: 'test-plugin-1',
+        },
         connectorConfig: null,
         fieldMappings: {},
         editorProject: null,
@@ -384,7 +462,13 @@ describe('Builder Auto-Save Utility', () => {
 
       const saver = createAutoSaver('test-plugin-1');
       const state: WizardState = {
-        metadata: { name: 'Test', description: 'Test', category: 'data', icon: 'star', id: 'test-plugin-1' },
+        metadata: {
+          name: 'Test',
+          description: 'Test',
+          category: 'data',
+          icon: 'star',
+          id: 'test-plugin-1',
+        },
         connectorConfig: null,
         fieldMappings: {},
         editorProject: null,
@@ -402,17 +486,44 @@ describe('Builder Auto-Save Utility', () => {
   describe('scoped multiple drafts', () => {
     it('should support multiple concurrent drafts for different plugins', () => {
       const state1: WizardState = {
-        metadata: { name: 'Weather Widget', description: 'Displays weather', category: 'data', icon: 'cloud', id: 'weather-widget' },
-        connectorConfig: { selectedType: 'json_api', url: 'https://weather.api', method: 'GET', refreshInterval: 600, headers: [] },
+        metadata: {
+          name: 'Weather Widget',
+          description: 'Displays weather',
+          category: 'data',
+          icon: 'cloud',
+          id: 'weather-widget',
+        },
+        connectorConfig: {
+          selectedType: 'json_api',
+          url: 'https://weather.api',
+          method: 'GET',
+          refreshInterval: 600,
+          headers: [],
+        },
         fieldMappings: { temp: { path: '$.temp', value: 72 } },
         editorProject: null,
         currentStep: 2,
         canvasSize: 'small',
       };
       const state2: WizardState = {
-        metadata: { name: 'News Reader', description: 'Displays news', category: 'web', icon: 'newspaper', id: 'news-reader' },
-        connectorConfig: { selectedType: 'rss_feed', url: 'https://news.rss', method: 'GET', refreshInterval: 1800, headers: [] },
-        fieldMappings: { headline: { path: '$.title', value: 'Breaking News' }, image: { path: '$.image', value: 'https://...' } },
+        metadata: {
+          name: 'News Reader',
+          description: 'Displays news',
+          category: 'web',
+          icon: 'newspaper',
+          id: 'news-reader',
+        },
+        connectorConfig: {
+          selectedType: 'rss_feed',
+          url: 'https://news.rss',
+          method: 'GET',
+          refreshInterval: 1800,
+          headers: [],
+        },
+        fieldMappings: {
+          headline: { path: '$.title', value: 'Breaking News' },
+          image: { path: '$.image', value: 'https://...' },
+        },
         editorProject: null,
         currentStep: 2,
         canvasSize: 'large',
