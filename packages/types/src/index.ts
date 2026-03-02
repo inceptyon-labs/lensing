@@ -712,7 +712,10 @@ export interface FetchInit {
 }
 
 /** Fetch function signature (matches global `fetch`) */
-export type FetchFn = (url: string, init?: FetchInit) => Promise<{
+export type FetchFn = (
+  url: string,
+  init?: FetchInit
+) => Promise<{
   ok: boolean;
   status?: number;
   statusText?: string;

@@ -322,7 +322,12 @@ describe('WeatherServer', () => {
         ok: true,
         json: () =>
           Promise.resolve({
-            current: { temp: 70, feels_like: 68, humidity: 50, weather: [{ description: 'clear', icon: '01d' }] },
+            current: {
+              temp: 70,
+              feels_like: 68,
+              humidity: 50,
+              weather: [{ description: 'clear', icon: '01d' }],
+            },
             daily: [],
           }),
       });
