@@ -230,7 +230,7 @@ describe('@lensing/types', () => {
     expect(index1.plugins).toHaveLength(1);
 
     // Should also work with lastFetchTime for offline fallback
-    const index2: MarketplaceIndex & { lastFetchTime?: number } = {
+    const index2: MarketplaceIndex = {
       version: '1.0.0',
       plugins: [mockPlugin],
       lastFetchTime: Date.now(),

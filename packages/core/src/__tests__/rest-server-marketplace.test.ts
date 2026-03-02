@@ -468,7 +468,6 @@ describe('Marketplace Offline Fallback', () => {
   });
 
   it('should include lastFetchTime in offline response', async () => {
-    const lastFetchTime = Date.now() - 60000;
     offlineServer = createRestServer(
       createStubHandlers({
         getMarketplacePlugins: async () => {
