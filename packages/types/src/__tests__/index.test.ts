@@ -15,6 +15,8 @@ import type {
   ConnectivityStatus,
   ResourceBudgetViolation,
   HealthStoreState,
+  MarketplaceIndex,
+  MarketplacePlugin,
 } from '@lensing/types';
 
 describe('@lensing/types', () => {
@@ -202,5 +204,38 @@ describe('@lensing/types', () => {
     expect(state.plugins.size).toBe(1);
     expect(state.connectivity.online).toBe(true);
     expect(state.violations).toHaveLength(0);
+  });
+
+  it('exports MarketplaceIndex with optional lastFetchTime field', () => {
+    // MarketplaceIndex should support optional lastFetchTime field for offline caching
+    const mockPlugin: MarketplacePlugin = {
+      id: 'test',
+      name: 'Test',
+      description: 'Test plugin',
+      version: '1.0.0',
+      author: 'test-author',
+      category: 'general',
+      tags: ['test'],
+      downloadUrl: 'http://example.com/test.zip',
+      installed: false,
+      updateAvailable: false,
+    };
+
+    // Should work without lastFetchTime (backward compatibility)
+    const index1: MarketplaceIndex = {
+      version: '1.0.0',
+      plugins: [mockPlugin],
+    };
+    expect(index1.version).toBe('1.0.0');
+    expect(index1.plugins).toHaveLength(1);
+
+    // Should also work with lastFetchTime for offline fallback
+    const index2: MarketplaceIndex & { lastFetchTime?: number } = {
+      version: '1.0.0',
+      plugins: [mockPlugin],
+      lastFetchTime: Date.now(),
+    };
+    expect(index2.lastFetchTime).toBeDefined();
+    expect(typeof index2.lastFetchTime).toBe('number');
   });
 });

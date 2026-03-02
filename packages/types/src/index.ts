@@ -956,6 +956,8 @@ export interface MarketplaceListResponse {
 export interface MarketplaceIndex {
   version: string;
   plugins: MarketplacePlugin[];
+  /** Unix timestamp (ms) when this index was last successfully fetched from GitHub */
+  lastFetchTime?: number;
 }
 
 // ── Marketplace Settings ────────────────────────────────────────────────────
