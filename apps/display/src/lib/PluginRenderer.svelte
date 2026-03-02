@@ -20,7 +20,7 @@
   import WeatherWidget from './WeatherWidget.svelte';
   import CalendarWidget from './CalendarWidget.svelte';
   import AllergiesWidget from './AllergiesWidget.svelte';
-  import Placeholder from './Placeholder.svelte';
+  import PluginWidget from './PluginWidget.svelte';
   import { getChannelData } from './stores/dataBusStore';
 
   export let plugin: PluginAdminEntry;
@@ -79,7 +79,7 @@
   {:else if pluginId === 'allergies'}
     <AllergiesWidget index={allergiesData?.index ?? 0} allergens={allergiesData?.allergens ?? []} />
   {:else}
-    <Placeholder title={plugin.manifest.name} index={0} />
+    <PluginWidget {pluginId} />
   {/if}
 </div>
 
