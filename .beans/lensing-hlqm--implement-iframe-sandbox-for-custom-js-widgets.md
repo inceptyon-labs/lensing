@@ -1,11 +1,11 @@
 ---
 # lensing-hlqm
 title: Implement iframe sandbox for custom JS widgets
-status: todo
+status: in-progress
 type: task
 priority: low
 created_at: 2026-02-28T15:47:49Z
-updated_at: 2026-02-28T15:47:49Z
+updated_at: 2026-03-02T14:29:47Z
 parent: lensing-25mp
 ---
 
