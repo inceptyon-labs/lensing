@@ -1,11 +1,11 @@
 ---
 # lensing-7nct
 title: 'Feature: Marketplace Client'
-status: todo
+status: in-progress
 type: feature
 priority: high
 created_at: 2026-02-28T15:44:35Z
-updated_at: 2026-02-28T15:44:35Z
+updated_at: 2026-03-02T01:05:58Z
 parent: lensing-023a
 ---
 

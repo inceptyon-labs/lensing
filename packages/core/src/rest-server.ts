@@ -43,6 +43,9 @@ export interface RestServerHandlers {
   getMarketplaceCategories?: () => Promise<MarketplaceCategory[]>;
   // Marketplace install (optional — omit to disable marketplace install endpoint)
   installMarketplacePlugin?: (id: string) => Promise<PluginAdminEntry>;
+  // Marketplace updates (optional — omit to disable update endpoints)
+  getMarketplaceUpdates?: () => Promise<import('./marketplace-updates').MarketplaceUpdateInfo[]>;
+  updateMarketplacePlugin?: (id: string) => Promise<PluginAdminEntry>;
   // Plugin management (optional — omit to disable plugin endpoints)
   getPlugins?: () => Promise<PluginAdminEntry[]>;
   getPlugin?: (id: string) => Promise<PluginAdminEntry | undefined>;
@@ -391,6 +394,20 @@ export function createRestServer(
       writeJson(res, 200, categories);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to fetch categories';
+      writeJson(res, 500, { error: msg });
+    }
+  });
+
+  addRoute('/marketplace/updates', 'GET', async (_req, res) => {
+    if (!handlers.getMarketplaceUpdates) {
+      writeJson(res, 404, { error: 'Not Found' });
+      return;
+    }
+    try {
+      const updates = await handlers.getMarketplaceUpdates();
+      writeJson(res, 200, updates);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to fetch marketplace updates';
       writeJson(res, 500, { error: msg });
     }
   });
@@ -915,8 +932,8 @@ export function createRestServer(
             return;
           }
 
-          // Skip detail route if this is the reserved 'categories' path (handled via route table)
-          if (pluginId === 'categories') {
+          // Skip detail route if this is a reserved path (handled via route table)
+          if (pluginId === 'categories' || pluginId === 'updates') {
             // Let route table handle this via exact match
             // Fall through to route table check below
           } else {
@@ -981,6 +998,32 @@ export function createRestServer(
             } catch {
               // Ignore logger errors
             }
+          }
+          return;
+        }
+
+        // POST /marketplace/:id/update — update a marketplace plugin
+        const marketplaceUpdateMatch = cleanPath.match(/^\/marketplace\/([^/]+)\/update$/);
+        if (marketplaceUpdateMatch && method === 'POST') {
+          let pluginId: string;
+          try {
+            pluginId = decodeURIComponent(marketplaceUpdateMatch[1]!);
+          } catch {
+            writeJson(res, 400, { error: 'Invalid plugin ID in URL' });
+            return;
+          }
+
+          if (!handlers.updateMarketplacePlugin) {
+            writeJson(res, 404, { error: 'Not Found' });
+            return;
+          }
+
+          try {
+            const plugin = await handlers.updateMarketplacePlugin(pluginId);
+            writeJson(res, 200, { ok: true, plugin });
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : 'Update failed';
+            writeJson(res, 400, { error: msg });
           }
           return;
         }

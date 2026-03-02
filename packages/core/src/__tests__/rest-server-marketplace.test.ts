@@ -1,10 +1,12 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { createRestServer, type RestServerInstance, type RestServerHandlers } from '../rest-server';
 import type {
   MarketplacePlugin,
   MarketplaceCategory,
   MarketplaceListResponse,
+  PluginAdminEntry,
 } from '@lensing/types';
+import type { MarketplaceUpdateInfo } from '../marketplace-updates';
 import http from 'node:http';
 
 /** Helper to make HTTP requests to the test server */
@@ -261,6 +263,135 @@ describe('Marketplace REST Endpoints', () => {
       expect(body.installed).toBe(true);
       expect(body.updateAvailable).toBe(true);
     });
+  });
+});
+
+describe('GET /marketplace/updates', () => {
+  let updatesServer: RestServerInstance;
+  let updatesPort: number;
+
+  const SAMPLE_UPDATES: MarketplaceUpdateInfo[] = [
+    {
+      pluginId: 'weather-pro',
+      pluginName: 'Weather Pro',
+      currentVersion: '1.0.0',
+      newVersion: '2.1.0',
+      downloadUrl: 'https://marketplace.example.com/weather-pro-2.1.0.zip',
+    },
+  ];
+
+  afterEach(async () => {
+    if (updatesServer) await updatesServer.close();
+  });
+
+  beforeEach(async () => {
+    updatesServer = createRestServer(
+      createStubHandlers({
+        getMarketplaceUpdates: async () => SAMPLE_UPDATES,
+      })
+    );
+    await updatesServer.ready();
+    updatesPort = updatesServer.port;
+  });
+
+  it('should return list of available updates', async () => {
+    const res = await request(updatesPort, 'GET', '/marketplace/updates');
+    expect(res.status).toBe(200);
+    const body = JSON.parse(res.body) as MarketplaceUpdateInfo[];
+    expect(body).toHaveLength(1);
+    expect(body[0]).toMatchObject({
+      pluginId: 'weather-pro',
+      currentVersion: '1.0.0',
+      newVersion: '2.1.0',
+    });
+  });
+
+  it('should return empty array when no updates available', async () => {
+    await updatesServer.close();
+    updatesServer = createRestServer(
+      createStubHandlers({
+        getMarketplaceUpdates: async () => [],
+      })
+    );
+    await updatesServer.ready();
+    updatesPort = updatesServer.port;
+
+    const res = await request(updatesPort, 'GET', '/marketplace/updates');
+    expect(res.status).toBe(200);
+    const body = JSON.parse(res.body) as MarketplaceUpdateInfo[];
+    expect(body).toHaveLength(0);
+  });
+
+  it('should return 404 when handler not configured', async () => {
+    await updatesServer.close();
+    updatesServer = createRestServer(createStubHandlers());
+    await updatesServer.ready();
+    updatesPort = updatesServer.port;
+
+    const res = await request(updatesPort, 'GET', '/marketplace/updates');
+    expect(res.status).toBe(404);
+  });
+});
+
+describe('POST /marketplace/:id/update', () => {
+  let updateServer: RestServerInstance;
+  let updatePort: number;
+
+  afterEach(async () => {
+    if (updateServer) await updateServer.close();
+  });
+
+  const UPDATED_PLUGIN: PluginAdminEntry = {
+    plugin_id: 'weather-pro',
+    manifest: { id: 'weather-pro', name: 'Weather Pro', version: '2.1.0' },
+    status: 'active',
+    enabled: true,
+    config: { location: 'NYC' },
+  };
+
+  it('should trigger plugin update and return updated entry', async () => {
+    const updateFn = vi.fn(async () => UPDATED_PLUGIN);
+    updateServer = createRestServer(
+      createStubHandlers({
+        updateMarketplacePlugin: updateFn,
+      })
+    );
+    await updateServer.ready();
+    updatePort = updateServer.port;
+
+    const res = await request(updatePort, 'POST', '/marketplace/weather-pro/update');
+    expect(res.status).toBe(200);
+    const body = JSON.parse(res.body) as { ok: boolean; plugin: PluginAdminEntry };
+    expect(body.ok).toBe(true);
+    expect(body.plugin.plugin_id).toBe('weather-pro');
+    expect(body.plugin.manifest.version).toBe('2.1.0');
+    expect(updateFn).toHaveBeenCalledWith('weather-pro');
+  });
+
+  it('should return 404 when handler not configured', async () => {
+    updateServer = createRestServer(createStubHandlers());
+    await updateServer.ready();
+    updatePort = updateServer.port;
+
+    const res = await request(updatePort, 'POST', '/marketplace/weather-pro/update');
+    expect(res.status).toBe(404);
+  });
+
+  it('should return 400 when update fails', async () => {
+    updateServer = createRestServer(
+      createStubHandlers({
+        updateMarketplacePlugin: async () => {
+          throw new Error('Already on latest version');
+        },
+      })
+    );
+    await updateServer.ready();
+    updatePort = updateServer.port;
+
+    const res = await request(updatePort, 'POST', '/marketplace/weather-pro/update');
+    expect(res.status).toBe(400);
+    const body = JSON.parse(res.body) as { error: string };
+    expect(body.error).toContain('Already on latest version');
   });
 });
 

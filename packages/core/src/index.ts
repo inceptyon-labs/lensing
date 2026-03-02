@@ -242,3 +242,7 @@ export type {
   ValidatePublishResult,
   PublishValidationError,
 } from './publish-validation';
+
+// ── Marketplace Updates ───────────────────────────────────────────────────────────
+export { compareSemver, checkForUpdates } from './marketplace-updates';
+export type { MarketplaceUpdateInfo } from './marketplace-updates';

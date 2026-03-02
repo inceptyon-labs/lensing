@@ -1,11 +1,11 @@
 ---
 # lensing-1283
 title: Add version comparison and update detection
-status: todo
+status: in-progress
 type: task
 priority: normal
 created_at: 2026-02-28T15:46:46Z
-updated_at: 2026-02-28T15:46:46Z
+updated_at: 2026-03-02T01:05:52Z
 parent: lensing-7nct
 ---
 
