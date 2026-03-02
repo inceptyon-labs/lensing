@@ -27,15 +27,18 @@ After packaging, trigger PluginLoader reload so the new plugin appears immediate
 ## Summary of Changes
 
 **Files changed:**
+
 - packages/core/src/plugin-admin-handlers.ts (modified — added saveBuiltPlugin handler)
-- packages/core/src/__tests__/plugin-admin-handlers.test.ts (modified — added 6 saveBuiltPlugin tests)
+- packages/core/src/**tests**/plugin-admin-handlers.test.ts (modified — added 6 saveBuiltPlugin tests)
 
 **Key decisions:**
+
 - Always uses overwrite: true — acceptance criteria say edit/save always overwrites existing plugin files
 - Mirrors installPlugin pattern exactly (save → reload → onChange → buildEntry)
 - onChange action is 'saved' (distinct from 'installed' for marketplace flow)
 
 **Notes for next task:**
+
 - saveBuiltPlugin is now available in createPluginAdminHandlers return value
 - REST endpoint POST /api/admin/builder/save already wired (rest-server.ts line 517) — calls handlers.saveBuiltPlugin
 - Plugin immediately discoverable via getPlugin/getPlugins after save (no page refresh needed)

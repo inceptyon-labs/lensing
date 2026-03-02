@@ -223,9 +223,7 @@ export function createPluginAdminHandlers(options: PluginAdminHandlersOptions) {
       return buildEntry(pluginId, manifest as PluginManifestWithConfig, 'loaded', undefined, state);
     },
 
-    async getPluginTemplate(
-      pluginId: string
-    ): Promise<{ html: string; css: string } | undefined> {
+    async getPluginTemplate(pluginId: string): Promise<{ html: string; css: string } | undefined> {
       if (!pluginsDir) return undefined;
       const htmlPath = path.join(pluginsDir, pluginId, 'template.html');
       const cssPath = path.join(pluginsDir, pluginId, 'template.css');

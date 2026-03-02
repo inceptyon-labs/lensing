@@ -18,10 +18,11 @@ describe('PluginWidget', () => {
     global.fetch = vi.fn(() =>
       Promise.resolve({
         ok: true,
-        json: () => Promise.resolve({
-          html: '<div>{{title}}</div>',
-          css: '.widget { color: blue; }',
-        }),
+        json: () =>
+          Promise.resolve({
+            html: '<div>{{title}}</div>',
+            css: '.widget { color: blue; }',
+          }),
       } as Response)
     );
 
@@ -44,10 +45,11 @@ describe('PluginWidget', () => {
     global.fetch = vi.fn(() =>
       Promise.resolve({
         ok: true,
-        json: () => Promise.resolve({
-          html: '<div>{{count}}</div>',
-          css: '.counter { color: white; }',
-        }),
+        json: () =>
+          Promise.resolve({
+            html: '<div>{{count}}</div>',
+            css: '.counter { color: white; }',
+          }),
       } as Response)
     );
 
@@ -78,20 +80,22 @@ describe('PluginWidget', () => {
   });
 
   it('should show loading state while fetching template', async () => {
-    global.fetch = vi.fn(() =>
-      new Promise((resolve) =>
-        setTimeout(
-          () =>
-            resolve({
-              ok: true,
-              json: () => Promise.resolve({
-                html: '<div>Loaded</div>',
-                css: '',
-              }),
-            } as Response),
-          100
+    global.fetch = vi.fn(
+      () =>
+        new Promise((resolve) =>
+          setTimeout(
+            () =>
+              resolve({
+                ok: true,
+                json: () =>
+                  Promise.resolve({
+                    html: '<div>Loaded</div>',
+                    css: '',
+                  }),
+              } as Response),
+            100
+          )
         )
-      )
     );
 
     const { getByText } = render(PluginWidget, {
@@ -137,10 +141,11 @@ describe('PluginWidget', () => {
     global.fetch = vi.fn(() =>
       Promise.resolve({
         ok: true,
-        json: () => Promise.resolve({
-          html: '<div>Value: {{value}}</div>',
-          css: '',
-        }),
+        json: () =>
+          Promise.resolve({
+            html: '<div>Value: {{value}}</div>',
+            css: '',
+          }),
       } as Response)
     );
 

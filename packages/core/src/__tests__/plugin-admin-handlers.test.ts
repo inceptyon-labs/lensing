@@ -704,7 +704,10 @@ describe('PluginAdminHandlers (plugin-admin-handlers.ts)', () => {
         JSON.stringify({ id: 'my-widget', name: 'My Widget', version: '1.0.0' })
       );
       fs.writeFileSync(path.join(pluginsDir, 'my-widget', 'template.html'), '<div>{{title}}</div>');
-      fs.writeFileSync(path.join(pluginsDir, 'my-widget', 'template.css'), '.widget { color: white; }');
+      fs.writeFileSync(
+        path.join(pluginsDir, 'my-widget', 'template.css'),
+        '.widget { color: white; }'
+      );
 
       await loader.reload();
 
