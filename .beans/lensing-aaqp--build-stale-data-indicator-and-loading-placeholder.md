@@ -27,10 +27,12 @@ Visual states for when widget data is loading, stale, or unavailable.
 ## Completed
 
 **Files changed:**
+
 - apps/display/src/lib/WidgetStateIndicator.svelte (new, 35 lines)
-- apps/display/src/__tests__/widget-state-indicator.test.ts (new, 73 lines)
+- apps/display/src/**tests**/widget-state-indicator.test.ts (new, 73 lines)
 
 **Key decisions:**
+
 - Used inline styles (not `<style>` block) for animation, opacity, and transition properties — avoids a Vite 6/5 version mismatch bug that causes `@keyframes` in Svelte `<style>` blocks to fail CSS preprocessing in tests
 - Shimmer uses `animation: shimmer 1.5s ease-in-out infinite` inline; `@keyframes shimmer` defined globally (not in component) for test compatibility
 - Stale icon is 🕐 emoji at opacity 0.4 — matches spec's "dimmed clock icon" guidance
@@ -38,12 +40,14 @@ Visual states for when widget data is loading, stale, or unavailable.
 - Ready state renders zero children (empty wrapper) — parent can check `state === 'ready'` before rendering
 
 **Notes for next task:**
+
 - WidgetStateIndicator is a standalone overlay component — parent determines `state` prop based on data freshness
 - For stale detection: compare `data.lastUpdated` to `Date.now() - 2 * refreshInterval`
 - For loading vs waiting: use `loading` when data fetch is in-flight, `waiting` when no data ever received (first load failed)
 - width/height props mirror parent widget dimensions for proper shimmer sizing
 
 **Commits:**
+
 - 7595af2 feat: add WidgetStateIndicator with loading/stale/waiting states
 - bef053a style: format and lint
 - ea5aca6 fix: add position relative and overflow hidden to widget indicator wrapper

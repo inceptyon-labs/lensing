@@ -114,8 +114,10 @@
             Update will replace widget template. Config will be preserved.
           </p>
           <button class="install-btn" on:click={confirmUpdate} aria-label="Confirm">Confirm</button>
-          <button class="install-btn install-btn--cancel" on:click={cancelUpdate} aria-label="Cancel"
-            >Cancel</button
+          <button
+            class="install-btn install-btn--cancel"
+            on:click={cancelUpdate}
+            aria-label="Cancel">Cancel</button
           >
         {:else if installStatus === 'installing'}
           <button class="install-btn install-btn--progress" disabled aria-label="Installing">

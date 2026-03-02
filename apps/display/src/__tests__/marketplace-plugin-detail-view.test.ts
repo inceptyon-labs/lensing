@@ -168,7 +168,13 @@ describe('MarketplacePluginDetailView: install progress', () => {
 
 describe('MarketplacePluginDetailView: version comparison', () => {
   it('shows version comparison when installedVersion is available', () => {
-    const plugin = { ...mockPlugin, installed: true, updateAvailable: true, installedVersion: '1.0.0', version: '1.1.0' };
+    const plugin = {
+      ...mockPlugin,
+      installed: true,
+      updateAvailable: true,
+      installedVersion: '1.0.0',
+      version: '1.1.0',
+    };
     render(MarketplacePluginDetailView, {
       props: { plugin, onBack: () => {} },
     });
