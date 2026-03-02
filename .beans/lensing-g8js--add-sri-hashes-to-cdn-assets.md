@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: normal
 created_at: 2026-03-02T16:49:36Z
-updated_at: 2026-03-02T23:29:55Z
+updated_at: 2026-03-02T23:31:18Z
 parent: lensing-umpl
 ---
 
@@ -15,9 +15,9 @@ GridStack CSS and JS loaded from jsDelivr CDN without `integrity` and `crossorig
 
 ## Acceptance Criteria
 
-- [ ] GridStack CSS link has `integrity` and `crossorigin="anonymous"` attributes
-- [ ] GridStack JS script has `integrity` and `crossorigin="anonymous"` attributes
-- [ ] SRI hashes verified against current CDN content
+- [x] GridStack CSS link has `integrity` and `crossorigin="anonymous"` attributes
+- [x] GridStack JS script has `integrity` and `crossorigin="anonymous"` attributes
+- [x] SRI hashes verified against current CDN content — computed fresh via curl + openssl
 
 ## Files
 
