@@ -19,6 +19,22 @@ function createMockDataBus(): DataBusInstance & { emit(channel: string, data: un
     getLatest<T>() {
       return undefined as T | undefined;
     },
+    publish() {
+      // stub
+    },
+    subscribe() {
+      // stub
+      return () => {};
+    },
+    getChannels() {
+      return [];
+    },
+    clear() {
+      // stub
+    },
+    close() {
+      // stub
+    },
     emit(channel: string, data: unknown) {
       listeners.forEach((cb) => cb({ channel, data }));
     },

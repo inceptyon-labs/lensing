@@ -64,8 +64,8 @@ describe('WebSocket server auth', () => {
         resolve(ws);
       };
 
-      const errorHandler = (event: Event) => {
-        ws.removeEventListener('open', openHandler);
+      const errorHandler = (_event: unknown) => {
+        ws.removeEventListener('open', openHandler as unknown);
         reject(new Error('Connection rejected'));
       };
 
