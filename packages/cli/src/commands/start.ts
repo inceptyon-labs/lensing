@@ -9,6 +9,8 @@ export interface StartServerOptions {
     info(msg: string, data?: unknown): void;
     error(msg: string, err?: unknown): void;
   };
+  authToken?: string;
+  bindAddress?: string;
 }
 
 export interface StartServerResult {
@@ -26,9 +28,11 @@ export async function startServer(options: StartServerOptions = {}): Promise<Sta
     pluginsDir = DEFAULT_PLUGINS_DIR,
     dbPath = DEFAULT_DB_PATH,
     logger,
+    authToken,
+    bindAddress,
   } = options;
 
-  const host = createHostService({ port, pluginsDir, dbPath });
+  const host = createHostService({ port, pluginsDir, dbPath, authToken, bindAddress });
   await host.ready;
 
   const boundPort = host.port;

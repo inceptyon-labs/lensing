@@ -54,6 +54,8 @@ export function createHostService(options: HostServiceOptions = {}): HostService
     staticDir,
     gpioFactory,
     displayControl: enableDisplayControl,
+    authToken,
+    bindAddress,
   } = options;
 
   let _db: DatabaseInstance | undefined;
@@ -197,7 +199,7 @@ export function createHostService(options: HostServiceOptions = {}): HostService
               }
             : undefined,
         },
-        { port, staticDir }
+        { port, staticDir, authToken, bindAddress }
       );
 
       await _rest.ready();
@@ -205,7 +207,7 @@ export function createHostService(options: HostServiceOptions = {}): HostService
       log.info('REST server ready', { port: _port });
 
       // 5. WebSocket server (attached to REST's HTTP server)
-      _ws = createWsServer({ server: _rest.server });
+      _ws = createWsServer({ server: _rest.server, authToken });
       await _ws.ready();
       log.info('WebSocket server ready');
 

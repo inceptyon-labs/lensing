@@ -994,6 +994,10 @@ export interface HostServiceOptions {
   gpioFactory?: GpioWatcherFactory;
   /** Enable display DPMS control via PIR presence (default: false) */
   displayControl?: boolean;
+  /** Bearer token required for REST and WebSocket auth. If omitted, auth is disabled. */
+  authToken?: string;
+  /** Network address to bind to. Defaults to '127.0.0.1' */
+  bindAddress?: string;
 }
 
 // ── Connector Configuration ──────────────────────────────────────────────────
