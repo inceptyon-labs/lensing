@@ -2,6 +2,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 import type { WsMessage } from '@lensing/types';
 import type { IncomingMessage } from 'node:http';
 import type { Server as HttpServer } from 'node:http';
+import { extractBearerToken } from './auth-middleware';
 
 /** Options for creating the WebSocket server */
 export interface WsServerOptions {
@@ -11,6 +12,8 @@ export interface WsServerOptions {
   server?: HttpServer;
   /** Heartbeat interval in ms (default: 30000) */
   heartbeatInterval?: number;
+  /** Bearer token required for WebSocket connections. If omitted, auth is disabled. */
+  authToken?: string;
 }
 
 /** Event types emitted by WsServerInstance */
@@ -40,7 +43,7 @@ export interface WsServerInstance {
  * Supports layout changes, plugin data updates, and scene changes.
  */
 export function createWsServer(options: WsServerOptions = {}): WsServerInstance {
-  const { port = 0, server, heartbeatInterval = 30000 } = options;
+  const { port = 0, server, heartbeatInterval = 30000, authToken } = options;
 
   const clients = new Set<WebSocket>();
   const listeners: Record<string, Array<(...args: unknown[]) => void>> = {};
@@ -57,12 +60,31 @@ export function createWsServer(options: WsServerOptions = {}): WsServerInstance 
     onError = reject;
   });
 
+  // Verify client for auth (if authToken is configured)
+  const verifyClient = authToken
+    ? (
+        info: {
+          origin: string;
+          secure: boolean;
+          req: IncomingMessage;
+        },
+        callback: (res: boolean, code?: number, message?: string) => void
+      ) => {
+        const token = extractBearerToken(info.req.headers.authorization);
+        if (token !== authToken) {
+          callback(false, 401, 'Unauthorized');
+          return;
+        }
+        callback(true);
+      }
+    : undefined;
+
   if (server) {
-    wss = new WebSocketServer({ server });
+    wss = new WebSocketServer({ server, verifyClient });
     listeningPort = port;
     onReady!();
   } else {
-    wss = new WebSocketServer({ port }, () => {
+    wss = new WebSocketServer({ port, verifyClient }, () => {
       const addr = wss.address();
       if (typeof addr === 'object' && addr) {
         listeningPort = addr.port;
