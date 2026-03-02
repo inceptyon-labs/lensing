@@ -1,11 +1,11 @@
 ---
 # lensing-l1nv
 title: Eliminate shell injection in display-control
-status: todo
+status: in-progress
 type: task
 priority: high
 created_at: 2026-03-02T16:49:29Z
-updated_at: 2026-03-02T16:49:29Z
+updated_at: 2026-03-02T22:06:58Z
 parent: lensing-umpl
 ---
 

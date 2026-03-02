@@ -1,11 +1,11 @@
 ---
 # lensing-05qz
 title: Add authentication to REST server and WebSocket
-status: in-progress
+status: completed
 type: task
 priority: critical
 created_at: 2026-03-02T16:49:13Z
-updated_at: 2026-03-02T16:51:46Z
+updated_at: 2026-03-02T21:52:15Z
 parent: lensing-umpl
 ---
 

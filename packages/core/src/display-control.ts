@@ -1,5 +1,7 @@
-import { exec } from 'node:child_process';
+import { execFile } from 'node:child_process';
 import type { DataBusInstance, PresenceData, HostServiceLogger } from '@lensing/types';
+
+const DISPLAY_RE = /^:\d+$/;
 
 export interface DisplayControlOptions {
   dataBus: DataBusInstance;
@@ -15,6 +17,12 @@ export interface DisplayControlOptions {
  */
 export function createDisplayControl(options: DisplayControlOptions): { close(): void } {
   const { dataBus, display = ':0', logger } = options;
+
+  if (!DISPLAY_RE.test(display)) {
+    throw new Error(`Invalid display value: "${display}". Must match /^:\\d+$/ (e.g. ":0")`);
+  }
+
+  const env = { ...process.env, DISPLAY: display };
   let screenOn = true;
 
   function setDisplay(on: boolean): void {
@@ -22,11 +30,9 @@ export function createDisplayControl(options: DisplayControlOptions): { close():
     screenOn = on;
 
     const mode = on ? 'on' : 'off';
-    const cmd = `DISPLAY=${display} xset dpms force ${mode}`;
-
-    exec(cmd, (err) => {
+    execFile('xset', ['dpms', 'force', mode], { env }, (err) => {
       if (err) {
-        logger?.error(`Display control failed: ${cmd}`, err);
+        logger?.error(`Display control failed`, err);
       } else {
         logger?.info(`Display ${mode}`);
       }
@@ -34,9 +40,7 @@ export function createDisplayControl(options: DisplayControlOptions): { close():
   }
 
   // Enable DPMS but disable auto-timeout — only PIR controls the display.
-  // Without "dpms 0 0 0", the default timeouts (600s) would turn the screen
-  // off independently of the PIR sensor.
-  exec(`DISPLAY=${display} xset +dpms dpms 0 0 0 s off`, (err) => {
+  execFile('xset', ['+dpms', 'dpms', '0', '0', '0', 's', 'off'], { env }, (err) => {
     if (err) logger?.error('Failed to configure DPMS', err);
     else logger?.info('DPMS configured (auto-timeout disabled, PIR-only control)');
   });

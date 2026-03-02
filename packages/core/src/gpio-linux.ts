@@ -1,4 +1,4 @@
-import { spawn, execSync } from 'node:child_process';
+import { spawn, execFileSync } from 'node:child_process';
 import type { GpioWatcher, GpioWatcherFactory } from '@lensing/types';
 
 /**
@@ -7,7 +7,7 @@ import type { GpioWatcher, GpioWatcherFactory } from '@lensing/types';
  */
 function isGpiomonV2(): boolean {
   try {
-    const out = execSync('gpiomon --version 2>&1', { encoding: 'utf-8' });
+    const out = execFileSync('gpiomon', ['--version'], { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'] });
     // v2 prints "gpiomon (libgpiod) v2.x.x", v1 prints "gpiomon (libgpiod) v1.x.x"
     return /v?2\./.test(out);
   } catch {
