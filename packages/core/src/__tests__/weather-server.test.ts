@@ -309,7 +309,30 @@ describe('WeatherServer', () => {
       server.refresh();
       expect(fetchFn).toHaveBeenCalledWith(expect.stringContaining('lat=51.5074'));
       expect(fetchFn).toHaveBeenCalledWith(expect.stringContaining('lon=-0.1278'));
+      // OpenWeatherMap requires appid as a query parameter — it does not support
+      // header-based authentication. This is a vendor limitation.
       expect(fetchFn).toHaveBeenCalledWith(expect.stringContaining('appid=test-api-key'));
+    });
+
+    it('OpenWeatherMap vendor limitation: appid must stay in URL (no header auth supported)', () => {
+      // OpenWeatherMap OneCall 3.0 API requires the API key as the `appid` query
+      // parameter. There is no header-based alternative. The key cannot be moved
+      // to a request header without breaking the API.
+      const fetchFn = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            current: { temp: 70, feels_like: 68, humidity: 50, weather: [{ description: 'clear', icon: '01d' }] },
+            daily: [],
+          }),
+      });
+      const server = createWeatherServer(validOptions({ fetchFn }));
+      server.refresh();
+      const calledUrl: string = (fetchFn as any).mock.calls[0][0];
+      expect(calledUrl).toContain('appid=test-api-key');
+      // No request init/headers should be passed — OWM key is URL-only
+      const calledInit = (fetchFn as any).mock.calls[0][1];
+      expect(calledInit?.headers?.['Authorization']).toBeUndefined();
     });
 
     it('should return null from getWeatherData before first refresh', () => {

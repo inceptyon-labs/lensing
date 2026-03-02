@@ -280,6 +280,8 @@ export function createWeatherServer(options: WeatherServerOptions): WeatherServe
     if (provider === 'open-meteo') {
       return buildOpenMeteoUrl(location, units);
     }
+    // OpenWeatherMap OneCall 3.0 requires `appid` as a query parameter.
+    // It does not support header-based API key auth — this is a vendor limitation.
     const base = 'https://api.openweathermap.org/data/3.0/onecall';
     return `${base}?lat=${location.lat}&lon=${location.lon}&units=${units}&appid=${apiKey}&exclude=minutely,hourly,alerts`;
   }
