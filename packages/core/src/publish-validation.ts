@@ -121,7 +121,7 @@ export function validatePublish(
     errors.push({
       field: 'size',
       code: 'TOO_LARGE',
-      message: `Package size exceeds 10MB limit`,
+      message: `Package size exceeds uncompressed limit (8MB)`,
     });
   }
 
