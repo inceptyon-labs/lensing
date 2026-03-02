@@ -1,3 +1,5 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import type {
   PluginAdminEntry,
   PluginManifestWithConfig,
@@ -219,6 +221,19 @@ export function createPluginAdminHandlers(options: PluginAdminHandlersOptions) {
       onChange?.(pluginId, 'installed');
       const state = getPersistedState(db, pluginId);
       return buildEntry(pluginId, manifest as PluginManifestWithConfig, 'loaded', undefined, state);
+    },
+
+    async getPluginTemplate(
+      pluginId: string
+    ): Promise<{ html: string; css: string } | undefined> {
+      if (!pluginsDir) return undefined;
+      const htmlPath = path.join(pluginsDir, pluginId, 'template.html');
+      const cssPath = path.join(pluginsDir, pluginId, 'template.css');
+      if (!fs.existsSync(htmlPath) || !fs.existsSync(cssPath)) return undefined;
+      return {
+        html: fs.readFileSync(htmlPath, 'utf-8'),
+        css: fs.readFileSync(cssPath, 'utf-8'),
+      };
     },
 
     async saveBuiltPlugin(input: BuilderSaveInput): Promise<PluginAdminEntry> {

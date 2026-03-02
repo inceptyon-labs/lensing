@@ -686,4 +686,78 @@ describe('PluginAdminHandlers (plugin-admin-handlers.ts)', () => {
       db.close();
     });
   });
+
+  // ── getPluginTemplate ────────────────────────────────────────────────────
+
+  describe('getPluginTemplate', () => {
+    it('should return html and css for a builder-created plugin', async () => {
+      const db = createDatabase({ path: ':memory:' });
+      const loader = createPluginLoader({ pluginsDir });
+      await loader.load();
+
+      const handlers = createPluginAdminHandlers({ pluginLoader: loader, db, pluginsDir });
+
+      // Create a builder-created plugin with templates
+      fs.mkdirSync(path.join(pluginsDir, 'my-widget'), { recursive: true });
+      fs.writeFileSync(
+        path.join(pluginsDir, 'my-widget', 'plugin.json'),
+        JSON.stringify({ id: 'my-widget', name: 'My Widget', version: '1.0.0' })
+      );
+      fs.writeFileSync(path.join(pluginsDir, 'my-widget', 'template.html'), '<div>{{title}}</div>');
+      fs.writeFileSync(path.join(pluginsDir, 'my-widget', 'template.css'), '.widget { color: white; }');
+
+      await loader.reload();
+
+      const template = await handlers.getPluginTemplate!('my-widget');
+      expect(template).toBeDefined();
+      expect(template!.html).toBe('<div>{{title}}</div>');
+      expect(template!.css).toBe('.widget { color: white; }');
+
+      db.close();
+    });
+
+    it('should return undefined for plugin without template files', async () => {
+      const db = createDatabase({ path: ':memory:' });
+      const loader = createPluginLoader({ pluginsDir });
+
+      // Plugin exists but has no template files
+      fs.mkdirSync(path.join(pluginsDir, 'no-template'), { recursive: true });
+      fs.writeFileSync(
+        path.join(pluginsDir, 'no-template', 'plugin.json'),
+        JSON.stringify({ id: 'no-template', name: 'No Template', version: '1.0.0' })
+      );
+
+      await loader.load();
+
+      const handlers = createPluginAdminHandlers({ pluginLoader: loader, db, pluginsDir });
+      const template = await handlers.getPluginTemplate!('no-template');
+      expect(template).toBeUndefined();
+
+      db.close();
+    });
+
+    it('should return undefined for nonexistent plugin', async () => {
+      const db = createDatabase({ path: ':memory:' });
+      const loader = createPluginLoader({ pluginsDir });
+      await loader.load();
+
+      const handlers = createPluginAdminHandlers({ pluginLoader: loader, db, pluginsDir });
+      const template = await handlers.getPluginTemplate!('nonexistent');
+      expect(template).toBeUndefined();
+
+      db.close();
+    });
+
+    it('should return undefined when pluginsDir not configured', async () => {
+      const db = createDatabase({ path: ':memory:' });
+      const loader = createPluginLoader({ pluginsDir });
+      await loader.load();
+
+      const handlers = createPluginAdminHandlers({ pluginLoader: loader, db });
+      const template = await handlers.getPluginTemplate!('any-plugin');
+      expect(template).toBeUndefined();
+
+      db.close();
+    });
+  });
 });
