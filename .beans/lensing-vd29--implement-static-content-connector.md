@@ -1,11 +1,11 @@
 ---
 # lensing-vd29
 title: Implement static content connector
-status: in-progress
+status: completed
 type: task
 priority: normal
 created_at: 2026-02-28T15:45:14Z
-updated_at: 2026-03-02T13:50:57Z
+updated_at: 2026-03-02T13:51:17Z
 parent: lensing-r333
 ---
 
