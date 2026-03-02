@@ -1,11 +1,11 @@
 ---
 # lensing-lqjc
 title: Create widget layout templates
-status: in-progress
+status: completed
 type: task
 priority: normal
 created_at: 2026-02-28T15:45:58Z
-updated_at: 2026-03-02T13:21:52Z
+updated_at: 2026-03-02T13:22:25Z
 parent: lensing-alyh
 ---
 
