@@ -143,7 +143,7 @@ describe('Allergies Server', () => {
       expect(data?.allergens[0].name).toBe('Grass Pollen');
     });
 
-    it('should fetch from correct API endpoint', async () => {
+    it('should fetch from correct API endpoint without api key in URL', async () => {
       const fetchFn = createMockFetch(createMockAllergyResponse());
       const server = createServer({ fetchFn });
 
@@ -151,9 +151,24 @@ describe('Allergies Server', () => {
 
       expect(fetchFn).toHaveBeenCalled();
       const url = (fetchFn as any).mock.calls[0][0];
+      const init = (fetchFn as any).mock.calls[0][1];
       expect(url).toContain('37.7749');
       expect(url).toContain('-122.4194');
-      expect(url).toContain('test-key');
+      expect(url).not.toContain('test-key');
+      expect(url).not.toContain('x-api-key');
+    });
+
+    it('should pass API key in request headers', async () => {
+      const fetchFn = createMockFetch(createMockAllergyResponse());
+      const server = createServer({ fetchFn });
+
+      await server.refresh();
+
+      expect(fetchFn).toHaveBeenCalled();
+      const init = (fetchFn as any).mock.calls[0][1];
+      expect(init).toBeDefined();
+      expect(init.headers).toBeDefined();
+      expect(init.headers['x-api-key']).toBe('test-key');
     });
 
     it('should handle fetch errors gracefully', async () => {

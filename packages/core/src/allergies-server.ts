@@ -107,7 +107,7 @@ export function createAllergiesServer(options: AllergiesServerOptions): Allergie
   }
 
   function buildUrl(): string {
-    return `https://api.ambeedata.com/latest/pollen?lat=${location.lat}&lng=${location.lon}&x-api-key=${apiKey}`;
+    return `https://api.ambeedata.com/latest/pollen?lat=${location.lat}&lng=${location.lon}`;
   }
 
   function checkAndEmitAlert(data: AllergyData): void {
@@ -133,7 +133,7 @@ export function createAllergiesServer(options: AllergiesServerOptions): Allergie
 
     let response: Awaited<ReturnType<FetchFn>>;
     try {
-      response = await fetchFn(buildUrl());
+      response = await fetchFn(buildUrl(), { headers: { 'x-api-key': apiKey } });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       notifyError(`Allergies fetch failed: ${message}`);

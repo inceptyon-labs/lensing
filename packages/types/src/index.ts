@@ -706,8 +706,13 @@ export interface AgentGatewayInstance {
 
 // ── Allergies/Pollen Server ────────────────────────────────────────────────
 
+/** Optional request init for FetchFn (subset of browser RequestInit) */
+export interface FetchInit {
+  headers?: Record<string, string>;
+}
+
 /** Fetch function signature (matches global `fetch`) */
-export type FetchFn = (url: string) => Promise<{
+export type FetchFn = (url: string, init?: FetchInit) => Promise<{
   ok: boolean;
   status?: number;
   statusText?: string;
