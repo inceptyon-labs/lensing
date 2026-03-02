@@ -1,11 +1,11 @@
 ---
 # lensing-z3aj
 title: 'Epic: Widget Runtime'
-status: todo
+status: completed
 type: epic
 priority: high
 created_at: 2026-02-28T15:44:09Z
-updated_at: 2026-02-28T15:44:09Z
+updated_at: 2026-03-02T16:32:04Z
 ---
 
 The rendering layer that displays builder-created plugins on the smart display. Hybrid sandboxing: Shadow DOM for trusted template widgets, iframe sandbox for custom JS.
@@ -29,3 +29,6 @@ Render builder-created plugins safely and performantly on the display. Template-
 - [ ] Stale data shows indicator, missing data shows placeholder
 - [ ] Custom JS widgets render in sandboxed iframe
 - [ ] Widgets integrate with existing zone/grid layout system
+
+## Summary
+Child feature completed (Template Widget Renderer). Epic closed.

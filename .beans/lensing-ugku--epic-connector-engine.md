@@ -1,11 +1,11 @@
 ---
 # lensing-ugku
 title: 'Epic: Connector Engine'
-status: todo
+status: completed
 type: epic
 priority: high
 created_at: 2026-02-28T15:43:53Z
-updated_at: 2026-02-28T15:43:53Z
+updated_at: 2026-03-02T16:31:52Z
 ---
 
 The data fetching foundation that powers builder-created plugins. Implements connector types (JSON API, RSS, static) that let users define data sources without writing server-side code.
@@ -31,3 +31,6 @@ Provide a simple, secure, template-based system for fetching and mapping externa
 - [ ] Static connector passes through content without fetching
 - [ ] URL blocklist prevents SSRF (localhost, private IPs)
 - [ ] Connectors integrate with plugin scheduler for periodic refresh
+
+## Summary
+All child features completed. Epic closed automatically — all work delivered.

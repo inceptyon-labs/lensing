@@ -1,11 +1,11 @@
 ---
 # lensing-7nct
 title: 'Feature: Marketplace Client'
-status: in-progress
+status: completed
 type: feature
 priority: high
 created_at: 2026-02-28T15:44:35Z
-updated_at: 2026-03-02T01:05:58Z
+updated_at: 2026-03-02T15:36:28Z
 parent: lensing-023a
 ---
 
@@ -23,3 +23,5 @@ Core service that fetches, caches, and serves the marketplace index from GitHub.
 
 **In Scope:** Index fetch/cache, REST API, download/install, version check, offline mode
 **Out of Scope:** Publishing (separate feature), ratings, analytics
+
+## Summary\n\nAll 5 sub-tasks completed: marketplace client, REST endpoints, plugin download/install, version comparison, offline fallback.

@@ -1,11 +1,11 @@
 ---
 # lensing-jwka
 title: 'Epic: Plugin Builder'
-status: todo
+status: completed
 type: epic
 priority: high
 created_at: 2026-02-28T15:43:59Z
-updated_at: 2026-02-28T15:43:59Z
+updated_at: 2026-03-02T16:32:01Z
 ---
 
 The no-code visual plugin builder — a GrapesJS-powered editor embedded in the admin UI that lets users create display widgets through a guided wizard: metadata → data source → visual design → preview → save.
@@ -32,3 +32,6 @@ Make plugin creation accessible to non-technical users. The builder handles mani
 - [ ] Live preview shows widget with real fetched data
 - [ ] Local save produces valid plugin package installable by PluginLoader
 - [ ] Auto-save to localStorage for crash recovery
+
+## Summary
+All 3 child features completed (Builder Wizard, Preview & Local Save, GrapesJS Visual Editor). Epic closed.

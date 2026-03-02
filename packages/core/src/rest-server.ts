@@ -1,6 +1,7 @@
 import http from 'node:http';
 import fs from 'node:fs';
 import nodePath from 'node:path';
+import { extractBearerToken, isProtectedRoute } from './auth-middleware';
 import type {
   ZoneConfig,
   ConversationEntry,
@@ -85,6 +86,10 @@ export interface RestServerOptions {
   photoDir?: string;
   /** Directory containing pre-built static files (SPA) to serve as fallback */
   staticDir?: string;
+  /** Bearer token required for protected routes. If omitted, auth is disabled. */
+  authToken?: string;
+  /** Network address to bind to. Defaults to '127.0.0.1' */
+  bindAddress?: string;
 }
 
 /** Public interface returned by createRestServer */
@@ -231,7 +236,7 @@ export function createRestServer(
   handlers: RestServerHandlers,
   options: RestServerOptions = {}
 ): RestServerInstance {
-  const { port = 0, corsOrigins, logger, photoDir, staticDir } = options;
+  const { port = 0, corsOrigins, logger, photoDir, staticDir, authToken, bindAddress = '127.0.0.1' } = options;
   const startedAt = Date.now();
   let boundPort = 0;
   let closed = false;
@@ -241,7 +246,7 @@ export function createRestServer(
   const corsHeaders = {
     'Access-Control-Allow-Origin': corsOrigin,
     'Access-Control-Allow-Methods': 'GET, PUT, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   };
 
   // Build route table: path → method → handler
@@ -579,6 +584,20 @@ export function createRestServer(
         // Ignore logger errors
       }
       return;
+    }
+
+    // Auth check for protected routes
+    if (authToken && isProtectedRoute(path.split('?')[0], method)) {
+      const token = extractBearerToken(req.headers.authorization);
+      if (token !== authToken) {
+        writeJson(res, 401, { error: 'Unauthorized' });
+        try {
+          logger?.({ method, path, status: 401, duration_ms: Date.now() - start });
+        } catch {
+          // Ignore logger errors
+        }
+        return;
+      }
     }
 
     // Wrap handler in error handling
@@ -1103,7 +1122,7 @@ export function createRestServer(
     onError = reject;
   });
 
-  server.listen(port, '0.0.0.0', () => {
+  server.listen(port, bindAddress, () => {
     const addr = server.address();
     if (typeof addr === 'object' && addr) {
       boundPort = addr.port;

@@ -1,11 +1,11 @@
 ---
 # lensing-023a
 title: 'Epic: Marketplace'
-status: todo
+status: completed
 type: epic
 priority: high
 created_at: 2026-02-28T15:44:05Z
-updated_at: 2026-02-28T15:44:05Z
+updated_at: 2026-03-02T16:31:57Z
 ---
 
 Plugin discovery and distribution via a GitHub-based marketplace. Users browse, search, and one-click install plugins. Creators publish directly from the device via GitHub API (PR-based review gate).
@@ -32,3 +32,6 @@ A zero-infrastructure marketplace powered by a GitHub repo. The full loop: creat
 - [ ] Publish creates PR to marketplace repo via GitHub API
 - [ ] Update detection shows badges for newer versions
 - [ ] Offline mode serves cached data with banner
+
+## Summary
+All 3 child features completed (Publish to Marketplace, Browser UI, Marketplace Client). Epic closed.

@@ -1,0 +1,26 @@
+---
+# lensing-g8js
+title: Add SRI hashes to CDN assets
+status: todo
+type: task
+priority: normal
+created_at: 2026-03-02T16:49:36Z
+updated_at: 2026-03-02T16:49:36Z
+parent: lensing-umpl
+---
+
+**Scan finding:** M-1
+
+GridStack CSS and JS loaded from jsDelivr CDN without `integrity` and `crossorigin` attributes. If the CDN were compromised, malicious code would execute in the application context.
+
+## Acceptance Criteria
+
+- [ ] GridStack CSS link has `integrity` and `crossorigin="anonymous"` attributes
+- [ ] GridStack JS script has `integrity` and `crossorigin="anonymous"` attributes
+- [ ] SRI hashes verified against current CDN content
+
+## Files
+- `apps/display/src/app.html:10-12`
+
+## Size: XS
+## Area: frontend

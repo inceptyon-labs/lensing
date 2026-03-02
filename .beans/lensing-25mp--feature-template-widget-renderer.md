@@ -1,11 +1,11 @@
 ---
 # lensing-25mp
 title: 'Feature: Template Widget Renderer'
-status: in-progress
+status: completed
 type: feature
 priority: high
 created_at: 2026-02-28T15:44:45Z
-updated_at: 2026-03-01T00:57:45Z
+updated_at: 2026-03-02T15:36:28Z
 parent: lensing-z3aj
 blocked_by:
   - lensing-r333
@@ -25,3 +25,5 @@ Renders builder-created plugins on the display with hybrid sandboxing: Shadow DO
 
 **In Scope:** Shadow DOM rendering, variable injection, placeholders, iframe sandbox, grid integration
 **Out of Scope:** Custom JS editing in builder (v1 is HTML/CSS only, iframe is future-proofing)
+
+## Summary\n\nAll 5 sub-tasks completed: Shadow DOM widget container, template variable injection, widget-to-grid wiring, stale data indicator, iframe sandbox for custom JS widgets.
