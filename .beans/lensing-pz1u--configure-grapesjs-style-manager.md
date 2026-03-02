@@ -29,12 +29,14 @@ Set up the GrapesJS style manager with controls appropriate for widget customiza
 ## Completed
 
 **Files changed:**
+
 - apps/display/src/lib/grapes-style-manager.ts (new) — configureStyleManager() with 3 sectors and 11 style properties
-- apps/display/src/__tests__/grapes-style-manager.test.ts (new) — 30 unit tests
+- apps/display/src/**tests**/grapes-style-manager.test.ts (new) — 30 unit tests
 - apps/display/src/lib/GrapesJSEditor.svelte (1 import + 1 call) — integrates style manager
-- apps/display/src/__tests__/grapesjs-editor.test.ts (StyleManager mock + 1 integration test)
+- apps/display/src/**tests**/grapesjs-editor.test.ts (StyleManager mock + 1 integration test)
 
 **Key decisions:**
+
 - addSector/addProperty pattern matches GrapesJS StyleManager API
 - 3 sectors: general (colors), typography (fonts), spacing (layout + opacity + border-radius)
 - Color defaults use CSS variable + HSL fallback pattern: var(--starlight, hsl(...))
@@ -44,6 +46,7 @@ Set up the GrapesJS style manager with controls appropriate for widget customiza
 - All design system font weights (400, 500, 600, 700) available as named options
 
 **Notes for next task:**
+
 - configureStyleManager() is called after registerDataBlocks() in GrapesJSEditor.svelte
 - addProperty(sectorId, config) uses GrapesJS v4 StyleManager API
 - Units ['px'] array on sliders enables unit-switching dropdown in GrapesJS UI
