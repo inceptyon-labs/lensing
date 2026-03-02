@@ -85,10 +85,12 @@
         {/each}
       </div>
     </div>
-    <div class="mp-result-count">
-      {filteredPlugins.length}
-      {filteredPlugins.length === 1 ? 'plugin' : 'plugins'}
-    </div>
+    {#if !loading}
+      <div class="mp-result-count">
+        {filteredPlugins.length}
+        {filteredPlugins.length === 1 ? 'plugin' : 'plugins'}
+      </div>
+    {/if}
     {#if loading}
       <p class="mp-state">Loading…</p>
       <div class="plugin-grid">
