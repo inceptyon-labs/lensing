@@ -1026,6 +1026,8 @@ export interface RssConnectorConfig {
   refresh_ms: number;
   /** Map field names to CSS selectors or standard feed field names (title, description, link, date, image) */
   mapping: ConnectorMapping;
+  /** Maximum number of items to return (default: 10) */
+  limit?: number;
 }
 
 /** Static data connector configuration for hardcoded/passthrough data */
