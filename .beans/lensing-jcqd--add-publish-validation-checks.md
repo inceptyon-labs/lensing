@@ -26,13 +26,12 @@ Validate plugin before allowing marketplace publish.
 **Size:** S
 **Area:** backend
 
-
-
 ## Summary of Changes
 
 Created validatePublish() pure function that validates plugins before marketplace publishing.
 
 **Features:**
+
 - 7 validation checks: ID uniqueness, required fields, connector tested, template HTML, placeholder resolution, package size < 8MB, error collection
 - Comprehensive error structure with field, code, and message
 - Supports dot-notation paths in templates: {{user.name}}, {{items[0].title}}
@@ -41,13 +40,15 @@ Created validatePublish() pure function that validates plugins before marketplac
 - Exported from @lensing/core for REST endpoint use
 
 **Files:**
+
 - packages/core/src/publish-validation.ts (129 lines)
-- packages/core/src/__tests__/publish-validation.test.ts (231 lines)
+- packages/core/src/**tests**/publish-validation.test.ts (231 lines)
 - packages/core/src/index.ts (exports)
 
 **Commits:**
+
 - 07b485e feat: add validatePublish function with full validation suite
-- 7a2702d style: format and lint  
+- 7a2702d style: format and lint
 - 21813c6 fix: clarify size limit error message to match implementation
 
 **Review:** O (Opus) - verified architecture, edge cases, security, test coverage
