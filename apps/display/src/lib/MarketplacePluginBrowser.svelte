@@ -104,7 +104,13 @@
       <div class="mp-empty-state">
         <svg width="64" height="64" viewBox="0 0 64 64" fill="none" aria-hidden="true">
           <circle cx="32" cy="32" r="30" stroke="currentColor" stroke-width="2" opacity="0.2" />
-          <path d="M24 28h16M24 36h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.3" />
+          <path
+            d="M24 28h16M24 36h10"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            opacity="0.3"
+          />
         </svg>
         <p class="mp-state">No plugins found</p>
       </div>
