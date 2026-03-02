@@ -1,11 +1,11 @@
 ---
 # lensing-g8js
 title: Add SRI hashes to CDN assets
-status: todo
+status: in-progress
 type: task
 priority: normal
 created_at: 2026-03-02T16:49:36Z
-updated_at: 2026-03-02T16:49:36Z
+updated_at: 2026-03-02T23:29:55Z
 parent: lensing-umpl
 ---
 
