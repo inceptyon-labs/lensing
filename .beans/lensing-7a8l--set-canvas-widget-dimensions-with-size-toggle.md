@@ -1,11 +1,11 @@
 ---
 # lensing-7a8l
 title: Set canvas widget dimensions with size toggle
-status: in-progress
+status: completed
 type: task
 priority: normal
 created_at: 2026-02-28T15:46:09Z
-updated_at: 2026-03-02T14:17:01Z
+updated_at: 2026-03-02T14:17:27Z
 parent: lensing-alyh
 ---
 

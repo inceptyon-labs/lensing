@@ -1,11 +1,11 @@
 ---
 # lensing-01jd
 title: Add auto-save to localStorage for crash recovery
-status: todo
+status: in-progress
 type: task
 priority: low
 created_at: 2026-02-28T15:46:28Z
-updated_at: 2026-02-28T15:46:28Z
+updated_at: 2026-03-02T14:19:41Z
 parent: lensing-rq0o
 ---
 
