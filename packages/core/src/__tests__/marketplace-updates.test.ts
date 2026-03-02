@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { compareSemver, checkForUpdates, type MarketplaceUpdateInfo } from '../marketplace-updates';
+import { compareSemver, checkForUpdates } from '../marketplace-updates';
 import type { MarketplacePlugin, PluginAdminEntry } from '@lensing/types';
 
 describe('compareSemver', () => {
