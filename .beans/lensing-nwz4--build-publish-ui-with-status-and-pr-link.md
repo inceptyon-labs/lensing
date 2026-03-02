@@ -1,11 +1,11 @@
 ---
 # lensing-nwz4
 title: Build publish UI with status and PR link
-status: todo
+status: in-progress
 type: task
 priority: normal
 created_at: 2026-02-28T15:47:28Z
-updated_at: 2026-02-28T15:47:28Z
+updated_at: 2026-03-02T02:33:32Z
 parent: lensing-lmnp
 ---
 

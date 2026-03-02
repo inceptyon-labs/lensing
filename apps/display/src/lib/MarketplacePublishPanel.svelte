@@ -65,12 +65,7 @@
 
 <div class="publish-panel">
   {#if stage === 'idle' || stage === 'validation-failed'}
-    <button
-      type="button"
-      class="publish-btn"
-      disabled={!githubToken}
-      on:click={handlePublish}
-    >
+    <button type="button" class="publish-btn" disabled={!githubToken} on:click={handlePublish}>
       Publish to Marketplace
     </button>
 
@@ -89,12 +84,7 @@
     <p class="progress-text">{publishingText}</p>
   {:else if stage === 'success'}
     <p class="success-msg">Published — awaiting review</p>
-    <a
-      class="pr-link"
-      href={prUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-    >View pull request</a>
+    <a class="pr-link" href={prUrl} target="_blank" rel="noopener noreferrer">View pull request</a>
   {:else if stage === 'error'}
     <p class="error-msg">{errorMessage}</p>
     <button type="button" class="retry-btn" on:click={retry}>Retry</button>
