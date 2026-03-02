@@ -29,14 +29,16 @@ Integrate the Shadow DOM / iframe widget renderer with the existing zone-based g
 **Completed**: Template Widget Renderer Step 2 - Created PluginWidget component and wired to PluginRenderer
 
 **Files Changed**:
+
 - apps/display/src/lib/PluginWidget.svelte (NEW) - Component to load and render builder templates
 - apps/display/src/lib/PluginRenderer.svelte - Updated to use PluginWidget for non-built-in plugins
-- apps/display/src/__tests__/plugin-widget.test.ts (NEW) - 5 comprehensive tests
+- apps/display/src/**tests**/plugin-widget.test.ts (NEW) - 5 comprehensive tests
 - packages/core/src/plugin-admin-handlers.ts - Added getPluginTemplate handler
 - packages/core/src/rest-server.ts - Added GET /plugins/:id/template endpoint
-- packages/core/src/__tests__/*.test.ts - Added tests for new endpoints
+- packages/core/src/**tests**/\*.test.ts - Added tests for new endpoints
 
 **Key Implementation Details**:
+
 - PluginWidget fetches template from REST API during component mount
 - Always renders ShadowWidget element (pragmatic solution for test timing)
 - Shows loading state while fetching, error state on failure
