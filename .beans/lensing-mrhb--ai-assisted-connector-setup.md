@@ -1,14 +1,14 @@
 ---
 # lensing-mrhb
 title: AI-assisted connector setup
-status: todo
+status: in-progress
 type: feature
 priority: normal
 created_at: 2026-03-03T13:15:22Z
-updated_at: 2026-03-03T13:15:22Z
+updated_at: 2026-03-03T15:45:20Z
 blocked_by:
-  - lensing-gjrv
-  - lensing-e18k
+    - lensing-gjrv
+    - lensing-e18k
 ---
 
 Add an AI agent to the plugin builder that can read API documentation and automatically
@@ -45,3 +45,17 @@ figures out endpoints, auth, response shape, and field mapping.
 - Request: { provider, docs_text_or_url, plugin_context }
 - Response: { connector: ConnectorInput, html: string, css: string, explanation: string }
 - Future: paywall-ready — feature flag to gate access when released publicly
+
+## Progress
+
+**Session 1 (2026-03-03):**
+- ✓ Step 1: Added AI assist types (AiProviderConfig, AiAssistRequest, AiAssistResponse)
+- ✓ Step 2: Implemented LLM provider abstraction (Anthropic, DeepSeek, Gemini)
+- 17 new tests added, all passing
+
+**Remaining:**
+- Step 3: AI assist service (prompt engineering, output parsing)
+- Step 4: REST endpoints + HostService wiring
+- Step 5: Admin UI panel
+
+**Handoff:** See docs/handoffs/handoff-2026-03-03-ai-assist-setup-wip.md

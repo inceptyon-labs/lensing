@@ -72,6 +72,10 @@ export interface RestServerHandlers {
   testConnector?: (
     config: import('./connector-proxy').ConnectorTestConfig
   ) => Promise<import('./connector-proxy').ConnectorTestResult>;
+  // AI-assisted connector setup (optional — omit to disable AI assist endpoints)
+  aiAssist?: (
+    input: import('@lensing/types').AiAssistRequest
+  ) => Promise<import('@lensing/types').AiAssistResponse>;
   // Plugin secrets (optional — omit to disable secret endpoints)
   getPluginSecretNames?: (id: string) => Promise<string[]>;
   setPluginSecret?: (id: string, key: string, value: string) => Promise<void>;
@@ -548,6 +552,27 @@ export function createRestServer(
     }
     try {
       const result = await handlers.testConnector(config);
+      writeJson(res, 200, result);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Internal error';
+      writeJson(res, 500, { error: msg });
+    }
+  });
+
+  addRoute('/api/admin/builder/ai-assist', 'POST', async (_req, res, body) => {
+    if (!handlers.aiAssist) {
+      writeJson(res, 404, { error: 'Not Found' });
+      return;
+    }
+    let input: import('@lensing/types').AiAssistRequest;
+    try {
+      input = JSON.parse(body) as import('@lensing/types').AiAssistRequest;
+    } catch {
+      writeJson(res, 400, { error: 'Invalid JSON' });
+      return;
+    }
+    try {
+      const result = await handlers.aiAssist(input);
       writeJson(res, 200, result);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Internal error';

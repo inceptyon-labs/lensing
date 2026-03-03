@@ -1133,3 +1133,57 @@ function isValidHttpUrl(url: string): boolean {
     return false;
   }
 }
+
+// ── AI Assist ────────────────────────────────────────────────────────────────
+
+/** Supported LLM provider IDs for AI-assisted connector setup */
+export type AiProviderId = 'anthropic' | 'deepseek' | 'gemini';
+
+/** Configuration for a single AI provider (stored in settings DB) */
+export interface AiProviderConfig {
+  /** Provider identifier */
+  provider: AiProviderId;
+  /** Model name to use (e.g. 'claude-sonnet-4-20250514', 'deepseek-chat') */
+  model: string;
+  /** Reference key used to look up the API key from the secrets store */
+  apiKeyRef: string;
+}
+
+/** Plugin context passed to the AI assist request */
+export interface AiAssistPluginContext {
+  name: string;
+  description?: string;
+}
+
+/** Request payload for POST /api/admin/builder/ai-assist */
+export interface AiAssistRequest {
+  /** LLM provider to use */
+  provider: AiProviderId;
+  /** Model to use (must be valid for the given provider) */
+  model: string;
+  /** API documentation as text or a URL to fetch docs from */
+  docsTextOrUrl: string;
+  /** Plugin context to help the AI understand what's being built */
+  pluginContext: AiAssistPluginContext;
+}
+
+/** Generated connector config within an AI assist response */
+export interface AiAssistConnector {
+  type: 'json_api' | 'rss_feed' | 'static_data';
+  url: string;
+  method?: string;
+  headers?: Record<string, string>;
+  refreshInterval: number;
+}
+
+/** Response payload from POST /api/admin/builder/ai-assist */
+export interface AiAssistResponse {
+  /** Generated connector configuration */
+  connector: AiAssistConnector;
+  /** Generated widget HTML template (may include {{field}} placeholders) */
+  html: string;
+  /** Generated widget CSS */
+  css: string;
+  /** Optional human-readable explanation of the generated config */
+  explanation?: string;
+}
