@@ -27,8 +27,6 @@ IframeWidget.svelte listens for postMessage resize events but does not validate 
 
 ## Area: frontend
 
-
-
 ## Verification Complete
 
 - Tests: ✓ 15/15 iframe-widget tests passing

@@ -24,8 +24,6 @@ Full report: `docs/scans/2026-03-02-lensing.md`
 - [ ] Dependency CVEs addressed
 - [ ] Plugin download domain allowlist added
 
-
-
 ## Epic Complete
 
 All 9 security hardening tasks completed and merged to main:

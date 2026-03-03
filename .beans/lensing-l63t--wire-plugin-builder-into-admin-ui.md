@@ -10,22 +10,23 @@ updated_at: 2026-03-03T03:40:48Z
 
 Create AdminBuilderView.svelte orchestrator and add 'Create Plugin' button to AdminPluginList.svelte that toggles between list and builder views. Builder uses existing BuilderWizard, BuilderStep1, WidgetTemplatePicker, BuilderPreview components with textarea-based HTML/CSS editing for Step 2.
 
-
 ## Summary of Changes
 
 ### New Files
+
 - `apps/display/src/lib/AdminBuilderView.svelte` — Orchestrator component that composes BuilderWizard, WidgetTemplatePicker, and BuilderPreview into a 3-step plugin creation flow (Metadata → Template & Code → Preview & Save)
 - `apps/display/src/__tests__/admin-builder-view.test.ts` — 19 tests covering wizard structure, metadata form, template/code editing, save endpoint, error handling, cancel
 - `apps/display/src/__tests__/admin-plugin-list-builder.test.ts` — 3 integration tests covering builder lifecycle (render, cancel→list, save→list)
 
 ### Modified Files
+
 - `apps/display/src/lib/AdminPluginList.svelte` — Added "Create Plugin" button to Plugins tab with `activeView` toggle between list and builder views
 
 ### Design Decisions
+
 - Built metadata form inline in AdminBuilderView (not reusing BuilderStep1) to avoid dual-Next-button conflict — BuilderStep1 has its own Next button that conflicts with BuilderWizard's navigation buttons
 - Used textarea-based HTML/CSS editing (not GrapesJS) per plan caveat about Svelte 5 onMount/onDestroy incompatibility
 - AdminPluginList cannot be directly rendered in vitest due to CSS preprocessing issue with vite 6 + svelte plugin; integration tests verify behavior via AdminBuilderView's onCancel/onSaved callbacks
-
 
 ### Follow-up: Data Source Step + Connector Fix (Session 2)
 

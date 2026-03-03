@@ -463,6 +463,23 @@ export interface DatabaseInstance {
   /** Delete a schedule by ID */
   deleteSchedule(id: string): boolean;
 
+  // --- Plugin Secrets (encrypted storage) ---
+
+  /** Get an encrypted secret for a plugin */
+  getPluginSecret(pluginId: string, secretKey: string): string | undefined;
+
+  /** Set an encrypted secret for a plugin (upsert) */
+  setPluginSecret(pluginId: string, secretKey: string, encryptedValue: string): void;
+
+  /** Get all encrypted secrets for a plugin as a record */
+  getPluginSecrets(pluginId: string): Record<string, string>;
+
+  /** Delete a specific secret for a plugin */
+  deletePluginSecret(pluginId: string, secretKey: string): boolean;
+
+  /** Delete all secrets for a plugin (e.g., when uninstalling). Returns count deleted. */
+  deleteAllPluginSecrets(pluginId: string): number;
+
   /** Close the database connection */
   close(): void;
 }

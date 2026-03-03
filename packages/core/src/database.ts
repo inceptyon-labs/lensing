@@ -46,6 +46,20 @@ const MIGRATIONS: Array<SchemaMigration & { sql: string }> = [
       );
     `,
   },
+  {
+    version: 3,
+    description: 'add plugin secrets table',
+    sql: `
+      CREATE TABLE IF NOT EXISTS plugin_secrets (
+        plugin_id TEXT NOT NULL,
+        secret_key TEXT NOT NULL,
+        encrypted_value TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        PRIMARY KEY (plugin_id, secret_key)
+      );
+    `,
+  },
 ];
 
 export function createDatabase(options: DatabaseOptions = {}): DatabaseInstance {
@@ -271,6 +285,50 @@ export function createDatabase(options: DatabaseOptions = {}): DatabaseInstance 
     deleteSchedule(id: string): boolean {
       const info = db.prepare('DELETE FROM scene_schedules WHERE id = ?').run(id);
       return info.changes > 0;
+    },
+
+    // --- Plugin Secrets (encrypted at rest) ---
+
+    getPluginSecret(pluginId: string, secretKey: string): string | undefined {
+      const row = db
+        .prepare(
+          'SELECT encrypted_value FROM plugin_secrets WHERE plugin_id = ? AND secret_key = ?'
+        )
+        .get(pluginId, secretKey) as { encrypted_value: string } | undefined;
+      return row?.encrypted_value;
+    },
+
+    setPluginSecret(pluginId: string, secretKey: string, encryptedValue: string): void {
+      db.prepare(
+        `
+        INSERT INTO plugin_secrets (plugin_id, secret_key, encrypted_value, created_at, updated_at)
+        VALUES (?, ?, ?, datetime('now'), datetime('now'))
+        ON CONFLICT(plugin_id, secret_key) DO UPDATE SET encrypted_value = excluded.encrypted_value, updated_at = excluded.updated_at
+      `
+      ).run(pluginId, secretKey, encryptedValue);
+    },
+
+    getPluginSecrets(pluginId: string): Record<string, string> {
+      const rows = db
+        .prepare('SELECT secret_key, encrypted_value FROM plugin_secrets WHERE plugin_id = ?')
+        .all(pluginId) as Array<{ secret_key: string; encrypted_value: string }>;
+      const result = Object.create(null) as Record<string, string>;
+      for (const row of rows) {
+        result[row.secret_key] = row.encrypted_value;
+      }
+      return result;
+    },
+
+    deletePluginSecret(pluginId: string, secretKey: string): boolean {
+      const info = db
+        .prepare('DELETE FROM plugin_secrets WHERE plugin_id = ? AND secret_key = ?')
+        .run(pluginId, secretKey);
+      return info.changes > 0;
+    },
+
+    deleteAllPluginSecrets(pluginId: string): number {
+      const info = db.prepare('DELETE FROM plugin_secrets WHERE plugin_id = ?').run(pluginId);
+      return info.changes as number;
     },
 
     close(): void {

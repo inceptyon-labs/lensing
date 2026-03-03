@@ -23,6 +23,8 @@ export interface ConnectorRunnerOptions {
   fetchFn?: ConnectorFetchFn;
   /** Allow private/local IPs — for home-lab setups (default: false) */
   allowPrivate?: boolean;
+  /** Resolve {{NAME}} secret placeholders for a given plugin */
+  secretResolver?: (pluginId: string, name: string) => Promise<string>;
 }
 
 export interface ConnectorRunnerInstance {
@@ -37,6 +39,21 @@ export interface ConnectorRunnerInstance {
   close(): void;
 }
 
+/** Substitute {{NAME}} placeholders in a string using the provided per-plugin resolver. */
+async function resolvePlaceholders(
+  str: string,
+  pluginId: string,
+  resolver: (pluginId: string, name: string) => Promise<string>
+): Promise<string> {
+  const matches = [...str.matchAll(/\{\{(\w+)\}\}/g)];
+  let result = str;
+  for (const match of matches) {
+    const value = await resolver(pluginId, match[1]!);
+    result = result.replace(match[0], value);
+  }
+  return result;
+}
+
 /** Create a connector runner that bridges plugin connectors to the scheduler and data bus. */
 export function createConnectorRunner(options: ConnectorRunnerOptions): ConnectorRunnerInstance {
   const {
@@ -44,6 +61,7 @@ export function createConnectorRunner(options: ConnectorRunnerOptions): Connecto
     scheduler,
     fetchFn = fetch as unknown as ConnectorFetchFn,
     allowPrivate = false,
+    secretResolver,
   } = options;
 
   const registered = new Set<string>();
@@ -53,8 +71,20 @@ export function createConnectorRunner(options: ConnectorRunnerOptions): Connecto
     config: ConnectorRunnerConfig
   ): () => Promise<void> {
     return async () => {
+      const isRss = config.type === 'rss_feed' || config.type === 'rss';
+
+      // Resolve {{SECRET}} placeholders in URL and headers (JSON API only)
+      let url = config.url;
+      let headers: Record<string, string> = { ...(config.headers ?? {}) };
+      if (secretResolver && !isRss) {
+        url = await resolvePlaceholders(url, pluginId, secretResolver);
+        for (const [key, value] of Object.entries(headers)) {
+          headers[key] = await resolvePlaceholders(value, pluginId, secretResolver);
+        }
+      }
+
       // SSRF protection — checked on every fetch in case URL resolves differently
-      const blockReason = getBlockReason(config.url, { allowPrivate });
+      const blockReason = getBlockReason(url, { allowPrivate });
       if (blockReason) {
         throw new Error(`URL blocked: ${blockReason}`);
       }
@@ -63,11 +93,9 @@ export function createConnectorRunner(options: ConnectorRunnerOptions): Connecto
       const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
 
       try {
-        const isRss = config.type === 'rss_feed' || config.type === 'rss';
-
-        const response = await fetchFn(config.url, {
+        const response = await fetchFn(url, {
           method: isRss ? 'GET' : (config.method ?? 'GET'),
-          headers: isRss ? {} : (config.headers ?? {}),
+          headers: isRss ? {} : headers,
           signal: controller.signal,
         });
 

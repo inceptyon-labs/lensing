@@ -72,6 +72,10 @@ export interface RestServerHandlers {
   testConnector?: (
     config: import('./connector-proxy').ConnectorTestConfig
   ) => Promise<import('./connector-proxy').ConnectorTestResult>;
+  // Plugin secrets (optional — omit to disable secret endpoints)
+  getPluginSecretNames?: (id: string) => Promise<string[]>;
+  setPluginSecret?: (id: string, key: string, value: string) => Promise<void>;
+  deletePluginSecret?: (id: string, key: string) => Promise<void>;
 }
 
 /** Configuration options for the REST server */
@@ -702,7 +706,18 @@ export function createRestServer(
         const pluginMatch = cleanPath.match(/^\/plugins\/([^/]+)(?:\/(.+))?$/);
         if (pluginMatch) {
           const pluginId = decodeURIComponent(pluginMatch[1]!);
-          const action = pluginMatch[2];
+          const fullAction = pluginMatch[2];
+
+          // Parse action and subAction (e.g., "secrets/KEY" → action="secrets", subAction="KEY")
+          let action: string | undefined;
+          let subAction: string | undefined;
+          if (fullAction) {
+            const parts = fullAction.split('/');
+            action = parts[0];
+            if (parts.length > 1) {
+              subAction = decodeURIComponent(parts.slice(1).join('/'));
+            }
+          }
 
           // GET /plugins/:id
           if (!action && method === 'GET') {
@@ -882,6 +897,92 @@ export function createRestServer(
             }
             const zone = parsed['zone'] === null ? undefined : (parsed['zone'] as ZoneName);
             await handlers.assignPluginZone(pluginId, zone);
+            writeJson(res, 200, { ok: true });
+            try {
+              logger?.({ method, path, status: 200, duration_ms: Date.now() - start });
+            } catch {
+              // Ignore logger errors
+            }
+            return;
+          }
+
+          // GET /plugins/:id/secrets — list secret key names
+          if (action === 'secrets' && method === 'GET') {
+            if (!handlers.getPluginSecretNames) {
+              writeJson(res, 404, { error: 'Not Found' });
+              try {
+                logger?.({ method, path, status: 404, duration_ms: Date.now() - start });
+              } catch {
+                // Ignore logger errors
+              }
+              return;
+            }
+            const names = await handlers.getPluginSecretNames(pluginId);
+            writeJson(res, 200, { keys: names });
+            try {
+              logger?.({ method, path, status: 200, duration_ms: Date.now() - start });
+            } catch {
+              // Ignore logger errors
+            }
+            return;
+          }
+
+          // PUT /plugins/:id/secrets/:key — set a secret
+          if (action === 'secrets' && subAction && method === 'PUT') {
+            if (!handlers.setPluginSecret) {
+              writeJson(res, 404, { error: 'Not Found' });
+              try {
+                logger?.({ method, path, status: 404, duration_ms: Date.now() - start });
+              } catch {
+                // Ignore logger errors
+              }
+              return;
+            }
+            const body = await readBody(req);
+            let parsed: Record<string, unknown>;
+            try {
+              parsed = JSON.parse(body) as Record<string, unknown>;
+            } catch {
+              writeJson(res, 400, { error: 'Invalid JSON' });
+              try {
+                logger?.({ method, path, status: 400, duration_ms: Date.now() - start });
+              } catch {
+                // Ignore logger errors
+              }
+              return;
+            }
+            if (!Object.prototype.hasOwnProperty.call(parsed, 'value')) {
+              writeJson(res, 400, { error: 'value is required' });
+              try {
+                logger?.({ method, path, status: 400, duration_ms: Date.now() - start });
+              } catch {
+                // Ignore logger errors
+              }
+              return;
+            }
+            const value = String(parsed['value']);
+            await handlers.setPluginSecret(pluginId, subAction, value);
+            writeJson(res, 200, { ok: true });
+            try {
+              logger?.({ method, path, status: 200, duration_ms: Date.now() - start });
+            } catch {
+              // Ignore logger errors
+            }
+            return;
+          }
+
+          // DELETE /plugins/:id/secrets/:key — delete a secret
+          if (action === 'secrets' && subAction && method === 'DELETE') {
+            if (!handlers.deletePluginSecret) {
+              writeJson(res, 404, { error: 'Not Found' });
+              try {
+                logger?.({ method, path, status: 404, duration_ms: Date.now() - start });
+              } catch {
+                // Ignore logger errors
+              }
+              return;
+            }
+            await handlers.deletePluginSecret(pluginId, subAction);
             writeJson(res, 200, { ok: true });
             try {
               logger?.({ method, path, status: 200, duration_ms: Date.now() - start });

@@ -38,16 +38,19 @@ but is not wired up for third-party plugins. Built-in modules have their own har
 ## Summary of Changes
 
 ### Files Modified
+
 - packages/core/src/plugin-loader.ts — connector.json discovery, register on load, unregister on unload/reload
 - packages/core/src/plugin-admin-handlers.ts — connector lifecycle on enable/disable, re-apply disabled state after reload
 - packages/core/src/connector-runner.ts — normalize static_data as alias for static
 
 ### Files Created
-- packages/core/src/__tests__/plugin-loader-connector.test.ts (11 tests)
-- packages/core/src/__tests__/plugin-admin-handlers-lifecycle.test.ts (6 tests)
-- packages/core/src/__tests__/plugin-connector-integration.test.ts (8 tests)
+
+- packages/core/src/**tests**/plugin-loader-connector.test.ts (11 tests)
+- packages/core/src/**tests**/plugin-admin-handlers-lifecycle.test.ts (6 tests)
+- packages/core/src/**tests**/plugin-connector-integration.test.ts (8 tests)
 
 ### Key Decisions
+
 - ConnectorRunner is optional dependency — backward compatible
 - Malformed connector.json is non-fatal — plugin still loads
 - Disabled state re-applied after reloadPlugins (Codex review catch)

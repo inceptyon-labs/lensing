@@ -7,8 +7,8 @@ priority: normal
 created_at: 2026-03-03T13:15:22Z
 updated_at: 2026-03-03T13:15:22Z
 blocked_by:
-    - lensing-gjrv
-    - lensing-e18k
+  - lensing-gjrv
+  - lensing-e18k
 ---
 
 Add an AI agent to the plugin builder that can read API documentation and automatically
@@ -31,11 +31,13 @@ figures out endpoints, auth, response shape, and field mapping.
 - [ ] Tests for agent flow, provider switching, generated output validation
 
 ## LLM Provider Config
+
 - DeepSeek: deepseek-chat / deepseek-reasoner
 - Anthropic: claude-sonnet-4-20250514 (default) / claude-haiku-4-5-20251001
 - Gemini: gemini-2.0-flash (default) / gemini-2.5-pro
 
 ## Architecture Notes
+
 - Provider config stored in settings DB (same as other module settings)
 - API keys stored via secrets management system (lensing-e18k)
 - Agent runs server-side (packages/core) to keep API keys off the client

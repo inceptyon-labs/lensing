@@ -14,6 +14,7 @@ import { readModuleConfig } from './module-settings';
 import { installPluginFromZip } from './plugin-install';
 import { savePluginFromBuilder, type BuilderSaveInput } from './plugin-save';
 import type { ConnectorRunnerInstance, ConnectorRunnerConfig } from './connector-runner';
+import type { SecretStore } from './secret-store';
 
 export interface PluginAdminHandlersOptions {
   pluginLoader: PluginLoader;
@@ -21,6 +22,7 @@ export interface PluginAdminHandlersOptions {
   pluginsDir?: string;
   onChange?: (pluginId: string, action: string) => void;
   connectorRunner?: ConnectorRunnerInstance;
+  secretStore?: SecretStore;
 }
 
 interface PluginPersistedState {
@@ -127,7 +129,7 @@ function isModuleId(id: string): boolean {
 }
 
 export function createPluginAdminHandlers(options: PluginAdminHandlersOptions) {
-  const { pluginLoader, db, pluginsDir, onChange, connectorRunner } = options;
+  const { pluginLoader, db, pluginsDir, onChange, connectorRunner, secretStore } = options;
 
   return {
     async getPlugins(): Promise<PluginAdminEntry[]> {
@@ -276,6 +278,30 @@ export function createPluginAdminHandlers(options: PluginAdminHandlersOptions) {
       onChange?.(pluginId, 'saved');
       const state = getPersistedState(db, pluginId);
       return buildEntry(pluginId, manifest as PluginManifestWithConfig, 'loaded', undefined, state);
+    },
+
+    async getPluginSecretNames(id: string): Promise<string[]> {
+      if (!secretStore) {
+        throw new Error('Secret store not configured');
+      }
+      const secrets = secretStore.getAll(id);
+      return Object.keys(secrets);
+    },
+
+    async setPluginSecret(id: string, key: string, value: string): Promise<void> {
+      if (!secretStore) {
+        throw new Error('Secret store not configured');
+      }
+      secretStore.set(id, key, value);
+      onChange?.(id, 'secret_updated');
+    },
+
+    async deletePluginSecret(id: string, key: string): Promise<void> {
+      if (!secretStore) {
+        throw new Error('Secret store not configured');
+      }
+      secretStore.delete(id, key);
+      onChange?.(id, 'secret_deleted');
     },
   };
 }

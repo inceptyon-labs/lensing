@@ -310,6 +310,152 @@ describe('createConnectorRunner', () => {
     });
   });
 
+  describe('secret resolution', () => {
+    it('resolves {{PLACEHOLDER}} in URL before fetch', async () => {
+      const secretResolver = vi.fn(async (pluginId: string, name: string) => {
+        if (name === 'API_KEY') return 'resolved-key';
+        throw new Error(`Unknown secret: ${name}`);
+      });
+
+      const secretRunner = createConnectorRunner({
+        dataBus,
+        scheduler,
+        fetchFn,
+        secretResolver,
+      });
+
+      fetchFn.mockResolvedValueOnce(okJsonResponse({ ok: true }));
+
+      secretRunner.register(
+        'weather',
+        stubManifest({
+          permissions: { allowed_domains: ['api.example.com'], secrets: ['API_KEY'] },
+        }),
+        jsonApiConfig({ url: 'https://api.example.com/data?key={{API_KEY}}' })
+      );
+
+      const handler = scheduler._handlers.get('weather')!;
+      await handler();
+
+      expect(fetchFn).toHaveBeenCalledWith(
+        'https://api.example.com/data?key=resolved-key',
+        expect.any(Object)
+      );
+      expect(secretResolver).toHaveBeenCalledWith('weather', 'API_KEY');
+    });
+
+    it('resolves {{PLACEHOLDER}} in headers before fetch', async () => {
+      const secretResolver = vi.fn(async (_pluginId: string, name: string) => {
+        if (name === 'TOKEN') return 'bearer-secret';
+        throw new Error(`Unknown secret: ${name}`);
+      });
+
+      const secretRunner = createConnectorRunner({
+        dataBus,
+        scheduler,
+        fetchFn,
+        secretResolver,
+      });
+
+      fetchFn.mockResolvedValueOnce(okJsonResponse({ ok: true }));
+
+      secretRunner.register(
+        'api-plugin',
+        stubManifest({ permissions: { allowed_domains: ['api.example.com'], secrets: ['TOKEN'] } }),
+        jsonApiConfig({ headers: { Authorization: 'Bearer {{TOKEN}}' } })
+      );
+
+      const handler = scheduler._handlers.get('api-plugin')!;
+      await handler();
+
+      expect(fetchFn).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          headers: expect.objectContaining({ Authorization: 'Bearer bearer-secret' }),
+        })
+      );
+    });
+
+    it('resolves multiple placeholders in the same string', async () => {
+      const secretResolver = vi.fn(async (_pluginId: string, name: string) => {
+        const secrets: Record<string, string> = { USER: 'admin', PASS: 's3cret' };
+        return secrets[name] ?? '';
+      });
+
+      const secretRunner = createConnectorRunner({
+        dataBus,
+        scheduler,
+        fetchFn,
+        secretResolver,
+      });
+
+      fetchFn.mockResolvedValueOnce(okJsonResponse({}));
+
+      secretRunner.register(
+        'test',
+        stubManifest({
+          permissions: { allowed_domains: ['api.example.com'], secrets: ['USER', 'PASS'] },
+        }),
+        jsonApiConfig({ url: 'https://api.example.com/login?u={{USER}}&p={{PASS}}' })
+      );
+
+      const handler = scheduler._handlers.get('test')!;
+      await handler();
+
+      expect(fetchFn).toHaveBeenCalledWith(
+        'https://api.example.com/login?u=admin&p=s3cret',
+        expect.any(Object)
+      );
+    });
+
+    it('skips resolution when no secretResolver provided', async () => {
+      fetchFn.mockResolvedValueOnce(okJsonResponse({}));
+
+      runner.register(
+        'test',
+        stubManifest(),
+        jsonApiConfig({ url: 'https://api.example.com/data?key={{API_KEY}}' })
+      );
+
+      const handler = scheduler._handlers.get('test')!;
+      await handler();
+
+      // Should pass the raw URL with unresolved placeholders
+      expect(fetchFn).toHaveBeenCalledWith(
+        'https://api.example.com/data?key={{API_KEY}}',
+        expect.any(Object)
+      );
+    });
+
+    it('does not resolve placeholders for RSS connectors', async () => {
+      const secretResolver = vi.fn(async () => 'resolved');
+
+      const secretRunner = createConnectorRunner({
+        dataBus,
+        scheduler,
+        fetchFn,
+        secretResolver,
+      });
+
+      fetchFn.mockResolvedValueOnce(okTextResponse('<rss></rss>'));
+
+      secretRunner.register(
+        'rss-plugin',
+        stubManifest({ permissions: { secrets: ['KEY'] } }),
+        jsonApiConfig({ type: 'rss_feed', url: 'https://feeds.example.com/rss' })
+      );
+
+      const handler = scheduler._handlers.get('rss-plugin')!;
+      await handler();
+
+      // RSS feeds use GET with no headers, so no resolution needed
+      expect(fetchFn).toHaveBeenCalledWith(
+        'https://feeds.example.com/rss',
+        expect.objectContaining({ method: 'GET', headers: {} })
+      );
+    });
+  });
+
   describe('error handling', () => {
     it('propagates network errors from fetch', async () => {
       fetchFn.mockRejectedValueOnce(new Error('ECONNREFUSED'));

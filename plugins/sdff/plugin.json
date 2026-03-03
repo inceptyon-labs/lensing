@@ -4,8 +4,6 @@
   "version": "1.0.0",
   "description": "dfd",
   "permissions": {
-    "allowed_domains": [
-      null
-    ]
+    "allowed_domains": [null]
   }
 }
