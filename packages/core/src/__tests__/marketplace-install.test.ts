@@ -248,10 +248,14 @@ describe('downloadAndInstallPlugin', () => {
       const zipBuffer = makeZip({ 'plugin.json': VALID_MANIFEST });
       mockZipResponse(zipBuffer);
 
-      const result = await downloadAndInstallPlugin('https://plugins.example.com/test.zip', tmpDir, {
-        fetchFn: mockFetch,
-        allowedDomains: ['plugins.example.com'],
-      });
+      const result = await downloadAndInstallPlugin(
+        'https://plugins.example.com/test.zip',
+        tmpDir,
+        {
+          fetchFn: mockFetch,
+          allowedDomains: ['plugins.example.com'],
+        }
+      );
 
       expect(result.pluginId).toBe('test-plugin');
       expect(mockFetch).toHaveBeenCalledWith(
@@ -264,10 +268,14 @@ describe('downloadAndInstallPlugin', () => {
       const zipBuffer = makeZip({ 'plugin.json': VALID_MANIFEST });
       mockZipResponse(zipBuffer);
 
-      const result = await downloadAndInstallPlugin('https://PLUGINS.EXAMPLE.COM/test.zip', tmpDir, {
-        fetchFn: mockFetch,
-        allowedDomains: ['plugins.example.com'],
-      });
+      const result = await downloadAndInstallPlugin(
+        'https://PLUGINS.EXAMPLE.COM/test.zip',
+        tmpDir,
+        {
+          fetchFn: mockFetch,
+          allowedDomains: ['plugins.example.com'],
+        }
+      );
 
       expect(result.pluginId).toBe('test-plugin');
       expect(mockFetch).toHaveBeenCalled();

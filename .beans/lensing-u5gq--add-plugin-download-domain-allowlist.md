@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: normal
 created_at: 2026-03-02T16:50:27Z
-updated_at: 2026-03-03T00:07:40Z
+updated_at: 2026-03-03T00:22:05Z
 parent: lensing-umpl
 blocked_by:
     - lensing-05qz
@@ -17,11 +17,11 @@ marketplace-install.ts accepts any public URL for plugin downloads. The SSRF blo
 
 ## Acceptance Criteria
 
-- [ ] Plugin downloads restricted to configured marketplace domain(s) by default
-- [ ] Config option to add trusted download domains
-- [ ] SSRF blocklist still applied as defense-in-depth
-- [ ] Tests for allowed and blocked domains
-- [ ] Error message indicates domain not in allowlist
+- [x] Plugin downloads restricted to configured marketplace domain(s) by default
+- [x] Config option to add trusted download domains
+- [x] SSRF blocklist still applied as defense-in-depth
+- [x] Tests for allowed and blocked domains
+- [x] Error message indicates domain not in allowlist
 
 ## Files
 

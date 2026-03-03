@@ -32,10 +32,12 @@ publisher.ts and marketplace-client.ts construct GitHub API URLs from user-provi
 ## Summary of Changes
 
 Implemented path traversal validation in two modules:
+
 - **publisher.ts**: Added GITHUB_SEGMENT_RE validation for marketplaceRepoUrl owner/repo segments (lines 45-48)
 - **marketplace-client.ts**: Added format validation and segment checking for marketplaceRepo option (lines 27-31)
 
 Both modules now validate that owner/repo segments match `/^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/`, which:
+
 - Requires alphanumeric first character (prevents `..\..` traversal)
 - Allows alphanumeric, underscores, hyphens, dots in remaining positions
 - Rejects encoded characters and path separators
