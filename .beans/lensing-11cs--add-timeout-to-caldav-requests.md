@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: normal
 created_at: 2026-03-02T16:50:07Z
-updated_at: 2026-03-03T00:41:24Z
+updated_at: 2026-03-03T00:47:21Z
 parent: lensing-umpl
 ---
 
@@ -15,9 +15,9 @@ CalDAV client makes HTTP requests without AbortController timeout. A slow or non
 
 ## Acceptance Criteria
 
-- [ ] All CalDAV fetch calls use AbortController with configurable timeout (default 30s)
-- [ ] Test verifies timeout behavior
-- [ ] Pattern consistent with json-api-connector.ts and rss-connector.ts
+- [x] All CalDAV fetch calls use AbortController with configurable timeout (default 30s)
+- [x] Test verifies timeout behavior
+- [x] Pattern consistent with json-api-connector.ts and rss-connector.ts
 
 ## Files
 

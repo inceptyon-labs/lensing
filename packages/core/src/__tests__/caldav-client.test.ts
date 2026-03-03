@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { createCalendarServer } from '../caldav-client';
-import type { CalendarServerOptions, CalDAVRequestOptions } from '../caldav-client';
+import type { CalendarServerOptions, CalDAVRequestOptions, CalDAVResponse } from '../caldav-client';
 
 // Minimal valid options for tests
 function validOptions(overrides: Partial<CalendarServerOptions> = {}): CalendarServerOptions {
@@ -570,7 +570,7 @@ END:VEVENT</calendar-data>
     it('should timeout if CalDAV server does not respond within timeout window', async () => {
       const fetchFn = vi.fn(
         () =>
-          new Promise((_, reject) => {
+          new Promise<CalDAVResponse>((_, reject) => {
             setTimeout(() => reject(new DOMException('Aborted', 'AbortError')), 20);
           })
       );
