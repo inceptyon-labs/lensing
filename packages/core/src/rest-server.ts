@@ -577,10 +577,6 @@ export function createRestServer(
       writeJson(res, 400, { error: 'Invalid request: provider must be anthropic, deepseek, or gemini' });
       return;
     }
-    if (typeof input.model !== 'string' || input.model.trim() === '') {
-      writeJson(res, 400, { error: 'Invalid request: model is required' });
-      return;
-    }
     if (typeof input.docsTextOrUrl !== 'string' || input.docsTextOrUrl.trim() === '') {
       writeJson(res, 400, { error: 'Invalid request: docsTextOrUrl is required' });
       return;
@@ -589,9 +585,9 @@ export function createRestServer(
       writeJson(res, 400, { error: 'Invalid request: pluginContext is required' });
       return;
     }
-    if (typeof input.pluginContext.name !== 'string' || input.pluginContext.name.trim() === '') {
-      writeJson(res, 400, { error: 'Invalid request: pluginContext.name is required' });
-      return;
+    // Default model if not provided
+    if (!input.model || typeof input.model !== 'string' || input.model.trim() === '') {
+      input.model = '';
     }
 
     try {
