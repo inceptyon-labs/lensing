@@ -26,6 +26,8 @@
   function onMessage(event: MessageEvent) {
     if (!event.data || event.data.type !== SANDBOX_MSG.RESIZE) return;
     if (event.data.pluginId !== pluginId) return;
+    // Validate event source is the iframe to prevent spoofed messages
+    if (event.source !== iframeEl?.contentWindow) return;
     // Validate height is a finite number before applying
     const height = event.data.height;
     if (!Number.isFinite(height)) return;

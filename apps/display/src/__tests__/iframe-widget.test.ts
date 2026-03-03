@@ -128,31 +128,38 @@ describe('IframeWidget', () => {
   });
 
   describe('resize message handling', () => {
-    it('updates iframe height when widget-resize message received for matching pluginId', async () => {
+    it('updates iframe height when widget-resize message received from correct iframe source', async () => {
       const { container } = render(IframeWidget, {
         props: { pluginId, html: sampleHtml, css: sampleCss, data: null },
       });
+
+      const iframe = container.querySelector('[data-testid="iframe-widget"]') as HTMLIFrameElement;
+      const mockContentWindow = iframe.contentWindow;
 
       window.dispatchEvent(
         new MessageEvent('message', {
           data: { type: SANDBOX_MSG.RESIZE, pluginId, height: 350 },
+          source: mockContentWindow,
         })
       );
 
       await waitFor(() => {
-        const iframe = container.querySelector('[data-testid="iframe-widget"]') as HTMLElement;
-        expect(iframe.style.height).toBe('350px');
+        const iframeEl = container.querySelector('[data-testid="iframe-widget"]') as HTMLElement;
+        expect(iframeEl.style.height).toBe('350px');
       });
     });
 
-    it('ignores widget-resize messages for a different pluginId', async () => {
+    it('ignores widget-resize messages from non-iframe sources', async () => {
       const { container } = render(IframeWidget, {
         props: { pluginId, html: sampleHtml, css: sampleCss, data: null },
       });
 
+      // Send message with wrong source (not the iframe)
+      const maliciousWindow = { example: 'not an iframe' } as unknown as Window;
       window.dispatchEvent(
         new MessageEvent('message', {
-          data: { type: SANDBOX_MSG.RESIZE, pluginId: 'other-plugin', height: 999 },
+          data: { type: SANDBOX_MSG.RESIZE, pluginId, height: 999 },
+          source: maliciousWindow,
         })
       );
 
@@ -161,20 +168,44 @@ describe('IframeWidget', () => {
       expect(iframe.style.height).not.toBe('999px');
     });
 
+    it('ignores widget-resize messages for a different pluginId', async () => {
+      const { container } = render(IframeWidget, {
+        props: { pluginId, html: sampleHtml, css: sampleCss, data: null },
+      });
+
+      const iframe = container.querySelector('[data-testid="iframe-widget"]') as HTMLIFrameElement;
+      const mockContentWindow = iframe.contentWindow;
+
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: { type: SANDBOX_MSG.RESIZE, pluginId: 'other-plugin', height: 999 },
+          source: mockContentWindow,
+        })
+      );
+
+      await new Promise((r) => setTimeout(r, 50));
+      const iframeEl = container.querySelector('[data-testid="iframe-widget"]') as HTMLElement;
+      expect(iframeEl.style.height).not.toBe('999px');
+    });
+
     it('ignores messages with wrong type', async () => {
       const { container } = render(IframeWidget, {
         props: { pluginId, html: sampleHtml, css: sampleCss, data: null },
       });
 
+      const iframe = container.querySelector('[data-testid="iframe-widget"]') as HTMLIFrameElement;
+      const mockContentWindow = iframe.contentWindow;
+
       window.dispatchEvent(
         new MessageEvent('message', {
           data: { type: 'unknown-type', pluginId, height: 888 },
+          source: mockContentWindow,
         })
       );
 
       await new Promise((r) => setTimeout(r, 50));
-      const iframe = container.querySelector('[data-testid="iframe-widget"]') as HTMLElement;
-      expect(iframe.style.height).not.toBe('888px');
+      const iframeEl = container.querySelector('[data-testid="iframe-widget"]') as HTMLElement;
+      expect(iframeEl.style.height).not.toBe('888px');
     });
 
     it('ignores messages with no data', async () => {
