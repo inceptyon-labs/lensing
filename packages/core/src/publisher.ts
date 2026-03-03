@@ -42,6 +42,9 @@ export async function createPublisherPr(config: PublisherConfig): Promise<Publis
   const match = marketplaceRepoUrl.match(/github\.com\/([^/]+)\/([^/]+)/);
   if (!match) throw new Error('Invalid marketplaceRepoUrl');
   const [, owner, repo] = match;
+  const GITHUB_SEGMENT_RE = /^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/;
+  if (!GITHUB_SEGMENT_RE.test(owner)) throw new Error(`Invalid owner in marketplaceRepoUrl: "${owner}"`);
+  if (!GITHUB_SEGMENT_RE.test(repo)) throw new Error(`Invalid repo in marketplaceRepoUrl: "${repo}"`);
   const apiBase = `https://api.github.com/repos/${owner}/${repo}`;
 
   const headers = {

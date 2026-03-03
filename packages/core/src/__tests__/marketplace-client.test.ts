@@ -243,6 +243,40 @@ describe('MarketplaceClient', () => {
     expect(result.lastFetchTime).toBeLessThanOrEqual(after);
   });
 
+  it('should reject marketplaceRepo with path traversal', () => {
+    expect(() =>
+      createMarketplaceClient({
+        cacheDir: tempCacheDir,
+        marketplaceRepo: '../evil/repo',
+        refreshInterval: 900,
+      })
+    ).toThrow(/invalid.*marketplace|marketplace.*invalid/i);
+  });
+
+  it('should reject marketplaceRepo with encoded characters', () => {
+    expect(() =>
+      createMarketplaceClient({
+        cacheDir: tempCacheDir,
+        marketplaceRepo: 'owner/repo%2F..%2Fsecret',
+        refreshInterval: 900,
+      })
+    ).toThrow(/invalid.*marketplace|marketplace.*invalid/i);
+  });
+
+  it('should accept valid owner/repo with dots, hyphens, underscores', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ version: '1.0.0', plugins: [] }),
+    });
+    const client = createMarketplaceClient({
+      cacheDir: tempCacheDir,
+      marketplaceRepo: 'my-org_1/my.repo-2',
+      refreshInterval: 900,
+    });
+    const result = await client.getIndex();
+    expect(result.version).toBe('1.0.0');
+  });
+
   it('retrieves lastFetchTime from disk cache', async () => {
     const mockIndex = { version: '1.0.0', plugins: [] };
     mockFetch.mockResolvedValueOnce({

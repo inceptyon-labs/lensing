@@ -151,6 +151,33 @@ describe('createPublisherPr', () => {
     );
   });
 
+  it('should reject owner with path traversal characters', async () => {
+    await expect(
+      createPublisherPr({
+        ...defaultConfig,
+        marketplaceRepoUrl: 'https://github.com/../evil/lensing-plugins',
+      })
+    ).rejects.toThrow(/invalid.*owner|owner.*invalid/i);
+  });
+
+  it('should reject repo with encoded characters', async () => {
+    await expect(
+      createPublisherPr({
+        ...defaultConfig,
+        marketplaceRepoUrl: 'https://github.com/owner/repo%2F..%2Fsecret',
+      })
+    ).rejects.toThrow(/invalid.*repo|repo.*invalid/i);
+  });
+
+  it('should accept valid owner/repo with dots, hyphens, underscores', async () => {
+    mockAllSuccess();
+    const result = await createPublisherPr({
+      ...defaultConfig,
+      marketplaceRepoUrl: 'https://github.com/my-org_1/my.repo-2',
+    });
+    expect(result.url).toBeDefined();
+  });
+
   it('should return PR URL on success', async () => {
     const prUrl = 'https://github.com/org/repo/pull/99';
     mockAllSuccess(prUrl);
