@@ -1,11 +1,11 @@
 ---
 # lensing-mtn6
 title: Validate GitHub owner/repo path segments
-status: in-progress
+status: completed
 type: task
 priority: normal
 created_at: 2026-03-02T16:49:59Z
-updated_at: 2026-03-03T00:06:05Z
+updated_at: 2026-03-03T00:06:50Z
 parent: lensing-umpl
 ---
 
@@ -28,3 +28,17 @@ publisher.ts and marketplace-client.ts construct GitHub API URLs from user-provi
 ## Size: XS
 
 ## Area: backend
+
+## Summary of Changes
+
+Implemented path traversal validation in two modules:
+- **publisher.ts**: Added GITHUB_SEGMENT_RE validation for marketplaceRepoUrl owner/repo segments (lines 45-48)
+- **marketplace-client.ts**: Added format validation and segment checking for marketplaceRepo option (lines 27-31)
+
+Both modules now validate that owner/repo segments match `/^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/`, which:
+- Requires alphanumeric first character (prevents `..\..` traversal)
+- Allows alphanumeric, underscores, hyphens, dots in remaining positions
+- Rejects encoded characters and path separators
+
+Added 6 new tests (3 per module) covering path traversal attacks, encoded chars, and valid names.
+All 1123 tests passing. Merged to main at 657c098.

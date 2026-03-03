@@ -17,6 +17,8 @@ export interface MarketplaceInstallOptions {
   timeoutMs?: number;
   maxSizeBytes?: number;
   replace?: boolean;
+  /** If non-empty, only URLs from these hostnames are allowed. Case-insensitive. */
+  allowedDomains?: string[];
 }
 
 const DEFAULT_TIMEOUT_MS = 30_000;
@@ -32,7 +34,24 @@ export async function downloadAndInstallPlugin(
     timeoutMs = DEFAULT_TIMEOUT_MS,
     maxSizeBytes = DEFAULT_MAX_SIZE_BYTES,
     replace = false,
+    allowedDomains,
   } = options ?? {};
+
+  // Domain allowlist — check before SSRF protection
+  if (allowedDomains && allowedDomains.length > 0) {
+    let hostname: string;
+    try {
+      hostname = new URL(downloadUrl).hostname.toLowerCase();
+    } catch {
+      throw new Error(`Invalid download URL: ${downloadUrl}`);
+    }
+    const allowed = allowedDomains.map((d) => d.toLowerCase());
+    if (!allowed.includes(hostname)) {
+      throw new Error(
+        `Download domain "${hostname}" is not in the allowlist: ${allowedDomains.join(', ')}`
+      );
+    }
+  }
 
   // SSRF protection — check before any network activity
   const blockReason = getBlockReason(downloadUrl);

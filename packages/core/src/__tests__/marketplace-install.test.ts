@@ -229,4 +229,84 @@ describe('downloadAndInstallPlugin', () => {
       expect(mockFetch).not.toHaveBeenCalled();
     });
   });
+
+  describe('domain allowlist', () => {
+    it('should reject download from domain not in allowlist', async () => {
+      const zipBuffer = makeZip({ 'plugin.json': VALID_MANIFEST });
+      mockZipResponse(zipBuffer);
+
+      await expect(
+        downloadAndInstallPlugin('https://evil.com/plugin.zip', tmpDir, {
+          fetchFn: mockFetch,
+          allowedDomains: ['plugins.example.com'],
+        })
+      ).rejects.toThrow(/allowlist|domain|evil\.com|not.*allowed/i);
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    it('should allow download from domain in allowlist', async () => {
+      const zipBuffer = makeZip({ 'plugin.json': VALID_MANIFEST });
+      mockZipResponse(zipBuffer);
+
+      const result = await downloadAndInstallPlugin('https://plugins.example.com/test.zip', tmpDir, {
+        fetchFn: mockFetch,
+        allowedDomains: ['plugins.example.com'],
+      });
+
+      expect(result.pluginId).toBe('test-plugin');
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://plugins.example.com/test.zip',
+        expect.any(Object)
+      );
+    });
+
+    it('should check allowlist case-insensitively', async () => {
+      const zipBuffer = makeZip({ 'plugin.json': VALID_MANIFEST });
+      mockZipResponse(zipBuffer);
+
+      const result = await downloadAndInstallPlugin('https://PLUGINS.EXAMPLE.COM/test.zip', tmpDir, {
+        fetchFn: mockFetch,
+        allowedDomains: ['plugins.example.com'],
+      });
+
+      expect(result.pluginId).toBe('test-plugin');
+      expect(mockFetch).toHaveBeenCalled();
+    });
+
+    it('should allow any domain when allowedDomains is empty', async () => {
+      const zipBuffer = makeZip({ 'plugin.json': VALID_MANIFEST });
+      mockZipResponse(zipBuffer);
+
+      const result = await downloadAndInstallPlugin('https://any.domain.com/test.zip', tmpDir, {
+        fetchFn: mockFetch,
+        allowedDomains: [],
+      });
+
+      expect(result.pluginId).toBe('test-plugin');
+      expect(mockFetch).toHaveBeenCalled();
+    });
+
+    it('should allow any domain when allowedDomains is undefined', async () => {
+      const zipBuffer = makeZip({ 'plugin.json': VALID_MANIFEST });
+      mockZipResponse(zipBuffer);
+
+      const result = await downloadAndInstallPlugin('https://any.domain.com/test.zip', tmpDir, {
+        fetchFn: mockFetch,
+      });
+
+      expect(result.pluginId).toBe('test-plugin');
+      expect(mockFetch).toHaveBeenCalled();
+    });
+
+    it('should check allowlist before SSRF blocklist', async () => {
+      // Ensure domain check happens first (rejected before SSRF check runs)
+      await expect(
+        downloadAndInstallPlugin('http://localhost:8080/plugin.zip', tmpDir, {
+          fetchFn: mockFetch,
+          allowedDomains: ['allowed.com'],
+        })
+      ).rejects.toThrow(/allowlist|domain|localhost|not.*allowed/i);
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+  });
 });

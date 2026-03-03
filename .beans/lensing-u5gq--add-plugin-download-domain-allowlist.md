@@ -1,14 +1,14 @@
 ---
 # lensing-u5gq
 title: Add plugin download domain allowlist
-status: todo
+status: in-progress
 type: task
 priority: normal
 created_at: 2026-03-02T16:50:27Z
-updated_at: 2026-03-02T16:50:27Z
+updated_at: 2026-03-03T00:07:40Z
 parent: lensing-umpl
 blocked_by:
-  - lensing-05qz
+    - lensing-05qz
 ---
 
 **Scan finding:** M-6
