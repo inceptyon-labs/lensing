@@ -2,7 +2,9 @@
   import BuilderWizard from './BuilderWizard.svelte';
   import WidgetTemplatePicker from './WidgetTemplatePicker.svelte';
   import BuilderPreview from './BuilderPreview.svelte';
+  import AdminAiAssist from './AdminAiAssist.svelte';
   import type { WidgetTemplate } from './grapes-templates';
+  import type { AiAssistResponse } from '@lensing/types';
 
   export let onCancel: () => void = () => {};
   export let onSaved: () => void = () => {};
@@ -143,6 +145,30 @@
 
   function addHeader() {
     connectorHeaders = [...connectorHeaders, { key: '', value: '' }];
+  }
+
+  function handleAiAssistApply(e: CustomEvent<AiAssistResponse>) {
+    const response = e.detail;
+
+    // Populate connector fields
+    connectorType = response.connector.type;
+    connectorUrl = response.connector.url || '';
+    if (response.connector.method) {
+      connectorMethod = response.connector.method;
+    }
+    refreshInterval = response.connector.refreshInterval ?? 300;
+
+    // Convert headers object to array
+    if (response.connector.headers) {
+      connectorHeaders = Object.entries(response.connector.headers).map(([key, value]) => ({
+        key,
+        value,
+      }));
+    }
+
+    // Populate template fields
+    html = response.html;
+    css = response.css || '';
   }
 
   function buildConnector(): {
@@ -306,6 +332,19 @@
     </div>
   {:else if step === 2}
     <div class="connector-step">
+      <div class="ai-assist-section">
+        <h3 class="ai-assist-title">🤖 AI-Assisted Setup</h3>
+        <p class="ai-assist-desc">Paste API documentation and let AI generate your connector config</p>
+        <AdminAiAssist
+          pluginContext={{ name, description }}
+          on:apply={handleAiAssistApply}
+        />
+      </div>
+
+      <div class="connector-divider">
+        <span>or configure manually</span>
+      </div>
+
       <div class="connector-type-picker">
         {#each CONNECTOR_TYPES as ctype (ctype.id)}
           <button

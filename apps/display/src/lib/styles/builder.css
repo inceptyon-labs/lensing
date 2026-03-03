@@ -428,3 +428,43 @@
   font-size: var(--text-xs);
   padding: var(--space-1) var(--space-3);
 }
+
+/* ── AI Assist Section ─────────────────────────────── */
+
+.ai-assist-section {
+  margin-bottom: var(--space-5);
+  padding: var(--space-4);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-panel);
+}
+
+.ai-assist-title {
+  margin: 0 0 var(--space-2) 0;
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--fg-primary);
+}
+
+.ai-assist-desc {
+  margin: 0 0 var(--space-3) 0;
+  font-size: var(--text-sm);
+  color: var(--faint-light);
+}
+
+.connector-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-5) 0;
+  font-size: var(--text-sm);
+  color: var(--faint-light);
+}
+
+.connector-divider::before,
+.connector-divider::after {
+  flex: 1;
+  height: 1px;
+  background-color: var(--edge);
+  content: '';
+}
