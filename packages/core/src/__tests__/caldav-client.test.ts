@@ -566,6 +566,50 @@ END:VEVENT</calendar-data>
     });
   });
 
+  describe('timeout', () => {
+    it('should timeout if CalDAV server does not respond within timeout window', async () => {
+      const fetchFn = vi.fn(
+        () =>
+          new Promise((_, reject) => {
+            setTimeout(() => reject(new DOMException('Aborted', 'AbortError')), 20);
+          })
+      );
+      const server = createCalendarServer(validOptions({ fetchFn, timeoutMs: 10 }));
+      const errorListener = vi.fn();
+      server.onError(errorListener);
+      await server.refresh();
+      expect(errorListener).toHaveBeenCalledWith(expect.stringMatching(/timeout|aborted/i));
+    });
+
+    it('should allow custom timeout duration', async () => {
+      const fetchFn = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 207,
+        statusText: 'Multi-Status',
+        text: () => Promise.resolve('<multistatus></multistatus>'),
+      });
+      const server = createCalendarServer(validOptions({ fetchFn, timeoutMs: 5000 }));
+      await server.refresh();
+      expect(fetchFn).toHaveBeenCalled();
+      const options = fetchFn.mock.calls[0][1] as Record<string, unknown>;
+      expect(options.signal).toBeInstanceOf(AbortSignal);
+    });
+
+    it('should use default 30 second timeout', async () => {
+      const fetchFn = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 207,
+        statusText: 'Multi-Status',
+        text: () => Promise.resolve('<multistatus></multistatus>'),
+      });
+      const server = createCalendarServer(validOptions({ fetchFn })); // no timeoutMs specified
+      await server.refresh();
+      expect(fetchFn).toHaveBeenCalled();
+      const options = fetchFn.mock.calls[0][1] as Record<string, unknown>;
+      expect(options.signal).toBeInstanceOf(AbortSignal);
+    });
+  });
+
   describe('exports', () => {
     it('should be exported from @lensing/core index', async () => {
       const core = await import('../index');

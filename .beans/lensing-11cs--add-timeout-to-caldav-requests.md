@@ -1,11 +1,11 @@
 ---
 # lensing-11cs
 title: Add timeout to CalDAV requests
-status: todo
+status: in-progress
 type: task
 priority: normal
 created_at: 2026-03-02T16:50:07Z
-updated_at: 2026-03-02T16:50:07Z
+updated_at: 2026-03-03T00:41:24Z
 parent: lensing-umpl
 ---
 

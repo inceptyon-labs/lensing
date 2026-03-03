@@ -7,6 +7,7 @@ export interface CalDAVRequestOptions {
   method: string;
   headers: Record<string, string>;
   body?: string;
+  signal?: AbortSignal;
 }
 
 export interface CalDAVResponse {
@@ -35,6 +36,8 @@ export interface CalendarServerOptions {
   maxStale_ms?: number;
   /** Injectable fetch function (defaults to global fetch) */
   fetchFn?: CalDAVFetchFn;
+  /** Request timeout in milliseconds (default: 30000) */
+  timeoutMs?: number;
   /** Optional data bus to publish calendar events after each refresh */
   dataBus?: DataBusInstance;
 }
@@ -57,6 +60,7 @@ export interface CalendarServerInstance {
 
 const DEFAULT_RANGE_DAYS = 7;
 const DEFAULT_MAX_STALE_MS = 3_600_000; // 1 hour
+const DEFAULT_TIMEOUT_MS = 30_000; // 30 seconds
 const MAX_RETRIES = 2;
 const RETRY_BASE_DELAY_MS = 50;
 
@@ -184,6 +188,7 @@ export function createCalendarServer(options: CalendarServerOptions): CalendarSe
 
   const rangeDays = options.rangeDays ?? DEFAULT_RANGE_DAYS;
   const maxStale_ms = options.maxStale_ms ?? DEFAULT_MAX_STALE_MS;
+  const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const fetchFn = options.fetchFn ?? (fetch as unknown as CalDAVFetchFn);
 
   const calendarName = deriveCalendarName(calendarPath);
@@ -223,6 +228,9 @@ export function createCalendarServer(options: CalendarServerOptions): CalendarSe
     const url = `${serverUrl}${calendarPath}`;
     const body = buildCalendarQuery(now, end);
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
     let response: CalDAVResponse;
     try {
       response = await fetchFn(url, {
@@ -233,15 +241,23 @@ export function createCalendarServer(options: CalendarServerOptions): CalendarSe
           Depth: '1',
         },
         body,
+        signal: controller.signal,
       });
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
+      const isTimeout = err instanceof DOMException && err.name === 'AbortError';
+      const message = isTimeout
+        ? `CalDAV request timeout after ${timeoutMs}ms`
+        : err instanceof Error
+          ? err.message
+          : String(err);
       if (attempt < MAX_RETRIES) {
         await sleep(RETRY_BASE_DELAY_MS * Math.pow(2, attempt));
         return doFetch(attempt + 1);
       }
       notifyError(`CalDAV fetch failed: ${message}`);
       return;
+    } finally {
+      clearTimeout(timeoutId);
     }
 
     // Auth errors: never retry
