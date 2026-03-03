@@ -72,32 +72,57 @@ describe('Plugin Loader — Connector Integration', () => {
       createPluginDir(
         'api-widget',
         makeManifest('api-widget'),
-        makeConnector({ type: 'json_api', url: 'https://api.example.com/data', refreshInterval: 60 })
+        makeConnector({
+          type: 'json_api',
+          url: 'https://api.example.com/data',
+          refreshInterval: 60,
+        })
       );
-      const loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR, connectorRunner: mockRunner });
+      const loader = createPluginLoader({
+        pluginsDir: TEMP_PLUGINS_DIR,
+        connectorRunner: mockRunner,
+      });
       await loader.load();
 
       expect(mockRunner.register).toHaveBeenCalledOnce();
       expect(mockRunner.register).toHaveBeenCalledWith(
         'api-widget',
         expect.objectContaining({ id: 'api-widget' }),
-        expect.objectContaining({ type: 'json_api', url: 'https://api.example.com/data', refreshInterval: 60 })
+        expect.objectContaining({
+          type: 'json_api',
+          url: 'https://api.example.com/data',
+          refreshInterval: 60,
+        })
       );
     });
 
     it('does NOT call register for a plugin without connector.json', async () => {
       createPluginDir('no-connector');
-      const loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR, connectorRunner: mockRunner });
+      const loader = createPluginLoader({
+        pluginsDir: TEMP_PLUGINS_DIR,
+        connectorRunner: mockRunner,
+      });
       await loader.load();
       expect(mockRunner.register).not.toHaveBeenCalled();
     });
 
     it('registers all plugins that have connectors', async () => {
-      createPluginDir('widget-a', makeManifest('widget-a'), makeConnector({ type: 'json_api', url: 'https://a.example.com' }));
-      createPluginDir('widget-b', makeManifest('widget-b'), makeConnector({ type: 'rss_feed', url: 'https://b.example.com/feed.xml' }));
+      createPluginDir(
+        'widget-a',
+        makeManifest('widget-a'),
+        makeConnector({ type: 'json_api', url: 'https://a.example.com' })
+      );
+      createPluginDir(
+        'widget-b',
+        makeManifest('widget-b'),
+        makeConnector({ type: 'rss_feed', url: 'https://b.example.com/feed.xml' })
+      );
       createPluginDir('widget-c'); // no connector
 
-      const loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR, connectorRunner: mockRunner });
+      const loader = createPluginLoader({
+        pluginsDir: TEMP_PLUGINS_DIR,
+        connectorRunner: mockRunner,
+      });
       await loader.load();
 
       expect(mockRunner.register).toHaveBeenCalledTimes(2);
@@ -122,7 +147,10 @@ describe('Plugin Loader — Connector Integration', () => {
           refreshInterval: 300,
         })
       );
-      const loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR, connectorRunner: mockRunner });
+      const loader = createPluginLoader({
+        pluginsDir: TEMP_PLUGINS_DIR,
+        connectorRunner: mockRunner,
+      });
       await loader.load();
 
       expect(mockRunner.register).toHaveBeenCalledWith(
@@ -144,7 +172,10 @@ describe('Plugin Loader — Connector Integration', () => {
         makeManifest('static-widget'),
         makeConnector({ type: 'static_data', url: '', data: { value: 42, label: 'hello' } })
       );
-      const loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR, connectorRunner: mockRunner });
+      const loader = createPluginLoader({
+        pluginsDir: TEMP_PLUGINS_DIR,
+        connectorRunner: mockRunner,
+      });
       await loader.load();
 
       expect(mockRunner.register).toHaveBeenCalledWith(
@@ -156,7 +187,10 @@ describe('Plugin Loader — Connector Integration', () => {
 
     it('gracefully skips a plugin with malformed connector.json (plugin still loads)', async () => {
       createPluginDir('bad-connector', makeManifest('bad-connector'), 'NOT VALID JSON {{{');
-      const loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR, connectorRunner: mockRunner });
+      const loader = createPluginLoader({
+        pluginsDir: TEMP_PLUGINS_DIR,
+        connectorRunner: mockRunner,
+      });
       const plugins = await loader.load();
 
       // Plugin itself should still load — connector failure is non-fatal
@@ -174,7 +208,10 @@ describe('Plugin Loader — Connector Integration', () => {
         makeManifest('to-unload'),
         makeConnector({ type: 'json_api', url: 'https://api.example.com/data' })
       );
-      const loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR, connectorRunner: mockRunner });
+      const loader = createPluginLoader({
+        pluginsDir: TEMP_PLUGINS_DIR,
+        connectorRunner: mockRunner,
+      });
       await loader.load();
 
       await loader.unload('to-unload');
@@ -184,7 +221,10 @@ describe('Plugin Loader — Connector Integration', () => {
 
     it('does NOT call unregister when unloading a plugin without a connector', async () => {
       createPluginDir('no-connector-unload');
-      const loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR, connectorRunner: mockRunner });
+      const loader = createPluginLoader({
+        pluginsDir: TEMP_PLUGINS_DIR,
+        connectorRunner: mockRunner,
+      });
       await loader.load();
 
       await loader.unload('no-connector-unload');
@@ -200,12 +240,18 @@ describe('Plugin Loader — Connector Integration', () => {
         makeManifest('reload-widget'),
         makeConnector({ type: 'json_api', url: 'https://api.example.com/v1' })
       );
-      const loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR, connectorRunner: mockRunner });
+      const loader = createPluginLoader({
+        pluginsDir: TEMP_PLUGINS_DIR,
+        connectorRunner: mockRunner,
+      });
       await loader.load();
 
       // Update connector URL
       const dir = path.join(TEMP_PLUGINS_DIR, 'reload-widget');
-      fs.writeFileSync(path.join(dir, 'connector.json'), makeConnector({ type: 'json_api', url: 'https://api.example.com/v2' }));
+      fs.writeFileSync(
+        path.join(dir, 'connector.json'),
+        makeConnector({ type: 'json_api', url: 'https://api.example.com/v2' })
+      );
 
       await loader.reload();
 

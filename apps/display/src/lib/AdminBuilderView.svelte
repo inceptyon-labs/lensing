@@ -28,7 +28,11 @@
   const CONNECTOR_TYPES = [
     { id: 'json_api', label: 'JSON API', description: 'Fetch data from a JSON REST API endpoint' },
     { id: 'rss_feed', label: 'RSS Feed', description: 'Subscribe to an RSS or Atom feed' },
-    { id: 'static_data', label: 'Static Data', description: 'Define fixed data without an external source' },
+    {
+      id: 'static_data',
+      label: 'Static Data',
+      description: 'Define fixed data without an external source',
+    },
   ];
 
   const REFRESH_DEFAULTS: Record<string, number> = {
@@ -207,7 +211,7 @@
   {stepValid}
   {dirty}
   onStepChange={(step) => (currentStep = step)}
-  onCancel={onCancel}
+  {onCancel}
   onFinish={handleFinish}
   let:step
 >
@@ -243,7 +247,12 @@
 
       <div class="builder-field">
         <label class="builder-label" for="plugin-category">Category</label>
-        <select class="builder-select" id="plugin-category" required on:change={handleCategoryChange}>
+        <select
+          class="builder-select"
+          id="plugin-category"
+          required
+          on:change={handleCategoryChange}
+        >
           <option value="">Select a category</option>
           {#each CATEGORIES as cat (cat.value)}
             <option value={cat.value}>{cat.label}</option>
@@ -253,7 +262,13 @@
 
       <div class="builder-field">
         <label class="builder-label" for="plugin-id">Plugin ID</label>
-        <input class="builder-input builder-input--disabled" id="plugin-id" type="text" disabled bind:value={pluginId} />
+        <input
+          class="builder-input builder-input--disabled"
+          id="plugin-id"
+          type="text"
+          disabled
+          bind:value={pluginId}
+        />
         <p class="builder-hint">Auto-generated from the plugin name</p>
       </div>
     </form>
@@ -336,7 +351,11 @@
 
             <div class="builder-field">
               <label class="builder-label" for="api-method">Method</label>
-              <select class="builder-select" id="api-method" on:change={handleConnectorMethodChange}>
+              <select
+                class="builder-select"
+                id="api-method"
+                on:change={handleConnectorMethodChange}
+              >
                 <option value="GET" selected={connectorMethod === 'GET'}>GET</option>
                 <option value="POST" selected={connectorMethod === 'POST'}>POST</option>
                 <option value="PUT" selected={connectorMethod === 'PUT'}>PUT</option>
@@ -367,7 +386,11 @@
                     />
                   </div>
                 {/each}
-                <button type="button" class="wizard-btn wizard-btn--ghost connector-add-header" on:click={addHeader}>
+                <button
+                  type="button"
+                  class="wizard-btn wizard-btn--ghost connector-add-header"
+                  on:click={addHeader}
+                >
                   + Add Header
                 </button>
               </div>

@@ -8,7 +8,13 @@
 </script>
 
 <div class="template-picker">
-  <button class="template-card" on:click={() => { selected = null; onSelect(null); }}>
+  <button
+    class="template-card"
+    on:click={() => {
+      selected = null;
+      onSelect(null);
+    }}
+  >
     <span class="template-card-name">Blank Canvas</span>
     <span class="template-card-desc">Start from scratch</span>
   </button>
@@ -16,7 +22,10 @@
     <button
       class="template-card"
       class:template-card--selected={selected === template.id}
-      on:click={() => { selected = template.id; onSelect(template); }}
+      on:click={() => {
+        selected = template.id;
+        onSelect(template);
+      }}
     >
       <span class="template-card-name">{template.name}</span>
       <span class="template-card-desc">{template.description}</span>

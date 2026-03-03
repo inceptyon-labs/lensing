@@ -29,7 +29,10 @@ async function fillCodeAndAdvance(htmlContent = '<div>Hello</div>', cssContent =
 }
 
 /** Pick a connector type and optionally fill URL, then advance */
-async function fillDataSourceAndAdvance(type: 'json_api' | 'rss_feed' | 'static_data' = 'static_data', url = '') {
+async function fillDataSourceAndAdvance(
+  type: 'json_api' | 'rss_feed' | 'static_data' = 'static_data',
+  url = ''
+) {
   const labels: Record<string, string> = {
     json_api: 'JSON API',
     rss_feed: 'RSS Feed',
@@ -248,7 +251,13 @@ describe('AdminBuilderView', () => {
   describe('step 4: preview & save', () => {
     async function goToStep4(
       props: { onCancel?: () => void; onSaved?: () => void } = {},
-      opts: { name?: string; description?: string; category?: string; html?: string; css?: string } = {}
+      opts: {
+        name?: string;
+        description?: string;
+        category?: string;
+        html?: string;
+        css?: string;
+      } = {}
     ) {
       const {
         name = 'Test Plugin',

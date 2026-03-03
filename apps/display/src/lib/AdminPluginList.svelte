@@ -225,11 +225,16 @@
     {#if activeView === 'builder'}
       <AdminBuilderView
         onCancel={() => (activeView = 'list')}
-        onSaved={() => { activeView = 'list'; refreshPlugins(); }}
+        onSaved={() => {
+          activeView = 'list';
+          refreshPlugins();
+        }}
       />
     {:else}
       <div class="plugins-header">
-        <button type="button" class="create-plugin-btn" on:click={() => (activeView = 'builder')}>Create Plugin</button>
+        <button type="button" class="create-plugin-btn" on:click={() => (activeView = 'builder')}
+          >Create Plugin</button
+        >
       </div>
 
       <AdminPluginUpload onInstalled={refreshPlugins} />

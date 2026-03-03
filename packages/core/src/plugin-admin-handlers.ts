@@ -180,7 +180,9 @@ export function createPluginAdminHandlers(options: PluginAdminHandlersOptions) {
         if (enabled) {
           if (fs.existsSync(connectorPath)) {
             try {
-              const config = JSON.parse(fs.readFileSync(connectorPath, 'utf-8')) as ConnectorRunnerConfig;
+              const config = JSON.parse(
+                fs.readFileSync(connectorPath, 'utf-8')
+              ) as ConnectorRunnerConfig;
               const plugin = pluginLoader.getPlugin(id);
               if (plugin) connectorRunner.register(id, plugin.manifest, config);
             } catch {

@@ -14,9 +14,13 @@ function createMockDb(): DatabaseInstance {
   const state = new Map<string, unknown>();
   return {
     getSetting: (key) => state.get(key),
-    setSetting: (key, value) => { state.set(key, value); },
+    setSetting: (key, value) => {
+      state.set(key, value);
+    },
     getPluginState: (id) => state.get(`plugin:${id}`) as any,
-    setPluginState: (id, value) => { state.set(`plugin:${id}`, value); },
+    setPluginState: (id, value) => {
+      state.set(`plugin:${id}`, value);
+    },
     getPhotos: () => [],
     findPhotos: () => [],
     getAllScenes: () => [],
@@ -69,10 +73,18 @@ describe('Plugin Admin Handlers — Connector Lifecycle', () => {
   describe('enable/disable with connector lifecycle', () => {
     it('calls unregister when a plugin with a connector is disabled', async () => {
       createPluginWithConnector('api-widget');
-      const loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR, connectorRunner: mockConnectorRunner });
+      const loader = createPluginLoader({
+        pluginsDir: TEMP_PLUGINS_DIR,
+        connectorRunner: mockConnectorRunner,
+      });
       await loader.load();
 
-      const handlers = createPluginAdminHandlers({ pluginLoader: loader, db: mockDb, pluginsDir: TEMP_PLUGINS_DIR, connectorRunner: mockConnectorRunner });
+      const handlers = createPluginAdminHandlers({
+        pluginLoader: loader,
+        db: mockDb,
+        pluginsDir: TEMP_PLUGINS_DIR,
+        connectorRunner: mockConnectorRunner,
+      });
       await handlers.setPluginEnabled('api-widget', false);
 
       expect(mockConnectorRunner.unregister).toHaveBeenCalledWith('api-widget');
@@ -80,11 +92,19 @@ describe('Plugin Admin Handlers — Connector Lifecycle', () => {
 
     it('calls register when a plugin with a connector is enabled', async () => {
       createPluginWithConnector('api-widget');
-      const loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR, connectorRunner: mockConnectorRunner });
+      const loader = createPluginLoader({
+        pluginsDir: TEMP_PLUGINS_DIR,
+        connectorRunner: mockConnectorRunner,
+      });
       await loader.load();
 
       // First disable it
-      const handlers = createPluginAdminHandlers({ pluginLoader: loader, db: mockDb, pluginsDir: TEMP_PLUGINS_DIR, connectorRunner: mockConnectorRunner });
+      const handlers = createPluginAdminHandlers({
+        pluginLoader: loader,
+        db: mockDb,
+        pluginsDir: TEMP_PLUGINS_DIR,
+        connectorRunner: mockConnectorRunner,
+      });
       await handlers.setPluginEnabled('api-widget', false);
       expect(mockConnectorRunner.unregister).toHaveBeenCalledTimes(1);
 
@@ -102,10 +122,17 @@ describe('Plugin Admin Handlers — Connector Lifecycle', () => {
         JSON.stringify({ id: 'static-widget', name: 'Static Widget', version: '1.0.0' })
       );
 
-      const loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR, connectorRunner: mockConnectorRunner });
+      const loader = createPluginLoader({
+        pluginsDir: TEMP_PLUGINS_DIR,
+        connectorRunner: mockConnectorRunner,
+      });
       await loader.load();
 
-      const handlers = createPluginAdminHandlers({ pluginLoader: loader, db: mockDb, pluginsDir: TEMP_PLUGINS_DIR });
+      const handlers = createPluginAdminHandlers({
+        pluginLoader: loader,
+        db: mockDb,
+        pluginsDir: TEMP_PLUGINS_DIR,
+      });
       await handlers.setPluginEnabled('static-widget', false);
 
       expect(mockConnectorRunner.unregister).not.toHaveBeenCalled();
@@ -113,10 +140,17 @@ describe('Plugin Admin Handlers — Connector Lifecycle', () => {
 
     it('unregisters a connector when plugin is deleted', async () => {
       createPluginWithConnector('temp-widget');
-      const loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR, connectorRunner: mockConnectorRunner });
+      const loader = createPluginLoader({
+        pluginsDir: TEMP_PLUGINS_DIR,
+        connectorRunner: mockConnectorRunner,
+      });
       await loader.load();
 
-      const handlers = createPluginAdminHandlers({ pluginLoader: loader, db: mockDb, pluginsDir: TEMP_PLUGINS_DIR });
+      const handlers = createPluginAdminHandlers({
+        pluginLoader: loader,
+        db: mockDb,
+        pluginsDir: TEMP_PLUGINS_DIR,
+      });
       const dir = path.join(TEMP_PLUGINS_DIR, 'temp-widget');
       fs.rmSync(dir, { recursive: true });
       await loader.reload();
@@ -127,10 +161,17 @@ describe('Plugin Admin Handlers — Connector Lifecycle', () => {
 
     it('tracks enabled state separately from connector registration', async () => {
       createPluginWithConnector('api-widget');
-      const loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR, connectorRunner: mockConnectorRunner });
+      const loader = createPluginLoader({
+        pluginsDir: TEMP_PLUGINS_DIR,
+        connectorRunner: mockConnectorRunner,
+      });
       await loader.load();
 
-      const handlers = createPluginAdminHandlers({ pluginLoader: loader, db: mockDb, pluginsDir: TEMP_PLUGINS_DIR });
+      const handlers = createPluginAdminHandlers({
+        pluginLoader: loader,
+        db: mockDb,
+        pluginsDir: TEMP_PLUGINS_DIR,
+      });
 
       // Get initial state (should be enabled by default)
       let entry = await handlers.getPlugin('api-widget');

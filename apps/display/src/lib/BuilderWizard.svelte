@@ -87,14 +87,27 @@
       <button class="wizard-btn wizard-btn--ghost" type="button" on:click={goBack}>Back</button>
     {/if}
 
-    <button class="wizard-btn wizard-btn--ghost" type="button" disabled={isPending} on:click={handleCancel}>Cancel</button>
+    <button
+      class="wizard-btn wizard-btn--ghost"
+      type="button"
+      disabled={isPending}
+      on:click={handleCancel}>Cancel</button
+    >
 
     {#if isLastStep}
-      <button class="wizard-btn wizard-btn--primary" type="button" disabled={!currentValid || isPending} on:click={handleFinish}
-        >Finish</button
+      <button
+        class="wizard-btn wizard-btn--primary"
+        type="button"
+        disabled={!currentValid || isPending}
+        on:click={handleFinish}>Finish</button
       >
     {:else}
-      <button class="wizard-btn wizard-btn--primary" type="button" disabled={!currentValid} on:click={goNext}>Next</button>
+      <button
+        class="wizard-btn wizard-btn--primary"
+        type="button"
+        disabled={!currentValid}
+        on:click={goNext}>Next</button
+      >
     {/if}
   </div>
 
@@ -107,10 +120,19 @@
         aria-modal="true"
         aria-labelledby="confirm-title"
       >
-        <p class="wizard-confirm__text" id="confirm-title">You have unsaved changes. Are you sure you want to discard them?</p>
+        <p class="wizard-confirm__text" id="confirm-title">
+          You have unsaved changes. Are you sure you want to discard them?
+        </p>
         <div class="wizard-confirm__actions">
-          <button class="wizard-btn wizard-btn--danger" type="button" disabled={isPending} on:click={confirmDiscard}>Discard</button>
-          <button class="wizard-btn wizard-btn--ghost" type="button" on:click={dismissConfirm}>Keep editing</button>
+          <button
+            class="wizard-btn wizard-btn--danger"
+            type="button"
+            disabled={isPending}
+            on:click={confirmDiscard}>Discard</button
+          >
+          <button class="wizard-btn wizard-btn--ghost" type="button" on:click={dismissConfirm}
+            >Keep editing</button
+          >
         </div>
       </div>
     </div>

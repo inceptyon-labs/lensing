@@ -35,8 +35,12 @@ function stubScheduler(): PluginSchedulerInstance & {
       handlers.delete(id);
       started.delete(id);
     }),
-    start: vi.fn((id: string) => { started.add(id); }),
-    stop: vi.fn((id: string) => { started.delete(id); }),
+    start: vi.fn((id: string) => {
+      started.add(id);
+    }),
+    stop: vi.fn((id: string) => {
+      started.delete(id);
+    }),
     restart: vi.fn(),
     startAll: vi.fn(),
     stopAll: vi.fn(),
@@ -124,7 +128,7 @@ describe('Plugin Connector Integration (end-to-end)', () => {
       ok: true,
       status: 200,
       statusText: 'OK',
-      json: async () => ({ price: 150.50, symbol: 'AAPL' }),
+      json: async () => ({ price: 150.5, symbol: 'AAPL' }),
     });
 
     const handler = scheduler._handlers.get('stock-ticker');
@@ -132,11 +136,10 @@ describe('Plugin Connector Integration (end-to-end)', () => {
     await handler!();
 
     // Verify data was published to the DataBus
-    expect(dataBus.publish).toHaveBeenCalledWith(
-      'plugin:stock-ticker',
-      'stock-ticker',
-      { price: 150.50, symbol: 'AAPL' }
-    );
+    expect(dataBus.publish).toHaveBeenCalledWith('plugin:stock-ticker', 'stock-ticker', {
+      price: 150.5,
+      symbol: 'AAPL',
+    });
   });
 
   it('rss_feed: plugin load → fetch → DataBus publish with raw text', async () => {
@@ -170,11 +173,7 @@ describe('Plugin Connector Integration (end-to-end)', () => {
     expect(handler).toBeDefined();
     await handler!();
 
-    expect(dataBus.publish).toHaveBeenCalledWith(
-      'plugin:news-feed',
-      'news-feed',
-      { raw: rssXml }
-    );
+    expect(dataBus.publish).toHaveBeenCalledWith('plugin:news-feed', 'news-feed', { raw: rssXml });
   });
 
   it('static connector: publishes data immediately on register (no scheduler)', async () => {
@@ -198,11 +197,10 @@ describe('Plugin Connector Integration (end-to-end)', () => {
 
     // Static connectors publish immediately — no scheduler involvement
     expect(scheduler.register).not.toHaveBeenCalled();
-    expect(dataBus.publish).toHaveBeenCalledWith(
-      'plugin:static-info',
-      'static-info',
-      { message: 'Hello World', count: 42 }
-    );
+    expect(dataBus.publish).toHaveBeenCalledWith('plugin:static-info', 'static-info', {
+      message: 'Hello World',
+      count: 42,
+    });
   });
 
   it('SSRF protection: blocks private IPs', async () => {
@@ -293,7 +291,7 @@ describe('Plugin Connector Integration (end-to-end)', () => {
       type: 'json_api',
       url: 'https://api.example.com/data',
       method: 'POST',
-      headers: { 'Authorization': 'Bearer test-token', 'X-Custom': 'value' },
+      headers: { Authorization: 'Bearer test-token', 'X-Custom': 'value' },
       refreshInterval: 60,
     });
 
@@ -323,7 +321,7 @@ describe('Plugin Connector Integration (end-to-end)', () => {
       'https://api.example.com/data',
       expect.objectContaining({
         method: 'POST',
-        headers: { 'Authorization': 'Bearer test-token', 'X-Custom': 'value' },
+        headers: { Authorization: 'Bearer test-token', 'X-Custom': 'value' },
       })
     );
   });
