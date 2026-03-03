@@ -13,12 +13,14 @@ import { MODULE_SCHEMAS, MODULE_IDS, getIntegrationFields } from '@lensing/types
 import { readModuleConfig } from './module-settings';
 import { installPluginFromZip } from './plugin-install';
 import { savePluginFromBuilder, type BuilderSaveInput } from './plugin-save';
+import type { ConnectorRunnerInstance, ConnectorRunnerConfig } from './connector-runner';
 
 export interface PluginAdminHandlersOptions {
   pluginLoader: PluginLoader;
   db: DatabaseInstance;
   pluginsDir?: string;
   onChange?: (pluginId: string, action: string) => void;
+  connectorRunner?: ConnectorRunnerInstance;
 }
 
 interface PluginPersistedState {
@@ -125,7 +127,7 @@ function isModuleId(id: string): boolean {
 }
 
 export function createPluginAdminHandlers(options: PluginAdminHandlersOptions) {
-  const { pluginLoader, db, pluginsDir, onChange } = options;
+  const { pluginLoader, db, pluginsDir, onChange, connectorRunner } = options;
 
   return {
     async getPlugins(): Promise<PluginAdminEntry[]> {
@@ -172,6 +174,24 @@ export function createPluginAdminHandlers(options: PluginAdminHandlersOptions) {
       }
       const state = getPersistedState(db, id);
       db.setPluginState(id, { ...state, enabled });
+
+      if (connectorRunner && pluginsDir) {
+        const connectorPath = path.join(pluginsDir, id, 'connector.json');
+        if (enabled) {
+          if (fs.existsSync(connectorPath)) {
+            try {
+              const config = JSON.parse(fs.readFileSync(connectorPath, 'utf-8')) as ConnectorRunnerConfig;
+              const plugin = pluginLoader.getPlugin(id);
+              if (plugin) connectorRunner.register(id, plugin.manifest, config);
+            } catch {
+              // Non-fatal: malformed connector.json
+            }
+          }
+        } else {
+          connectorRunner.unregister(id);
+        }
+      }
+
       onChange?.(id, 'enabled');
     },
 
