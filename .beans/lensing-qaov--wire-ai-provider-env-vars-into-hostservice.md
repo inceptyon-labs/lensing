@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: normal
 created_at: 2026-03-03T18:49:02Z
-updated_at: 2026-03-03T18:49:35Z
+updated_at: 2026-03-03T18:57:34Z
 ---
 
 ## Description
@@ -14,12 +14,12 @@ Wire environment variable API keys into the HostService so the AI-assisted conne
 
 ## Acceptance Criteria
 
-- [ ] HostService reads ANTHROPIC_API_KEY, DEEPSEEK_API_KEY, GEMINI_API_KEY from env
-- [ ] Creates AiProvider instances for each key that is set
-- [ ] Wires aiAssist handler into RestServerHandlers
-- [ ] Available providers list is derived from which env vars are set
-- [ ] POST /api/admin/builder/ai-assist returns working responses (not 404)
-- [ ] Tests cover: no keys set, partial keys, all keys, handler integration
+- [x] HostService reads ANTHROPIC_API_KEY, DEEPSEEK_API_KEY, GEMINI_API_KEY from env
+- [x] Creates AiProvider instances for each key that is set
+- [x] Wires aiAssist handler into RestServerHandlers
+- [x] Available providers list is derived from which env vars are set
+- [x] POST /api/admin/builder/ai-assist returns working responses (not 404)
+- [x] Tests cover: no keys set, partial keys, all keys, handler integration
 
 ## Technical Notes
 
