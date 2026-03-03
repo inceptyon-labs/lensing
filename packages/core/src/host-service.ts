@@ -9,6 +9,8 @@ import { createNotificationQueue } from './notification-queue';
 import { bootEnabledModules, rebootModule, syncModulesWithLayout } from './module-boot';
 import { createDisplayControl } from './display-control';
 import { createDisplayHardware } from './display-hardware';
+import { createAiProvider } from './ai-assist-providers';
+import { createAiAssist } from './ai-assist';
 import type { BootedModule } from './module-boot';
 import type {
   HostServiceOptions,
@@ -16,6 +18,9 @@ import type {
   PluginLoader,
   ModuleId,
   DisplayHardwareInstance,
+  AiAssistRequest,
+  AiAssistResponse,
+  AiProviderId,
 } from '@lensing/types';
 import { MODULE_SCHEMAS, SYSTEM_MODULE_IDS } from '@lensing/types';
 import type { DataBusInstance } from '@lensing/types';
@@ -69,6 +74,28 @@ export function createHostService(options: HostServiceOptions = {}): HostService
   let _displayControl: { close(): void } | undefined;
   let _displayHardware: DisplayHardwareInstance | undefined;
 
+  // AI Assist: Load providers from env vars
+  const aiProviders = new Map<AiProviderId, ReturnType<typeof createAiProvider>>();
+  const setupAiProviders = () => {
+    const providerConfigs: { env: string; provider: AiProviderId }[] = [
+      { env: 'ANTHROPIC_API_KEY', provider: 'anthropic' },
+      { env: 'DEEPSEEK_API_KEY', provider: 'deepseek' },
+      { env: 'GEMINI_API_KEY', provider: 'gemini' },
+    ];
+
+    for (const { env, provider } of providerConfigs) {
+      const apiKey = process.env[env];
+      if (apiKey && apiKey.trim()) {
+        try {
+          aiProviders.set(provider, createAiProvider({ provider, apiKey }));
+          log.info(`AI provider configured: ${provider}`);
+        } catch (err) {
+          log.error(`Failed to configure ${provider} provider`, err);
+        }
+      }
+    }
+  };
+
   const log = {
     info: (msg: string, data?: unknown) => logger?.info(msg, data),
     error: (msg: string, err?: unknown) => logger?.error(msg, err),
@@ -80,19 +107,22 @@ export function createHostService(options: HostServiceOptions = {}): HostService
       _db = createDatabase({ path: dbPath });
       log.info('Database ready');
 
-      // 2. Plugin loader
+      // 2. AI Assist providers
+      setupAiProviders();
+
+      // 3. Plugin loader
       _plugins = createPluginLoader({ pluginsDir });
       await _plugins.load();
       log.info('Plugins loaded', { count: _plugins.getAllPlugins().length });
 
-      // 3. Data bus
+      // 4. Data bus
       const dataBus = createDataBus();
       _dataBus = dataBus;
 
-      // 4. Display hardware (probes available controls)
+      // 5. Display hardware (probes available controls)
       _displayHardware = createDisplayHardware({ logger });
 
-      // 5. REST server (wired to database + plugins)
+      // 6. REST server (wired to database + plugins)
       const pluginHandlers = createPluginAdminHandlers({
         pluginLoader: _plugins,
         db: _db!,
@@ -106,6 +136,18 @@ export function createHostService(options: HostServiceOptions = {}): HostService
           });
         },
       });
+
+      // Create aiAssist handler if providers are configured
+      const aiAssistHandler = aiProviders.size > 0
+        ? async (input: AiAssistRequest): Promise<AiAssistResponse> => {
+            const provider = aiProviders.get(input.provider);
+            if (!provider) {
+              throw new Error(`AI provider not configured: ${input.provider}`);
+            }
+            const assist = createAiAssist({ provider, model: input.model });
+            return assist.generate({ docsText: input.docsTextOrUrl, pluginContext: input.pluginContext });
+          }
+        : undefined;
 
       _rest = createRestServer(
         {
@@ -173,6 +215,8 @@ export function createHostService(options: HostServiceOptions = {}): HostService
             );
             return { ok: true, running: result !== null };
           },
+          // AI Assist handler (optional — omit if no providers configured)
+          ...(aiAssistHandler ? { aiAssist: aiAssistHandler } : {}),
           // Display hardware handlers
           getDisplayCapabilities: async () => _displayHardware!.capabilities,
           getDisplaySettings: async () => ({
@@ -206,7 +250,7 @@ export function createHostService(options: HostServiceOptions = {}): HostService
       _port = _rest.port;
       log.info('REST server ready', { port: _port });
 
-      // 5. WebSocket server (attached to REST's HTTP server)
+      // 7. WebSocket server (attached to REST's HTTP server)
       _ws = createWsServer({ server: _rest.server, authToken });
       await _ws.ready();
       log.info('WebSocket server ready');
@@ -231,10 +275,10 @@ export function createHostService(options: HostServiceOptions = {}): HostService
         }
       });
 
-      // 6. Plugin scheduler (no-op — plugins can register themselves)
+      // 8. Plugin scheduler (no-op — plugins can register themselves)
       createPluginScheduler();
 
-      // 7. Boot built-in modules based on saved grid layout
+      // 9. Boot built-in modules based on saved grid layout
       //    System modules (like PIR) always boot regardless of grid placement.
       _notificationQueue = createNotificationQueue();
       const savedLayout = _db!.getLayout('default');
@@ -252,13 +296,13 @@ export function createHostService(options: HostServiceOptions = {}): HostService
         logger
       );
 
-      // 9. Display DPMS control via PIR presence
+      // 10. Display DPMS control via PIR presence
       if (enableDisplayControl) {
         _displayControl = createDisplayControl({ dataBus, logger });
         log.info('Display control enabled (DPMS via PIR)');
       }
 
-      // 10. Restore persisted display settings
+      // 11. Restore persisted display settings
       if (_displayHardware) {
         try {
           const savedBrightness = _db!.getSetting('display.brightness');
