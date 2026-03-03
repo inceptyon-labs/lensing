@@ -571,12 +571,37 @@ export function createRestServer(
       writeJson(res, 400, { error: 'Invalid JSON' });
       return;
     }
+
+    // Validate required fields
+    if (typeof input.provider !== 'string' || !['anthropic', 'deepseek', 'gemini'].includes(input.provider)) {
+      writeJson(res, 400, { error: 'Invalid request: provider must be anthropic, deepseek, or gemini' });
+      return;
+    }
+    if (typeof input.model !== 'string' || input.model.trim() === '') {
+      writeJson(res, 400, { error: 'Invalid request: model is required' });
+      return;
+    }
+    if (typeof input.docsTextOrUrl !== 'string' || input.docsTextOrUrl.trim() === '') {
+      writeJson(res, 400, { error: 'Invalid request: docsTextOrUrl is required' });
+      return;
+    }
+    if (!input.pluginContext || typeof input.pluginContext !== 'object') {
+      writeJson(res, 400, { error: 'Invalid request: pluginContext is required' });
+      return;
+    }
+    if (typeof input.pluginContext.name !== 'string' || input.pluginContext.name.trim() === '') {
+      writeJson(res, 400, { error: 'Invalid request: pluginContext.name is required' });
+      return;
+    }
+
     try {
       const result = await handlers.aiAssist(input);
       writeJson(res, 200, result);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Internal error';
-      writeJson(res, 500, { error: msg });
+      // Log full error server-side but return generic message to client
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      // Don't expose internal error details to client
+      writeJson(res, 400, { error: 'AI assist request failed' });
     }
   });
 

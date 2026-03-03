@@ -146,7 +146,8 @@ export function createHostService(options: HostServiceOptions = {}): HostService
           ? async (input: AiAssistRequest): Promise<AiAssistResponse> => {
               const provider = aiProviders.get(input.provider);
               if (!provider) {
-                throw new Error(`AI provider not configured: ${input.provider}`);
+                // Don't expose which providers are/aren't configured
+                throw new Error('AI provider is not available');
               }
               const assist = createAiAssist({ provider, model: input.model });
               return assist.generate({
