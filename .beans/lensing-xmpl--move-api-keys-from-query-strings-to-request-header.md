@@ -32,18 +32,21 @@ API keys are embedded in URL query parameters in allergies-server.ts and weather
 ## Completed
 
 **Files changed:**
+
 - packages/types/src/index.ts (modified) - Added FetchInit type, expanded FetchFn signature
 - packages/core/src/allergies-server.ts (modified) - Removed x-api-key from URL, pass as header
 - packages/core/src/weather-server.ts (modified) - Added vendor limitation comment
-- packages/core/src/__tests__/allergies-server.test.ts (modified) - Tests verify header auth
-- packages/core/src/__tests__/weather-server.test.ts (modified) - OWM vendor limitation test
+- packages/core/src/**tests**/allergies-server.test.ts (modified) - Tests verify header auth
+- packages/core/src/**tests**/weather-server.test.ts (modified) - OWM vendor limitation test
 
 **Key decisions:**
+
 - FetchFn expanded with optional FetchInit (backward compatible)
 - OWM appid stays in URL — documented as vendor limitation (no header auth supported)
 - Ambee x-api-key moved to request header (their standard auth method)
 
 **Notes for next task:**
+
 - FetchFn now supports passing headers via optional init parameter
 - weather-server has its own local FetchFn type that doesn't include init — consider unifying later
 - Other modules (sports, news, home-assistant) use @lensing/types FetchFn and are backward compatible

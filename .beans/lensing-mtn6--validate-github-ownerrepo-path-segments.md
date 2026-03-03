@@ -1,11 +1,11 @@
 ---
 # lensing-mtn6
 title: Validate GitHub owner/repo path segments
-status: todo
+status: in-progress
 type: task
 priority: normal
 created_at: 2026-03-02T16:49:59Z
-updated_at: 2026-03-02T16:49:59Z
+updated_at: 2026-03-03T00:06:05Z
 parent: lensing-umpl
 ---
 
@@ -15,10 +15,10 @@ publisher.ts and marketplace-client.ts construct GitHub API URLs from user-provi
 
 ## Acceptance Criteria
 
-- [ ] publisher.ts validates owner and repo match `/^[a-zA-Z0-9_.-]+$/` before URL construction
-- [ ] marketplace-client.ts validates marketplaceRepo format
-- [ ] Tests for valid and invalid inputs
-- [ ] Error thrown for malformed values
+- [x] publisher.ts validates owner and repo match `/^[a-zA-Z0-9_.-]+$/` before URL construction
+- [x] marketplace-client.ts validates marketplaceRepo format
+- [x] Tests for valid and invalid inputs
+- [x] Error thrown for malformed values
 
 ## Files
 

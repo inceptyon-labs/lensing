@@ -26,7 +26,11 @@ export function createMarketplaceClient(
   const refreshInterval = options.refreshInterval ?? 900_000;
   const GITHUB_SEGMENT_RE = /^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/;
   const [owner, repo, ...extra] = marketplaceRepo.split('/');
-  if (extra.length > 0 || !GITHUB_SEGMENT_RE.test(owner ?? '') || !GITHUB_SEGMENT_RE.test(repo ?? '')) {
+  if (
+    extra.length > 0 ||
+    !GITHUB_SEGMENT_RE.test(owner ?? '') ||
+    !GITHUB_SEGMENT_RE.test(repo ?? '')
+  ) {
     throw new Error(`Invalid marketplaceRepo: "${marketplaceRepo}". Expected format: owner/repo`);
   }
   const cacheFile = path.join(cacheDir, 'index.json');
