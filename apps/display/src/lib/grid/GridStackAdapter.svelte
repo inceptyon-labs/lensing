@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import type { Snippet } from 'svelte';
   import type { GridWidget, GridPolicy } from './types';
   import { DEFAULT_GRID_POLICY } from './types';
@@ -26,19 +25,28 @@
   }: Props = $props();
 
   let gridEl: HTMLDivElement | undefined = $state(undefined);
+
+  // gridInstance is intentionally NOT $state — GridStack is a third-party
+  // object that must not participate in Svelte's reactive tracking.
+  // Reading it inside $effect would create dependency cycles.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let gridInstance: any = $state(undefined);
+  let gridInstance: any = undefined;
+
+  // Simple boolean flag for template reactivity (static fallback vs live grid)
+  let gridReady = $state(false);
   let syncing = false;
 
-  onMount(() => {
-    // GridStack.js is loaded via CDN <script> tag at runtime.
-    // Access it from the window global — never imported as a module.
-    void initGrid();
+  // Initialize GridStack after the DOM element is available.
+  // Uses $effect instead of onMount due to Svelte 5 lifecycle issue.
+  $effect(() => {
+    if (!gridEl) return;
+    initGrid();
 
     return () => {
       if (gridInstance) {
         gridInstance.destroy(false);
         gridInstance = undefined;
+        gridReady = false;
       }
     };
   });
@@ -61,7 +69,7 @@
       const touchDelay = activeOptions.touchDelay ?? 0;
       const moveTolerance = activeOptions.moveTolerance ?? 0;
 
-      gridInstance = GridStack.init(
+      const grid = GridStack.init(
         {
           column: responsiveColumns,
           cellHeight: activeOptions.rowHeight,
@@ -80,11 +88,14 @@
         gridEl
       );
 
+      // Store instance in non-reactive variable
+      gridInstance = grid;
+
       // Sync initial items
       syncItems(items);
 
       // Listen for changes (skip events triggered by our own syncItems)
-      gridInstance.on('change', () => {
+      grid.on('change', () => {
         if (syncing) return;
         if (onchange) {
           const updated = extractWidgets();
@@ -92,7 +103,7 @@
         }
       });
 
-      gridInstance.on('added', (_event: unknown, addedItems: { id?: string }[]) => {
+      grid.on('added', (_event: unknown, addedItems: { id?: string }[]) => {
         if (syncing) return;
         if (onadd && addedItems.length > 0) {
           for (const item of addedItems) {
@@ -102,7 +113,7 @@
         }
       });
 
-      gridInstance.on('removed', (_event: unknown, removedItems: { id?: string }[]) => {
+      grid.on('removed', (_event: unknown, removedItems: { id?: string }[]) => {
         if (syncing) return;
         if (onremove && removedItems.length > 0) {
           for (const item of removedItems) {
@@ -111,6 +122,9 @@
           }
         }
       });
+
+      // Signal template to remove static fallback
+      gridReady = true;
     } catch {
       // GridStack init failed — static fallback will render
     }
@@ -210,14 +224,16 @@
     };
   }
 
+  // Toggle static/edit mode on the grid
   $effect(() => {
-    if (gridInstance) {
+    if (gridReady && gridInstance) {
       gridInstance.setStatic(!editMode);
     }
   });
 
+  // Sync items when they change (reactive on items array content)
   $effect(() => {
-    if (!gridInstance) return;
+    if (!gridReady) return;
     // Build a snapshot to ensure effect tracks each widget's identity and position.
     // Without this, Svelte 5 may not detect array content changes.
     const snapshot: GridWidget[] = items.map((i) => ({
@@ -237,7 +253,7 @@
 </script>
 
 <div class="grid-stack" bind:this={gridEl}>
-  {#if !gridInstance}
+  {#if !gridReady}
     <!-- Static fallback when GridStack.js is not loaded (SSR / test) -->
     {#each items as item (item.id)}
       <div

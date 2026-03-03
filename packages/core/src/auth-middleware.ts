@@ -31,8 +31,12 @@ export function isProtectedRoute(path: string, method: string): boolean {
   // GET /marketplace/:id is public (plugin details page)
   if (method === 'GET' && /^\/marketplace\/[^/]+$/.test(path)) return false;
 
-  // Plugin template reads are public (used by the display to render widgets)
+  // Display-consumed read routes are public (same-origin frontend fetches these without auth)
+  if (method === 'GET' && path === '/plugins') return false;
   if (method === 'GET' && /^\/plugins\/[^/]+\/template$/.test(path)) return false;
+  if (method === 'GET' && path === '/layout') return false;
+  if (method === 'GET' && path.startsWith('/display/')) return false;
+  if (method === 'GET' && path === '/api/admin/marketplace') return false;
 
   return true;
 }

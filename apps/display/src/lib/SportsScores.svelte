@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import type { SportsGame } from '@lensing/types';
 
   export let games: SportsGame[] = [];
@@ -8,12 +7,6 @@
   $: liveGames = games.filter((g) => g.status === 'in_progress');
   $: otherGames = games.filter((g) => g.status !== 'in_progress');
   $: displayedGames = [...liveGames, ...otherGames];
-
-  let unsubscribe: (() => void) | null = null;
-
-  onDestroy(() => {
-    if (unsubscribe) unsubscribe();
-  });
 
   function formatStatus(game: SportsGame): string {
     if (game.status === 'in_progress') return game.period || 'LIVE';

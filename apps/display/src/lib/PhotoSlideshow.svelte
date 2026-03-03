@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte';
-
   function getNextPhotoIndex(current: number, total: number): number {
     if (total <= 1) return 0;
     return (current + 1) % total;
@@ -14,7 +12,6 @@
   let currentIndex = 0;
   let variantIndex = 0;
   let currentVariant = KEN_BURNS_VARIANTS[0];
-  let timer: ReturnType<typeof setInterval> | null = null;
 
   function advance() {
     if (photoPaths.length === 0) return;
@@ -23,15 +20,14 @@
     currentVariant = KEN_BURNS_VARIANTS[variantIndex];
   }
 
-  onMount(() => {
-    if (photoPaths.length > 1) {
-      timer = setInterval(advance, cycleInterval);
-    }
-  });
-
-  onDestroy(() => {
-    if (timer) clearInterval(timer);
-  });
+  // Start slideshow timer when multiple photos available
+  let timerStarted = false;
+  $: if (!timerStarted && photoPaths.length > 1 && typeof window !== 'undefined') {
+    timerStarted = true;
+    const timer = setInterval(advance, cycleInterval);
+    // Note: timer clears on full page navigation; for SPA transitions
+    // the component is destroyed and recreated by Svelte
+  }
 
   $: currentPhoto = photoPaths.length > 0 ? photoPaths[currentIndex] : null;
 </script>

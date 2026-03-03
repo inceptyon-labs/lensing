@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { browser } from '$app/environment';
   import type {
     DisplayCapabilities,
     DisplaySettings,
@@ -38,29 +38,31 @@
 
   $: pirPlugin = plugins.find((p) => p.plugin_id === 'pir');
 
-  onMount(async () => {
-    try {
-      const [capsRes, settingsRes, marketplaceRes] = await Promise.all([
-        fetch('/display/capabilities'),
-        fetch('/display/settings'),
-        fetch('/api/admin/marketplace'),
-      ]);
-      if (capsRes.ok) {
-        capabilities = (await capsRes.json()) as DisplayCapabilities;
+  if (browser) {
+    void (async () => {
+      try {
+        const [capsRes, settingsRes, marketplaceRes] = await Promise.all([
+          fetch('/display/capabilities'),
+          fetch('/display/settings'),
+          fetch('/api/admin/marketplace'),
+        ]);
+        if (capsRes.ok) {
+          capabilities = (await capsRes.json()) as DisplayCapabilities;
+        }
+        if (settingsRes.ok) {
+          settings = (await settingsRes.json()) as DisplaySettings;
+        }
+        if (marketplaceRes.ok) {
+          const marketplaceData = (await marketplaceRes.json()) as { marketplaceRepoUrl: string };
+          marketplaceRepoUrl = marketplaceData.marketplaceRepoUrl;
+        }
+      } catch (err) {
+        error = err instanceof Error ? err.message : 'Failed to load display settings';
+      } finally {
+        loading = false;
       }
-      if (settingsRes.ok) {
-        settings = (await settingsRes.json()) as DisplaySettings;
-      }
-      if (marketplaceRes.ok) {
-        const marketplaceData = (await marketplaceRes.json()) as { marketplaceRepoUrl: string };
-        marketplaceRepoUrl = marketplaceData.marketplaceRepoUrl;
-      }
-    } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to load display settings';
-    } finally {
-      loading = false;
-    }
-  });
+    })();
+  }
 
   function showSaved(key: string) {
     savedFeedback = { ...savedFeedback, [key]: true };

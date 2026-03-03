@@ -1,0 +1,11 @@
+{
+  "id": "sdff",
+  "name": "sdff",
+  "version": "1.0.0",
+  "description": "dfd",
+  "permissions": {
+    "allowed_domains": [
+      null
+    ]
+  }
+}

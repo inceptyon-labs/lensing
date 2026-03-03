@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onDestroy, onMount } from 'svelte';
   import { buildSandboxSrcdoc, SANDBOX_MSG } from './iframe-sandbox';
 
   export let pluginId: string;
@@ -34,18 +33,10 @@
     iframeHeight = Math.min(Math.max(height as number, 0), MAX_IFRAME_HEIGHT);
   }
 
-  // Register message listener on mount to avoid SSR issues
-  onMount(() => {
-    if (typeof window !== 'undefined') {
-      window.addEventListener('message', onMessage);
-    }
-  });
-
-  onDestroy(() => {
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('message', onMessage);
-    }
-  });
+  // Register message listener (browser-only)
+  if (typeof window !== 'undefined') {
+    window.addEventListener('message', onMessage);
+  }
 </script>
 
 <iframe

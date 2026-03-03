@@ -61,50 +61,58 @@
   $: isPending = false;
 </script>
 
-<div>
-  <nav>
+<div class="wizard">
+  <nav class="wizard-nav">
     {#each steps as step, i (step.key)}
       <div
+        class="wizard-step"
+        class:wizard-step--active={currentStep === i}
+        class:wizard-step--completed={i < currentStep}
         data-testid="step-indicator"
         data-active={currentStep === i ? 'true' : 'false'}
         data-completed={i < currentStep ? 'true' : 'false'}
       >
-        <span>{i + 1}</span>
-        <span>{step.label}</span>
+        <span class="wizard-step__number">{i + 1}</span>
+        <span class="wizard-step__label">{step.label}</span>
       </div>
     {/each}
   </nav>
 
-  <div data-testid="wizard-content">
+  <div class="wizard-content" data-testid="wizard-content">
     <slot step={currentStep} />
   </div>
 
-  <div>
+  <div class="wizard-actions">
     {#if currentStep > 0}
-      <button type="button" on:click={goBack}>Back</button>
+      <button class="wizard-btn wizard-btn--ghost" type="button" on:click={goBack}>Back</button>
     {/if}
 
-    <button type="button" disabled={isPending} on:click={handleCancel}>Cancel</button>
+    <button class="wizard-btn wizard-btn--ghost" type="button" disabled={isPending} on:click={handleCancel}>Cancel</button>
 
     {#if isLastStep}
-      <button type="button" disabled={!currentValid || isPending} on:click={handleFinish}
+      <button class="wizard-btn wizard-btn--primary" type="button" disabled={!currentValid || isPending} on:click={handleFinish}
         >Finish</button
       >
     {:else}
-      <button type="button" disabled={!currentValid} on:click={goNext}>Next</button>
+      <button class="wizard-btn wizard-btn--primary" type="button" disabled={!currentValid} on:click={goNext}>Next</button>
     {/if}
   </div>
 
   {#if showConfirm}
-    <div
-      data-testid="confirm-dialog"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="confirm-title"
-    >
-      <p id="confirm-title">You have unsaved changes. Are you sure you want to discard them?</p>
-      <button type="button" disabled={isPending} on:click={confirmDiscard}>Discard</button>
-      <button type="button" on:click={dismissConfirm}>Keep editing</button>
+    <div class="wizard-overlay">
+      <div
+        class="wizard-confirm"
+        data-testid="confirm-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-title"
+      >
+        <p class="wizard-confirm__text" id="confirm-title">You have unsaved changes. Are you sure you want to discard them?</p>
+        <div class="wizard-confirm__actions">
+          <button class="wizard-btn wizard-btn--danger" type="button" disabled={isPending} on:click={confirmDiscard}>Discard</button>
+          <button class="wizard-btn wizard-btn--ghost" type="button" on:click={dismissConfirm}>Keep editing</button>
+        </div>
+      </div>
     </div>
   {/if}
 </div>

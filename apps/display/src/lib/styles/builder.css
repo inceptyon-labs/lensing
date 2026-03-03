@@ -1,0 +1,430 @@
+/* ── Builder Wizard ───────────────────────────────────────────── */
+
+.wizard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* ── Step indicators ─────────────────────────── */
+
+.wizard-nav {
+  display: flex;
+  gap: var(--space-1);
+  border-bottom: 1px solid var(--edge);
+  padding-bottom: var(--space-4);
+}
+
+.wizard-step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.wizard-step__number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  font-family: var(--font-mono);
+  background-color: var(--accretion);
+  color: var(--faint-light);
+  border: 1px solid var(--edge);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.wizard-step__label {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--faint-light);
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.wizard-step--active .wizard-step__number {
+  background-color: var(--ember);
+  color: var(--void);
+  border-color: var(--ember);
+}
+
+.wizard-step--active .wizard-step__label {
+  color: var(--starlight);
+}
+
+.wizard-step--completed .wizard-step__number {
+  background-color: var(--ember-dim);
+  color: var(--void);
+  border-color: var(--ember-dim);
+}
+
+.wizard-step--completed .wizard-step__label {
+  color: var(--dim-light);
+}
+
+/* ── Wizard content area ─────────────────────── */
+
+.wizard-content {
+  min-height: 200px;
+}
+
+/* ── Action buttons ──────────────────────────── */
+
+.wizard-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--edge);
+}
+
+.wizard-btn {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  font-family: var(--font-sans);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  line-height: 1;
+}
+
+.wizard-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.wizard-btn--primary {
+  background-color: var(--ember);
+  color: var(--void);
+  border: 1px solid var(--ember);
+}
+
+.wizard-btn--primary:hover:not(:disabled) {
+  background-color: var(--ember-dim);
+  border-color: var(--ember-dim);
+}
+
+.wizard-btn--primary:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--edge-focus);
+}
+
+.wizard-btn--ghost {
+  background-color: transparent;
+  color: var(--dim-light);
+  border: 1px solid var(--edge);
+}
+
+.wizard-btn--ghost:hover:not(:disabled) {
+  color: var(--starlight);
+  border-color: var(--edge-bright);
+  background-color: var(--accretion);
+}
+
+.wizard-btn--ghost:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--edge-focus);
+}
+
+.wizard-btn--danger {
+  background-color: color-mix(in srgb, var(--alert-urgent) 15%, var(--void));
+  color: var(--alert-urgent);
+  border: 1px solid color-mix(in srgb, var(--alert-urgent) 40%, transparent);
+}
+
+.wizard-btn--danger:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--alert-urgent) 25%, var(--void));
+}
+
+.wizard-btn--danger:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--alert-urgent) 30%, transparent);
+}
+
+/* ── Confirm dialog ──────────────────────────── */
+
+.wizard-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: hsla(240, 8%, 4%, 0.75);
+  z-index: 100;
+}
+
+.wizard-confirm {
+  background-color: var(--accretion);
+  border: 1px solid var(--edge-bright);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.wizard-confirm__text {
+  font-size: var(--text-sm);
+  color: var(--dim-light);
+  line-height: var(--leading-normal);
+  margin: 0;
+}
+
+.wizard-confirm__actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+}
+
+/* ── Template picker ─────────────────────────── */
+
+.template-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-3);
+}
+
+.template-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--event-horizon);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.template-card:hover {
+  border-color: var(--edge-bright);
+  box-shadow: 0 0 20px var(--ember-trace);
+}
+
+.template-card--selected {
+  border-color: var(--ember);
+  box-shadow: 0 0 0 1px var(--ember);
+}
+
+.template-card-name {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--starlight);
+}
+
+.template-card-desc {
+  font-size: var(--text-xs);
+  color: var(--faint-light);
+  line-height: var(--leading-normal);
+}
+
+/* ── Builder metadata form ───────────────────── */
+
+.builder-meta-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 480px;
+}
+
+.builder-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.builder-label {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--dim-light);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+}
+
+.builder-input,
+.builder-textarea,
+.builder-select {
+  background-color: var(--control-bg);
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-sm);
+  color: var(--starlight);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  padding: var(--space-2) var(--space-3);
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.builder-input::placeholder,
+.builder-textarea::placeholder {
+  color: var(--ghost-light);
+}
+
+.builder-input:focus,
+.builder-textarea:focus,
+.builder-select:focus {
+  outline: none;
+  border-color: var(--control-focus);
+  box-shadow: 0 0 0 2px hsla(28, 85%, 55%, 0.1);
+}
+
+.builder-input--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.builder-textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.builder-select {
+  cursor: pointer;
+}
+
+.builder-hint {
+  font-size: var(--text-xs);
+  color: var(--faint-light);
+  margin: 0;
+}
+
+/* ── Code editor textareas ───────────────────── */
+
+.builder-code-editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.builder-code {
+  background-color: var(--void);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius-sm);
+  color: var(--starlight);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  padding: var(--space-3);
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  line-height: var(--leading-normal);
+  tab-size: 2;
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.builder-code::placeholder {
+  color: var(--ghost-light);
+}
+
+.builder-code:focus {
+  outline: none;
+  border-color: var(--control-focus);
+  box-shadow: 0 0 0 2px hsla(28, 85%, 55%, 0.1);
+}
+
+/* ── Save error ──────────────────────────────── */
+
+.builder-save-error {
+  font-size: var(--text-sm);
+  font-family: var(--font-mono);
+  color: var(--alert-urgent);
+  background-color: color-mix(in srgb, var(--alert-urgent) 10%, var(--void));
+  border: 1px solid color-mix(in srgb, var(--alert-urgent) 30%, transparent);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
+  margin-top: var(--space-3);
+}
+
+/* ── Connector / Data Source step ────────────── */
+
+.connector-step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.connector-type-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-3);
+}
+
+.connector-type-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--event-horizon);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.connector-type-card:hover {
+  border-color: var(--edge-bright);
+  box-shadow: 0 0 20px var(--ember-trace);
+}
+
+.connector-type-card--selected {
+  border-color: var(--ember);
+  box-shadow: 0 0 0 1px var(--ember);
+}
+
+.connector-type-card__label {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--starlight);
+}
+
+.connector-type-card__desc {
+  font-size: var(--text-xs);
+  color: var(--faint-light);
+  line-height: var(--leading-normal);
+}
+
+.connector-config {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 480px;
+}
+
+.connector-headers {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.connector-header-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.connector-add-header {
+  align-self: flex-start;
+  font-size: var(--text-xs);
+  padding: var(--space-1) var(--space-3);
+}

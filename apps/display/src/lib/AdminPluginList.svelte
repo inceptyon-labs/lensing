@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { browser } from '$app/environment';
   import type {
     PluginAdminEntry,
     MarketplacePlugin,
@@ -14,12 +14,14 @@
   import AdminModuleSection from './AdminModuleSection.svelte';
   import AdminSettingsPanel from './AdminSettingsPanel.svelte';
   import MarketplacePluginBrowser from './MarketplacePluginBrowser.svelte';
+  import AdminBuilderView from './AdminBuilderView.svelte';
 
   let plugins: PluginAdminEntry[] = [];
   let loading = true;
   let error: string | null = null;
   let activeTab: 'modules' | 'plugins' | 'marketplace' | 'settings' = 'modules';
   let marketplaceCount: number = 0;
+  let activeView: 'list' | 'builder' = 'list';
 
   let marketplacePlugins: MarketplacePlugin[] | null = null;
   let marketplaceLoading = false;
@@ -55,18 +57,19 @@
     return groups;
   })();
 
-  onMount(async () => {
-    try {
-      // eslint-disable-next-line no-undef
-      const res = await fetch('/plugins');
-      if (!res.ok) throw new Error(`Failed to load plugins (${res.status})`);
-      plugins = (await res.json()) as PluginAdminEntry[];
-    } catch (err) {
-      error = err instanceof Error ? err.message : 'Unknown error';
-    } finally {
-      loading = false;
-    }
-  });
+  if (browser) {
+    void (async () => {
+      try {
+        const res = await fetch('/plugins');
+        if (!res.ok) throw new Error(`Failed to load plugins (${res.status})`);
+        plugins = (await res.json()) as PluginAdminEntry[];
+      } catch (err) {
+        error = err instanceof Error ? err.message : 'Unknown error';
+      } finally {
+        loading = false;
+      }
+    })();
+  }
 
   async function fetchMarketplace() {
     if (marketplacePlugins !== null || marketplaceLoading) return; // already loaded or in progress
@@ -219,21 +222,32 @@
       </div>
     {/if}
   {:else if activeTab === 'plugins'}
-    <AdminPluginUpload onInstalled={refreshPlugins} />
-
-    {#if thirdParty.length === 0}
-      <p class="state-message">No third-party plugins installed.</p>
+    {#if activeView === 'builder'}
+      <AdminBuilderView
+        onCancel={() => (activeView = 'list')}
+        onSaved={() => { activeView = 'list'; refreshPlugins(); }}
+      />
     {:else}
-      <div class="plugins-grid">
-        {#each thirdParty as plugin (plugin.plugin_id)}
-          <AdminPluginCard
-            {plugin}
-            onToggleEnabled={handleToggleEnabled}
-            onZoneChange={handleZoneChange}
-            onConfigSave={handleConfigSave}
-          />
-        {/each}
+      <div class="plugins-header">
+        <button type="button" class="create-plugin-btn" on:click={() => (activeView = 'builder')}>Create Plugin</button>
       </div>
+
+      <AdminPluginUpload onInstalled={refreshPlugins} />
+
+      {#if thirdParty.length === 0}
+        <p class="state-message">No third-party plugins installed.</p>
+      {:else}
+        <div class="plugins-grid">
+          {#each thirdParty as plugin (plugin.plugin_id)}
+            <AdminPluginCard
+              {plugin}
+              onToggleEnabled={handleToggleEnabled}
+              onZoneChange={handleZoneChange}
+              onConfigSave={handleConfigSave}
+            />
+          {/each}
+        </div>
+      {/if}
     {/if}
   {:else if activeTab === 'marketplace'}
     <MarketplacePluginBrowser
@@ -290,5 +304,36 @@
 
   .state-message--error {
     color: var(--nova);
+  }
+
+  .plugins-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: var(--space-2);
+  }
+
+  .create-plugin-btn {
+    background-color: var(--ember);
+    color: var(--void);
+    border: 1px solid var(--ember);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    padding: var(--space-2) var(--space-4);
+    cursor: pointer;
+    font-family: var(--font-sans);
+    transition:
+      background-color var(--duration-fast) var(--ease-out),
+      border-color var(--duration-fast) var(--ease-out);
+  }
+
+  .create-plugin-btn:hover {
+    background-color: var(--ember-dim);
+    border-color: var(--ember-dim);
+  }
+
+  .create-plugin-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--edge-focus);
   }
 </style>

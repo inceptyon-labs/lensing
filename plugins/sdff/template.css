@@ -1,0 +1,26 @@
+.list-wrapper {
+  padding: 16px;
+  color: var(--starlight, hsl(220, 15%, 90%));
+  background: var(--event-horizon, hsl(240, 6%, 7%));
+  border-radius: 8px;
+}
+.list-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  line-height: 1.2;
+}
+.list-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.list-item {
+  font-size: 16px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--edge, hsla(220, 10%, 50%, 0.12));
+  line-height: 1.5;
+}

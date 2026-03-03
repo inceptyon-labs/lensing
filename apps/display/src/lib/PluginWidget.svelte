@@ -1,28 +1,31 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import ShadowWidget from './ShadowWidget.svelte';
   import { getChannelData } from './stores/dataBusStore';
 
-  export let pluginId: string;
+  let { pluginId }: { pluginId: string } = $props();
 
-  let html = '';
-  let css = '';
-  let loading = true;
-  let error = false;
+  let html = $state('');
+  let css = $state('');
+  let loading = $state(true);
+  let error = $state(false);
 
-  const dataStore = getChannelData(pluginId);
+  // pluginId is stable for this widget's lifetime (keyed by id in the parent #each)
+  const id = pluginId;
+  const dataStore = getChannelData(id);
 
-  onMount(async () => {
-    const res = await fetch(`/plugins/${pluginId}/template`);
-    if (!res.ok) {
-      error = true;
+  $effect(() => {
+    void (async () => {
+      const res = await fetch(`/plugins/${pluginId}/template`);
+      if (!res.ok) {
+        error = true;
+        loading = false;
+        return;
+      }
+      const template = await res.json();
+      html = template.html;
+      css = template.css;
       loading = false;
-      return;
-    }
-    const template = await res.json();
-    html = template.html;
-    css = template.css;
-    loading = false;
+    })();
   });
 </script>
 

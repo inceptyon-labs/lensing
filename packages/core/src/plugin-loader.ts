@@ -2,9 +2,11 @@ import type { PluginManifest, LoadedPlugin, DiscoveredPlugin, PluginLoader } fro
 import * as fs from 'fs';
 import * as path from 'path';
 import { pathToFileURL } from 'url';
+import type { ConnectorRunnerInstance, ConnectorRunnerConfig } from './connector-runner';
 
 export interface PluginLoaderOptions {
   pluginsDir: string;
+  connectorRunner?: ConnectorRunnerInstance;
 }
 
 interface ValidationResult {
@@ -144,12 +146,21 @@ function scanDirectory(pluginsDir: string, errors: Map<string, string>): Scanned
 }
 
 export function createPluginLoader(options: PluginLoaderOptions): PluginLoader {
-  const { pluginsDir } = options;
+  const { pluginsDir, connectorRunner } = options;
   const registry = new Map<string, LoadedPlugin>();
   const errors = new Map<string, string>();
+  const connectedPlugins = new Set<string>();
   let loaded = false;
 
   async function load(): Promise<LoadedPlugin[]> {
+    // Unregister all previously tracked connectors before re-scanning
+    if (connectorRunner) {
+      for (const id of connectedPlugins) {
+        connectorRunner.unregister(id);
+      }
+      connectedPlugins.clear();
+    }
+
     registry.clear();
     errors.clear();
     loaded = true;
@@ -181,6 +192,22 @@ export function createPluginLoader(options: PluginLoaderOptions): PluginLoader {
 
         loadedPlugin.status = 'loaded';
         registry.set(id, loadedPlugin);
+
+        // Register connector if present
+        if (connectorRunner) {
+          const connectorPath = path.join(pluginDir, 'connector.json');
+          if (fs.existsSync(connectorPath)) {
+            try {
+              const connectorData = JSON.parse(
+                fs.readFileSync(connectorPath, 'utf-8')
+              ) as ConnectorRunnerConfig;
+              connectorRunner.register(id, manifest, connectorData);
+              connectedPlugins.add(id);
+            } catch {
+              // Malformed connector.json is non-fatal — plugin still loads
+            }
+          }
+        }
       } catch (err) {
         loadedPlugin.status = 'error';
         loadedPlugin.error = `Failed to load module: ${String(err)}`;
@@ -225,6 +252,10 @@ export function createPluginLoader(options: PluginLoaderOptions): PluginLoader {
     },
 
     async unload(id: string): Promise<void> {
+      if (connectorRunner && connectedPlugins.has(id)) {
+        connectorRunner.unregister(id);
+        connectedPlugins.delete(id);
+      }
       registry.delete(id);
       errors.delete(id);
     },

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte';
   import type { NewsArticle } from '@lensing/types';
 
   export let headlines: NewsArticle[] = [];
@@ -7,16 +6,6 @@
   export let compact: boolean = false;
 
   $: displayedHeadlines = headlines.slice(0, maxItems);
-
-  let unsubscribe: (() => void) | null = null;
-
-  onMount(() => {
-    // Component is ready — consumers wire up store subscriptions externally
-  });
-
-  onDestroy(() => {
-    if (unsubscribe) unsubscribe();
-  });
 
   function formatAge(published: number): string {
     const ageMs = Math.max(0, Date.now() - published);

@@ -51,12 +51,36 @@ describe('auth-middleware', () => {
       expect(isProtectedRoute('/marketplace/plugin-1', 'GET')).toBe(false);
     });
 
+    it('should not protect GET /plugins', () => {
+      expect(isProtectedRoute('/plugins', 'GET')).toBe(false);
+    });
+
     it('should not protect GET /plugins/:id/template', () => {
       expect(isProtectedRoute('/plugins/weather/template', 'GET')).toBe(false);
     });
 
+    it('should not protect GET /layout', () => {
+      expect(isProtectedRoute('/layout', 'GET')).toBe(false);
+    });
+
+    it('should not protect GET /display/settings', () => {
+      expect(isProtectedRoute('/display/settings', 'GET')).toBe(false);
+    });
+
+    it('should not protect GET /display/capabilities', () => {
+      expect(isProtectedRoute('/display/capabilities', 'GET')).toBe(false);
+    });
+
+    it('should not protect GET /api/admin/marketplace', () => {
+      expect(isProtectedRoute('/api/admin/marketplace', 'GET')).toBe(false);
+    });
+
     it('should not protect OPTIONS requests', () => {
       expect(isProtectedRoute('/settings', 'OPTIONS')).toBe(false);
+    });
+
+    it('should protect POST /plugins', () => {
+      expect(isProtectedRoute('/plugins', 'POST')).toBe(true);
     });
 
     it('should protect PUT /settings', () => {

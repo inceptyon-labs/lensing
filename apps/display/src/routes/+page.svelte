@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import type { PluginAdminEntry } from '@lensing/types';
   import type { DataBusMessage, WsMessage } from '@lensing/types';
   import { SYSTEM_MODULE_IDS } from '@lensing/types';
@@ -39,7 +38,9 @@
     void saveLayout(widgets).then(() => loadPlugins());
   }
 
-  onMount(() => {
+  // Initialize on mount: load plugins and connect WebSocket for live updates.
+  // Uses $effect instead of onMount due to Svelte 5 hydration lifecycle issue.
+  $effect(() => {
     void loadPlugins();
 
     // eslint-disable-next-line no-undef

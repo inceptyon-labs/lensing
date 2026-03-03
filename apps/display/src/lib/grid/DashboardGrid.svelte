@@ -14,7 +14,7 @@
   import WidgetConfigPanel from './WidgetConfigPanel.svelte';
   import EditBar from './EditBar.svelte';
   import { createEditHistory } from './edit-history';
-  import { onMount, tick } from 'svelte';
+  import { tick } from 'svelte';
   import Settings from '@lucide/svelte/icons/settings';
   import '../styles/grid-layout.css';
 
@@ -43,9 +43,9 @@
 
   let initialWidgets = $derived(pluginsToGridWidgets(plugins));
 
-  // Load saved layout from localStorage on mount, and sync to server
+  // Load saved layout from localStorage on init, and sync to server
   // so modules are booted for widgets on the grid.
-  onMount(() => {
+  if (typeof window !== 'undefined') {
     try {
       const stored = localStorage.getItem(LAYOUT_KEY);
       if (stored) {
@@ -57,7 +57,7 @@
     } catch {
       // ignore corrupt storage
     }
-  });
+  }
 
   // When a remote client saves a layout, the server broadcasts layout_change
   // and +page.svelte fetches the new layout into serverLayout.  Sync it into
