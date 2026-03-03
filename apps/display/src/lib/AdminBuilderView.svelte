@@ -334,11 +334,10 @@
     <div class="connector-step">
       <div class="ai-assist-section">
         <h3 class="ai-assist-title">🤖 AI-Assisted Setup</h3>
-        <p class="ai-assist-desc">Paste API documentation and let AI generate your connector config</p>
-        <AdminAiAssist
-          pluginContext={{ name, description }}
-          on:apply={handleAiAssistApply}
-        />
+        <p class="ai-assist-desc">
+          Paste API documentation and let AI generate your connector config
+        </p>
+        <AdminAiAssist pluginContext={{ name, description }} on:apply={handleAiAssistApply} />
       </div>
 
       <div class="connector-divider">

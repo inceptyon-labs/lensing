@@ -108,11 +108,9 @@ describe('AI Assist Providers', () => {
       });
 
       await expect(
-        provider.generate(
-          [{ role: 'user', content: 'Test' }],
-          'claude-sonnet-4-20250514',
-          { fetchFn: mockFetch as any }
-        )
+        provider.generate([{ role: 'user', content: 'Test' }], 'claude-sonnet-4-20250514', {
+          fetchFn: mockFetch as any,
+        })
       ).rejects.toThrow();
     });
 
@@ -129,11 +127,9 @@ describe('AI Assist Providers', () => {
       });
 
       await expect(
-        provider.generate(
-          [{ role: 'user', content: 'Test' }],
-          'claude-sonnet-4-20250514',
-          { fetchFn: mockFetch as any }
-        )
+        provider.generate([{ role: 'user', content: 'Test' }], 'claude-sonnet-4-20250514', {
+          fetchFn: mockFetch as any,
+        })
       ).rejects.toThrow('Unauthorized');
     });
 
@@ -148,10 +144,7 @@ describe('AI Assist Providers', () => {
               });
             }
             // Never resolve - timeout should abort
-            setTimeout(
-              () => resolve({ ok: true, json: async () => ({ content: [] }) }),
-              5000
-            );
+            setTimeout(() => resolve({ ok: true, json: async () => ({ content: [] }) }), 5000);
           })
       );
 
@@ -161,11 +154,10 @@ describe('AI Assist Providers', () => {
       });
 
       await expect(
-        provider.generate(
-          [{ role: 'user', content: 'Test' }],
-          'claude-sonnet-4-20250514',
-          { fetchFn: mockFetch as any, timeoutMs: 100 }
-        )
+        provider.generate([{ role: 'user', content: 'Test' }], 'claude-sonnet-4-20250514', {
+          fetchFn: mockFetch as any,
+          timeoutMs: 100,
+        })
       ).rejects.toThrow(/timeout|Timeout/i);
     });
 

@@ -112,7 +112,8 @@ function validateOutput(raw: unknown): AiAssistResponse {
         connector.headers && typeof connector.headers === 'object'
           ? (connector.headers as Record<string, string>)
           : undefined,
-      refreshInterval: typeof connector.refreshInterval === 'number' ? connector.refreshInterval : 300,
+      refreshInterval:
+        typeof connector.refreshInterval === 'number' ? connector.refreshInterval : 300,
     },
     html: obj.html as string,
     css: typeof obj.css === 'string' ? obj.css : '',
@@ -152,9 +153,7 @@ ${docsText}
 
 Generate the widget configuration JSON now.`;
 
-      const messages = [
-        { role: 'user' as const, content: `${SYSTEM_PROMPT}\n\n${userPrompt}` },
-      ];
+      const messages = [{ role: 'user' as const, content: `${SYSTEM_PROMPT}\n\n${userPrompt}` }];
 
       const rawText = await provider.generate(messages, model);
 

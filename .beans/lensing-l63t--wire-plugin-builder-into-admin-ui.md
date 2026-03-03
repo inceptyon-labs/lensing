@@ -1,11 +1,11 @@
 ---
 # lensing-l63t
 title: Wire plugin builder into admin UI
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-03-03T02:59:16Z
-updated_at: 2026-03-03T03:40:48Z
+updated_at: 2026-03-03T15:14:25Z
 ---
 
 Create AdminBuilderView.svelte orchestrator and add 'Create Plugin' button to AdminPluginList.svelte that toggles between list and builder views. Builder uses existing BuilderWizard, BuilderStep1, WidgetTemplatePicker, BuilderPreview components with textarea-based HTML/CSS editing for Step 2.

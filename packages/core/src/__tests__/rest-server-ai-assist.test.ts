@@ -14,7 +14,7 @@ describe('REST Server — AI Assist Endpoints', () => {
       putSettings: vi.fn(async () => {}),
       getLayout: vi.fn(async () => []),
       putLayout: vi.fn(async () => {}),
-      postAsk: vi.fn(async () => ({} as any)),
+      postAsk: vi.fn(async () => ({}) as any),
       aiAssist: mockAiAssist,
     };
   });

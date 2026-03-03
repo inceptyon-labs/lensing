@@ -128,7 +128,7 @@ function createDeepSeekProvider(apiKey: string): AiProvider {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`,
+            Authorization: `Bearer ${apiKey}`,
           },
           body: JSON.stringify({
             model,
@@ -207,9 +207,7 @@ function createGeminiProvider(apiKey: string): AiProvider {
         }
 
         const data = (await response.json()) as any;
-        const textParts = (data.candidates?.[0]?.content?.parts || []).filter(
-          (p: any) => p.text
-        );
+        const textParts = (data.candidates?.[0]?.content?.parts || []).filter((p: any) => p.text);
         return textParts.map((p: any) => p.text).join('');
       } catch (err) {
         if (err instanceof Error && err.name === 'AbortError') {

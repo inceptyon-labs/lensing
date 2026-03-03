@@ -79,7 +79,7 @@ describe('AI Assist Types', () => {
         url: 'https://api.example.com/data',
         headers: {
           'X-API-Key': '{{API_KEY}}',
-          'Authorization': 'Bearer {{TOKEN}}',
+          Authorization: 'Bearer {{TOKEN}}',
         },
         refreshInterval: 300,
       },
