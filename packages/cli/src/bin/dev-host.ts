@@ -1,13 +1,17 @@
-import 'dotenv/config';
 import { fileURLToPath } from 'node:url';
 import { resolve, dirname } from 'node:path';
+import { config } from 'dotenv';
+
+// Resolve paths relative to monorepo root (../../.. from packages/cli/src/bin/)
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..');
+
+// Load .env from monorepo root
+config({ path: resolve(root, '.env') });
+
 import { mkdirSync, existsSync } from 'node:fs';
 import { platform } from 'node:os';
 import { createHostService, createGpiomonFactory } from '@lensing/core';
 import type { GpioWatcherFactory, HostServiceLogger } from '@lensing/types';
-
-// Resolve paths relative to monorepo root (../../.. from packages/cli/src/bin/)
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..');
 const dataDir = resolve(root, 'data');
 mkdirSync(dataDir, { recursive: true });
 

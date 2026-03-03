@@ -1,11 +1,11 @@
 ---
 # lensing-qaov
 title: Wire AI provider env vars into HostService
-status: in-progress
+status: completed
 type: task
 priority: normal
 created_at: 2026-03-03T18:49:02Z
-updated_at: 2026-03-03T18:57:34Z
+updated_at: 2026-03-03T18:58:38Z
 ---
 
 ## Description
