@@ -114,7 +114,7 @@ describe('Plugin Admin Handlers — Connector Lifecycle', () => {
       expect(mockConnectorRunner.register).toHaveBeenCalled();
     });
 
-    it('does NOT call unregister when disabling a plugin without a connector', async () => {
+    it('calls unregister (safe no-op) when disabling a plugin without a connector', async () => {
       const dir = path.join(TEMP_PLUGINS_DIR, 'static-widget');
       fs.mkdirSync(dir, { recursive: true });
       fs.writeFileSync(
@@ -132,10 +132,12 @@ describe('Plugin Admin Handlers — Connector Lifecycle', () => {
         pluginLoader: loader,
         db: mockDb,
         pluginsDir: TEMP_PLUGINS_DIR,
+        connectorRunner: mockConnectorRunner,
       });
       await handlers.setPluginEnabled('static-widget', false);
 
-      expect(mockConnectorRunner.unregister).not.toHaveBeenCalled();
+      // unregister is called unconditionally on disable — ConnectorRunner guards internally
+      expect(mockConnectorRunner.unregister).toHaveBeenCalledWith('static-widget');
     });
 
     it('unregisters a connector when plugin is deleted', async () => {
@@ -186,6 +188,34 @@ describe('Plugin Admin Handlers — Connector Lifecycle', () => {
       await handlers.setPluginEnabled('api-widget', true);
       entry = await handlers.getPlugin('api-widget');
       expect(entry?.enabled).toBe(true);
+    });
+
+    it('disabled connector stays unregistered after reloadPlugins', async () => {
+      createPluginWithConnector('api-widget');
+      const loader = createPluginLoader({
+        pluginsDir: TEMP_PLUGINS_DIR,
+        connectorRunner: mockConnectorRunner,
+      });
+      await loader.load();
+
+      const handlers = createPluginAdminHandlers({
+        pluginLoader: loader,
+        db: mockDb,
+        pluginsDir: TEMP_PLUGINS_DIR,
+        connectorRunner: mockConnectorRunner,
+      });
+
+      // Disable the plugin
+      await handlers.setPluginEnabled('api-widget', false);
+      (mockConnectorRunner.unregister as ReturnType<typeof vi.fn>).mockClear();
+      (mockConnectorRunner.register as ReturnType<typeof vi.fn>).mockClear();
+
+      // Reload all plugins
+      await handlers.reloadPlugins();
+
+      // Loader re-registers connectors, but admin handler should
+      // unregister disabled plugins' connectors afterward
+      expect(mockConnectorRunner.unregister).toHaveBeenCalledWith('api-widget');
     });
   });
 });

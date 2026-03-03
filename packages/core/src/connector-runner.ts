@@ -91,7 +91,7 @@ export function createConnectorRunner(options: ConnectorRunnerOptions): Connecto
   return {
     register(pluginId: string, manifest: PluginManifest, config: ConnectorRunnerConfig): void {
       // Static connectors: publish immediately, no periodic scheduling
-      if (config.type === 'static') {
+      if (config.type === 'static' || config.type === 'static_data') {
         dataBus.publish(`plugin:${pluginId}`, pluginId, config.data ?? {});
         return;
       }

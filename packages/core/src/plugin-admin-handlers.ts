@@ -232,6 +232,15 @@ export function createPluginAdminHandlers(options: PluginAdminHandlersOptions) {
 
     async reloadPlugins(): Promise<void> {
       await pluginLoader.reload();
+      // Re-apply disabled state — loader doesn't know about enabled/disabled
+      if (connectorRunner) {
+        for (const plugin of pluginLoader.getAllPlugins()) {
+          const state = getPersistedState(db, plugin.manifest.id);
+          if (!state.enabled) {
+            connectorRunner.unregister(plugin.manifest.id);
+          }
+        }
+      }
     },
 
     async installPlugin(zipBuffer: Buffer): Promise<PluginAdminEntry> {

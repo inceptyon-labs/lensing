@@ -203,6 +203,33 @@ describe('Plugin Connector Integration (end-to-end)', () => {
     });
   });
 
+  it('static_data connector: treated as alias for static', async () => {
+    createPlugin('static-data-widget', {
+      type: 'static_data',
+      url: '',
+      data: { label: 'test', value: 99 },
+    });
+
+    const runner = createConnectorRunner({
+      dataBus,
+      scheduler,
+      fetchFn: mockFetchFn,
+    });
+
+    const loader = createPluginLoader({
+      pluginsDir: TEMP_PLUGINS_DIR,
+      connectorRunner: runner,
+    });
+    await loader.load();
+
+    // static_data should behave like static — publish immediately, no scheduler
+    expect(scheduler.register).not.toHaveBeenCalled();
+    expect(dataBus.publish).toHaveBeenCalledWith('plugin:static-data-widget', 'static-data-widget', {
+      label: 'test',
+      value: 99,
+    });
+  });
+
   it('SSRF protection: blocks private IPs', async () => {
     createPlugin('bad-plugin', {
       type: 'json_api',
