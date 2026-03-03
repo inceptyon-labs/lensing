@@ -147,9 +147,7 @@
     connectorHeaders = [...connectorHeaders, { key: '', value: '' }];
   }
 
-  function handleAiAssistApply(e: CustomEvent<AiAssistResponse>) {
-    const response = e.detail;
-
+  function handleAiAssistApply(response: AiAssistResponse) {
     // Populate connector fields
     connectorType = response.connector.type;
     connectorUrl = response.connector.url || '';
@@ -337,7 +335,7 @@
         <p class="ai-assist-desc">
           Paste API documentation and let AI generate your connector config
         </p>
-        <AdminAiAssist pluginContext={{ name, description }} on:apply={handleAiAssistApply} />
+        <AdminAiAssist pluginContext={{ name, description }} onApply={handleAiAssistApply} />
       </div>
 
       <div class="connector-divider">
