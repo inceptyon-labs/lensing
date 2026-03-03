@@ -90,7 +90,10 @@ export function createHostService(options: HostServiceOptions = {}): HostService
           aiProviders.set(provider, createAiProvider({ provider, apiKey }));
           log.info(`AI provider configured: ${provider}`);
         } catch (err) {
-          log.error(`Failed to configure ${provider} provider`, err);
+          // Log error without exposing API key
+          log.error(
+            `Failed to configure ${provider} provider: ${err instanceof Error ? err.message : 'Unknown error'}`
+          );
         }
       }
     }
