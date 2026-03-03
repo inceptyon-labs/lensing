@@ -224,10 +224,14 @@ describe('Plugin Connector Integration (end-to-end)', () => {
 
     // static_data should behave like static — publish immediately, no scheduler
     expect(scheduler.register).not.toHaveBeenCalled();
-    expect(dataBus.publish).toHaveBeenCalledWith('plugin:static-data-widget', 'static-data-widget', {
-      label: 'test',
-      value: 99,
-    });
+    expect(dataBus.publish).toHaveBeenCalledWith(
+      'plugin:static-data-widget',
+      'static-data-widget',
+      {
+        label: 'test',
+        value: 99,
+      }
+    );
   });
 
   it('SSRF protection: blocks private IPs', async () => {

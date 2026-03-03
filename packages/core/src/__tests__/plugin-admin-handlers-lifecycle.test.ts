@@ -13,12 +13,12 @@ const TEMP_PLUGINS_DIR = path.join(__dirname, 'temp-admin-lifecycle');
 function createMockDb(): DatabaseInstance {
   const state = new Map<string, unknown>();
   return {
-    getSetting: (key) => state.get(key),
-    setSetting: (key, value) => {
+    getSetting: (key: string) => state.get(key),
+    setSetting: (key: string, value: string) => {
       state.set(key, value);
     },
-    getPluginState: (id) => state.get(`plugin:${id}`) as any,
-    setPluginState: (id, value) => {
+    getPluginState: (id: string) => state.get(`plugin:${id}`) as any,
+    setPluginState: (id: string, value: unknown) => {
       state.set(`plugin:${id}`, value);
     },
     getPhotos: () => [],
