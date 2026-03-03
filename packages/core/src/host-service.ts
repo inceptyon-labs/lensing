@@ -138,16 +138,20 @@ export function createHostService(options: HostServiceOptions = {}): HostService
       });
 
       // Create aiAssist handler if providers are configured
-      const aiAssistHandler = aiProviders.size > 0
-        ? async (input: AiAssistRequest): Promise<AiAssistResponse> => {
-            const provider = aiProviders.get(input.provider);
-            if (!provider) {
-              throw new Error(`AI provider not configured: ${input.provider}`);
+      const aiAssistHandler =
+        aiProviders.size > 0
+          ? async (input: AiAssistRequest): Promise<AiAssistResponse> => {
+              const provider = aiProviders.get(input.provider);
+              if (!provider) {
+                throw new Error(`AI provider not configured: ${input.provider}`);
+              }
+              const assist = createAiAssist({ provider, model: input.model });
+              return assist.generate({
+                docsText: input.docsTextOrUrl,
+                pluginContext: input.pluginContext,
+              });
             }
-            const assist = createAiAssist({ provider, model: input.model });
-            return assist.generate({ docsText: input.docsTextOrUrl, pluginContext: input.pluginContext });
-          }
-        : undefined;
+          : undefined;
 
       _rest = createRestServer(
         {
