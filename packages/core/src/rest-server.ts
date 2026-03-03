@@ -598,10 +598,10 @@ export function createRestServer(
       const result = await handlers.aiAssist(input);
       writeJson(res, 200, result);
     } catch (err) {
-      // Log full error server-side but return generic message to client
-      const msg = err instanceof Error ? err.message : 'Unknown error';
-      // Don't expose internal error details to client
-      writeJson(res, 400, { error: 'AI assist request failed' });
+      const msg = err instanceof Error ? err.message : 'AI assist request failed';
+      // Strip API keys or URLs from error messages before sending to client
+      const safeMsg = msg.replace(/sk-[a-zA-Z0-9-]+/g, 'sk-***').replace(/AIzaSy[a-zA-Z0-9_-]+/g, 'AIza***');
+      writeJson(res, 502, { error: safeMsg });
     }
   });
 
