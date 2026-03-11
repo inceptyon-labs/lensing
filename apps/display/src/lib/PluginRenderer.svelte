@@ -11,6 +11,7 @@
     CalendarData,
     PhotoSlideshowData,
     AllergyData,
+    AiNewsData,
   } from '@lensing/types';
   import PhotoSlideshow from './PhotoSlideshow.svelte';
   import NewsHeadlines from './NewsHeadlines.svelte';
@@ -20,6 +21,7 @@
   import WeatherWidget from './WeatherWidget.svelte';
   import CalendarWidget from './CalendarWidget.svelte';
   import AllergiesWidget from './AllergiesWidget.svelte';
+  import AiNewsWidget from './AiNewsWidget.svelte';
   import PluginWidget from './PluginWidget.svelte';
   import { getChannelData } from './stores/dataBusStore';
 
@@ -43,6 +45,7 @@
   const calendarStore = getChannelData('calendar-server');
   const photoStore = getChannelData('photo-slideshow-server');
   const allergiesStore = getChannelData('allergies-server');
+  const aiNewsStore = getChannelData('ai-news-server');
 
   $: newsData = $newsStore as NewsData | null;
   $: sportsData = $sportsStore as SportsData | null;
@@ -52,6 +55,7 @@
   $: calendarData = $calendarStore as CalendarData | null;
   $: photoData = $photoStore as PhotoSlideshowData | null;
   $: allergiesData = $allergiesStore as AllergyData | null;
+  $: aiNewsData = $aiNewsStore as AiNewsData | null;
 </script>
 
 <div class="plugin-renderer-wrap">
@@ -77,7 +81,20 @@
   {:else if pluginId === 'calendar'}
     <CalendarWidget events={calendarData?.events ?? []} />
   {:else if pluginId === 'allergies'}
-    <AllergiesWidget index={allergiesData?.index ?? 0} allergens={allergiesData?.allergens ?? []} />
+    <AllergiesWidget
+      index={allergiesData?.index ?? 0}
+      level={allergiesData?.level ?? 'Low'}
+      color={allergiesData?.color ?? '#4caf50'}
+      location={allergiesData?.location ?? ''}
+      triggers={allergiesData?.triggers ?? []}
+      periods={allergiesData?.periods ?? []}
+    />
+  {:else if pluginId === 'ai-news'}
+    <AiNewsWidget
+      summaries={aiNewsData?.summaries ?? []}
+      pageSize={Number(plugin.config['pageSize']) || 5}
+      rotateSeconds={Number(plugin.config['rotateSeconds']) ?? 30}
+    />
   {:else}
     <PluginWidget {pluginId} />
   {/if}

@@ -51,6 +51,22 @@ export interface RestServerHandlers {
   getPlugins?: () => Promise<PluginAdminEntry[]>;
   getPlugin?: (id: string) => Promise<PluginAdminEntry | undefined>;
   getPluginTemplate?: (id: string) => Promise<{ html: string; css: string } | undefined>;
+  getPluginSource?: (
+    id: string
+  ) => Promise<
+    | {
+        html: string;
+        css: string;
+        connector?: {
+          type: string;
+          url: string;
+          method?: string;
+          headers?: Record<string, string>;
+          refreshInterval?: number;
+        };
+      }
+    | undefined
+  >;
   setPluginEnabled?: (id: string, enabled: boolean) => Promise<void>;
   updatePluginConfig?: (id: string, config: Record<string, unknown>) => Promise<void>;
   assignPluginZone?: (id: string, zone: ZoneName | undefined) => Promise<void>;
@@ -76,10 +92,16 @@ export interface RestServerHandlers {
   aiAssist?: (
     input: import('@lensing/types').AiAssistRequest
   ) => Promise<import('@lensing/types').AiAssistResponse>;
+  // AI model listing (optional — returns available models for a provider)
+  listAiModels?: (
+    provider: import('@lensing/types').AiProviderId
+  ) => Promise<Array<{ id: string; name: string }>>;
   // Plugin secrets (optional — omit to disable secret endpoints)
   getPluginSecretNames?: (id: string) => Promise<string[]>;
   setPluginSecret?: (id: string, key: string, value: string) => Promise<void>;
   deletePluginSecret?: (id: string, key: string) => Promise<void>;
+  // Plugin deletion (optional — omit to disable plugin delete endpoint)
+  deletePlugin?: (id: string) => Promise<void>;
 }
 
 /** Configuration options for the REST server */
@@ -543,14 +565,40 @@ export function createRestServer(
       writeJson(res, 404, { error: 'Not Found' });
       return;
     }
-    let config: import('./connector-proxy').ConnectorTestConfig;
+    let parsed: {
+      type: string;
+      url: string;
+      method?: string;
+      headers?: Record<string, string>;
+      secrets?: Record<string, string>;
+    };
     try {
-      config = JSON.parse(body) as import('./connector-proxy').ConnectorTestConfig;
+      parsed = JSON.parse(body);
     } catch {
       writeJson(res, 400, { error: 'Invalid JSON' });
       return;
     }
     try {
+      // Substitute {{NAME}} placeholders with provided secret values
+      let url = parsed.url;
+      const headers = { ...(parsed.headers ?? {}) };
+      if (parsed.secrets && Object.keys(parsed.secrets).length > 0) {
+        const secrets = parsed.secrets;
+        const sub = (str: string) =>
+          str.replace(/\{\{(\w+)\}\}/g, (m, name: string) =>
+            secrets[name] !== undefined ? secrets[name] : m
+          );
+        url = sub(url);
+        for (const [k, v] of Object.entries(headers)) {
+          headers[k] = sub(v);
+        }
+      }
+      const config: import('./connector-proxy').ConnectorTestConfig = {
+        type: parsed.type,
+        url,
+        method: parsed.method,
+        headers,
+      };
       const result = await handlers.testConnector(config);
       writeJson(res, 200, result);
     } catch (err) {
@@ -573,8 +621,13 @@ export function createRestServer(
     }
 
     // Validate required fields
-    if (typeof input.provider !== 'string' || !['anthropic', 'deepseek', 'gemini'].includes(input.provider)) {
-      writeJson(res, 400, { error: 'Invalid request: provider must be anthropic, deepseek, or gemini' });
+    if (
+      typeof input.provider !== 'string' ||
+      !['anthropic', 'deepseek', 'gemini'].includes(input.provider)
+    ) {
+      writeJson(res, 400, {
+        error: 'Invalid request: provider must be anthropic, deepseek, or gemini',
+      });
       return;
     }
     if (typeof input.docsTextOrUrl !== 'string' || input.docsTextOrUrl.trim() === '') {
@@ -596,8 +649,33 @@ export function createRestServer(
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'AI assist request failed';
       // Strip API keys or URLs from error messages before sending to client
-      const safeMsg = msg.replace(/sk-[a-zA-Z0-9-]+/g, 'sk-***').replace(/AIzaSy[a-zA-Z0-9_-]+/g, 'AIza***');
+      const safeMsg = msg
+        .replace(/sk-[a-zA-Z0-9-]+/g, 'sk-***')
+        .replace(/AIzaSy[a-zA-Z0-9_-]+/g, 'AIza***');
       writeJson(res, 502, { error: safeMsg });
+    }
+  });
+
+  addRoute('/api/admin/ai-models', 'GET', async (req, res) => {
+    if (!handlers.listAiModels) {
+      writeJson(res, 404, { error: 'Not Found' });
+      return;
+    }
+    const url = new URL(req.url!, `http://${req.headers.host}`);
+    const provider = url.searchParams.get('provider');
+    if (!provider || !['anthropic', 'deepseek', 'gemini'].includes(provider)) {
+      writeJson(res, 400, {
+        error: 'Invalid request: provider query param must be anthropic, deepseek, or gemini',
+      });
+      return;
+    }
+    try {
+      const models = await handlers.listAiModels(
+        provider as import('@lensing/types').AiProviderId
+      );
+      writeJson(res, 200, { models });
+    } catch {
+      writeJson(res, 502, { error: 'Failed to list models' });
     }
   });
 
@@ -790,6 +868,32 @@ export function createRestServer(
             return;
           }
 
+          // DELETE /plugins/:id
+          if (!action && method === 'DELETE') {
+            if (!handlers.deletePlugin) {
+              writeJson(res, 404, { error: 'Not Found' });
+              try {
+                logger?.({ method, path, status: 404, duration_ms: Date.now() - start });
+              } catch {
+                // Ignore logger errors
+              }
+              return;
+            }
+            try {
+              await handlers.deletePlugin(pluginId);
+              writeJson(res, 200, { ok: true });
+            } catch (err) {
+              const msg = err instanceof Error ? err.message : 'Failed to delete plugin';
+              writeJson(res, 400, { error: msg });
+            }
+            try {
+              logger?.({ method, path, status: res.statusCode, duration_ms: Date.now() - start });
+            } catch {
+              // Ignore logger errors
+            }
+            return;
+          }
+
           // GET /plugins/:id/template
           if (action === 'template' && method === 'GET') {
             if (!handlers.getPluginTemplate) {
@@ -806,6 +910,31 @@ export function createRestServer(
               writeJson(res, 404, { error: `Template for plugin '${pluginId}' not found` });
             } else {
               writeJson(res, 200, template);
+            }
+            try {
+              logger?.({ method, path, status: res.statusCode, duration_ms: Date.now() - start });
+            } catch {
+              // Ignore logger errors
+            }
+            return;
+          }
+
+          // GET /plugins/:id/source — full plugin source for editing
+          if (action === 'source' && method === 'GET') {
+            if (!handlers.getPluginSource) {
+              writeJson(res, 404, { error: 'Not Found' });
+              try {
+                logger?.({ method, path, status: 404, duration_ms: Date.now() - start });
+              } catch {
+                // Ignore logger errors
+              }
+              return;
+            }
+            const source = await handlers.getPluginSource(pluginId);
+            if (!source) {
+              writeJson(res, 404, { error: `Source for plugin '${pluginId}' not found` });
+            } else {
+              writeJson(res, 200, source);
             }
             try {
               logger?.({ method, path, status: res.statusCode, duration_ms: Date.now() - start });

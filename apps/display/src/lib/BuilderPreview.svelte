@@ -1,10 +1,18 @@
 <script lang="ts">
+  import { renderTemplate } from './template-engine';
+
   /** HTML content from the GrapesJS editor */
   export let html: string = '';
   /** CSS content from the GrapesJS editor */
   export let css: string = '';
   /** Sample data from a connector test result — null/undefined = no data yet */
   export let sampleData: Record<string, unknown> | null | undefined = undefined;
+  /** Callback to request fetching live data */
+  export let onFetchData: (() => void) | undefined = undefined;
+  /** Whether a fetch is currently in progress */
+  export let fetching: boolean = false;
+  /** Error message from last fetch attempt */
+  export let fetchError: string | null = null;
 
   type Size = 'small' | 'medium' | 'large';
 
@@ -17,33 +25,9 @@
 
   let currentSize: Size = 'medium';
 
-  /** Resolve a dot-notation path (e.g. "source.name") against a data object */
-  function resolvePath(data: Record<string, unknown>, path: string): unknown {
-    const parts = path.split('.');
-    let current: unknown = data;
-    for (const part of parts) {
-      if (current === null || current === undefined || typeof current !== 'object') {
-        return undefined;
-      }
-      current = (current as Record<string, unknown>)[part];
-    }
-    return current;
-  }
-
-  /** Replace {{placeholder}} expressions with real data values */
-  function interpolate(template: string, data: Record<string, unknown>): string {
-    return template.replace(/\{\{([^}]+)\}\}/g, (_match, path: string) => {
-      const value = resolvePath(data, path.trim());
-      if (value === null || value === undefined) {
-        return `{{${path}}}`;
-      }
-      return String(value);
-    });
-  }
-
   $: hasData = sampleData !== null && sampleData !== undefined;
 
-  $: processedHtml = hasData ? interpolate(html, sampleData as Record<string, unknown>) : html;
+  $: processedHtml = hasData ? renderTemplate(html, sampleData as Record<string, unknown>) : html;
 
   function buildSrcdoc(h: string, c: string): string {
     return (
@@ -71,19 +55,36 @@
       style="font-size: var(--text-sm, 0.875rem); color: var(--dim-light, hsl(220, 10%, 62%)); font-weight: var(--weight-medium, 500); letter-spacing: 0.04em; text-transform: uppercase;"
       >Preview</span
     >
-    <div role="group" aria-label="Preview size" style="display: flex; gap: var(--space-1, 4px);">
-      {#each SIZE_KEYS as size}
+    <div style="display: flex; align-items: center; gap: var(--space-2, 8px);">
+      {#if onFetchData}
         <button
           type="button"
-          aria-pressed={currentSize === size ? 'true' : 'false'}
-          on:click={() => (currentSize = size)}
-          style="padding: 4px 12px; background: transparent; border: 1px solid var(--edge, hsla(220, 10%, 50%, 0.12)); border-radius: var(--radius-sm, 4px); color: var(--dim-light, hsl(220, 10%, 62%)); font-size: var(--text-xs, 0.75rem); cursor: pointer;"
+          class="wizard-btn wizard-btn--ghost"
+          style="font-size: var(--text-xs, 0.75rem); padding: 4px 12px;"
+          disabled={fetching}
+          on:click={onFetchData}
         >
-          {size.charAt(0).toUpperCase() + size.slice(1)}
+          {fetching ? 'Fetching…' : hasData ? 'Refresh Data' : 'Fetch Live Data'}
         </button>
-      {/each}
+      {/if}
+      <div role="group" aria-label="Preview size" style="display: flex; gap: var(--space-1, 4px);">
+        {#each SIZE_KEYS as size}
+          <button
+            type="button"
+            aria-pressed={currentSize === size ? 'true' : 'false'}
+            on:click={() => (currentSize = size)}
+            style="padding: 4px 12px; background: transparent; border: 1px solid var(--edge, hsla(220, 10%, 50%, 0.12)); border-radius: var(--radius-sm, 4px); color: var(--dim-light, hsl(220, 10%, 62%)); font-size: var(--text-xs, 0.75rem); cursor: pointer;"
+          >
+            {size.charAt(0).toUpperCase() + size.slice(1)}
+          </button>
+        {/each}
+      </div>
     </div>
   </div>
+
+  {#if fetchError}
+    <p class="builder-save-error" style="margin: 0;">{fetchError}</p>
+  {/if}
 
   <div
     style="position: relative; display: flex; align-items: center; justify-content: center; min-height: 150px; background: hsl(0, 0%, 12%); border-radius: var(--radius-sm, 4px); padding: var(--space-4, 16px);"
@@ -94,8 +95,13 @@
       >
         <span
           style="color: var(--ghost-light, hsl(220, 6%, 28%)); font-size: var(--text-sm, 0.875rem); text-align: center; padding: var(--space-4, 16px);"
-          >No data — test a connector in Step 2 to see live data</span
         >
+          {#if onFetchData}
+            Click "Fetch Live Data" to preview with real API data
+          {:else}
+            No data available
+          {/if}
+        </span>
       </div>
     {/if}
     <iframe

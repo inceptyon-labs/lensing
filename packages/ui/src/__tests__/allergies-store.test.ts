@@ -4,11 +4,27 @@ import type { AllergyData } from '@lensing/types';
 
 // ── Fixtures ───────────────────────────────────────────────────────────────
 
-function createAllergyData(index = 2): AllergyData {
+function createAllergyData(index = 5.5): AllergyData {
   return {
-    index: index as 0 | 1 | 2 | 3 | 4 | 5,
-    allergens: [
-      { name: 'Grass Pollen', level: index as 0 | 1 | 2 | 3 | 4 | 5, category: 'pollen' },
+    index,
+    level: 'Medium',
+    color: '#ffeb3b',
+    location: 'Beverly Hills, CA',
+    periods: [
+      { type: 'Yesterday', index: 4.2, triggers: [{ name: 'Alder', plantType: 'Tree' }] },
+      {
+        type: 'Today',
+        index,
+        triggers: [
+          { name: 'Alder', plantType: 'Tree' },
+          { name: 'Juniper', plantType: 'Tree' },
+        ],
+      },
+      { type: 'Tomorrow', index: 6.1, triggers: [{ name: 'Ash', plantType: 'Tree' }] },
+    ],
+    triggers: [
+      { name: 'Alder', plantType: 'Tree' },
+      { name: 'Juniper', plantType: 'Tree' },
     ],
     lastUpdated: Date.now(),
   };
@@ -35,13 +51,14 @@ describe('Allergies Store', () => {
   });
 
   describe('setData', () => {
-    it('should update state with new allergy data', () => {
+    it('should update state with new pollen data', () => {
       const store = createAllergiesStore();
-      const data = createAllergyData(2);
+      const data = createAllergyData(5.5);
 
       store.setData(data);
 
-      expect(store.getState().data?.index).toBe(2);
+      expect(store.getState().data?.index).toBe(5.5);
+      expect(store.getState().data?.level).toBe('Medium');
     });
 
     it('should clear error on setData', () => {
@@ -62,15 +79,15 @@ describe('Allergies Store', () => {
       expect(store.getState().isLoading).toBe(false);
     });
 
-    it('should store a copy of allergens (defensive)', () => {
+    it('should store a copy of triggers (defensive)', () => {
       const store = createAllergiesStore();
-      const data = createAllergyData(3);
+      const data = createAllergyData();
       store.setData(data);
 
       // Mutating original should not affect stored data
-      data.allergens[0].name = 'mutated';
+      data.triggers[0].name = 'mutated';
 
-      expect(store.getState().data?.allergens[0].name).toBe('Grass Pollen');
+      expect(store.getState().data?.triggers[0].name).toBe('Alder');
     });
   });
 
@@ -111,73 +128,42 @@ describe('Allergies Store', () => {
     });
   });
 
-  describe('getSeverityColor', () => {
-    it('should return success color for level 0 (none)', () => {
+  describe('getPollenLevel', () => {
+    it('should return "Low" for index 1.0', () => {
       const store = createAllergiesStore();
-      const color = store.getSeverityColor(0);
-      expect(color).toContain('alert-success');
+      expect(store.getPollenLevel(1.0)).toBe('Low');
     });
 
-    it('should return success color for level 1 (low)', () => {
+    it('should return "Low-Medium" for index 3.5', () => {
       const store = createAllergiesStore();
-      const color = store.getSeverityColor(1);
-      expect(color).toContain('alert-success');
+      expect(store.getPollenLevel(3.5)).toBe('Low-Medium');
     });
 
-    it('should return success color for level 2 (low-moderate)', () => {
+    it('should return "Medium" for index 6.0', () => {
       const store = createAllergiesStore();
-      const color = store.getSeverityColor(2);
-      expect(color).toContain('alert-success');
+      expect(store.getPollenLevel(6.0)).toBe('Medium');
     });
 
-    it('should return warning color for level 3 (moderate)', () => {
+    it('should return "Medium-High" for index 8.5', () => {
       const store = createAllergiesStore();
-      const color = store.getSeverityColor(3);
-      expect(color).toContain('alert-warning');
+      expect(store.getPollenLevel(8.5)).toBe('Medium-High');
     });
 
-    it('should return urgent color for level 4 (high)', () => {
+    it('should return "High" for index 10.5', () => {
       const store = createAllergiesStore();
-      const color = store.getSeverityColor(4);
-      expect(color).toContain('alert-urgent');
-    });
-
-    it('should return ember color for level 5 (very high)', () => {
-      const store = createAllergiesStore();
-      const color = store.getSeverityColor(5);
-      expect(color).toContain('ember');
+      expect(store.getPollenLevel(10.5)).toBe('High');
     });
   });
 
-  describe('getSeverityLabel', () => {
-    it('should return "None" for index 0', () => {
+  describe('getPollenColor', () => {
+    it('should return green for Low', () => {
       const store = createAllergiesStore();
-      expect(store.getSeverityLabel(0)).toBe('None');
+      expect(store.getPollenColor(1.0)).toBe('#4caf50');
     });
 
-    it('should return "Low" for index 1', () => {
+    it('should return red for High', () => {
       const store = createAllergiesStore();
-      expect(store.getSeverityLabel(1)).toBe('Low');
-    });
-
-    it('should return "Low" for index 2', () => {
-      const store = createAllergiesStore();
-      expect(store.getSeverityLabel(2)).toBe('Low');
-    });
-
-    it('should return "Moderate" for index 3', () => {
-      const store = createAllergiesStore();
-      expect(store.getSeverityLabel(3)).toBe('Moderate');
-    });
-
-    it('should return "High" for index 4', () => {
-      const store = createAllergiesStore();
-      expect(store.getSeverityLabel(4)).toBe('High');
-    });
-
-    it('should return "Very High" for index 5', () => {
-      const store = createAllergiesStore();
-      expect(store.getSeverityLabel(5)).toBe('Very High');
+      expect(store.getPollenColor(10.5)).toBe('#f44336');
     });
   });
 
@@ -195,11 +181,9 @@ describe('Allergies Store', () => {
 
     it('should return true when data is older than maxStale_ms', () => {
       const store = createAllergiesStore({ maxStale_ms: 1000 });
-      store.setData({
-        index: 2,
-        allergens: [],
-        lastUpdated: Date.now() - 2000, // 2 seconds ago
-      });
+      const data = createAllergyData();
+      data.lastUpdated = Date.now() - 2000;
+      store.setData(data);
       expect(store.isStale()).toBe(true);
     });
   });
@@ -207,26 +191,26 @@ describe('Allergies Store', () => {
   describe('onChange', () => {
     it('should notify on setData', () => {
       const store = createAllergiesStore();
-      const onChange = { called: false };
+      let called = false;
       store.onChange(() => {
-        onChange.called = true;
+        called = true;
       });
 
       store.setData(createAllergyData());
 
-      expect(onChange.called).toBe(true);
+      expect(called).toBe(true);
     });
 
     it('should notify on setError', () => {
       const store = createAllergiesStore();
-      const onChange = { called: false };
+      let called = false;
       store.onChange(() => {
-        onChange.called = true;
+        called = true;
       });
 
       store.setError('error');
 
-      expect(onChange.called).toBe(true);
+      expect(called).toBe(true);
     });
   });
 });

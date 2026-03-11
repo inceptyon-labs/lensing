@@ -1,4 +1,4 @@
-import type { AiAssistResponse, AiAssistPluginContext } from '@lensing/types';
+import type { AiAssistResponse, AiAssistPluginContext, AiAssistSecretInfo } from '@lensing/types';
 import type { AiProvider } from './ai-assist-providers';
 
 const DEFAULT_MAX_DOCS_SIZE = 50_000; // 50 KB
@@ -36,16 +36,70 @@ You must return ONLY a valid JSON object with this exact structure:
   },
   "html": "<div>{{field}}</div>",
   "css": ".widget { ... }",
-  "explanation": "Brief description of what was generated"
+  "explanation": "Brief description of what was generated",
+  "secrets": [{ "name": "API_KEY", "description": "Your API key from https://..." }]
 }
 
 Connector type rules:
-- Use "json_api" for REST APIs returning JSON
-- Use "rss_feed" for RSS/Atom feed URLs
-- Use "static_data" for hardcoded data (no external source)
+- Use "json_api" ONLY for endpoints that return a JSON response body. The platform calls response.json() to parse the data — if the endpoint returns CSV, XML, HTML, or plain text, it will FAIL. If the API only offers non-JSON formats, use "static_data" and explain in the explanation field that the API does not support JSON.
+- Use "rss_feed" for RSS/Atom XML feed URLs (the platform has a built-in RSS parser).
+- Use "static_data" for hardcoded data (no external source), or when the API does not return JSON.
+- CRITICAL: Verify that the specific endpoint and query parameters you choose actually return JSON. Many APIs have endpoints that return CSV or other formats by default (e.g., Alpha Vantage LISTING_STATUS returns CSV). Always pick a JSON-returning endpoint.
 
-For API keys/tokens in headers, use {{SECRET_NAME}} placeholder syntax (e.g., "Authorization": "Bearer {{API_KEY}}").
-In HTML, use {{fieldName}} placeholders to reference fields from the API response.
+CRITICAL — Data flow (how the API response reaches the template):
+The platform fetches the connector URL, parses the JSON response, and passes the RAW response object directly as the template data. There is NO transformation layer. The template placeholders must exactly match the keys in the API response.
+
+Example 1 — API returns a flat object:
+  API response: { "symbol": "AAPL", "price": 150.25, "change": -1.2 }
+  Template: <div>{{symbol}}: \${{price}} ({{change}})</div>
+
+Example 2 — API returns nested object:
+  API response: { "Global Quote": { "01. symbol": "AAPL", "05. price": "150.25" } }
+  Template: <div>{{["Global Quote"]["01. symbol"]}}: \${{["Global Quote"]["05. price"]}}</div>
+
+Example 3 — API returns an object with an array field:
+  API response: { "articles": [{ "title": "...", "source": "..." }] }
+  Template: {{#each articles}}<div>{{title}} — {{source}}</div>{{/each}}
+  NOTE: {{#each articles}} works because "articles" is a key in the response object.
+
+Example 4 — API returns a top-level array:
+  API response: [{ "name": "Item 1" }, { "name": "Item 2" }]
+  This CANNOT be iterated directly because the template data must be an object with named keys.
+  For top-level arrays, use a wrapper field or pick specific indices: {{[0].name}}, {{[1].name}}.
+
+IMPORTANT: You must understand the actual JSON response shape of the API endpoint you choose, and write template placeholders that match it exactly. Do NOT guess field names — use the names from the documentation. If the docs show a response like {"data": {"temperature": 72}}, the template must use {{data.temperature}}, NOT {{temperature}}.
+
+For API keys/tokens in headers or URLs, use {{SECRET_NAME}} placeholder syntax (e.g., "Authorization": "Bearer {{API_KEY}}").
+For each {{SECRET_NAME}} placeholder used, include a "secrets" entry with the name and a helpful description of what the credential is and where to get it.
+
+HTML template syntax rules:
+- Use {{fieldName}} for simple top-level keys.
+- Use dot notation for nested objects: {{weather.temp}}
+- Use bracket notation for keys containing spaces, dots, or special characters: {{["Global Quote"]["01. symbol"]}}
+- Use array indices: {{items[0].title}}
+- Use {{#each items}}...{{/each}} to loop over arrays. Inside the loop, use {{fieldName}} for object properties or {{this}} for primitive values.
+- The template engine does NOT support conditionals, ternary expressions, or any logic — only simple value interpolation and #each loops.
+- Keep the CSS self-contained. Use a class prefix matching the widget name to avoid style conflicts. Do NOT use external fonts or CDN links.
+
+Design system — ALL widgets MUST follow these rules:
+- This is a 24/7 ambient display with a gravitational lensing dark theme. Widgets sit on a near-black background.
+- Background: use transparent or hsl(240, 8%, 4%) for the widget root. The widget sits on a near-black page — do NOT add a visible card surface. NEVER use gradients, bright backgrounds, or white backgrounds.
+- Primary text: hsl(220, 15%, 90%) — cool off-white, NEVER pure #fff.
+- Secondary text (labels, metadata): hsl(220, 10%, 62%).
+- Muted text (timestamps, captions): hsl(220, 8%, 42%).
+- Accent (sparingly — active states, emphasis): hsl(28, 85%, 55%) — warm ember orange.
+- Positive values: hsl(160, 45%, 45%) — muted teal-green.
+- Negative values: hsl(0, 60%, 55%) — desaturated red.
+- Warning: hsl(38, 65%, 50%).
+- Borders: hsla(220, 10%, 50%, 0.12) — subtle, nearly invisible.
+- Border radius: 8px for cards.
+- Font: inherit (Inter is set globally). Use font-weight 600-700 for titles/hero numbers, 400-500 for body.
+- No drop shadows. Use border glow for depth: box-shadow: 0 0 0 1px hsla(220, 10%, 50%, 0.12).
+- Hero metrics (main numbers like price, temperature): large (1.5-2rem), bold, primary text color.
+- Labels: small (0.75-0.875rem), weight 500-600, secondary text color, uppercase with letter-spacing 0.04em.
+- Minimum text size: 0.875rem (14px) — must be readable from across a room.
+- Keep DOM minimal — this runs on constrained hardware (Pi 3B).
+
 Return ONLY the JSON object, no markdown, no explanation outside the JSON.`;
 
 /** Extract a JSON object from text that may contain markdown fences or surrounding prose */
@@ -103,21 +157,60 @@ function validateOutput(raw: unknown): AiAssistResponse {
     throw new Error('Invalid response: html field is required');
   }
 
+  const connectorResult = {
+    type: connector.type as 'json_api' | 'rss_feed' | 'static_data',
+    url: typeof connector.url === 'string' ? connector.url : '',
+    method: typeof connector.method === 'string' ? connector.method : undefined,
+    headers:
+      connector.headers && typeof connector.headers === 'object'
+        ? (connector.headers as Record<string, string>)
+        : undefined,
+    refreshInterval:
+      typeof connector.refreshInterval === 'number' ? connector.refreshInterval : 300,
+  };
+
+  // Parse secrets from LLM response
+  const llmSecrets = new Map<string, string>();
+  if (Array.isArray(obj.secrets)) {
+    for (const entry of obj.secrets) {
+      if (entry && typeof entry === 'object') {
+        const s = entry as Record<string, unknown>;
+        if (typeof s.name === 'string') {
+          llmSecrets.set(s.name, typeof s.description === 'string' ? s.description : '');
+        }
+      }
+    }
+  }
+
+  // Auto-detect {{NAME}} in connector URL and headers as fallback
+  const secretPattern = /\{\{(\w+)\}\}/g;
+  const detectedNames = new Set<string>();
+  for (const match of connectorResult.url.matchAll(secretPattern)) {
+    detectedNames.add(match[1]!);
+  }
+  if (connectorResult.headers) {
+    for (const value of Object.values(connectorResult.headers)) {
+      for (const match of value.matchAll(secretPattern)) {
+        detectedNames.add(match[1]!);
+      }
+    }
+  }
+
+  // Merge: LLM descriptions take precedence, auto-detect fills gaps
+  const secrets: AiAssistSecretInfo[] = [];
+  for (const name of detectedNames) {
+    secrets.push({
+      name,
+      description: llmSecrets.get(name) || `API credential: ${name}`,
+    });
+  }
+
   return {
-    connector: {
-      type: connector.type as 'json_api' | 'rss_feed' | 'static_data',
-      url: typeof connector.url === 'string' ? connector.url : '',
-      method: typeof connector.method === 'string' ? connector.method : undefined,
-      headers:
-        connector.headers && typeof connector.headers === 'object'
-          ? (connector.headers as Record<string, string>)
-          : undefined,
-      refreshInterval:
-        typeof connector.refreshInterval === 'number' ? connector.refreshInterval : 300,
-    },
+    connector: connectorResult,
     html: obj.html as string,
     css: typeof obj.css === 'string' ? obj.css : '',
     explanation: typeof obj.explanation === 'string' ? obj.explanation : undefined,
+    ...(secrets.length > 0 ? { secrets } : {}),
   };
 }
 

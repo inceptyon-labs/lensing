@@ -5,7 +5,7 @@ export interface ModuleGroup {
 }
 
 export const MODULE_GROUPS: ModuleGroup[] = [
-  { label: 'Data Sources', ids: ['weather', 'news', 'sports', 'crypto'] },
+  { label: 'Data Sources', ids: ['weather', 'news', 'ai-news', 'sports', 'crypto'] },
   { label: 'Integrations', ids: ['calendar', 'home-assistant', 'allergies'] },
   { label: 'Media', ids: ['photo-slideshow'] },
 ];

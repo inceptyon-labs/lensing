@@ -1,0 +1,15 @@
+<div class="myfinance-exchanges">
+  <div class="header"><h2 class="title">Top Stock Exchanges</h2></div>
+  <div class="exchanges-grid">
+    {{#each data}}
+    <div class="exchange-item">
+      <div class="exchange-symbol">{{symbol}}</div>
+      <div class="exchange-name">{{name}}</div>
+      <div class="exchange-meta">
+        <span class="exchange-type">{{exchange}}</span
+        ><span class="exchange-status">{{status}}</span>
+      </div>
+    </div>
+    {{/each}}
+  </div>
+</div>

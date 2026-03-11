@@ -21,6 +21,7 @@ export interface SportsStore {
   isStale(): boolean;
   onChange(callback: () => void): () => void;
   getByLeague(league: string): SportsGame[];
+  getByTeam(team: string): SportsGame[];
   getLiveGames(): SportsGame[];
   getUpcoming(): SportsGame[];
   getLeagues(): string[];
@@ -111,6 +112,17 @@ export function createSportsStore(options: SportsStoreOptions = {}): SportsStore
     getByLeague(league: string): SportsGame[] {
       if (!data) return [];
       return data.games.filter((g) => g.league === league).map(copyGame);
+    },
+
+    getByTeam(team: string): SportsGame[] {
+      if (!data) return [];
+      const needle = team.toLowerCase();
+      return data.games
+        .filter(
+          (g) =>
+            g.homeTeam.toLowerCase().includes(needle) || g.awayTeam.toLowerCase().includes(needle)
+        )
+        .map(copyGame);
     },
 
     getLiveGames(): SportsGame[] {

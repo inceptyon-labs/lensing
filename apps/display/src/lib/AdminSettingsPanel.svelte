@@ -272,7 +272,6 @@
           <AdminPluginCard
             plugin={pirPlugin}
             {onToggleEnabled}
-            onZoneChange={() => {}}
             {onConfigSave}
             {onRestart}
             onConfigure={(p) => (configPlugin = p)}

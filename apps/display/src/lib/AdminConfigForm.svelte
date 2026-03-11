@@ -1,7 +1,8 @@
 <script lang="ts">
-  import type { PluginAdminEntry } from '@lensing/types';
+  import type { PluginAdminEntry, ConfigField } from '@lensing/types';
   import { getIntegrationFields } from '@lensing/types';
   import NewsFeedPresets from './NewsFeedPresets.svelte';
+  import AiNewsCategoryPicker from './AiNewsCategoryPicker.svelte';
 
   export let plugin: PluginAdminEntry;
   export let onSave: (config: Record<string, string | number | boolean>) => void = () => {};
@@ -31,6 +32,47 @@
                 ? 0
                 : '';
     }
+    // Fetch models for ai-news on init
+    if (plugin.plugin_id === 'ai-news' && values['aiProvider']) {
+      fetchAiModels(String(values['aiProvider']));
+    }
+  }
+
+  // Dynamic model options for ai-news module
+  let aiModelOptions: Array<{ label: string; value: string }> = [];
+  let aiModelsLoading = false;
+
+  async function fetchAiModels(provider: string) {
+    aiModelsLoading = true;
+    aiModelOptions = [];
+    try {
+      const res = await fetch(`/api/admin/ai-models?provider=${encodeURIComponent(provider)}`);
+      if (res.ok) {
+        const data = await res.json();
+        aiModelOptions = (data.models || []).map((m: { id: string; name: string }) => ({
+          label: m.name || m.id,
+          value: m.id,
+        }));
+        // If current value is empty or not in the list, select first available
+        const currentModel = String(values['aiModel'] ?? '');
+        if (aiModelOptions.length > 0 && !aiModelOptions.some((o) => o.value === currentModel)) {
+          values['aiModel'] = aiModelOptions[0].value;
+        }
+      }
+    } catch {
+      // Silently fail — user can still type manually
+    } finally {
+      aiModelsLoading = false;
+    }
+  }
+
+  function handleFieldChange(field: ConfigField, value: string | number | boolean) {
+    values[field.key] = value;
+    // When ai-news provider changes, re-fetch models
+    if (plugin.plugin_id === 'ai-news' && field.key === 'aiProvider') {
+      values['aiModel'] = '';
+      fetchAiModels(String(value));
+    }
   }
 
   function handleSubmit() {
@@ -53,7 +95,12 @@
           <p class="field-description">{field.description}</p>
         {/if}
 
-        {#if field.type === 'string'}
+        {#if plugin.plugin_id === 'ai-news' && field.key === 'categories'}
+          <AiNewsCategoryPicker
+            currentCategories={String(values[field.key] ?? '')}
+            onCategoriesChange={(cats) => (values[field.key] = cats)}
+          />
+        {:else if field.type === 'string'}
           <input
             id="cfg-{field.key}"
             type="text"
@@ -94,8 +141,19 @@
             bind:checked={values[field.key] as boolean}
           />
         {:else if field.type === 'select'}
-          <select id="cfg-{field.key}" class="field-select" bind:value={values[field.key]}>
-            {#each field.options ?? [] as opt (opt.value)}
+          {@const isAiModelField = plugin.plugin_id === 'ai-news' && field.key === 'aiModel'}
+          <select
+            id="cfg-{field.key}"
+            class="field-select"
+            value={values[field.key]}
+            on:change={(e) => handleFieldChange(field, e.currentTarget.value)}
+          >
+            {#if isAiModelField && aiModelsLoading}
+              <option value="">Loading models…</option>
+            {:else if isAiModelField && aiModelOptions.length === 0}
+              <option value="">No models available</option>
+            {/if}
+            {#each isAiModelField ? aiModelOptions : (field.options ?? []) as opt (opt.value)}
               <option value={opt.value}>{opt.label}</option>
             {/each}
           </select>

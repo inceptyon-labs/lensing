@@ -681,6 +681,180 @@ describe('WeatherServer', () => {
     });
   });
 
+  describe('geocoding via locationQuery', () => {
+    function geocodeFetchFn() {
+      return vi.fn().mockImplementation((url: string) => {
+        // Geocoding request
+        if (url.includes('geocoding-api.open-meteo.com')) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                results: [{ latitude: 40.7128, longitude: -74.006, name: 'New York' }],
+              }),
+          });
+        }
+        // Weather request (Open-Meteo)
+        return Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              current: {
+                temperature_2m: 72,
+                apparent_temperature: 70,
+                weather_code: 0,
+                relative_humidity_2m: 55,
+              },
+              daily: {
+                time: ['2026-02-25'],
+                temperature_2m_max: [75],
+                temperature_2m_min: [60],
+                weather_code: [2],
+              },
+            }),
+        });
+      });
+    }
+
+    it('should accept locationQuery instead of location', () => {
+      const fetchFn = geocodeFetchFn();
+      expect(() => createWeatherServer({ locationQuery: 'New York', fetchFn })).not.toThrow();
+    });
+
+    it('should throw if neither location nor locationQuery is provided', () => {
+      expect(() =>
+        createWeatherServer({
+          fetchFn: vi.fn(),
+        } as unknown as WeatherServerOptions)
+      ).toThrow(/location/i);
+    });
+
+    it('should geocode on first refresh and use resolved coordinates', async () => {
+      const fetchFn = geocodeFetchFn();
+      const server = createWeatherServer({ locationQuery: 'New York', fetchFn });
+      await server.refresh();
+
+      // First call should be geocoding
+      expect(fetchFn).toHaveBeenCalledWith(expect.stringContaining('geocoding-api.open-meteo.com'));
+      // Second call should be weather with resolved coordinates
+      const weatherUrl = fetchFn.mock.calls[1][0] as string;
+      expect(weatherUrl).toContain('latitude=40.7128');
+      expect(weatherUrl).toContain('longitude=-74.006');
+
+      // Should have weather data
+      expect(server.getWeatherData()).not.toBeNull();
+    });
+
+    it('should cache geocoded coordinates (no re-geocode on second refresh)', async () => {
+      const fetchFn = geocodeFetchFn();
+      const server = createWeatherServer({
+        locationQuery: 'New York',
+        fetchFn,
+        maxStale_ms: 0,
+      });
+      await server.refresh();
+      await server.refresh();
+
+      // Geocoding should only happen once
+      const geocodeCalls = fetchFn.mock.calls.filter((c: string[]) =>
+        c[0].includes('geocoding-api.open-meteo.com')
+      );
+      expect(geocodeCalls).toHaveLength(1);
+    });
+
+    it('should report error when geocoding fails (network)', async () => {
+      const fetchFn = vi.fn().mockRejectedValue(new Error('network error'));
+      const server = createWeatherServer({ locationQuery: 'Nowhere', fetchFn });
+      const errorListener = vi.fn();
+      server.onError(errorListener);
+      await server.refresh();
+      expect(errorListener).toHaveBeenCalledWith(expect.stringContaining('Geocoding failed'));
+    });
+
+    it('should report error when geocoding returns no results', async () => {
+      const fetchFn = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ results: [] }),
+      });
+      const server = createWeatherServer({ locationQuery: 'xyzzy', fetchFn });
+      const errorListener = vi.fn();
+      server.onError(errorListener);
+      await server.refresh();
+      expect(errorListener).toHaveBeenCalledWith(expect.stringContaining('No results'));
+    });
+
+    it('should report error when geocoding returns empty response', async () => {
+      const fetchFn = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({}),
+      });
+      const server = createWeatherServer({ locationQuery: 'xyzzy', fetchFn });
+      const errorListener = vi.fn();
+      server.onError(errorListener);
+      await server.refresh();
+      expect(errorListener).toHaveBeenCalledWith(expect.stringContaining('No results'));
+    });
+
+    it('should report error when geocoding API returns HTTP error', async () => {
+      const fetchFn = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+      });
+      const server = createWeatherServer({ locationQuery: 'Berlin', fetchFn });
+      const errorListener = vi.fn();
+      server.onError(errorListener);
+      await server.refresh();
+      expect(errorListener).toHaveBeenCalledWith(expect.stringContaining('Geocoding failed'));
+    });
+
+    it('should work with zip code style queries', async () => {
+      const fetchFn = vi.fn().mockImplementation((url: string) => {
+        if (url.includes('geocoding-api.open-meteo.com')) {
+          expect(url).toContain('name=10001');
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                results: [{ latitude: 40.7484, longitude: -73.9967, name: 'New York' }],
+              }),
+          });
+        }
+        return Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              current: {
+                temperature_2m: 72,
+                apparent_temperature: 70,
+                weather_code: 0,
+                relative_humidity_2m: 55,
+              },
+              daily: { time: [], temperature_2m_max: [], temperature_2m_min: [], weather_code: [] },
+            }),
+        });
+      });
+      const server = createWeatherServer({ locationQuery: '10001', fetchFn });
+      await server.refresh();
+      expect(server.getWeatherData()).not.toBeNull();
+    });
+
+    it('should prefer locationQuery over location when both are provided', async () => {
+      const fetchFn = geocodeFetchFn();
+      const server = createWeatherServer({
+        locationQuery: 'New York',
+        location: { lat: 0, lon: 0 },
+        fetchFn,
+      });
+      await server.refresh();
+
+      // Should have geocoded (not used the 0,0 coordinates)
+      expect(fetchFn).toHaveBeenCalledWith(expect.stringContaining('geocoding-api.open-meteo.com'));
+      const weatherUrl = fetchFn.mock.calls[1][0] as string;
+      expect(weatherUrl).toContain('40.7128');
+    });
+  });
+
   describe('exports', () => {
     it('should be exported from @lensing/core index', async () => {
       const core = await import('../index');

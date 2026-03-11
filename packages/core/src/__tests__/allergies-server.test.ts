@@ -1,12 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { createAllergiesServer } from '../allergies-server';
-import type {
-  AllergiesServerOptions,
-  AllergiesServerInstance,
-  AllergyData,
-  AllergyLocation,
-  FetchFn,
-} from '@lensing/types';
+import type { AllergiesServerOptions, AllergiesServerInstance, FetchFn } from '@lensing/types';
 import type { DataBusInstance, NotificationQueueInstance } from '@lensing/types';
 
 // ── Mock helpers ───────────────────────────────────────────────────────────
@@ -44,13 +38,37 @@ function createMockFetch(response: unknown): FetchFn {
   } as any);
 }
 
-function createMockAllergyResponse() {
+function createMockPollenResponse(todayIndex = 5.5) {
   return {
-    current: {
-      idx: 2,
-      allergens: [
-        { name: 'Grass Pollen', level: 2, category: 'pollen' },
-        { name: 'Ragweed', level: 1, category: 'pollen' },
+    Type: 'pollen',
+    ForecastDate: '2026-03-05T00:00:00-05:00',
+    Location: {
+      ZIP: '90210',
+      City: 'BEVERLY HILLS',
+      State: 'CA',
+      DisplayLocation: 'Beverly Hills, CA',
+      periods: [
+        {
+          Triggers: [{ LGID: 22, Name: 'Alder', Genus: 'Alnus', PlantType: 'Tree' }],
+          Period: '0001-01-01T00:00:00',
+          Type: 'Yesterday',
+          Index: 4.2,
+        },
+        {
+          Triggers: [
+            { LGID: 22, Name: 'Alder', Genus: 'Alnus', PlantType: 'Tree' },
+            { LGID: 272, Name: 'Juniper', Genus: 'Juniperus', PlantType: 'Tree' },
+          ],
+          Period: '0001-01-01T00:00:00',
+          Type: 'Today',
+          Index: todayIndex,
+        },
+        {
+          Triggers: [{ LGID: 103, Name: 'Ash', Genus: 'Fraxinus', PlantType: 'Tree' }],
+          Period: '0001-01-01T00:00:00',
+          Type: 'Tomorrow',
+          Index: 6.1,
+        },
       ],
     },
   };
@@ -58,11 +76,10 @@ function createMockAllergyResponse() {
 
 // ── Tests ──────────────────────────────────────────────────────────────────
 
-describe('Allergies Server', () => {
+describe('Allergies Server (pollen.com)', () => {
   let dataBus: DataBusInstance;
   let notifications: NotificationQueueInstance;
   let server: AllergiesServerInstance;
-  const location: AllergyLocation = { lat: 37.7749, lon: -122.4194 };
 
   beforeEach(() => {
     dataBus = createMockDataBus();
@@ -77,97 +94,90 @@ describe('Allergies Server', () => {
 
   function createServer(overrides: Partial<AllergiesServerOptions> = {}): AllergiesServerInstance {
     server = createAllergiesServer({
-      apiKey: 'test-key',
-      location,
+      zipCode: '90210',
       dataBus,
       notifications,
-      fetchFn: createMockFetch(createMockAllergyResponse()),
+      fetchFn: createMockFetch(createMockPollenResponse()),
       ...overrides,
     });
     return server;
   }
 
   describe('Configuration', () => {
-    it('should require apiKey', () => {
+    it('should require zipCode', () => {
       expect(() => {
         createAllergiesServer({
-          apiKey: '',
-          location,
+          zipCode: '',
           dataBus,
           notifications,
         });
-      }).toThrow('apiKey is required');
+      }).toThrow('zipCode is required');
     });
 
-    it('should require location', () => {
+    it('should reject non-5-digit zip codes', () => {
       expect(() => {
         createAllergiesServer({
-          apiKey: 'test',
-          location: {} as any,
+          zipCode: '1234',
           dataBus,
           notifications,
         });
-      }).toThrow('location is required');
+      }).toThrow('zipCode is required');
     });
 
-    it('should accept lat=0 (equator) as valid location', () => {
+    it('should accept valid 5-digit zip code', () => {
       expect(() => {
-        createAllergiesServer({
-          apiKey: 'test',
-          location: { lat: 0, lon: -122.4194 },
-          dataBus,
-          notifications,
-          fetchFn: createMockFetch(createMockAllergyResponse()),
-        });
+        createServer({ zipCode: '10001' });
       }).not.toThrow();
     });
 
     it('should accept alertThreshold option', () => {
-      const server = createServer({ alertThreshold: 4 });
-      expect(server).toBeDefined();
-      server.close();
+      const s = createServer({ alertThreshold: 9.7 });
+      expect(s).toBeDefined();
+      s.close();
     });
   });
 
   describe('Data Fetching', () => {
-    it('should fetch and transform allergy data', async () => {
-      const fetchFn = createMockFetch(createMockAllergyResponse());
-      const server = createServer({ fetchFn });
+    it('should fetch and transform pollen data', async () => {
+      const server = createServer();
 
       await server.refresh();
 
       const data = server.getAllergyData();
       expect(data).not.toBeNull();
-      expect(data?.index).toBe(2);
-      expect(data?.allergens).toHaveLength(2);
-      expect(data?.allergens[0].name).toBe('Grass Pollen');
+      expect(data?.index).toBe(5.5);
+      expect(data?.level).toBe('Medium');
+      expect(data?.color).toBe('#ffeb3b');
+      expect(data?.location).toBe('Beverly Hills, CA');
+      expect(data?.triggers).toHaveLength(2);
+      expect(data?.triggers[0].name).toBe('Alder');
+      expect(data?.triggers[0].plantType).toBe('Tree');
     });
 
-    it('should fetch from correct API endpoint without api key in URL', async () => {
-      const fetchFn = createMockFetch(createMockAllergyResponse());
+    it('should include all three periods', async () => {
+      const server = createServer();
+
+      await server.refresh();
+
+      const data = server.getAllergyData();
+      expect(data?.periods).toHaveLength(3);
+      expect(data?.periods[0].type).toBe('Yesterday');
+      expect(data?.periods[1].type).toBe('Today');
+      expect(data?.periods[2].type).toBe('Tomorrow');
+    });
+
+    it('should fetch from correct API endpoint with headers', async () => {
+      const fetchFn = createMockFetch(createMockPollenResponse());
       const server = createServer({ fetchFn });
 
       await server.refresh();
 
       expect(fetchFn).toHaveBeenCalled();
       const url = (fetchFn as any).mock.calls[0][0];
-      expect(url).toContain('37.7749');
-      expect(url).toContain('-122.4194');
-      expect(url).not.toContain('test-key');
-      expect(url).not.toContain('x-api-key');
-    });
-
-    it('should pass API key in request headers', async () => {
-      const fetchFn = createMockFetch(createMockAllergyResponse());
-      const server = createServer({ fetchFn });
-
-      await server.refresh();
-
-      expect(fetchFn).toHaveBeenCalled();
+      expect(url).toBe('https://www.pollen.com/api/forecast/current/pollen/90210');
       const init = (fetchFn as any).mock.calls[0][1];
-      expect(init).toBeDefined();
-      expect(init.headers).toBeDefined();
-      expect(init.headers['x-api-key']).toBe('test-key');
+      expect(init.headers.Referer).toContain('pollen.com');
+      expect(init.headers['User-Agent']).toBeDefined();
     });
 
     it('should handle fetch errors gracefully', async () => {
@@ -185,8 +195,8 @@ describe('Allergies Server', () => {
     it('should handle HTTP error responses', async () => {
       const fetchFn = vi.fn().mockResolvedValue({
         ok: false,
-        status: 401,
-        statusText: 'Unauthorized',
+        status: 403,
+        statusText: 'Forbidden',
       } as any);
       const onError = vi.fn();
       const server = createServer({ fetchFn });
@@ -195,7 +205,7 @@ describe('Allergies Server', () => {
       await server.refresh();
 
       expect(onError).toHaveBeenCalled();
-      expect(onError.mock.calls[0][0]).toContain('401');
+      expect(onError.mock.calls[0][0]).toContain('403');
     });
 
     it('should handle malformed JSON responses', async () => {
@@ -213,10 +223,66 @@ describe('Allergies Server', () => {
 
       expect(onError).toHaveBeenCalled();
     });
+
+    it('should handle missing Location in response', async () => {
+      const fetchFn = createMockFetch({ Type: 'pollen' });
+      const onError = vi.fn();
+      const server = createServer({ fetchFn });
+      server.onError(onError);
+
+      await server.refresh();
+
+      expect(onError).toHaveBeenCalled();
+      expect(onError.mock.calls[0][0]).toContain('Location');
+    });
+  });
+
+  describe('Severity Levels', () => {
+    it('should classify Low (0-2.4)', async () => {
+      const server = createServer({
+        fetchFn: createMockFetch(createMockPollenResponse(1.5)),
+      });
+      await server.refresh();
+      expect(server.getAllergyData()?.level).toBe('Low');
+      expect(server.getAllergyData()?.color).toBe('#4caf50');
+    });
+
+    it('should classify Low-Medium (2.5-4.8)', async () => {
+      const server = createServer({
+        fetchFn: createMockFetch(createMockPollenResponse(3.5)),
+      });
+      await server.refresh();
+      expect(server.getAllergyData()?.level).toBe('Low-Medium');
+    });
+
+    it('should classify Medium (4.9-7.2)', async () => {
+      const server = createServer({
+        fetchFn: createMockFetch(createMockPollenResponse(6.0)),
+      });
+      await server.refresh();
+      expect(server.getAllergyData()?.level).toBe('Medium');
+    });
+
+    it('should classify Medium-High (7.3-9.6)', async () => {
+      const server = createServer({
+        fetchFn: createMockFetch(createMockPollenResponse(8.5)),
+      });
+      await server.refresh();
+      expect(server.getAllergyData()?.level).toBe('Medium-High');
+    });
+
+    it('should classify High (9.7-12)', async () => {
+      const server = createServer({
+        fetchFn: createMockFetch(createMockPollenResponse(10.5)),
+      });
+      await server.refresh();
+      expect(server.getAllergyData()?.level).toBe('High');
+      expect(server.getAllergyData()?.color).toBe('#f44336');
+    });
   });
 
   describe('Data Bus Publishing', () => {
-    it('should publish allergy data to data bus', async () => {
+    it('should publish pollen data to data bus', async () => {
       const server = createServer();
 
       await server.refresh();
@@ -226,27 +292,25 @@ describe('Allergies Server', () => {
       expect(publishCall[0]).toBe('allergies.current');
     });
 
-    it('should include allergen data in publication', async () => {
+    it('should include pollen data in publication', async () => {
       const server = createServer();
 
       await server.refresh();
 
       const publishCall = (dataBus.publish as any).mock.calls[0];
       const data = publishCall[2];
-      expect(data.index).toBe(2);
-      expect(data.allergens).toBeDefined();
+      expect(data.index).toBe(5.5);
+      expect(data.triggers).toBeDefined();
+      expect(data.periods).toBeDefined();
     });
   });
 
   describe('Alert Notifications', () => {
     it('should emit alert when index exceeds threshold', async () => {
-      const fetchFn = createMockFetch({
-        current: {
-          idx: 4,
-          allergens: [{ name: 'Pollen', level: 4, category: 'pollen' }],
-        },
+      const server = createServer({
+        fetchFn: createMockFetch(createMockPollenResponse(9.0)),
+        alertThreshold: 7.3,
       });
-      const server = createServer({ fetchFn, alertThreshold: 3 });
 
       await server.refresh();
 
@@ -254,32 +318,36 @@ describe('Allergies Server', () => {
     });
 
     it('should not emit alert when index below threshold', async () => {
-      const fetchFn = createMockFetch({
-        current: {
-          idx: 2,
-          allergens: [{ name: 'Pollen', level: 2, category: 'pollen' }],
-        },
+      const server = createServer({
+        fetchFn: createMockFetch(createMockPollenResponse(3.0)),
+        alertThreshold: 7.3,
       });
-      const server = createServer({ fetchFn, alertThreshold: 3 });
 
       await server.refresh();
 
       expect((notifications.emit as any).mock.calls.length).toBe(0);
     });
 
-    it('should use default alert threshold of 3', async () => {
-      const fetchFn = createMockFetch({
-        current: {
-          idx: 3,
-          allergens: [{ name: 'Pollen', level: 3, category: 'pollen' }],
-        },
-      });
-      const server = createServer({ fetchFn }); // no alertThreshold
+    it('should use default alert threshold of 7.3', async () => {
+      const server = createServer({
+        fetchFn: createMockFetch(createMockPollenResponse(8.0)),
+      }); // no alertThreshold
 
       await server.refresh();
 
-      // idx=3, default threshold=3, should trigger
       expect((notifications.emit as any).mock.calls.length).toBeGreaterThan(0);
+    });
+
+    it('should set urgent priority for High level', async () => {
+      const server = createServer({
+        fetchFn: createMockFetch(createMockPollenResponse(10.5)),
+        alertThreshold: 7.3,
+      });
+
+      await server.refresh();
+
+      const emitCall = (notifications.emit as any).mock.calls[0][0];
+      expect(emitCall.priority).toBe('urgent');
     });
   });
 
@@ -293,7 +361,7 @@ describe('Allergies Server', () => {
 
       expect(onUpdate).toHaveBeenCalled();
       const data = onUpdate.mock.calls[0][0];
-      expect(data.index).toBe(2);
+      expect(data.index).toBe(5.5);
     });
 
     it('should isolate callback errors', async () => {
@@ -314,14 +382,13 @@ describe('Allergies Server', () => {
       unsubscribe();
       await server.refresh();
 
-      // After unsubscribe, onUpdate should not be called again
       expect(onUpdate).not.toHaveBeenCalled();
     });
   });
 
   describe('Caching', () => {
     it('should not refetch if cache is fresh', async () => {
-      const fetchFn = createMockFetch(createMockAllergyResponse());
+      const fetchFn = createMockFetch(createMockPollenResponse());
       const server = createServer({ fetchFn, maxStale_ms: 3600000 });
 
       await server.refresh();
@@ -332,7 +399,7 @@ describe('Allergies Server', () => {
     });
 
     it('should refetch if cache is stale', async () => {
-      const fetchFn = createMockFetch(createMockAllergyResponse());
+      const fetchFn = createMockFetch(createMockPollenResponse());
       const server = createServer({ fetchFn, maxStale_ms: 1000 });
 
       await server.refresh();
@@ -356,49 +423,13 @@ describe('Allergies Server', () => {
     });
 
     it('should ignore refresh after close', async () => {
-      const fetchFn = createMockFetch(createMockAllergyResponse());
+      const fetchFn = createMockFetch(createMockPollenResponse());
       const server = createServer({ fetchFn });
 
       server.close();
       await server.refresh();
 
       expect(fetchFn).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('Malformed API payloads', () => {
-    it('should handle non-finite idx without throwing', async () => {
-      const fetchFn = createMockFetch({
-        current: { idx: NaN, allergens: [] },
-      });
-      const server = createServer({ fetchFn });
-
-      await expect(server.refresh()).resolves.toBeUndefined();
-      expect(server.getAllergyData()?.index).toBe(0);
-    });
-
-    it('should handle null category without throwing', async () => {
-      const fetchFn = createMockFetch({
-        current: {
-          idx: 2,
-          allergens: [{ name: 'Pollen', level: 2, category: null }],
-        },
-      });
-      const server = createServer({ fetchFn });
-
-      await expect(server.refresh()).resolves.toBeUndefined();
-      expect(server.getAllergyData()?.allergens[0].category).toBe('other');
-    });
-
-    it('should handle non-array allergens without throwing', async () => {
-      const fetchFn = createMockFetch({
-        current: { idx: 2, allergens: null },
-      });
-      const server = createServer({ fetchFn });
-      const onError = vi.fn();
-      server.onError(onError);
-
-      await expect(server.refresh()).resolves.toBeUndefined();
     });
   });
 
@@ -413,23 +444,22 @@ describe('Allergies Server', () => {
       );
 
       const server = createAllergiesServer({
-        apiKey: 'test-key',
-        location,
+        zipCode: '90210',
         dataBus: mockDataBus,
         notifications,
-        fetchFn: createMockFetch(createMockAllergyResponse()),
+        fetchFn: createMockFetch(createMockPollenResponse()),
       });
 
       await server.refresh();
 
       // Mutate published data
       publishedData.index = 99;
-      publishedData.allergens[0].name = 'MUTATED';
+      publishedData.triggers[0].name = 'MUTATED';
 
       // Internal cache should be unaffected
       const cached = server.getAllergyData();
-      expect(cached?.index).toBe(2);
-      expect(cached?.allergens[0].name).toBe('Grass Pollen');
+      expect(cached?.index).toBe(5.5);
+      expect(cached?.triggers[0].name).toBe('Alder');
     });
   });
 });

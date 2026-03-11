@@ -1,0 +1,6 @@
+{
+  "type": "json_api",
+  "url": "https://www.alphavantage.co/query?function=LISTING_STATUS&apikey={{API_KEY}}",
+  "refreshInterval": 3600,
+  "method": "GET"
+}

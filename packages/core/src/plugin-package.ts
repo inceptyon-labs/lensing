@@ -50,6 +50,23 @@ export function packagePlugin(input: PackageInput): PackageResult {
     permissions.max_refresh_ms = input.connector.refreshInterval * 1000;
   }
 
+  // Auto-detect {{NAME}} secret placeholders in connector URL and headers
+  const secretNames = new Set<string>();
+  const secretPattern = /\{\{(\w+)\}\}/g;
+  for (const match of input.connector.url.matchAll(secretPattern)) {
+    secretNames.add(match[1]!);
+  }
+  if (input.connector.headers) {
+    for (const value of Object.values(input.connector.headers)) {
+      for (const match of value.matchAll(secretPattern)) {
+        secretNames.add(match[1]!);
+      }
+    }
+  }
+  if (secretNames.size > 0) {
+    permissions.secrets = [...secretNames].sort();
+  }
+
   const manifest: PluginManifest = {
     id: input.id,
     name: input.name,

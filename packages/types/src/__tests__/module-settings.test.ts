@@ -8,9 +8,9 @@ import {
 } from '../module-settings';
 
 describe('Module Settings Schemas', () => {
-  it('should define exactly 9 modules', () => {
-    expect(MODULE_SCHEMAS).toHaveLength(9);
-    expect(MODULE_IDS).toHaveLength(9);
+  it('should define exactly 10 modules', () => {
+    expect(MODULE_SCHEMAS).toHaveLength(10);
+    expect(MODULE_IDS).toHaveLength(10);
   });
 
   it('should include photo-slideshow module with photoDirectory field', () => {
@@ -63,10 +63,12 @@ describe('Module Settings Schemas', () => {
     }
   });
 
-  it('select fields should have options defined', () => {
+  it('select fields should have options defined (except dynamically-populated ones)', () => {
     for (const schema of MODULE_SCHEMAS) {
       for (const field of schema.fields) {
         if (field.type === 'select') {
+          // aiModel options are populated dynamically from the API
+          if (schema.id === 'ai-news' && field.key === 'aiModel') continue;
           expect(field.options).toBeDefined();
           expect(field.options!.length).toBeGreaterThan(0);
         }
@@ -118,14 +120,12 @@ describe('Config field category helpers', () => {
     const weather = MODULE_SCHEMAS.find((s) => s.id === 'weather')!;
     const calendar = MODULE_SCHEMAS.find((s) => s.id === 'calendar')!;
     const ha = MODULE_SCHEMAS.find((s) => s.id === 'home-assistant')!;
-    const allergies = MODULE_SCHEMAS.find((s) => s.id === 'allergies')!;
     const photoSlideshow = MODULE_SCHEMAS.find((s) => s.id === 'photo-slideshow')!;
     const pir = MODULE_SCHEMAS.find((s) => s.id === 'pir')!;
 
     expect(moduleNeedsIntegration(weather)).toBe(true);
     expect(moduleNeedsIntegration(calendar)).toBe(true);
     expect(moduleNeedsIntegration(ha)).toBe(true);
-    expect(moduleNeedsIntegration(allergies)).toBe(true);
     expect(moduleNeedsIntegration(photoSlideshow)).toBe(true);
     expect(moduleNeedsIntegration(pir)).toBe(true);
   });
@@ -134,10 +134,12 @@ describe('Config field category helpers', () => {
     const crypto = MODULE_SCHEMAS.find((s) => s.id === 'crypto')!;
     const news = MODULE_SCHEMAS.find((s) => s.id === 'news')!;
     const sports = MODULE_SCHEMAS.find((s) => s.id === 'sports')!;
+    const allergies = MODULE_SCHEMAS.find((s) => s.id === 'allergies')!;
 
     expect(moduleNeedsIntegration(crypto)).toBe(false);
     expect(moduleNeedsIntegration(news)).toBe(false);
     expect(moduleNeedsIntegration(sports)).toBe(false);
+    expect(moduleNeedsIntegration(allergies)).toBe(false);
   });
 
   it('crypto has no integration fields and all widget fields', () => {
@@ -153,8 +155,8 @@ describe('Config field category helpers', () => {
     const widget = getWidgetFields(calendar);
 
     expect(integration.map((f) => f.key)).toEqual(
-      expect.arrayContaining(['serverUrl', 'username', 'password'])
+      expect.arrayContaining(['serverUrl', 'username', 'password', 'calendarPath'])
     );
-    expect(widget.map((f) => f.key)).toEqual(expect.arrayContaining(['calendarPath', 'rangeDays']));
+    expect(widget.map((f) => f.key)).toEqual(expect.arrayContaining(['rangeDays']));
   });
 });

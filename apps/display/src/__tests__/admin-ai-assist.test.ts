@@ -221,7 +221,7 @@ describe('AdminAiAssist', () => {
       await fireEvent.click(screen.getByRole('button', { name: /generate/i }));
 
       await waitFor(() => {
-        expect(screen.getByText(/json_api/i)).toBeInTheDocument();
+        expect(screen.getByText(/json api/i)).toBeInTheDocument();
       });
     });
 
@@ -298,7 +298,7 @@ describe('AdminAiAssist', () => {
       const applyBtn = screen.getByRole('button', { name: /apply/i });
       await fireEvent.click(applyBtn);
 
-      expect(onApply).toHaveBeenCalledWith(mockResponse);
+      expect(onApply).toHaveBeenCalledWith(mockResponse, undefined);
     });
   });
 

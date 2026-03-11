@@ -3,7 +3,6 @@ import { createPluginLoader } from './plugin-loader';
 import { createDataBus } from './data-bus';
 import { createRestServer } from './rest-server';
 import { createWsServer } from './ws-server';
-import { createPluginScheduler } from './plugin-scheduler';
 import { createPluginAdminHandlers } from './plugin-admin-handlers';
 import { createNotificationQueue } from './notification-queue';
 import { bootEnabledModules, rebootModule, syncModulesWithLayout } from './module-boot';
@@ -11,6 +10,12 @@ import { createDisplayControl } from './display-control';
 import { createDisplayHardware } from './display-hardware';
 import { createAiProvider } from './ai-assist-providers';
 import { createAiAssist } from './ai-assist';
+import { createSecretStore } from './secret-store';
+import { createConnectorRunner } from './connector-runner';
+import { createPluginScheduler } from './plugin-scheduler';
+import { validateSecretAccess } from './plugin-permissions';
+import type { SecretStore } from './secret-store';
+import type { ConnectorRunnerInstance } from './connector-runner';
 import type { BootedModule } from './module-boot';
 import type {
   HostServiceOptions,
@@ -73,6 +78,8 @@ export function createHostService(options: HostServiceOptions = {}): HostService
   let _dataBus: DataBusInstance | undefined;
   let _displayControl: { close(): void } | undefined;
   let _displayHardware: DisplayHardwareInstance | undefined;
+  let _secretStore: SecretStore | undefined;
+  let _connectorRunner: ConnectorRunnerInstance | undefined;
 
   // AI Assist: Load providers from env vars
   const aiProviders = new Map<AiProviderId, ReturnType<typeof createAiProvider>>();
@@ -110,17 +117,38 @@ export function createHostService(options: HostServiceOptions = {}): HostService
       _db = createDatabase({ path: dbPath });
       log.info('Database ready');
 
-      // 2. AI Assist providers
+      // 2. Secret store (uses DB for encrypted persistence)
+      _secretStore = createSecretStore(_db);
+      log.info('Secret store ready');
+
+      // 3. AI Assist providers
       setupAiProviders();
 
-      // 3. Plugin loader
-      _plugins = createPluginLoader({ pluginsDir });
-      await _plugins.load();
-      log.info('Plugins loaded', { count: _plugins.getAllPlugins().length });
-
-      // 4. Data bus
+      // 4. Data bus + connector runner (must be ready before plugin loader)
       const dataBus = createDataBus();
       _dataBus = dataBus;
+
+      const scheduler = createPluginScheduler();
+      _connectorRunner = createConnectorRunner({
+        dataBus,
+        scheduler,
+        allowPrivate: true,
+        secretResolver: async (pluginId, name) => {
+          const plugin = _plugins!.getPlugin(pluginId);
+          if (plugin && !validateSecretAccess(name, plugin.manifest.permissions ?? {})) {
+            throw new Error(`Secret '${name}' not declared in plugin permissions`);
+          }
+          const value = _secretStore!.get(pluginId, name);
+          if (value === undefined) throw new Error(`Secret '${name}' not found`);
+          return value;
+        },
+      });
+      log.info('Connector runner ready');
+
+      // 5. Plugin loader (with connector runner so plugin connectors start on boot)
+      _plugins = createPluginLoader({ pluginsDir, connectorRunner: _connectorRunner });
+      await _plugins.load();
+      log.info('Plugins loaded', { count: _plugins.getAllPlugins().length });
 
       // 5. Display hardware (probes available controls)
       _displayHardware = createDisplayHardware({ logger });
@@ -130,6 +158,8 @@ export function createHostService(options: HostServiceOptions = {}): HostService
         pluginLoader: _plugins,
         db: _db!,
         pluginsDir,
+        connectorRunner: _connectorRunner,
+        secretStore: _secretStore,
         onChange: (_pluginId, _action) => {
           // Notify connected display clients so they re-fetch plugin data
           _ws?.broadcast({
@@ -193,7 +223,7 @@ export function createHostService(options: HostServiceOptions = {}): HostService
               ids,
               _modules,
               _db!,
-              { dataBus, notifications: _notificationQueue!, gpioFactory },
+              { dataBus, notifications: _notificationQueue!, gpioFactory, aiProviders },
               logger
             );
             // Notify connected clients about layout change
@@ -218,13 +248,23 @@ export function createHostService(options: HostServiceOptions = {}): HostService
               id as ModuleId,
               _modules,
               _db!,
-              { dataBus, notifications: _notificationQueue!, gpioFactory },
+              { dataBus, notifications: _notificationQueue!, gpioFactory, aiProviders },
               logger
             );
             return { ok: true, running: result !== null };
           },
           // AI Assist handler (optional — omit if no providers configured)
           ...(aiAssistHandler ? { aiAssist: aiAssistHandler } : {}),
+          // AI model listing (uses same env-based providers)
+          ...(aiProviders.size > 0
+            ? {
+                listAiModels: async (providerId: AiProviderId) => {
+                  const provider = aiProviders.get(providerId);
+                  if (!provider) return [];
+                  return provider.listModels();
+                },
+              }
+            : {}),
           // Display hardware handlers
           getDisplayCapabilities: async () => _displayHardware!.capabilities,
           getDisplaySettings: async () => ({
@@ -283,10 +323,7 @@ export function createHostService(options: HostServiceOptions = {}): HostService
         }
       });
 
-      // 8. Plugin scheduler (no-op — plugins can register themselves)
-      createPluginScheduler();
-
-      // 9. Boot built-in modules based on saved grid layout
+      // 8. Boot built-in modules based on saved grid layout
       //    System modules (like PIR) always boot regardless of grid placement.
       _notificationQueue = createNotificationQueue();
       const savedLayout = _db!.getLayout('default');
@@ -300,7 +337,7 @@ export function createHostService(options: HostServiceOptions = {}): HostService
         allIds,
         [],
         _db!,
-        { dataBus, notifications: _notificationQueue, gpioFactory },
+        { dataBus, notifications: _notificationQueue, gpioFactory, aiProviders },
         logger
       );
 
@@ -355,6 +392,11 @@ export function createHostService(options: HostServiceOptions = {}): HostService
         }
       }
       try {
+        _connectorRunner?.close();
+      } catch {
+        /* ignore cleanup errors */
+      }
+      try {
         _displayControl?.close();
       } catch {
         /* ignore cleanup errors */
@@ -395,6 +437,7 @@ export function createHostService(options: HostServiceOptions = {}): HostService
             /* ignore */
           }
         }
+        _connectorRunner?.close();
         _displayControl?.close();
         _notificationQueue?.close();
         await _ws?.close();
@@ -426,6 +469,7 @@ export function createHostService(options: HostServiceOptions = {}): HostService
           /* ignore */
         }
       }
+      _connectorRunner?.close();
       _displayControl?.close();
       _notificationQueue?.close();
       await _ws?.close();

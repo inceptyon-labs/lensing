@@ -739,36 +739,39 @@ export type FetchFn = (
   json: () => Promise<unknown>;
 }>;
 
-/** A single allergen with its level */
-export interface AllergenLevel {
-  name: string; // e.g., "Pollen", "Ragweed", "Grass"
-  level: 0 | 1 | 2 | 3 | 4 | 5; // 0=none, 5=very high
-  category: 'pollen' | 'mold' | 'dust' | 'other';
+/** A pollen trigger allergen */
+export interface PollenTrigger {
+  name: string; // e.g., "Alder", "Juniper"
+  plantType: string; // e.g., "Tree", "Grass", "Weed"
 }
 
-/** Full allergy/pollen data payload */
+/** A single forecast period (Yesterday, Today, Tomorrow) */
+export interface PollenPeriod {
+  type: string; // "Yesterday" | "Today" | "Tomorrow"
+  index: number; // 0-12 pollen index
+  triggers: PollenTrigger[];
+}
+
+/** Pollen severity level label */
+export type PollenLevel = 'Low' | 'Low-Medium' | 'Medium' | 'Medium-High' | 'High';
+
+/** Full allergy/pollen data payload (from pollen.com) */
 export interface AllergyData {
-  index: number; // 0-5 overall index
-  allergens: AllergenLevel[];
+  index: number; // 0-12 today's pollen index
+  level: PollenLevel;
+  color: string; // hex color for the severity level
+  location: string; // e.g., "Beverly Hills, CA"
+  periods: PollenPeriod[];
+  triggers: PollenTrigger[]; // today's triggers
   lastUpdated: number; // Unix timestamp in ms
-}
-
-/** Location for allergy queries */
-export interface AllergyLocation {
-  lat: number;
-  lon: number;
 }
 
 /** Configuration for createAllergiesServer */
 export interface AllergiesServerOptions {
-  /** API key for pollen data service */
-  apiKey: string;
-  /** Geographic location to query */
-  location: AllergyLocation;
-  /** Alert threshold (0-5) — emit notification when index >= this (default: 3) */
+  /** US zip code for pollen lookup */
+  zipCode: string;
+  /** Alert threshold (0-12) — emit notification when index >= this (default: 7.3) */
   alertThreshold?: number;
-  /** Refresh interval in ms (default: 600000 = 10 min) */
-  refreshInterval_ms?: number;
   /** Max staleness in ms before cache considered stale (default: 3600000 = 1 hour) */
   maxStale_ms?: number;
   /** Data bus instance for publishing allergen data */
@@ -866,6 +869,24 @@ export {
 // ── News ───────────────────────────────────────────────────────────────────
 export type { NewsArticle, NewsData, NewsServerOptions, NewsServerInstance } from './news';
 export { DEFAULT_NEWS_MAX_ITEMS, DEFAULT_NEWS_MAX_STALE_MS } from './news';
+
+// ── AI News Summary ────────────────────────────────────────────────────────
+export type {
+  AiNewsSummary,
+  AiNewsData,
+  AiNewsRssFetchFn,
+  SummarizeFn,
+  AiNewsServerOptions,
+  AiNewsServerInstance,
+} from './ai-news';
+export type { AiNewsCategory } from './ai-news';
+export {
+  DEFAULT_AI_NEWS_MAX_ITEMS,
+  DEFAULT_AI_NEWS_MAX_STALE_MS,
+  AI_NEWS_CATEGORIES,
+  AI_NEWS_SCHEDULES,
+  resolveCategoriesToFeeds,
+} from './ai-news';
 
 // ── Sports Scores ───────────────────────────────────────────────────────────
 export type {
@@ -1176,6 +1197,14 @@ export interface AiAssistConnector {
   refreshInterval: number;
 }
 
+/** Info about a secret placeholder detected in AI-generated connector config */
+export interface AiAssistSecretInfo {
+  /** Secret name matching {{NAME}} placeholder */
+  name: string;
+  /** Human-readable description of what this credential is and where to get it */
+  description: string;
+}
+
 /** Response payload from POST /api/admin/builder/ai-assist */
 export interface AiAssistResponse {
   /** Generated connector configuration */
@@ -1186,4 +1215,6 @@ export interface AiAssistResponse {
   css: string;
   /** Optional human-readable explanation of the generated config */
   explanation?: string;
+  /** Detected secret placeholders with descriptions */
+  secrets?: AiAssistSecretInfo[];
 }

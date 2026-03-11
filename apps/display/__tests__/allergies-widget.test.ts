@@ -14,62 +14,74 @@ describe('AllergiesWidget Component', () => {
     expect(source).toContain('export let index');
   });
 
-  it('should accept allergens prop (AllergenLevel[])', () => {
+  it('should accept level prop (string)', () => {
     const source = readFileSync(widgetPath, 'utf-8');
-    expect(source).toContain('export let allergens');
+    expect(source).toContain('export let level');
   });
 
-  it('should display the overall allergy index as a hero number', () => {
+  it('should accept color prop (string)', () => {
     const source = readFileSync(widgetPath, 'utf-8');
-    // Should render index value prominently
+    expect(source).toContain('export let color');
+  });
+
+  it('should accept triggers prop (PollenTrigger[])', () => {
+    const source = readFileSync(widgetPath, 'utf-8');
+    expect(source).toContain('export let triggers');
+  });
+
+  it('should accept periods prop (PollenPeriod[])', () => {
+    const source = readFileSync(widgetPath, 'utf-8');
+    expect(source).toContain('export let periods');
+  });
+
+  it('should display the pollen index as a hero number', () => {
+    const source = readFileSync(widgetPath, 'utf-8');
     expect(source).toContain('index');
-    // Should use large text styling (hero metric)
     expect(source).toMatch(/text-2xl|allergies-widget__index/);
+  });
+
+  it('should show scale as /12', () => {
+    const source = readFileSync(widgetPath, 'utf-8');
+    expect(source).toContain('/12');
   });
 
   it('should have a visual gauge/bar for overall index', () => {
     const source = readFileSync(widgetPath, 'utf-8');
-    // Should have a gauge element with dynamic width based on index
     expect(source).toMatch(/allergies-widget__gauge|allergies-widget__bar/);
   });
 
-  it('should show empty state when no allergens provided', () => {
+  it('should show empty state when no periods provided', () => {
     const source = readFileSync(widgetPath, 'utf-8');
-    // Should handle empty allergens array
-    expect(source).toMatch(/allergens\.length\s*===?\s*0|allergens\.length|No allergy/i);
+    expect(source).toMatch(/periods\.length|No pollen/i);
   });
 
-  it('should list individual allergens with name and level', () => {
+  it('should display trigger allergens with plant type', () => {
     const source = readFileSync(widgetPath, 'utf-8');
-    // Should iterate over allergens
-    expect(source).toMatch(/{#each allergens/);
-    // Should display allergen name and level
+    expect(source).toMatch(/{#each triggers/);
     expect(source).toMatch(/\.name/);
-    expect(source).toMatch(/\.level/);
+    expect(source).toMatch(/\.plantType/);
   });
 
-  it('should display allergen category', () => {
+  it('should display forecast periods', () => {
     const source = readFileSync(widgetPath, 'utf-8');
-    expect(source).toMatch(/\.category/);
+    expect(source).toMatch(/{#each periods/);
   });
 
   it('should use lensing design system tokens for styling', () => {
     const source = readFileSync(widgetPath, 'utf-8');
-    // Should use design system CSS variables
     expect(source).toContain('--event-horizon');
     expect(source).toContain('--edge');
     expect(source).toContain('--starlight');
   });
 
-  it('should color-code the gauge based on severity', () => {
+  it('should color-code based on severity', () => {
     const source = readFileSync(widgetPath, 'utf-8');
-    // Should reference alert colors for severity levels
-    expect(source).toMatch(/alert-success|alert-warning|alert-urgent/);
+    // Should use the color prop for dynamic coloring
+    expect(source).toContain('{color}');
   });
 
-  it('should have a label showing the severity text', () => {
+  it('should display severity level label', () => {
     const source = readFileSync(widgetPath, 'utf-8');
-    // Should map index to severity label (Low, Moderate, High, etc.)
-    expect(source).toMatch(/Low|Moderate|High|Very High|None/i);
+    expect(source).toContain('{level}');
   });
 });

@@ -71,7 +71,7 @@ describe('BuilderPreview', () => {
       expect(srcdoc).not.toContain('{{value}}');
     });
 
-    it('should leave unmatched placeholders as-is', () => {
+    it('should render empty string for unmatched placeholders', () => {
       const html = '<span>{{unknown_field}}</span>';
       render(BuilderPreview, {
         props: { html, css: '', sampleData: sampleData },
@@ -79,7 +79,8 @@ describe('BuilderPreview', () => {
 
       const iframe = screen.getByTestId('preview-frame') as HTMLIFrameElement;
       const srcdoc = iframe.getAttribute('srcdoc') ?? '';
-      expect(srcdoc).toContain('{{unknown_field}}');
+      expect(srcdoc).toContain('<span></span>');
+      expect(srcdoc).not.toContain('{{unknown_field}}');
     });
 
     it('should resolve nested dot-path placeholders', () => {

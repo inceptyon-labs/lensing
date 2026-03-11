@@ -1,18 +1,19 @@
 <script lang="ts">
   import type { PluginAdminEntry } from '@lensing/types';
-  import { ZONE_NAMES } from './config.ts';
   import AdminConfigForm from './AdminConfigForm.svelte';
   import ChevronRight from '@lucide/svelte/icons/chevron-right';
 
   export let plugin: PluginAdminEntry;
   export let onToggleEnabled: (id: string, enabled: boolean) => void = () => {};
-  export let onZoneChange: (id: string, zone: string | undefined) => void = () => {};
   export let onConfigSave: (
     id: string,
     config: Record<string, string | number | boolean>
   ) => void | Promise<void> = () => {};
   export let onRestart: ((id: string) => Promise<void>) | undefined = undefined;
   export let onConfigure: ((plugin: PluginAdminEntry) => void) | undefined = undefined;
+  export let onManageSecrets: ((plugin: PluginAdminEntry) => void) | undefined = undefined;
+  export let onEdit: ((plugin: PluginAdminEntry) => void) | undefined = undefined;
+  export let onDelete: ((plugin: PluginAdminEntry) => void) | undefined = undefined;
   export let configDirty = false;
 
   let configOpen = false;
@@ -20,18 +21,12 @@
   let restartError = '';
 
   $: hasConfig = !!plugin.manifest.config_schema?.fields?.length;
+  $: hasSecrets = !!plugin.manifest.permissions?.secrets?.length;
   $: showRestart =
     onRestart && (configDirty || restartStatus === 'restarting' || restartStatus === 'restarted');
 
   function handleToggle() {
     onToggleEnabled(plugin.plugin_id, !plugin.enabled);
-  }
-
-  // eslint-disable-next-line no-undef
-  function handleZoneChange(e: Event) {
-    // eslint-disable-next-line no-undef
-    const val = (e.target as HTMLSelectElement).value;
-    onZoneChange(plugin.plugin_id, val === '' ? undefined : val);
   }
 
   async function handleConfigSave(config: Record<string, string | number | boolean>) {
@@ -91,23 +86,6 @@
       <span class="status status--{plugin.status}">{plugin.status}</span>
     </div>
 
-    <div class="card-body">
-      <div class="field">
-        <label class="field-label" for="zone-{plugin.plugin_id}">Zone</label>
-        <select
-          id="zone-{plugin.plugin_id}"
-          class="zone-select"
-          value={plugin.zone ?? ''}
-          on:change={handleZoneChange}
-        >
-          <option value="">— unassigned —</option>
-          {#each ZONE_NAMES as zone (zone)}
-            <option value={zone}>{zone}</option>
-          {/each}
-        </select>
-      </div>
-    </div>
-
     <div class="card-footer">
       <button
         class="toggle-btn toggle-btn--{plugin.enabled ? 'disable' : 'enable'}"
@@ -125,6 +103,18 @@
         >
           Configure
         </button>
+      {/if}
+
+      {#if hasSecrets && onManageSecrets}
+        <button class="configure-btn" on:click={() => onManageSecrets?.(plugin)}> Secrets </button>
+      {/if}
+
+      {#if onEdit}
+        <button class="configure-btn" on:click={() => onEdit?.(plugin)}> Edit </button>
+      {/if}
+
+      {#if onDelete}
+        <button class="delete-btn" on:click={() => onDelete?.(plugin)}> Delete </button>
       {/if}
 
       {#if showRestart}
@@ -311,37 +301,6 @@
     border: 1px solid color-mix(in srgb, var(--dim-light) 40%, transparent);
   }
 
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
-  }
-
-  .field-label {
-    font-size: var(--text-xs);
-    color: var(--dim-light);
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-wide);
-  }
-
-  .zone-select {
-    background-color: var(--void);
-    border: 1px solid var(--edge);
-    border-radius: var(--radius-sm);
-    color: var(--starlight);
-    padding: var(--space-1) var(--space-2);
-    font-size: var(--text-sm);
-    font-family: var(--font-mono);
-    cursor: pointer;
-    width: 100%;
-  }
-
-  .zone-select:focus {
-    outline: none;
-    border-color: var(--ember);
-    box-shadow: 0 0 0 2px var(--ember-trace);
-  }
-
   .toggle-btn {
     font-size: var(--text-sm);
     font-weight: var(--weight-medium);
@@ -388,6 +347,23 @@
     background-color: var(--void);
     color: var(--dim-light);
     transition: all var(--duration-fast) var(--ease-out);
+  }
+
+  .delete-btn {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-sm);
+    border: 1px solid color-mix(in srgb, var(--nova) 30%, transparent);
+    cursor: pointer;
+    background-color: var(--void);
+    color: var(--nova);
+    transition: all var(--duration-fast) var(--ease-out);
+  }
+
+  .delete-btn:hover {
+    background-color: color-mix(in srgb, var(--nova) 15%, transparent);
+    border-color: color-mix(in srgb, var(--nova) 50%, transparent);
   }
 
   .configure-btn:hover {

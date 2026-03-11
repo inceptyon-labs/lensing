@@ -367,6 +367,27 @@ describe('Sports Server', () => {
     server.close();
   });
 
+  it('should treat HTTP 400 as empty games (off-season), not an error', async () => {
+    const onError = vi.fn();
+    const server = createSportsServer({
+      leagues: [{ sport: 'basketball', league: 'ncaab' }],
+      dataBus,
+      notifications,
+      fetchFn: createErrorFetch(400),
+    });
+
+    server.onError(onError);
+    await server.refresh();
+
+    // 400 should NOT trigger an error — it means off-season
+    expect(onError).not.toHaveBeenCalled();
+    const data = server.getScores();
+    expect(data).not.toBeNull();
+    expect(data!.games).toHaveLength(0);
+
+    server.close();
+  });
+
   it('should isolate listener errors from other listeners', async () => {
     const goodListener = vi.fn();
     const server = createSportsServer({
@@ -579,6 +600,244 @@ describe('Sports Server', () => {
 
     expect(onError).toHaveBeenCalledTimes(1);
     expect(onError.mock.calls[0][0]).toContain('timeout');
+
+    server.close();
+  });
+
+  // ── Team Filtering ──────────────────────────────────────────────────────
+
+  it('should filter games to only matching teams when teams option is set', async () => {
+    const chiefsGame = makeEspnGame({ id: 'chiefs-game' });
+    const lakersGame = makeEspnGame({
+      id: 'lakers-game',
+      competitions: [
+        {
+          competitors: [
+            {
+              homeAway: 'home',
+              team: { displayName: 'Los Angeles Lakers', abbreviation: 'LAL' },
+              score: '110',
+            },
+            {
+              homeAway: 'away',
+              team: { displayName: 'Boston Celtics', abbreviation: 'BOS' },
+              score: '105',
+            },
+          ],
+          status: {
+            type: { state: 'post', completed: true, description: 'Final' },
+            period: 4,
+            displayClock: '0:00',
+          },
+          date: '2024-01-15T20:00:00Z',
+        },
+      ],
+      status: { type: { state: 'post', completed: true, description: 'Final' } },
+    });
+
+    const server = createSportsServer({
+      leagues: [{ sport: 'football', league: 'nfl' }],
+      teams: ['Chiefs'],
+      dataBus,
+      notifications,
+      fetchFn: createMockFetch(makeEspnResponse([chiefsGame, lakersGame])),
+    });
+
+    await server.refresh();
+    const data = server.getScores();
+
+    expect(data!.games).toHaveLength(1);
+    expect(data!.games[0].id).toBe('chiefs-game');
+
+    server.close();
+  });
+
+  it('should match teams case-insensitively', async () => {
+    const server = createSportsServer({
+      leagues: [{ sport: 'football', league: 'nfl' }],
+      teams: ['chiefs'],
+      dataBus,
+      notifications,
+      fetchFn: createMockFetch(makeEspnResponse([makeEspnGame()])),
+    });
+
+    await server.refresh();
+    const data = server.getScores();
+
+    expect(data!.games).toHaveLength(1);
+    expect(data!.games[0].homeTeam).toBe('Kansas City Chiefs');
+
+    server.close();
+  });
+
+  it('should match partial team names (substring)', async () => {
+    const gatorGame = makeEspnGame({
+      id: 'gator-game',
+      competitions: [
+        {
+          competitors: [
+            {
+              homeAway: 'home',
+              team: { displayName: 'Florida Gators', abbreviation: 'FLA' },
+              score: '28',
+            },
+            {
+              homeAway: 'away',
+              team: { displayName: 'Georgia Bulldogs', abbreviation: 'UGA' },
+              score: '21',
+            },
+          ],
+          status: {
+            type: { state: 'in', completed: false, description: 'In Progress' },
+            period: 3,
+            displayClock: '5:00',
+          },
+          date: '2024-11-02T15:30:00Z',
+        },
+      ],
+      status: { type: { state: 'in', completed: false, description: 'In Progress' } },
+    });
+
+    const server = createSportsServer({
+      leagues: [{ sport: 'football', league: 'ncaaf' }],
+      teams: ['Gators'],
+      dataBus,
+      notifications,
+      fetchFn: createMockFetch(makeEspnResponse([gatorGame])),
+    });
+
+    await server.refresh();
+    const data = server.getScores();
+
+    expect(data!.games).toHaveLength(1);
+    expect(data!.games[0].homeTeam).toBe('Florida Gators');
+
+    server.close();
+  });
+
+  it('should match away team as well', async () => {
+    const server = createSportsServer({
+      leagues: [{ sport: 'football', league: 'nfl' }],
+      teams: ['Eagles'],
+      dataBus,
+      notifications,
+      fetchFn: createMockFetch(makeEspnResponse([makeEspnGame()])),
+    });
+
+    await server.refresh();
+    const data = server.getScores();
+
+    expect(data!.games).toHaveLength(1);
+    expect(data!.games[0].awayTeam).toBe('Philadelphia Eagles');
+
+    server.close();
+  });
+
+  it('should show all games when teams is empty or undefined', async () => {
+    const server = createSportsServer({
+      leagues: [{ sport: 'football', league: 'nfl' }],
+      teams: [],
+      dataBus,
+      notifications,
+      fetchFn: createMockFetch(makeEspnResponse([makeEspnGame()])),
+    });
+
+    await server.refresh();
+    const data = server.getScores();
+
+    expect(data!.games).toHaveLength(1);
+
+    server.close();
+  });
+
+  it('should support multiple team filters (OR logic)', async () => {
+    const bucsGame = makeEspnGame({
+      id: 'bucs-game',
+      competitions: [
+        {
+          competitors: [
+            {
+              homeAway: 'home',
+              team: { displayName: 'Tampa Bay Buccaneers', abbreviation: 'TB' },
+              score: '24',
+            },
+            {
+              homeAway: 'away',
+              team: { displayName: 'New Orleans Saints', abbreviation: 'NO' },
+              score: '17',
+            },
+          ],
+          status: {
+            type: { state: 'post', completed: true, description: 'Final' },
+            period: 4,
+            displayClock: '0:00',
+          },
+          date: '2024-01-15T13:00:00Z',
+        },
+      ],
+      status: { type: { state: 'post', completed: true, description: 'Final' } },
+    });
+
+    const unrelatedGame = makeEspnGame({
+      id: 'other-game',
+      competitions: [
+        {
+          competitors: [
+            {
+              homeAway: 'home',
+              team: { displayName: 'Green Bay Packers', abbreviation: 'GB' },
+              score: '31',
+            },
+            {
+              homeAway: 'away',
+              team: { displayName: 'Chicago Bears', abbreviation: 'CHI' },
+              score: '10',
+            },
+          ],
+          status: {
+            type: { state: 'post', completed: true, description: 'Final' },
+            period: 4,
+            displayClock: '0:00',
+          },
+          date: '2024-01-15T13:00:00Z',
+        },
+      ],
+      status: { type: { state: 'post', completed: true, description: 'Final' } },
+    });
+
+    const server = createSportsServer({
+      leagues: [{ sport: 'football', league: 'nfl' }],
+      teams: ['Buccaneers', 'Chiefs'],
+      dataBus,
+      notifications,
+      fetchFn: createMockFetch(makeEspnResponse([makeEspnGame(), bucsGame, unrelatedGame])),
+    });
+
+    await server.refresh();
+    const data = server.getScores();
+
+    expect(data!.games).toHaveLength(2);
+    const ids = data!.games.map((g) => g.id);
+    expect(ids).toContain('game-1'); // Chiefs game
+    expect(ids).toContain('bucs-game');
+
+    server.close();
+  });
+
+  it('should return empty games when no teams match', async () => {
+    const server = createSportsServer({
+      leagues: [{ sport: 'football', league: 'nfl' }],
+      teams: ['Nonexistent Team'],
+      dataBus,
+      notifications,
+      fetchFn: createMockFetch(makeEspnResponse([makeEspnGame()])),
+    });
+
+    await server.refresh();
+    const data = server.getScores();
+
+    expect(data).not.toBeNull();
+    expect(data!.games).toHaveLength(0);
 
     server.close();
   });

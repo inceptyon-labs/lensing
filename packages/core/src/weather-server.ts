@@ -47,8 +47,10 @@ export interface WeatherServerOptions {
   provider?: WeatherProvider;
   /** API key (required for OpenWeatherMap, ignored for Open-Meteo) */
   apiKey?: string;
-  /** Geographic location to query */
-  location: WeatherLocation;
+  /** Geographic location to query (required if locationQuery not set) */
+  location?: WeatherLocation;
+  /** City name, zip code, or place to geocode (alternative to location) */
+  locationQuery?: string;
   /** Unit system: 'imperial' (°F) or 'metric' (°C) */
   units?: 'imperial' | 'metric';
   /** Max staleness in ms before considering cache stale (default: 3600000 = 1 hour) */
@@ -235,7 +237,7 @@ export function createWeatherServer(options: WeatherServerOptions): WeatherServe
   const {
     provider = 'open-meteo',
     apiKey,
-    location,
+    locationQuery,
     units = 'imperial',
     fetchFn = fetch as unknown as FetchFn,
     dataBus,
@@ -244,9 +246,13 @@ export function createWeatherServer(options: WeatherServerOptions): WeatherServe
   if (provider === 'openweathermap' && !apiKey) {
     throw new Error('WeatherServer: apiKey is required for OpenWeatherMap provider');
   }
-  if (!location) {
-    throw new Error('WeatherServer: location is required');
+  if (!options.location && !locationQuery) {
+    throw new Error('WeatherServer: location or locationQuery is required');
   }
+
+  // Mutable location — resolved from geocoding or provided directly
+  let location: WeatherLocation | undefined = options.location;
+  let geocodeResolved = !locationQuery; // skip geocoding if no query
 
   const maxStale_ms = options.maxStale_ms ?? 3600000;
 
@@ -276,14 +282,55 @@ export function createWeatherServer(options: WeatherServerOptions): WeatherServe
     }
   }
 
+  async function resolveGeocode(): Promise<boolean> {
+    if (geocodeResolved) return true;
+
+    let response: Awaited<ReturnType<FetchFn>>;
+    try {
+      const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locationQuery!)}&count=1`;
+      response = await fetchFn(url);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      notifyError(`Geocoding failed: ${message}`);
+      return false;
+    }
+
+    if (!response.ok) {
+      notifyError(`Geocoding failed: HTTP ${response.status ?? ''} ${response.statusText ?? ''}`);
+      return false;
+    }
+
+    let data: unknown;
+    try {
+      data = await response.json();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      notifyError(`Geocoding failed: ${message}`);
+      return false;
+    }
+
+    const results = (data as { results?: Array<{ latitude: number; longitude: number }> }).results;
+    if (!results || results.length === 0) {
+      notifyError(`No results found for location: "${locationQuery}"`);
+      return false;
+    }
+
+    location = { lat: results[0].latitude, lon: results[0].longitude };
+    geocodeResolved = true;
+    return true;
+  }
+
   function buildUrl(): string {
+    // location is guaranteed to be set by the time buildUrl is called
+    // (either provided directly or resolved via geocoding)
+    const loc = location!;
     if (provider === 'open-meteo') {
-      return buildOpenMeteoUrl(location, units);
+      return buildOpenMeteoUrl(loc, units);
     }
     // OpenWeatherMap OneCall 3.0 requires `appid` as a query parameter.
     // It does not support header-based API key auth — this is a vendor limitation.
     const base = 'https://api.openweathermap.org/data/3.0/onecall';
-    return `${base}?lat=${location.lat}&lon=${location.lon}&units=${units}&appid=${apiKey}&exclude=minutely,hourly,alerts`;
+    return `${base}?lat=${loc.lat}&lon=${loc.lon}&units=${units}&appid=${apiKey}&exclude=minutely,hourly,alerts`;
   }
 
   function transformResponse(raw: unknown): WeatherData | null {
@@ -314,6 +361,12 @@ export function createWeatherServer(options: WeatherServerOptions): WeatherServe
 
   async function refresh(): Promise<void> {
     if (closed) return;
+
+    // Resolve geocoding if needed (only on first call)
+    if (!geocodeResolved) {
+      const ok = await resolveGeocode();
+      if (!ok) return;
+    }
 
     // Return cached data if still fresh
     if (lastFetchedAt !== null && maxStale_ms > 0 && Date.now() - lastFetchedAt < maxStale_ms) {

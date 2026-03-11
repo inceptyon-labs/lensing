@@ -5,11 +5,11 @@
     MarketplacePlugin,
     MarketplaceListResponse,
   } from '@lensing/types';
-  import { ZONE_NAMES } from './config.ts';
   import { MODULE_GROUPS } from './admin-module-groups.ts';
   import AdminPluginCard from './AdminPluginCard.svelte';
   import AdminConfigModal from './AdminConfigModal.svelte';
   import AdminPluginUpload from './AdminPluginUpload.svelte';
+  import AdminPluginSecrets from './AdminPluginSecrets.svelte';
   import AdminTabBar from './AdminTabBar.svelte';
   import AdminModuleSection from './AdminModuleSection.svelte';
   import AdminSettingsPanel from './AdminSettingsPanel.svelte';
@@ -22,6 +22,7 @@
   let activeTab: 'modules' | 'plugins' | 'marketplace' | 'settings' = 'modules';
   let marketplaceCount: number = 0;
   let activeView: 'list' | 'builder' = 'list';
+  let editingPluginId: string | null = null;
 
   let marketplacePlugins: MarketplacePlugin[] | null = null;
   let marketplaceLoading = false;
@@ -32,6 +33,10 @@
 
   /** Plugin currently being configured in the modal */
   let configPlugin: PluginAdminEntry | null = null;
+
+  /** Plugin currently managing secrets */
+  let secretsPlugin: PluginAdminEntry | null = null;
+  let secretNames: string[] = [];
 
   /** PIR lives in the Settings tab, not Modules */
   const SETTINGS_ONLY_IDS = new Set(['pir']);
@@ -121,27 +126,6 @@
     }
   }
 
-  async function handleZoneChange(id: string, zone: string | undefined) {
-    try {
-      if (zone !== undefined && !ZONE_NAMES.includes(zone as (typeof ZONE_NAMES)[number])) {
-        throw new Error('Invalid zone selected');
-      }
-      // eslint-disable-next-line no-undef
-      const res = await fetch(`/plugins/${encodeURIComponent(id)}/zone`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ zone: zone ?? null }),
-      });
-      if (!res.ok) throw new Error(`Server returned ${res.status}`);
-      plugins = plugins.map((p) =>
-        p.plugin_id === id ? { ...p, zone: zone as PluginAdminEntry['zone'] } : p
-      );
-      error = null;
-    } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to change plugin zone';
-    }
-  }
-
   async function refreshPlugins() {
     try {
       // eslint-disable-next-line no-undef
@@ -190,6 +174,72 @@
     // Refresh the plugin list so the badge updates
     await refreshPlugins();
   }
+
+  async function handleManageSecrets(plugin: PluginAdminEntry) {
+    try {
+      const res = await fetch(`/plugins/${encodeURIComponent(plugin.plugin_id)}/secrets`);
+      if (!res.ok) throw new Error(`Failed to load secrets (${res.status})`);
+      secretNames = (await res.json()) as string[];
+    } catch {
+      // Fallback to manifest-declared secrets
+      secretNames = plugin.manifest.permissions?.secrets ?? [];
+    }
+    secretsPlugin = plugin;
+  }
+
+  async function handleSaveSecrets(secrets: Record<string, string>) {
+    if (!secretsPlugin) return;
+    const id = secretsPlugin.plugin_id;
+    const errors: string[] = [];
+    for (const [key, value] of Object.entries(secrets)) {
+      if (!value) continue; // skip empty
+      try {
+        const res = await fetch(
+          `/plugins/${encodeURIComponent(id)}/secrets/${encodeURIComponent(key)}`,
+          {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ value }),
+          }
+        );
+        if (!res.ok) throw new Error(`Failed to save ${key} (${res.status})`);
+      } catch (err) {
+        errors.push(err instanceof Error ? err.message : `Failed to save ${key}`);
+      }
+    }
+    if (errors.length > 0) {
+      throw new Error(errors.join('; '));
+    }
+  }
+
+  function handleEditPlugin(plugin: PluginAdminEntry) {
+    editingPluginId = plugin.plugin_id;
+    activeView = 'builder';
+  }
+
+  /** Plugin pending delete confirmation */
+  let deleteTarget: PluginAdminEntry | null = null;
+  let deleting = false;
+
+  async function handleDeletePlugin() {
+    if (!deleteTarget) return;
+    deleting = true;
+    try {
+      const res = await fetch(`/plugins/${encodeURIComponent(deleteTarget.plugin_id)}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(body.error ?? `Delete failed (${res.status})`);
+      }
+      deleteTarget = null;
+      await refreshPlugins();
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Failed to delete plugin';
+    } finally {
+      deleting = false;
+    }
+  }
 </script>
 
 <div class="plugin-list">
@@ -197,78 +247,91 @@
 
   {#if loading}
     <p class="state-message">Loading plugins…</p>
-  {:else if error}
-    <p class="state-message state-message--error">Error: {error}</p>
-  {:else if activeTab === 'modules'}
-    {#if builtins.length === 0}
-      <p class="state-message">No built-in modules found.</p>
-    {:else}
-      <div class="modules-layout">
-        {#each groupedBuiltins as group (group.label)}
-          <AdminModuleSection label={group.label}>
-            {#each group.plugins as plugin (plugin.plugin_id)}
-              <AdminPluginCard
-                {plugin}
-                onToggleEnabled={handleToggleEnabled}
-                onZoneChange={handleZoneChange}
-                onConfigSave={handleConfigSave}
-                onRestart={plugin.builtin ? handleRestart : undefined}
-                onConfigure={(p) => (configPlugin = p)}
-                configDirty={dirtyIds.has(plugin.plugin_id)}
-              />
-            {/each}
-          </AdminModuleSection>
-        {/each}
+  {:else}
+    {#if error}
+      <div class="error-banner">
+        <span>Error: {error}</span>
+        <button class="error-dismiss" on:click={() => (error = null)}>Dismiss</button>
       </div>
     {/if}
-  {:else if activeTab === 'plugins'}
-    {#if activeView === 'builder'}
-      <AdminBuilderView
-        onCancel={() => (activeView = 'list')}
-        onSaved={() => {
-          activeView = 'list';
-          refreshPlugins();
-        }}
-      />
-    {:else}
-      <div class="plugins-header">
-        <button type="button" class="create-plugin-btn" on:click={() => (activeView = 'builder')}
-          >Create Plugin</button
-        >
-      </div>
 
-      <AdminPluginUpload onInstalled={refreshPlugins} />
-
-      {#if thirdParty.length === 0}
-        <p class="state-message">No third-party plugins installed.</p>
+    {#if activeTab === 'modules'}
+      {#if builtins.length === 0}
+        <p class="state-message">No built-in modules found.</p>
       {:else}
-        <div class="plugins-grid">
-          {#each thirdParty as plugin (plugin.plugin_id)}
-            <AdminPluginCard
-              {plugin}
-              onToggleEnabled={handleToggleEnabled}
-              onZoneChange={handleZoneChange}
-              onConfigSave={handleConfigSave}
-            />
+        <div class="modules-layout">
+          {#each groupedBuiltins as group (group.label)}
+            <AdminModuleSection label={group.label}>
+              {#each group.plugins as plugin (plugin.plugin_id)}
+                <AdminPluginCard
+                  {plugin}
+                  onToggleEnabled={handleToggleEnabled}
+                  onConfigSave={handleConfigSave}
+                  onRestart={plugin.builtin ? handleRestart : undefined}
+                  onConfigure={(p) => (configPlugin = p)}
+                  configDirty={dirtyIds.has(plugin.plugin_id)}
+                />
+              {/each}
+            </AdminModuleSection>
           {/each}
         </div>
       {/if}
+    {:else if activeTab === 'plugins'}
+      {#if activeView === 'builder'}
+        <AdminBuilderView
+          editPluginId={editingPluginId}
+          onCancel={() => {
+            activeView = 'list';
+            editingPluginId = null;
+          }}
+          onSaved={() => {
+            activeView = 'list';
+            editingPluginId = null;
+            refreshPlugins();
+          }}
+        />
+      {:else}
+        <div class="plugins-header">
+          <button type="button" class="create-plugin-btn" on:click={() => (activeView = 'builder')}
+            >Create Plugin</button
+          >
+        </div>
+
+        <AdminPluginUpload onInstalled={refreshPlugins} />
+
+        {#if thirdParty.length === 0}
+          <p class="state-message">No third-party plugins installed.</p>
+        {:else}
+          <div class="plugins-grid">
+            {#each thirdParty as plugin (plugin.plugin_id)}
+              <AdminPluginCard
+                {plugin}
+                onToggleEnabled={handleToggleEnabled}
+                onConfigSave={handleConfigSave}
+                onManageSecrets={handleManageSecrets}
+                onEdit={handleEditPlugin}
+                onDelete={(p) => (deleteTarget = p)}
+              />
+            {/each}
+          </div>
+        {/if}
+      {/if}
+    {:else if activeTab === 'marketplace'}
+      <MarketplacePluginBrowser
+        plugins={marketplacePlugins}
+        loading={marketplaceLoading}
+        onInstall={handleMarketplaceInstall}
+      />
+    {:else if activeTab === 'settings'}
+      <AdminSettingsPanel
+        {plugins}
+        onConfigSave={handleConfigSave}
+        onToggleEnabled={handleToggleEnabled}
+        onRestart={handleRestart}
+        onRefreshPlugins={refreshPlugins}
+        {dirtyIds}
+      />
     {/if}
-  {:else if activeTab === 'marketplace'}
-    <MarketplacePluginBrowser
-      plugins={marketplacePlugins}
-      loading={marketplaceLoading}
-      onInstall={handleMarketplaceInstall}
-    />
-  {:else if activeTab === 'settings'}
-    <AdminSettingsPanel
-      {plugins}
-      onConfigSave={handleConfigSave}
-      onToggleEnabled={handleToggleEnabled}
-      onRestart={handleRestart}
-      onRefreshPlugins={refreshPlugins}
-      {dirtyIds}
-    />
   {/if}
 
   {#if configPlugin}
@@ -277,6 +340,42 @@
       onSave={handleModalSave}
       onClose={() => (configPlugin = null)}
     />
+  {/if}
+
+  {#if secretsPlugin}
+    <AdminPluginSecrets
+      plugin={secretsPlugin}
+      {secretNames}
+      onSave={handleSaveSecrets}
+      onClose={() => (secretsPlugin = null)}
+    />
+  {/if}
+
+  {#if deleteTarget}
+    <div class="confirm-overlay" on:click={() => (deleteTarget = null)} on:keydown={() => {}}>
+      <div class="confirm-dialog" on:click|stopPropagation on:keydown|stopPropagation>
+        <p class="confirm-text">
+          Delete <strong>{deleteTarget.manifest.name}</strong>? This removes all plugin files,
+          config, and secrets. This cannot be undone.
+        </p>
+        <div class="confirm-actions">
+          <button
+            class="confirm-btn confirm-btn--cancel"
+            disabled={deleting}
+            on:click={() => (deleteTarget = null)}
+          >
+            Cancel
+          </button>
+          <button
+            class="confirm-btn confirm-btn--delete"
+            disabled={deleting}
+            on:click={handleDeletePlugin}
+          >
+            {deleting ? 'Deleting…' : 'Delete'}
+          </button>
+        </div>
+      </div>
+    </div>
   {/if}
 </div>
 
@@ -307,8 +406,33 @@
     text-align: center;
   }
 
-  .state-message--error {
+  .error-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    background-color: color-mix(in srgb, var(--nova) 10%, var(--void));
+    border: 1px solid color-mix(in srgb, var(--nova) 30%, transparent);
+    border-radius: var(--radius-sm);
     color: var(--nova);
+    font-size: var(--text-sm);
+    font-family: var(--font-mono);
+  }
+
+  .error-dismiss {
+    background: none;
+    border: 1px solid color-mix(in srgb, var(--nova) 40%, transparent);
+    border-radius: var(--radius-sm);
+    color: var(--nova);
+    font-size: var(--text-xs);
+    padding: var(--space-1) var(--space-2);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .error-dismiss:hover {
+    background-color: color-mix(in srgb, var(--nova) 20%, transparent);
   }
 
   .plugins-header {
@@ -340,5 +464,74 @@
   .create-plugin-btn:focus {
     outline: none;
     box-shadow: 0 0 0 2px var(--edge-focus);
+  }
+
+  .confirm-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: hsla(240, 8%, 4%, 0.75);
+    z-index: 200;
+  }
+
+  .confirm-dialog {
+    background-color: var(--accretion);
+    border: 1px solid var(--edge-bright);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .confirm-text {
+    font-size: var(--text-sm);
+    color: var(--dim-light);
+    line-height: var(--leading-normal);
+    margin: 0;
+  }
+
+  .confirm-actions {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: flex-end;
+  }
+
+  .confirm-btn {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-out);
+  }
+
+  .confirm-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .confirm-btn--cancel {
+    background-color: transparent;
+    color: var(--dim-light);
+    border: 1px solid var(--edge);
+  }
+
+  .confirm-btn--cancel:hover:not(:disabled) {
+    color: var(--starlight);
+    border-color: var(--edge-bright);
+  }
+
+  .confirm-btn--delete {
+    background-color: color-mix(in srgb, var(--nova) 15%, var(--void));
+    color: var(--nova);
+    border: 1px solid color-mix(in srgb, var(--nova) 40%, transparent);
+  }
+
+  .confirm-btn--delete:hover:not(:disabled) {
+    background-color: color-mix(in srgb, var(--nova) 25%, var(--void));
   }
 </style>

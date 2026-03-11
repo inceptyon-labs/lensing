@@ -42,4 +42,7 @@ export type {
 export { createPresenceStore } from './presence-store';
 export type { PresenceStore, PresenceStoreOptions, PresenceStoreState } from './presence-store';
 
+export { createAiNewsStore } from './ai-news-store';
+export type { AiNewsStore, AiNewsStoreOptions, AiNewsStoreState } from './ai-news-store';
+
 /** Placeholder: UI primitives will be exported here (cards, charts, text blocks, loading states) */

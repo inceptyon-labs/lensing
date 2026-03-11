@@ -97,7 +97,7 @@ describe('PluginScheduler', () => {
       expect(scheduler.getPluginState('clock')).toBeUndefined();
     });
 
-    it('should stop timer when unregistering a running plugin', () => {
+    it('should stop timer when unregistering a running plugin', async () => {
       scheduler = createPluginScheduler();
       const handler = vi.fn().mockResolvedValue(undefined);
       scheduler.register('clock', createManifest('clock'), handler);
@@ -106,13 +106,13 @@ describe('PluginScheduler', () => {
       scheduler.unregister('clock');
 
       // Advance time past interval — handler should not be called after unregister
-      vi.advanceTimersByTime(10000);
+      await vi.advanceTimersByTimeAsync(10000);
       expect(handler).not.toHaveBeenCalled();
     });
   });
 
   describe('start / stop / restart', () => {
-    it('should start a plugin timer and execute handler', async () => {
+    it('should start a plugin timer and execute handler immediately', async () => {
       scheduler = createPluginScheduler();
       const handler = vi.fn().mockResolvedValue(undefined);
       const manifest = createManifest('clock', {
@@ -124,13 +124,13 @@ describe('PluginScheduler', () => {
 
       expect(scheduler.getPluginState('clock')!.status).toBe('running');
 
-      // Advance past interval
+      // Immediate fire at t=0, then another at t=1000
       await vi.advanceTimersByTimeAsync(1000);
 
-      expect(handler).toHaveBeenCalledTimes(1);
+      expect(handler).toHaveBeenCalledTimes(2);
     });
 
-    it('should repeatedly execute handler at interval', async () => {
+    it('should repeatedly execute handler at interval after immediate first fire', async () => {
       scheduler = createPluginScheduler();
       const handler = vi.fn().mockResolvedValue(undefined);
       const manifest = createManifest('clock', {
@@ -139,9 +139,10 @@ describe('PluginScheduler', () => {
       scheduler.register('clock', manifest, handler);
       scheduler.start('clock');
 
+      // t=0: immediate, t=1000, t=2000, t=3000 → 4 calls by 3500ms
       await vi.advanceTimersByTimeAsync(3500);
 
-      expect(handler).toHaveBeenCalledTimes(3);
+      expect(handler).toHaveBeenCalledTimes(4);
     });
 
     it('should stop a running plugin', async () => {
@@ -153,15 +154,16 @@ describe('PluginScheduler', () => {
       scheduler.register('clock', manifest, handler);
       scheduler.start('clock');
 
+      // t=0: immediate, t=1000: second call → 2 calls by 1500ms
       await vi.advanceTimersByTimeAsync(1500);
-      expect(handler).toHaveBeenCalledTimes(1);
+      expect(handler).toHaveBeenCalledTimes(2);
 
       scheduler.stop('clock');
       expect(scheduler.getPluginState('clock')!.status).toBe('stopped');
 
       await vi.advanceTimersByTimeAsync(2000);
       // Should not have been called again after stop
-      expect(handler).toHaveBeenCalledTimes(1);
+      expect(handler).toHaveBeenCalledTimes(2);
     });
 
     it('should restart a plugin (stop + start)', async () => {
@@ -173,14 +175,16 @@ describe('PluginScheduler', () => {
       scheduler.register('clock', manifest, handler);
       scheduler.start('clock');
 
+      // t=0: immediate, t=1000: second → 2 calls by 1500ms
       await vi.advanceTimersByTimeAsync(1500);
-      expect(handler).toHaveBeenCalledTimes(1);
+      expect(handler).toHaveBeenCalledTimes(2);
 
       scheduler.restart('clock');
       expect(scheduler.getPluginState('clock')!.status).toBe('running');
 
+      // restart fires immediately (t=0), then at t=1000 → +2 = 4 total
       await vi.advanceTimersByTimeAsync(1000);
-      expect(handler).toHaveBeenCalledTimes(2);
+      expect(handler).toHaveBeenCalledTimes(4);
     });
 
     it('should startAll registered plugins', async () => {
@@ -204,9 +208,11 @@ describe('PluginScheduler', () => {
 
       scheduler.startAll();
 
+      // clock: immediate + t=1000 + t=2000 → 3 calls by 2000ms
+      // weather: immediate + t=2000 → 2 calls by 2000ms
       await vi.advanceTimersByTimeAsync(2000);
-      expect(handler1).toHaveBeenCalledTimes(2);
-      expect(handler2).toHaveBeenCalledTimes(1);
+      expect(handler1).toHaveBeenCalledTimes(3);
+      expect(handler2).toHaveBeenCalledTimes(2);
     });
 
     it('should stopAll running plugins', async () => {
@@ -229,14 +235,15 @@ describe('PluginScheduler', () => {
       );
 
       scheduler.startAll();
+      // immediate + t=1000 → 2 calls each by 1000ms
       await vi.advanceTimersByTimeAsync(1000);
 
       scheduler.stopAll();
 
       await vi.advanceTimersByTimeAsync(5000);
-      // Both should have only 1 call (before stopAll)
-      expect(handler1).toHaveBeenCalledTimes(1);
-      expect(handler2).toHaveBeenCalledTimes(1);
+      // Both should have 2 calls (immediate + one tick before stopAll)
+      expect(handler1).toHaveBeenCalledTimes(2);
+      expect(handler2).toHaveBeenCalledTimes(2);
     });
 
     it('should not throw for start on unknown plugin', () => {
@@ -275,10 +282,10 @@ describe('PluginScheduler', () => {
       scheduler.register('clock', manifest, handler);
       scheduler.start('clock');
 
-      // Let 5 intervals pass — only 3 should execute due to burst limit
+      // immediate + 5 intervals — burst limit of 3 should cap total calls
       await vi.advanceTimersByTimeAsync(550);
 
-      expect(handler.mock.calls.length).toBeLessThanOrEqual(3);
+      expect(handler.mock.calls.length).toBeLessThanOrEqual(4);
     });
   });
 
@@ -292,7 +299,8 @@ describe('PluginScheduler', () => {
       scheduler.register('bad-plugin', manifest, handler);
       scheduler.start('bad-plugin');
 
-      await vi.advanceTimersByTimeAsync(1000);
+      // Immediate fire at t=0 triggers the error
+      await vi.advanceTimersByTimeAsync(0);
 
       const state = scheduler.getPluginState('bad-plugin');
       expect(state!.status).toBe('error');
@@ -312,11 +320,11 @@ describe('PluginScheduler', () => {
       scheduler.register('flaky', manifest, handler);
       scheduler.start('flaky');
 
-      // First call fails
-      await vi.advanceTimersByTimeAsync(1000);
+      // Immediate fire (t=0) fails
+      await vi.advanceTimersByTimeAsync(0);
       expect(scheduler.getPluginState('flaky')!.status).toBe('error');
 
-      // Second call succeeds
+      // Next tick (t=1000) succeeds
       await vi.advanceTimersByTimeAsync(1000);
       expect(handler).toHaveBeenCalledTimes(2);
       expect(scheduler.getPluginState('flaky')!.status).toBe('running');
@@ -342,7 +350,8 @@ describe('PluginScheduler', () => {
       );
 
       scheduler.startAll();
-      await vi.advanceTimersByTimeAsync(1000);
+      // Immediate fire at t=0
+      await vi.advanceTimersByTimeAsync(0);
 
       expect(badHandler).toHaveBeenCalledTimes(1);
       expect(goodHandler).toHaveBeenCalledTimes(1);
@@ -397,7 +406,8 @@ describe('PluginScheduler', () => {
       scheduler.start('clock');
 
       const beforeRun = Date.now();
-      await vi.advanceTimersByTimeAsync(1000);
+      // Immediate fire at t=0
+      await vi.advanceTimersByTimeAsync(0);
 
       const state = scheduler.getPluginState('clock');
       expect(state!.lastRun).toBeGreaterThanOrEqual(beforeRun);
@@ -415,10 +425,11 @@ describe('PluginScheduler', () => {
       );
       scheduler.start('clock');
 
+      // immediate + t=1000, t=2000, t=3000 → 4 calls
       await vi.advanceTimersByTimeAsync(3000);
 
       const state = scheduler.getPluginState('clock');
-      expect(state!.runCount).toBe(3);
+      expect(state!.runCount).toBe(4);
     });
   });
 

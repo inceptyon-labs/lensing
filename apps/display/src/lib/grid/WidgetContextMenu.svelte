@@ -10,7 +10,7 @@
     showHeader?: boolean;
     x?: number;
     y?: number;
-    onconfigure: () => void;
+    onconfigure?: () => void;
     ondelete: () => void;
     onresize: () => void;
     ontoggleheader?: () => void;
@@ -60,10 +60,12 @@
       <span class="context-menu__name">{pluginName}</span>
     </div>
 
-    <button type="button" class="context-menu__item" role="menuitem" onclick={onconfigure}>
-      <span class="context-menu__icon" aria-hidden="true"><Pencil size={14} /></span>
-      Configure
-    </button>
+    {#if onconfigure}
+      <button type="button" class="context-menu__item" role="menuitem" onclick={onconfigure}>
+        <span class="context-menu__icon" aria-hidden="true"><Pencil size={14} /></span>
+        Configure
+      </button>
+    {/if}
 
     <button type="button" class="context-menu__item" role="menuitem" onclick={onresize}>
       <span class="context-menu__icon" aria-hidden="true"><Move size={14} /></span>

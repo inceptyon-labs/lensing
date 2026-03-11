@@ -123,11 +123,15 @@ function copyData(d: SportsData): SportsData {
 export function createSportsServer(options: SportsServerOptions): SportsServerInstance {
   const {
     leagues,
+    teams,
     dataBus,
     notifications: _notifications,
     maxStale_ms = DEFAULT_SPORTS_MAX_STALE_MS,
     fetchFn,
   } = options;
+
+  // Pre-compute lowercase team filters for case-insensitive substring matching
+  const teamFilters = (teams ?? []).map((t) => t.toLowerCase().trim()).filter(Boolean);
 
   if (!leagues || leagues.length === 0) {
     throw new Error('SportsServer: leagues is required and must not be empty');
@@ -163,7 +167,18 @@ export function createSportsServer(options: SportsServerOptions): SportsServerIn
     }
   }
 
-  async function fetchLeague(sport: string, league: string): Promise<SportsGame[] | null> {
+  function matchesTeamFilter(game: SportsGame): boolean {
+    if (teamFilters.length === 0) return true;
+    const home = game.homeTeam.toLowerCase();
+    const away = game.awayTeam.toLowerCase();
+    return teamFilters.some((filter) => home.includes(filter) || away.includes(filter));
+  }
+
+  async function fetchLeague(
+    sport: string,
+    league: string,
+    label?: string
+  ): Promise<SportsGame[] | null> {
     const url = buildEspnUrl(sport, league);
     let response: Awaited<ReturnType<FetchFn>>;
 
@@ -184,6 +199,10 @@ export function createSportsServer(options: SportsServerOptions): SportsServerIn
     }
 
     if (!response.ok) {
+      // ESPN returns 400 for off-season leagues — treat as empty, not an error
+      if (response.status === 400) {
+        return [];
+      }
       notifyError(
         `Sports API error ${response.status ?? ''} [${league}]: ${response.statusText ?? 'unknown'}`
       );
@@ -199,7 +218,7 @@ export function createSportsServer(options: SportsServerOptions): SportsServerIn
       return null;
     }
 
-    return transformScoreboard(raw as EspnScoreboard, league);
+    return transformScoreboard(raw as EspnScoreboard, label ?? league);
   }
 
   async function refresh(): Promise<void> {
@@ -216,8 +235,8 @@ export function createSportsServer(options: SportsServerOptions): SportsServerIn
       const allGames: SportsGame[] = [];
       let anySuccess = false;
 
-      for (const { sport, league } of leagues) {
-        const games = await fetchLeague(sport, league);
+      for (const { sport, league, label } of leagues) {
+        const games = await fetchLeague(sport, league, label);
         if (games !== null) {
           allGames.push(...games);
           anySuccess = true;
@@ -229,16 +248,17 @@ export function createSportsServer(options: SportsServerOptions): SportsServerIn
         return;
       }
 
+      const filteredGames = allGames.filter(matchesTeamFilter);
       const now = Date.now();
 
       lastData = {
-        games: allGames.map(copyGame),
+        games: filteredGames.map(copyGame),
         lastUpdated: now,
       };
       lastFetchedAt = now;
 
       const publishData: SportsData = {
-        games: allGames.map(copyGame),
+        games: filteredGames.map(copyGame),
         lastUpdated: now,
       };
 

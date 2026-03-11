@@ -1,0 +1,45 @@
+.f-widget {
+  background: hsl(240, 6%, 7%);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 0 0 1px hsla(220, 10%, 50%, 0.12);
+}
+.f-header {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: hsl(220, 15%, 90%);
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+.f-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+.f-item {
+  text-align: center;
+}
+.f-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: hsl(220, 10%, 62%);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.5rem;
+}
+.f-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: hsl(220, 15%, 90%);
+  margin-bottom: 0.25rem;
+}
+.f-change {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.f-change.positive {
+  color: hsl(160, 45%, 45%);
+}
+.f-change.negative {
+  color: hsl(0, 60%, 55%);
+}

@@ -1,16 +1,28 @@
 <script lang="ts">
   import type { PluginAdminEntry } from '@lensing/types';
   import { getPreferredSize } from './widget-sizes';
+  import { LAYOUT_UTILITIES, makeUtilityId, type UtilityDefinition } from './layout-utilities';
+  import type { GridWidget } from './types';
 
   interface Props {
     availablePlugins: PluginAdminEntry[];
     onadd: (plugin: PluginAdminEntry) => void;
+    onaddutility?: (widget: GridWidget) => void;
     onclose: () => void;
   }
 
-  let { availablePlugins, onadd, onclose }: Props = $props();
+  let { availablePlugins, onadd, onaddutility, onclose }: Props = $props();
 
   let search = $state('');
+
+  let filteredUtilities = $derived(
+    search.trim().length === 0
+      ? LAYOUT_UTILITIES
+      : LAYOUT_UTILITIES.filter((u) => {
+          const q = search.toLowerCase();
+          return u.label.toLowerCase().includes(q) || u.type.toLowerCase().includes(q);
+        })
+  );
 
   let filtered = $derived(
     search.trim().length === 0
@@ -30,6 +42,23 @@
     if (thirdParty.length > 0) groups.push({ label: 'Plugins', plugins: thirdParty });
     return groups;
   });
+
+  function handleAddUtility(def: UtilityDefinition) {
+    if (!onaddutility) return;
+    const widget: GridWidget = {
+      id: makeUtilityId(def.type),
+      x: 0,
+      y: 0,
+      w: def.defaultW,
+      h: def.defaultH,
+      minW: def.minW,
+      minH: def.minH,
+      maxW: def.maxW,
+      maxH: def.maxH,
+      showHeader: false,
+    };
+    onaddutility(widget);
+  }
 
   function handleKeydown(event: KeyboardEvent) {
     if (event.key === 'Escape') onclose();
@@ -73,14 +102,43 @@
     </div>
 
     <div class="picker__body">
-      {#if filtered.length === 0}
-        <p class="picker__empty">
-          {#if availablePlugins.length === 0}
-            All widgets are already on the dashboard.
-          {:else}
-            No widgets match your search.
-          {/if}
-        </p>
+      {#if filteredUtilities.length > 0}
+        <div class="picker__group">
+          <h3 class="picker__group-label">
+            Layout
+            <span class="picker__group-count">({filteredUtilities.length})</span>
+          </h3>
+          <div class="picker__grid">
+            {#each filteredUtilities as util (util.type)}
+              <div class="picker__card">
+                <div class="picker__card-body">
+                  <div class="picker__card-icon picker__card-icon--util">
+                    {util.icon}
+                  </div>
+                  <div class="picker__card-info">
+                    <span class="picker__card-name">{util.label}</span>
+                    <span class="picker__card-id">{util.description}</span>
+                  </div>
+                </div>
+                <div class="picker__card-meta">
+                  <span class="picker__card-size">{util.defaultW}×{util.defaultH}</span>
+                </div>
+                <button
+                  type="button"
+                  class="picker__card-add"
+                  onclick={() => handleAddUtility(util)}
+                  aria-label="Add {util.label} to dashboard"
+                >
+                  + Add to Dashboard
+                </button>
+              </div>
+            {/each}
+          </div>
+        </div>
+      {/if}
+
+      {#if filtered.length === 0 && filteredUtilities.length === 0}
+        <p class="picker__empty">No widgets match your search.</p>
       {:else}
         {#each grouped as group (group.label)}
           <div class="picker__group">
@@ -297,6 +355,11 @@
     font-size: var(--text-lg);
     font-weight: 700;
     flex-shrink: 0;
+  }
+
+  .picker__card-icon--util {
+    background: hsla(220, 10%, 50%, 0.1);
+    color: var(--dim-light);
   }
 
   .picker__card-info {

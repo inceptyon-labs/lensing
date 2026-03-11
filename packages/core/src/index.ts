@@ -86,8 +86,9 @@ export type {
   AllergiesServerOptions,
   AllergiesServerInstance,
   AllergyData,
-  AllergenLevel,
-  AllergyLocation,
+  PollenTrigger,
+  PollenPeriod,
+  PollenLevel,
 } from '@lensing/types';
 
 export { createCryptoServer } from './crypto-server';
@@ -116,6 +117,18 @@ export {
 export { createNewsServer } from './news-server';
 export type { NewsServerOptions, NewsServerInstance, NewsData, NewsArticle } from '@lensing/types';
 export { DEFAULT_NEWS_MAX_ITEMS, DEFAULT_NEWS_MAX_STALE_MS } from '@lensing/types';
+
+// ── AI News Summary ────────────────────────────────────────────────────────
+export { createAiNewsServer } from './ai-news-server';
+export type {
+  AiNewsServerOptions,
+  AiNewsServerInstance,
+  AiNewsData,
+  AiNewsSummary,
+  AiNewsRssFetchFn,
+  SummarizeFn,
+} from '@lensing/types';
+export { DEFAULT_AI_NEWS_MAX_ITEMS, DEFAULT_AI_NEWS_MAX_STALE_MS } from '@lensing/types';
 
 // ── Sports Scores ───────────────────────────────────────────────────────────
 export { createSportsServer } from './sports-server';
@@ -242,6 +255,10 @@ export type {
   ConnectorRunnerOptions,
   ConnectorRunnerInstance,
 } from './connector-runner';
+
+// ── Secret Store ──────────────────────────────────────────────────────────────────
+export { createSecretStore } from './secret-store';
+export type { SecretStore } from './secret-store';
 
 // ── Publish Validation ────────────────────────────────────────────────────────────
 export { validatePublish } from './publish-validation';

@@ -8,6 +8,7 @@ function stubProvider(response: string): AiProvider {
   return {
     provider: 'anthropic' as AiProviderId,
     generate: vi.fn(async () => response),
+    listModels: vi.fn(async () => []),
   };
 }
 
@@ -223,6 +224,7 @@ describe('createAiAssist', () => {
       const provider: AiProvider = {
         provider: 'anthropic',
         generate: vi.fn().mockRejectedValue(new Error('Rate limit exceeded')),
+        listModels: vi.fn(async () => []),
       };
       const assist = createAiAssist({ provider });
 

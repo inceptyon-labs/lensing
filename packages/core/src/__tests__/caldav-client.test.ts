@@ -62,10 +62,9 @@ describe('CalendarServer', () => {
       expect(() => createCalendarServer(validOptions({ serverUrl: '' }))).toThrow(/serverUrl/i);
     });
 
-    it('should throw if calendarPath is missing', () => {
-      expect(() => createCalendarServer(validOptions({ calendarPath: '' }))).toThrow(
-        /calendarPath/i
-      );
+    it('should accept empty calendarPath (auto-discovery at refresh time)', () => {
+      const server = createCalendarServer(validOptions({ calendarPath: '' }));
+      expect(server).toBeDefined();
     });
 
     it('should throw if serverUrl does not use HTTPS', () => {
@@ -551,13 +550,17 @@ END:VEVENT</calendar-data>
       );
     });
 
-    it('should not publish to dataBus on fetch failure', async () => {
+    it('should publish empty events to dataBus on fetch failure', async () => {
       const publish = vi.fn();
       const dataBus = { publish } as unknown as import('@lensing/types').DataBusInstance;
       const fetchFn = vi.fn().mockRejectedValue(new Error('network error'));
       const server = createCalendarServer(validOptions({ dataBus, fetchFn }));
       await server.refresh();
-      expect(publish).not.toHaveBeenCalled();
+      expect(publish).toHaveBeenCalledWith(
+        'calendar.events',
+        'calendar-server',
+        expect.objectContaining({ events: [] })
+      );
     });
 
     it('should not throw when dataBus is not provided', async () => {

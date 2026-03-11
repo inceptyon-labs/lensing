@@ -6,7 +6,13 @@ import type {
   ModuleId,
   HostServiceLogger,
 } from '@lensing/types';
-import { MODULE_SCHEMAS, MODULE_IDS } from '@lensing/types';
+import {
+  MODULE_SCHEMAS,
+  MODULE_IDS,
+  resolveCategoriesToFeeds,
+  AI_NEWS_SCHEDULES,
+  AI_NEWS_CATEGORIES,
+} from '@lensing/types';
 import { readModuleConfig } from './module-settings';
 import { createWeatherServer } from './weather-server';
 import { createCryptoServer } from './crypto-server';
@@ -17,12 +23,17 @@ import { createHomeAssistantServer } from './home-assistant-server';
 import { createAllergiesServer } from './allergies-server';
 import { createPIRServer } from './pir-server';
 import { createPhotoSlideshowServer } from './photo-slideshow-server';
+import { createAiNewsServer } from './ai-news-server';
+import type { AiProvider } from './ai-assist-providers';
+import type { AiProviderId } from '@lensing/types';
 
 /** Dependencies injected into module boot */
 export interface BootDeps {
   dataBus: DataBusInstance;
   notifications: NotificationQueueInstance;
   gpioFactory?: GpioWatcherFactory;
+  /** AI providers loaded from env vars (shared with AI assist) */
+  aiProviders?: Map<AiProviderId, AiProvider>;
 }
 
 /** A successfully booted module */
@@ -43,6 +54,7 @@ const MODULE_REFRESH_MS: Partial<Record<ModuleId, number>> = {
   allergies: 3_600_000, // 1 hour
   // pir: event-driven, no polling
   'photo-slideshow': 600_000, // 10 min
+  // ai-news: schedule-driven, interval comes from config
 };
 
 /**
@@ -84,14 +96,15 @@ export function rebootModule(
   if (!instance) return null;
 
   const booted: BootedModule = { id, instance };
-  startPolling(booted, log);
+  const overrideMs = id === 'ai-news' ? getAiNewsRefreshMs(config.values) : undefined;
+  startPolling(booted, log, overrideMs);
   modules.push(booted);
   log?.info(`Module rebooted: ${id}`);
   return booted;
 }
 
 /** Fire initial refresh and set up periodic polling timer for a booted module. */
-function startPolling(booted: BootedModule, log?: HostServiceLogger): void {
+function startPolling(booted: BootedModule, log?: HostServiceLogger, overrideMs?: number): void {
   const { id, instance } = booted;
   if (!instance.refresh) return;
 
@@ -99,7 +112,7 @@ function startPolling(booted: BootedModule, log?: HostServiceLogger): void {
   instance.refresh().catch((err) => log?.error(`Initial refresh failed: ${id}`, err));
 
   // Periodic polling
-  const interval = MODULE_REFRESH_MS[id];
+  const interval = overrideMs ?? MODULE_REFRESH_MS[id];
   if (interval !== undefined) {
     booted.timer = setInterval(() => {
       instance.refresh!().catch((err) => log?.error(`Refresh failed: ${id}`, err));
@@ -123,7 +136,8 @@ export function bootEnabledModules(
       const instance = bootModule(schema.id, config.values, deps);
       if (instance) {
         const booted_module: BootedModule = { id: schema.id, instance };
-        startPolling(booted_module, log);
+        const overrideMs = schema.id === 'ai-news' ? getAiNewsRefreshMs(config.values) : undefined;
+        startPolling(booted_module, log, overrideMs);
         booted.push(booted_module);
         log?.info(`Module booted: ${schema.id}`);
       }
@@ -182,7 +196,8 @@ export function syncModulesWithLayout(
       const instance = bootModule(id as ModuleId, config.values, deps);
       if (instance) {
         const booted: BootedModule = { id: id as ModuleId, instance };
-        startPolling(booted, log);
+        const overrideMs = id === 'ai-news' ? getAiNewsRefreshMs(config.values) : undefined;
+        startPolling(booted, log, overrideMs);
         kept.push(booted);
         log?.info(`Module booted (added to grid): ${id}`);
       }
@@ -194,16 +209,23 @@ export function syncModulesWithLayout(
   return kept;
 }
 
-/** League ID → sport name for ESPN API */
-const LEAGUE_SPORT_MAP: Record<string, string> = {
-  nfl: 'football',
-  nba: 'basketball',
-  mlb: 'baseball',
-  nhl: 'hockey',
-  mls: 'soccer',
-  ncaaf: 'football',
-  ncaab: 'basketball',
+/** League ID → ESPN API path segments { sport, slug } */
+const LEAGUE_ESPN_MAP: Record<string, { sport: string; slug: string }> = {
+  nfl: { sport: 'football', slug: 'nfl' },
+  nba: { sport: 'basketball', slug: 'nba' },
+  mlb: { sport: 'baseball', slug: 'mlb' },
+  nhl: { sport: 'hockey', slug: 'nhl' },
+  mls: { sport: 'soccer', slug: 'mls' },
+  ncaaf: { sport: 'football', slug: 'college-football' },
+  ncaab: { sport: 'basketball', slug: 'mens-college-basketball' },
+  wcbb: { sport: 'basketball', slug: 'womens-college-basketball' },
 };
+
+/** Get ai-news refresh interval from config (defaults to 2x-daily / 12h) */
+function getAiNewsRefreshMs(values: Record<string, string | number | boolean>): number {
+  const schedule = String(values['refreshSchedule'] ?? '2x-daily');
+  return AI_NEWS_SCHEDULES[schedule] ?? AI_NEWS_SCHEDULES['2x-daily']!;
+}
 
 /** Comma-separated string → string array */
 function csvToArray(val: unknown): string[] {
@@ -218,7 +240,7 @@ function bootModule(
   id: ModuleId,
   values: Record<string, string | number | boolean>,
   deps: BootDeps
-): { close(): void } | null {
+): { close(): void; refresh?(): Promise<void> } | null {
   const { dataBus, notifications, gpioFactory } = deps;
 
   switch (id) {
@@ -226,7 +248,11 @@ function bootModule(
       return createWeatherServer({
         provider: (values['provider'] as 'openweathermap' | 'open-meteo') ?? 'open-meteo',
         apiKey: values['apiKey'] ? String(values['apiKey']) : undefined,
-        location: { lat: Number(values['lat']), lon: Number(values['lon']) },
+        locationQuery: values['locationQuery'] ? String(values['locationQuery']) : undefined,
+        location:
+          values['lat'] != null && values['lon'] != null
+            ? { lat: Number(values['lat']), lon: Number(values['lon']) }
+            : undefined,
         units: (values['units'] as 'imperial' | 'metric') ?? 'imperial',
         dataBus,
       });
@@ -248,22 +274,29 @@ function bootModule(
 
     case 'sports': {
       const leagueIds = csvToArray(values['leagues']);
+      const teamNames = csvToArray(values['teams']);
       return createSportsServer({
-        leagues: leagueIds.map((l) => ({
-          sport: LEAGUE_SPORT_MAP[l] ?? l,
-          league: l,
-        })),
+        leagues: leagueIds.map((l) => {
+          const mapping = LEAGUE_ESPN_MAP[l];
+          return {
+            sport: mapping?.sport ?? l,
+            league: mapping?.slug ?? l,
+            label: l,
+          };
+        }),
+        teams: teamNames.length > 0 ? teamNames : undefined,
         dataBus,
         notifications,
       });
     }
 
     case 'calendar': {
+      const calPath = String(values['calendarPath'] ?? '').trim();
       const calOpts = {
         serverUrl: String(values['serverUrl'] ?? ''),
         username: String(values['username'] ?? ''),
         password: String(values['password'] ?? ''),
-        calendarPath: String(values['calendarPath'] ?? ''),
+        ...(calPath ? { calendarPath: calPath } : {}),
         rangeDays: values['rangeDays'] != null ? Number(values['rangeDays']) : undefined,
         dataBus,
       };
@@ -281,8 +314,7 @@ function bootModule(
 
     case 'allergies':
       return createAllergiesServer({
-        apiKey: String(values['apiKey'] ?? ''),
-        location: { lat: Number(values['lat']), lon: Number(values['lon']) },
+        zipCode: String(values['zipCode'] ?? ''),
         alertThreshold:
           values['alertThreshold'] != null ? Number(values['alertThreshold']) : undefined,
         dataBus,
@@ -303,6 +335,67 @@ function bootModule(
         photoDir: String(values['photoDirectory'] ?? ''),
         dataBus,
       });
+
+    case 'ai-news': {
+      // Resolve category IDs → feed URLs + build feed→label mapping
+      const categoryIds = csvToArray(values['categories']);
+      const aiNewsFeedUrls = resolveCategoriesToFeeds(categoryIds);
+      if (aiNewsFeedUrls.length === 0) return null; // No categories selected
+      const idSet = new Set(categoryIds);
+      const feedCategoryMap: Record<string, string> = {};
+      for (const cat of AI_NEWS_CATEGORIES) {
+        if (idSet.has(cat.id)) {
+          for (const feed of cat.feeds) {
+            feedCategoryMap[feed] = cat.label;
+          }
+        }
+      }
+      const aiProviderId = String(values['aiProvider'] ?? 'anthropic') as AiProviderId;
+      const provider = deps.aiProviders?.get(aiProviderId);
+      if (!provider) return null; // No API key configured for this provider
+      const aiModelDefault: Record<string, string> = {
+        anthropic: 'claude-sonnet-4-20250514',
+        deepseek: 'deepseek-chat',
+        gemini: 'gemini-2.0-flash',
+      };
+      const aiModel = String(values['aiModel'] || aiModelDefault[aiProviderId] || '');
+
+      return createAiNewsServer({
+        feedUrls: aiNewsFeedUrls,
+        categories: feedCategoryMap,
+        maxItems: values['maxItems'] != null ? Number(values['maxItems']) : undefined,
+        dataBus,
+        notifications,
+        summarize: async (articles) => {
+          const prompt = articles
+            .map((a, i) => `${i + 1}. ${a.title}\n   ${a.summary}`)
+            .join('\n\n');
+          const response = await provider.generate(
+            [
+              {
+                role: 'user',
+                content:
+                  `Summarize each of the following news headlines in 2-3 concise sentences. ` +
+                  `Return ONLY a JSON array of strings, one summary per headline, in the same order.\n\n${prompt}`,
+              },
+            ],
+            aiModel
+          );
+          try {
+            const parsed = JSON.parse(
+              response
+                .trim()
+                .replace(/^```json\s*/, '')
+                .replace(/```\s*$/, '')
+            );
+            if (Array.isArray(parsed)) return parsed.map(String);
+          } catch {
+            // fallback: split by numbered lines
+          }
+          return articles.map((a) => a.summary);
+        },
+      });
+    }
 
     default:
       return null;

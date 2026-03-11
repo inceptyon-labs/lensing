@@ -1,4 +1,4 @@
-import type { AllergyData } from '@lensing/types';
+import type { AllergyData, PollenLevel } from '@lensing/types';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -19,32 +19,46 @@ export interface AllergiesStore {
   setLoading(loading: boolean): void;
   setError(error: string): void;
   isStale(): boolean;
-  getSeverityColor(index: number): string;
-  getSeverityLabel(index: number): string;
+  getPollenLevel(index: number): PollenLevel;
+  getPollenColor(index: number): string;
   onChange(callback: () => void): void;
 }
 
-// ── Severity maps (using design system CSS custom properties) ──────────────
+// ── Severity maps ──────────────────────────────────────────────────────────
 
-const SEVERITY_COLORS: Record<number, string> = {
-  0: 'var(--alert-success)',
-  1: 'var(--alert-success)',
-  2: 'var(--alert-success)',
-  3: 'var(--alert-warning)',
-  4: 'var(--alert-urgent)',
-  5: 'var(--ember)',
-};
+function pollenLevel(index: number): PollenLevel {
+  if (index <= 2.4) return 'Low';
+  if (index <= 4.8) return 'Low-Medium';
+  if (index <= 7.2) return 'Medium';
+  if (index <= 9.6) return 'Medium-High';
+  return 'High';
+}
 
-const SEVERITY_LABELS: Record<number, string> = {
-  0: 'None',
-  1: 'Low',
-  2: 'Low',
-  3: 'Moderate',
-  4: 'High',
-  5: 'Very High',
-};
+function pollenColor(index: number): string {
+  if (index <= 2.4) return '#4caf50';
+  if (index <= 4.8) return '#8bc34a';
+  if (index <= 7.2) return '#ffeb3b';
+  if (index <= 9.6) return '#ff9800';
+  return '#f44336';
+}
 
 // ── Factory ────────────────────────────────────────────────────────────────
+
+function copyData(d: AllergyData): AllergyData {
+  return {
+    index: d.index,
+    level: d.level,
+    color: d.color,
+    location: d.location,
+    periods: d.periods.map((p) => ({
+      type: p.type,
+      index: p.index,
+      triggers: p.triggers.map((t) => ({ ...t })),
+    })),
+    triggers: d.triggers.map((t) => ({ ...t })),
+    lastUpdated: d.lastUpdated,
+  };
+}
 
 export function createAllergiesStore(options: AllergiesStoreOptions = {}): AllergiesStore {
   const { maxStale_ms = 3_600_000 } = options;
@@ -71,25 +85,17 @@ export function createAllergiesStore(options: AllergiesStoreOptions = {}): Aller
     }
   }
 
-  function copyAllergens(d: AllergyData): AllergyData {
-    return {
-      index: d.index,
-      allergens: d.allergens.map((a) => ({ ...a })),
-      lastUpdated: d.lastUpdated,
-    };
-  }
-
   return {
     getState(): AllergiesStoreState {
       return {
-        data: data ? copyAllergens(data) : null,
+        data: data ? copyData(data) : null,
         isLoading,
         error,
       };
     },
 
     setData(newData: AllergyData): void {
-      data = copyAllergens(newData);
+      data = copyData(newData);
       error = null;
       isLoading = false;
       notifyChange();
@@ -113,14 +119,12 @@ export function createAllergiesStore(options: AllergiesStoreOptions = {}): Aller
       return Date.now() - data.lastUpdated > maxStale_ms;
     },
 
-    getSeverityColor(index: number): string {
-      const clamped = Math.max(0, Math.min(5, Math.round(index)));
-      return SEVERITY_COLORS[clamped] ?? SEVERITY_COLORS[0];
+    getPollenLevel(index: number): PollenLevel {
+      return pollenLevel(index);
     },
 
-    getSeverityLabel(index: number): string {
-      const clamped = Math.max(0, Math.min(5, Math.round(index)));
-      return SEVERITY_LABELS[clamped] ?? 'Unknown';
+    getPollenColor(index: number): string {
+      return pollenColor(index);
     },
 
     onChange(callback: () => void): void {

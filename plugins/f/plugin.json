@@ -1,0 +1,10 @@
+{
+  "id": "f",
+  "name": "F",
+  "version": "1.0.0",
+  "description": "F",
+  "permissions": {
+    "allowed_domains": [""],
+    "max_refresh_ms": 300000
+  }
+}

@@ -10,7 +10,8 @@ export type ModuleId =
   | 'home-assistant'
   | 'allergies'
   | 'pir'
-  | 'photo-slideshow';
+  | 'photo-slideshow'
+  | 'ai-news';
 
 /** All module IDs as a constant array */
 export const MODULE_IDS: readonly ModuleId[] = [
@@ -23,6 +24,7 @@ export const MODULE_IDS: readonly ModuleId[] = [
   'allergies',
   'pir',
   'photo-slideshow',
+  'ai-news',
 ] as const;
 
 /** Schema describing a built-in module's user-configurable settings */
@@ -44,10 +46,11 @@ export const MODULE_SCHEMAS: readonly ModuleSettingsSchema[] = [
     name: 'Weather',
     description: 'Current conditions and forecast via Open-Meteo (free) or OpenWeatherMap',
     setupGuide:
-      'Open-Meteo is free and requires no API key — just set your coordinates.\n\n' +
+      'Open-Meteo is free and requires no API key.\n\n' +
+      'Enter a city name or zip code in the Location field — coordinates will be ' +
+      'looked up automatically. Or set Latitude/Longitude directly for precision.\n\n' +
       'For OpenWeatherMap, sign up at openweathermap.org/api and get a free API key ' +
-      '(the "Current Weather" plan is free for up to 1,000 calls/day).\n\n' +
-      'Find your coordinates at latlong.net or by right-clicking in Google Maps.',
+      '(the "Current Weather" plan is free for up to 1,000 calls/day).',
     fields: [
       {
         key: 'provider',
@@ -68,10 +71,17 @@ export const MODULE_SCHEMAS: readonly ModuleSettingsSchema[] = [
         category: 'integration',
       },
       {
+        key: 'locationQuery',
+        type: 'string',
+        label: 'Location',
+        description: 'City name or zip code (e.g. "New York" or "10001")',
+        category: 'widget',
+      },
+      {
         key: 'lat',
         type: 'number',
         label: 'Latitude',
-        required: true,
+        description: 'Optional if Location is set',
         min: -90,
         max: 90,
         category: 'widget',
@@ -80,7 +90,7 @@ export const MODULE_SCHEMAS: readonly ModuleSettingsSchema[] = [
         key: 'lon',
         type: 'number',
         label: 'Longitude',
-        required: true,
+        description: 'Optional if Location is set',
         min: -180,
         max: 180,
         category: 'widget',
@@ -157,7 +167,10 @@ export const MODULE_SCHEMAS: readonly ModuleSettingsSchema[] = [
     setupGuide:
       'Uses the free ESPN API — no API key needed.\n\n' +
       'Enter league IDs separated by commas.\n\n' +
-      'Available leagues: nfl, nba, mlb, nhl, mls, ncaaf, ncaab.\n\n' +
+      'Available leagues: nfl, nba, mlb, nhl, mls, ncaaf, ncaab, wcbb.\n\n' +
+      'To filter by specific teams, enter team names separated by commas ' +
+      '(e.g. "Buccaneers, Gators, Lakers"). Matching is case-insensitive ' +
+      'and partial — "Gators" matches "Florida Gators". Leave blank to show all games.\n\n' +
       'Scores update every 2 minutes during active games.',
     fields: [
       {
@@ -166,6 +179,14 @@ export const MODULE_SCHEMAS: readonly ModuleSettingsSchema[] = [
         label: 'Leagues',
         description: 'Comma-separated league IDs (e.g. nfl,nba,mlb)',
         default: 'nfl,nba',
+        category: 'widget',
+      },
+      {
+        key: 'teams',
+        type: 'string',
+        label: 'Favorite Teams',
+        description:
+          'Comma-separated team names to filter (e.g. Buccaneers,Gators,Lakers). Leave blank for all games.',
         category: 'widget',
       },
     ],
@@ -180,7 +201,7 @@ export const MODULE_SCHEMAS: readonly ModuleSettingsSchema[] = [
       '• Server URL: https://caldav.icloud.com\n' +
       '• Username: your Apple ID email\n' +
       '• Password: generate an app-specific password at appleid.apple.com\n' +
-      '• Calendar Path: /calendars/<apple-id-dsid>/calendar/\n\n' +
+      '• Calendar Path: leave blank to auto-discover your first calendar\n\n' +
       'For Google Calendar:\n' +
       '• Server URL: https://apidata.googleusercontent.com/caldav/v2\n' +
       '• Use an app password from myaccount.google.com/apppasswords',
@@ -211,9 +232,9 @@ export const MODULE_SCHEMAS: readonly ModuleSettingsSchema[] = [
         key: 'calendarPath',
         type: 'string',
         label: 'Calendar Path',
-        description: 'Collection path (e.g. /calendars/user@icloud.com/calendar/)',
-        required: true,
-        category: 'widget',
+        description: 'Auto-discovered if blank. Override: /calendars/user@icloud.com/calendar/',
+        required: false,
+        category: 'integration',
       },
       {
         key: 'rangeDays',
@@ -268,51 +289,32 @@ export const MODULE_SCHEMAS: readonly ModuleSettingsSchema[] = [
   },
   {
     id: 'allergies',
-    name: 'Allergies / Pollen',
-    description: 'Pollen and allergen index via Ambee API',
+    name: 'Pollen Index',
+    description: 'Pollen forecast and allergen triggers via pollen.com (free, no key required)',
     setupGuide:
-      'Uses the Ambee pollen API for real-time pollen and allergen data.\n\n' +
-      'To get an API key:\n' +
-      '1. Sign up at api-dashboard.getambee.com\n' +
-      '2. The free tier includes 100 calls/day\n' +
-      '3. Copy your API key from the dashboard\n\n' +
-      'Set your location coordinates (find them at latlong.net). ' +
-      'The alert threshold (0-5) controls when you get notifications — ' +
-      '0 is any pollen, 3 is moderate, 5 is very high.',
+      'Uses pollen.com for real-time pollen data — no API key needed.\n\n' +
+      'Enter your 5-digit US zip code to get local pollen forecasts.\n\n' +
+      'The index runs from 0 (none) to 12 (very high). The alert threshold ' +
+      'controls when you get notifications — default is 7.3 (medium-high).\n\n' +
+      'Data includes yesterday, today, and tomorrow forecasts with ' +
+      'specific allergen triggers (tree, grass, weed pollen).',
     fields: [
       {
-        key: 'apiKey',
-        type: 'password',
-        label: 'API Key',
+        key: 'zipCode',
+        type: 'string',
+        label: 'Zip Code',
+        description: '5-digit US zip code (e.g. 90210)',
         required: true,
-        category: 'integration',
-      },
-      {
-        key: 'lat',
-        type: 'number',
-        label: 'Latitude',
-        required: true,
-        min: -90,
-        max: 90,
-        category: 'widget',
-      },
-      {
-        key: 'lon',
-        type: 'number',
-        label: 'Longitude',
-        required: true,
-        min: -180,
-        max: 180,
         category: 'widget',
       },
       {
         key: 'alertThreshold',
         type: 'number',
         label: 'Alert Threshold',
-        description: 'Notify when index reaches this level (0-5)',
-        default: 3,
+        description: 'Notify when index reaches this level (0-12)',
+        default: 7.3,
         min: 0,
-        max: 5,
+        max: 12,
         category: 'widget',
       },
     ],
@@ -371,6 +373,90 @@ export const MODULE_SCHEMAS: readonly ModuleSettingsSchema[] = [
         description: 'Absolute path to the directory containing photos',
         required: true,
         category: 'integration',
+      },
+    ],
+  },
+  {
+    id: 'ai-news',
+    name: 'AI News Summary',
+    description: 'AI-powered headline summaries from RSS feeds',
+    setupGuide:
+      'Pick news categories below and choose how often to refresh.\n\n' +
+      'Uses the same API key from your .env file (ANTHROPIC_API_KEY, DEEPSEEK_API_KEY, ' +
+      'or GEMINI_API_KEY) — no extra key needed.\n\n' +
+      'Tip: "2x daily" is great for morning and evening updates with minimal API usage.',
+    fields: [
+      {
+        key: 'categories',
+        type: 'string',
+        label: 'News Categories',
+        description: 'Select topics to follow',
+        required: true,
+        category: 'integration',
+      },
+      {
+        key: 'refreshSchedule',
+        type: 'select',
+        label: 'Refresh Schedule',
+        description: 'How often to fetch and summarize new headlines',
+        default: '2x-daily',
+        category: 'integration',
+        options: [
+          { label: '2x daily (morning & evening)', value: '2x-daily' },
+          { label: '3x daily', value: '3x-daily' },
+          { label: '4x daily (every 6 hours)', value: '4x-daily' },
+          { label: 'Hourly', value: 'hourly' },
+        ],
+      },
+      {
+        key: 'maxItems',
+        type: 'number',
+        label: 'Max Headlines',
+        description: 'Maximum articles to summarize per refresh',
+        default: 10,
+        min: 1,
+        max: 50,
+        category: 'integration',
+      },
+      {
+        key: 'pageSize',
+        type: 'number',
+        label: 'Headlines Per Page',
+        description: 'How many headlines to show at once on the display',
+        default: 5,
+        min: 1,
+        max: 20,
+        category: 'integration',
+      },
+      {
+        key: 'rotateSeconds',
+        type: 'number',
+        label: 'Rotate Every (seconds)',
+        description: 'Auto-cycle to next page after this many seconds (0 = manual only)',
+        default: 30,
+        min: 0,
+        max: 300,
+        category: 'integration',
+      },
+      {
+        key: 'aiProvider',
+        type: 'select',
+        label: 'AI Provider',
+        default: 'anthropic',
+        category: 'integration',
+        options: [
+          { label: 'Anthropic (Claude)', value: 'anthropic' },
+          { label: 'DeepSeek', value: 'deepseek' },
+          { label: 'Gemini', value: 'gemini' },
+        ],
+      },
+      {
+        key: 'aiModel',
+        type: 'select',
+        label: 'Model',
+        description: 'AI model to use for summarization',
+        category: 'integration',
+        options: [],
       },
     ],
   },

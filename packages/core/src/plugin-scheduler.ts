@@ -76,13 +76,13 @@ export function createPluginScheduler(options: SchedulerOptions = {}): PluginSch
     record.entry.nextRun = undefined;
   }
 
-  function scheduleNext(record: PluginRecord, capturedGeneration: number): void {
+  function scheduleNext(record: PluginRecord, capturedGeneration: number, delay?: number): void {
     // Stale callback guard: skip if generation changed or scheduler closed
     if (closed || record.generation !== capturedGeneration || record.entry.status === 'stopped') {
       return;
     }
 
-    const interval = record.entry.interval;
+    const interval = delay ?? record.entry.interval;
     record.entry.nextRun = Date.now() + interval;
 
     record.timerId = setTimeout(async () => {
@@ -194,7 +194,8 @@ export function createPluginScheduler(options: SchedulerOptions = {}): PluginSch
       clearTimer(record);
       record.entry.status = 'running';
       record.entry.error = undefined;
-      scheduleNext(record, record.generation);
+      // Fire immediately on first start so data is available right away
+      scheduleNext(record, record.generation, 0);
     },
 
     stop(pluginId) {
@@ -215,7 +216,8 @@ export function createPluginScheduler(options: SchedulerOptions = {}): PluginSch
       record.entry.status = 'running';
       record.entry.error = undefined;
       record.burstWindow = [];
-      scheduleNext(record, record.generation);
+      // Fire immediately so fresh data is available right away
+      scheduleNext(record, record.generation, 0);
     },
 
     startAll() {

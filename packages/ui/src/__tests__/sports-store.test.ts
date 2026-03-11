@@ -213,4 +213,38 @@ describe('Sports Store', () => {
     const store = createSportsStore();
     expect(store.getLeagues()).toEqual([]);
   });
+
+  // ── getByTeam ───────────────────────────────────────────────────────────
+
+  it('should return games matching a team name (case-insensitive substring)', () => {
+    const store = createSportsStore();
+    store.setData(
+      makeData({
+        games: [
+          makeGame({ id: '1', homeTeam: 'Tampa Bay Buccaneers', awayTeam: 'New Orleans Saints' }),
+          makeGame({ id: '2', homeTeam: 'Green Bay Packers', awayTeam: 'Chicago Bears' }),
+        ],
+      })
+    );
+
+    const bucsGames = store.getByTeam('buccaneers');
+    expect(bucsGames).toHaveLength(1);
+    expect(bucsGames[0].id).toBe('1');
+  });
+
+  it('should match away team too', () => {
+    const store = createSportsStore();
+    store.setData(
+      makeData({
+        games: [makeGame({ id: '1', homeTeam: 'Chiefs', awayTeam: 'Philadelphia Eagles' })],
+      })
+    );
+
+    expect(store.getByTeam('Eagles')).toHaveLength(1);
+  });
+
+  it('should return empty array from getByTeam when no data', () => {
+    const store = createSportsStore();
+    expect(store.getByTeam('Chiefs')).toEqual([]);
+  });
 });

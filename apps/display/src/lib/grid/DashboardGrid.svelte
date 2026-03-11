@@ -4,9 +4,11 @@
   import { DEFAULT_GRID_POLICY } from './types';
   import { pluginsToGridWidgets } from './default-layouts';
   import { getPreferredSize } from './widget-sizes';
+  import { isUtilityWidget, getUtilityType, getUtilityDefinition } from './layout-utilities';
   import type { WidgetPosition } from './resize-modal-validation';
   import GridStackAdapter from './GridStackAdapter.svelte';
   import PluginRenderer from '../PluginRenderer.svelte';
+  import UtilityClock from './UtilityClock.svelte';
   import ErrorBoundary from '../ErrorBoundary.svelte';
   import WidgetPicker from './WidgetPicker.svelte';
   import WidgetContextMenu from './WidgetContextMenu.svelte';
@@ -83,7 +85,14 @@
     // pluginMap in sync), but only use them when no saved layout exists.
     const defaults = initialWidgets;
     const widgets: GridWidget[] = savedLayout ? [...savedLayout] : [...defaults];
-    localWidgets = widgets;
+    // Hydrate utility widget constraints (not persisted in layout JSON)
+    localWidgets = widgets.map((w) => {
+      const utilType = getUtilityType(w.id);
+      if (!utilType) return w;
+      const def = getUtilityDefinition(utilType);
+      if (!def) return w;
+      return { ...w, minW: def.minW, minH: def.minH, maxW: def.maxW, maxH: def.maxH };
+    });
     // Use the local variable (not localWidgets $state) to avoid read-after-write loop
     history = createEditHistory(widgets);
   });
@@ -197,6 +206,13 @@
       h: preferred.h,
     };
     const updated = [...localWidgets, newWidget];
+    history.pushState(updated);
+    localWidgets = updated;
+    showPicker = false;
+  }
+
+  function handleAddUtilityWidget(widget: GridWidget) {
+    const updated = [...localWidgets, widget];
     history.pushState(updated);
     localWidgets = updated;
     showPicker = false;
@@ -341,9 +357,10 @@
     </div>
   {/if}
 
-  <!-- Plugin content rendered for each widget (transferred to grid tiles at runtime) -->
+  <!-- Plugin and utility content rendered for each widget (transferred to grid tiles at runtime) -->
   {#each gridWidgets as widget (widget.id)}
     {@const plugin = pluginMap.get(widget.id)}
+    {@const utilType = getUtilityType(widget.id)}
     {#if plugin}
       <div class="dashboard-widget-content" data-widget-id={widget.id}>
         {#if editMode}
@@ -365,6 +382,30 @@
           <ErrorBoundary name={plugin.manifest.name}>
             <PluginRenderer {plugin} />
           </ErrorBoundary>
+        </div>
+      </div>
+    {:else if utilType}
+      <div class="dashboard-widget-content" data-widget-id={widget.id}>
+        {#if editMode}
+          <button
+            type="button"
+            class="widget-gear-btn"
+            aria-label="Widget settings"
+            onclick={(e) => handleGearClick(e, widget.id)}
+          >
+            <Settings size={14} strokeWidth={2} />
+          </button>
+        {/if}
+        <div class="widget-body widget-body--no-header">
+          {#if utilType === 'spacer'}
+            <div class="util-spacer" class:util-spacer--edit={editMode}></div>
+          {:else if utilType === 'hdiv'}
+            <div class="util-hdiv"></div>
+          {:else if utilType === 'vdiv'}
+            <div class="util-vdiv"></div>
+          {:else if utilType === 'clock'}
+            <UtilityClock />
+          {/if}
         </div>
       </div>
     {/if}
@@ -408,16 +449,32 @@
     {@const contextPlugin =
       pluginMap.get(activeContextWidget.id) ??
       allPlugins.find((p) => p.plugin_id === activeContextWidget!.id)}
+    {@const contextUtilType = getUtilityType(activeContextWidget.id)}
+    {@const contextName =
+      contextPlugin?.manifest.name ??
+      (contextUtilType === 'spacer'
+        ? 'Spacer'
+        : contextUtilType === 'hdiv'
+          ? 'Horizontal Line'
+          : contextUtilType === 'vdiv'
+            ? 'Vertical Line'
+            : contextUtilType === 'clock'
+              ? 'Clock'
+              : activeContextWidget.id)}
     <WidgetContextMenu
       pluginId={activeContextWidget.id}
-      pluginName={contextPlugin?.manifest.name ?? activeContextWidget.id}
+      pluginName={contextName}
       showHeader={activeContextWidget.showHeader !== false}
       x={contextMenuPos?.x ?? 0}
       y={contextMenuPos?.y ?? 0}
-      onconfigure={() => handleConfigureWidget(activeContextWidget!.id)}
+      onconfigure={contextUtilType
+        ? undefined
+        : () => handleConfigureWidget(activeContextWidget!.id)}
       ondelete={() => handleDeleteWidget(activeContextWidget!.id)}
       onresize={() => handleResizeWidget(activeContextWidget!)}
-      ontoggleheader={() => handleToggleHeader(activeContextWidget!.id)}
+      ontoggleheader={contextUtilType
+        ? undefined
+        : () => handleToggleHeader(activeContextWidget!.id)}
       onclose={() => (activeContextWidget = null)}
     />
   {/if}
@@ -450,7 +507,12 @@
 
   <!-- Widget picker (add new widgets) -->
   {#if editMode && showPicker}
-    <WidgetPicker {availablePlugins} onadd={handleAddWidget} onclose={() => (showPicker = false)} />
+    <WidgetPicker
+      {availablePlugins}
+      onadd={handleAddWidget}
+      onaddutility={handleAddUtilityWidget}
+      onclose={() => (showPicker = false)}
+    />
   {/if}
 </div>
 
@@ -521,6 +583,51 @@
 
   .widget-body--no-header {
     /* No header — body gets full height */
+  }
+
+  /* Layout utility styles */
+  .util-spacer {
+    width: 100%;
+    height: 100%;
+  }
+
+  .util-spacer--edit {
+    background: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 8px,
+      hsla(220, 10%, 50%, 0.06) 8px,
+      hsla(220, 10%, 50%, 0.06) 16px
+    );
+    border-radius: var(--radius-sm);
+  }
+
+  .util-hdiv {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  .util-hdiv::after {
+    content: '';
+    width: 100%;
+    height: 1px;
+    background: var(--edge-bright);
+  }
+
+  .util-vdiv {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  .util-vdiv::after {
+    content: '';
+    width: 1px;
+    height: 100%;
+    background: var(--edge-bright);
   }
 
   /* Gear settings button — top-right of each widget in edit mode */

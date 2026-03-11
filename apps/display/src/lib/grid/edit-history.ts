@@ -38,7 +38,8 @@ function widgetsEqual(a: GridWidget[], b: GridWidget[]): boolean {
       a[i].x !== b[i].x ||
       a[i].y !== b[i].y ||
       a[i].w !== b[i].w ||
-      a[i].h !== b[i].h
+      a[i].h !== b[i].h ||
+      (a[i].showHeader !== false) !== (b[i].showHeader !== false)
     ) {
       return false;
     }

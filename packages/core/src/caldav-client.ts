@@ -28,8 +28,8 @@ export interface CalendarServerOptions {
   password: string;
   /** CalDAV server base URL, e.g. 'https://caldav.icloud.com' */
   serverUrl: string;
-  /** Calendar collection path, e.g. '/calendars/user@icloud.com/calendar/' */
-  calendarPath: string;
+  /** Calendar collection path — if omitted, auto-discovered via PROPFIND */
+  calendarPath?: string;
   /** Number of days ahead to fetch (default: 7) */
   rangeDays?: number;
   /** Max staleness in ms before re-fetching (default: 3600000 = 1 hour) */
@@ -84,7 +84,7 @@ function buildCalendarQuery(start: Date, end: Date): string {
   <C:filter>
     <C:comp-filter name="VCALENDAR">
       <C:comp-filter name="VEVENT">
-        <C:time-range DTSTART="${formatICalDate(start)}" DTEND="${formatICalDate(end)}"/>
+        <C:time-range start="${formatICalDate(start)}" end="${formatICalDate(end)}"/>
       </C:comp-filter>
     </C:comp-filter>
   </C:filter>
@@ -169,20 +169,186 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+// ── CalDAV Discovery ──────────────────────────────────────────────────────────
+
+/** Extract an XML text element value by tag name (handles namespace prefixes). */
+function extractXmlValue(xml: string, tagName: string): string | undefined {
+  const re = new RegExp(`<[a-zA-Z]*:?${tagName}[^>]*>([^<]*)<\\/[a-zA-Z]*:?${tagName}>`, 'i');
+  const m = xml.match(re);
+  return m?.[1]?.trim() || undefined;
+}
+
+/** Extract href from inside an XML element (handles nested <D:href>). */
+function extractHref(xml: string, wrapperTag: string): string | undefined {
+  const wrapperRe = new RegExp(
+    `<[a-zA-Z]*:?${wrapperTag}[^>]*>([\\s\\S]*?)<\\/[a-zA-Z]*:?${wrapperTag}>`,
+    'i'
+  );
+  const wrapper = xml.match(wrapperRe);
+  if (!wrapper) return undefined;
+  return extractXmlValue(wrapper[1], 'href');
+}
+
+/** PROPFIND request body for discovering the current user principal. */
+const PROPFIND_PRINCIPAL = `<?xml version="1.0" encoding="utf-8"?>
+<D:propfind xmlns:D="DAV:">
+  <D:prop>
+    <D:current-user-principal/>
+  </D:prop>
+</D:propfind>`;
+
+/** PROPFIND request body for discovering calendar home set. */
+const PROPFIND_CALENDAR_HOME = `<?xml version="1.0" encoding="utf-8"?>
+<D:propfind xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">
+  <D:prop>
+    <C:calendar-home-set/>
+  </D:prop>
+</D:propfind>`;
+
+/** PROPFIND request body for listing calendars (resourcetype + displayname). */
+const PROPFIND_CALENDARS = `<?xml version="1.0" encoding="utf-8"?>
+<D:propfind xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">
+  <D:prop>
+    <D:resourcetype/>
+    <D:displayname/>
+  </D:prop>
+</D:propfind>`;
+
+/**
+ * Discover the first available calendar collection path via CalDAV PROPFIND.
+ * Steps: server root → current-user-principal → calendar-home-set → list calendars
+ */
+export interface DiscoveredCalendar {
+  /** Base URL of the pod-specific server (may differ from original serverUrl) */
+  baseUrl: string;
+  /** Calendar collection path on that server */
+  path: string;
+  /** Display name from CalDAV server */
+  name: string;
+}
+
+export async function discoverCalendars(
+  serverUrl: string,
+  authHeader: string,
+  fetchFn: CalDAVFetchFn,
+  timeoutMs: number
+): Promise<DiscoveredCalendar[]> {
+  const propfind = async (url: string, body: string): Promise<string> => {
+    const controller = new AbortController();
+    const tid = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetchFn(url, {
+        method: 'PROPFIND',
+        headers: {
+          Authorization: authHeader,
+          'Content-Type': 'application/xml; charset=utf-8',
+          Depth: '0',
+        },
+        body,
+        signal: controller.signal,
+      });
+      if (!res.ok && res.status !== 207) throw new Error(`PROPFIND ${url} returned ${res.status}`);
+      return await res.text();
+    } finally {
+      clearTimeout(tid);
+    }
+  };
+
+  const propfindList = async (url: string, body: string): Promise<string> => {
+    const controller = new AbortController();
+    const tid = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetchFn(url, {
+        method: 'PROPFIND',
+        headers: {
+          Authorization: authHeader,
+          'Content-Type': 'application/xml; charset=utf-8',
+          Depth: '1',
+        },
+        body,
+        signal: controller.signal,
+      });
+      if (!res.ok && res.status !== 207) throw new Error(`PROPFIND ${url} returned ${res.status}`);
+      return await res.text();
+    } finally {
+      clearTimeout(tid);
+    }
+  };
+
+  // Step 1: Find current-user-principal
+  const principalXml = await propfind(serverUrl, PROPFIND_PRINCIPAL);
+  const principalHref = extractHref(principalXml, 'current-user-principal');
+  if (!principalHref) throw new Error('CalDAV discovery: could not find current-user-principal');
+
+  const principalUrl = principalHref.startsWith('http')
+    ? principalHref
+    : `${serverUrl}${principalHref}`;
+
+  // Step 2: Find calendar-home-set
+  const homeXml = await propfind(principalUrl, PROPFIND_CALENDAR_HOME);
+  const homeHref = extractHref(homeXml, 'calendar-home-set');
+  if (!homeHref) throw new Error('CalDAV discovery: could not find calendar-home-set');
+
+  // iCloud returns a full URL with a pod-specific host (e.g. p64-caldav.icloud.com)
+  // We must use that host for subsequent requests, not the original serverUrl.
+  const homeUrl = homeHref.startsWith('http') ? homeHref : `${serverUrl}${homeHref}`;
+  let baseUrl = serverUrl;
+  if (homeHref.startsWith('http')) {
+    try {
+      const parsed = new URL(homeHref);
+      baseUrl = `${parsed.protocol}//${parsed.host}`;
+    } catch {
+      // fall back to original serverUrl
+    }
+  }
+
+  // Step 3: List calendars under home set
+  const listXml = await propfindList(homeUrl, PROPFIND_CALENDARS);
+
+  // Extract the home path for comparison (to skip the home collection itself)
+  let homePath = homeHref;
+  if (homeHref.startsWith('http')) {
+    try {
+      homePath = new URL(homeHref).pathname;
+    } catch {
+      /* keep as-is */
+    }
+  }
+
+  // Find <response> blocks that contain <calendar/> resourcetype (i.e. actual calendars)
+  const calendars: DiscoveredCalendar[] = [];
+  const responseBlocks =
+    listXml.match(/<[a-zA-Z]*:?response\b[\s\S]*?<\/[a-zA-Z]*:?response>/gi) ?? [];
+  for (const block of responseBlocks) {
+    // Must have <calendar .../> or <calendar/> in resourcetype
+    if (!/<[a-zA-Z]*:?calendar[\s/]/i.test(block)) continue;
+    const href = extractXmlValue(block, 'href');
+    // Skip the calendar home itself (Depth:1 includes the target)
+    if (!href || href === homePath) continue;
+    const calPath = href.startsWith('http') ? new URL(href).pathname : href;
+    const displayName = extractXmlValue(block, 'displayname') ?? deriveCalendarName(calPath);
+    calendars.push({ baseUrl, path: calPath, name: displayName });
+  }
+
+  if (calendars.length === 0) throw new Error('CalDAV discovery: no calendars found');
+  return calendars;
+}
+
 // ── Factory ───────────────────────────────────────────────────────────────────
 
 /**
  * Creates a CalDAV calendar server module that fetches, caches, and publishes
  * calendar events from Apple iCloud (or any CalDAV server) using app-specific
  * password authentication.
+ *
+ * If calendarPath is omitted, the first available calendar is auto-discovered.
  */
 export function createCalendarServer(options: CalendarServerOptions): CalendarServerInstance {
-  const { username, password, serverUrl, calendarPath, dataBus } = options;
+  const { username, password, serverUrl, dataBus } = options;
 
   if (!username) throw new Error('CalendarServer: username is required');
   if (!password) throw new Error('CalendarServer: password is required');
   if (!serverUrl) throw new Error('CalendarServer: serverUrl is required');
-  if (!calendarPath) throw new Error('CalendarServer: calendarPath is required');
   if (!serverUrl.startsWith('https://'))
     throw new Error('CalendarServer: serverUrl must use HTTPS');
 
@@ -191,8 +357,19 @@ export function createCalendarServer(options: CalendarServerOptions): CalendarSe
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const fetchFn = options.fetchFn ?? (fetch as unknown as CalDAVFetchFn);
 
-  const calendarName = deriveCalendarName(calendarPath);
   const authHeader = buildBasicAuth(username, password);
+
+  // Calendar targets: either a single explicit path, or all discovered calendars
+  let resolvedTargets: Array<{ baseUrl: string; path: string; name: string }> | null = null;
+  if (options.calendarPath) {
+    resolvedTargets = [
+      {
+        baseUrl: serverUrl,
+        path: options.calendarPath,
+        name: deriveCalendarName(options.calendarPath),
+      },
+    ];
+  }
 
   let lastEvents: CalendarEvent[] | null = null;
   let lastFetchedAt: number | null = null;
@@ -222,10 +399,13 @@ export function createCalendarServer(options: CalendarServerOptions): CalendarSe
     }
   }
 
-  async function doFetch(attempt: number = 0): Promise<void> {
-    const now = new Date();
-    const end = new Date(now.getTime() + rangeDays * 24 * 60 * 60 * 1000);
-    const url = `${serverUrl}${calendarPath}`;
+  async function fetchOneCalendar(
+    target: { baseUrl: string; path: string; name: string },
+    now: Date,
+    end: Date,
+    attempt: number = 0
+  ): Promise<CalendarEvent[]> {
+    const url = `${target.baseUrl}${target.path}`;
     const body = buildCalendarQuery(now, end);
 
     const controller = new AbortController();
@@ -252,30 +432,27 @@ export function createCalendarServer(options: CalendarServerOptions): CalendarSe
           : String(err);
       if (attempt < MAX_RETRIES) {
         await sleep(RETRY_BASE_DELAY_MS * Math.pow(2, attempt));
-        return doFetch(attempt + 1);
+        return fetchOneCalendar(target, now, end, attempt + 1);
       }
-      notifyError(`CalDAV fetch failed: ${message}`);
-      return;
+      notifyError(`CalDAV fetch failed (${target.name}): ${message}`);
+      return [];
     } finally {
       clearTimeout(timeoutId);
     }
 
-    // Auth errors: never retry
     if (response.status === 401 || response.status === 403) {
+      console.log(`[CalDAV] ${target.name}: AUTH ERROR ${response.status}`);
       notifyError(`CalDAV auth error ${response.status}: ${response.statusText}`);
-      return;
+      return [];
     }
-
-    // Rate limit: report and stop
     if (response.status === 429) {
       notifyError(`CalDAV rate limited ${response.status}: ${response.statusText}`);
-      return;
+      return [];
     }
-
-    // Other HTTP errors
-    if (!response.ok) {
-      notifyError(`CalDAV error ${response.status}: ${response.statusText}`);
-      return;
+    if (!response.ok && response.status !== 207) {
+      console.log(`[CalDAV] ${target.name}: HTTP ERROR ${response.status}`);
+      notifyError(`CalDAV error ${response.status} (${target.name}): ${response.statusText}`);
+      return [];
     }
 
     let xml: string;
@@ -283,16 +460,41 @@ export function createCalendarServer(options: CalendarServerOptions): CalendarSe
       xml = await response.text();
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      notifyError(`CalDAV response parse error: ${message}`);
-      return;
+      notifyError(`CalDAV response parse error (${target.name}): ${message}`);
+      return [];
     }
+
+    console.log(`[CalDAV] ${target.name}: status=${response.status}, body=${xml.slice(0, 500)}`);
 
     const events: CalendarEvent[] = [];
     const calDataBlocks = extractCalendarData(xml);
     for (const block of calDataBlocks) {
-      const parsed = parseCalendarData(block, calendarName);
-      events.push(...parsed);
+      events.push(...parseCalendarData(block, target.name));
     }
+    return events;
+  }
+
+  async function doFetch(): Promise<void> {
+    // Auto-discover calendars if not set
+    if (!resolvedTargets) {
+      const discovered = await discoverCalendars(serverUrl, authHeader, fetchFn, timeoutMs);
+      resolvedTargets = discovered;
+    }
+
+    const now = new Date();
+    const end = new Date(now.getTime() + rangeDays * 24 * 60 * 60 * 1000);
+
+    // Fetch all calendars in parallel
+    console.log(
+      `[CalDAV] Fetching ${resolvedTargets.length} calendars:`,
+      resolvedTargets.map((t) => t.name)
+    );
+    const results = await Promise.all(resolvedTargets.map((t) => fetchOneCalendar(t, now, end)));
+    const events = results.flat();
+    console.log(
+      `[CalDAV] Total events found: ${events.length}`,
+      events.map((e) => `${e.calendar}: ${e.title}`)
+    );
 
     lastEvents = events;
     lastFetchedAt = Date.now();

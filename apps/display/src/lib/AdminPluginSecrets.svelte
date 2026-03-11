@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { PluginAdminEntry } from '@lensing/types';
+  import './styles/builder.css';
 
   export let plugin: PluginAdminEntry;
   export let secretNames: string[] = [];
@@ -42,36 +43,36 @@
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-<div class="modal-backdrop" on:click={onClose}>
+<div class="secrets-modal-backdrop" on:click={onClose}>
   <div
-    class="modal"
+    class="secrets-modal"
     role="dialog"
     tabindex="-1"
     aria-modal="true"
     aria-label="Manage secrets for {plugin.manifest.name}"
     on:click|stopPropagation
   >
-    <div class="modal-header">
-      <div class="modal-header__info">
-        <h2 class="modal-header__title">🔐 {plugin.manifest.name} Secrets</h2>
-        <p class="modal-header__desc">Store credentials securely encrypted in the database</p>
+    <div class="secrets-modal__header">
+      <div class="secrets-modal__header-info">
+        <h2 class="secrets-modal__title">{plugin.manifest.name} Secrets</h2>
+        <p class="secrets-modal__desc">Store credentials securely encrypted in the database</p>
       </div>
     </div>
 
-    <div class="modal-body">
+    <div class="secrets-modal__body">
       {#if secretNames.length === 0}
-        <div class="no-secrets">
-          <p>No secrets required. This plugin doesn't declare any secrets in its manifest.</p>
-        </div>
+        <p class="secrets-modal__empty">
+          No secrets required. This plugin doesn't declare any secrets in its manifest.
+        </p>
       {:else}
-        <div class="secrets-form">
+        <div class="secrets-modal__form">
           {#each secretNames as name (name)}
-            <div class="form-group">
-              <label for="secret-{name}" class="form-label">{name}</label>
+            <div class="secrets-modal__field">
+              <label for="secret-{name}" class="secrets-modal__label">{name}</label>
               <input
                 id="secret-{name}"
                 type="password"
-                class="form-input"
+                class="secrets-modal__input"
                 placeholder="Enter {name}..."
                 value={secretValues[name]}
                 on:input={(e) => {
@@ -89,23 +90,23 @@
     </div>
 
     {#if status === 'saving'}
-      <div class="modal-footer">
-        <span class="status-msg status-msg--saving">Saving secrets…</span>
+      <div class="secrets-modal__footer">
+        <span class="secrets-modal__status secrets-modal__status--saving">Saving secrets…</span>
       </div>
     {:else if status === 'saved'}
-      <div class="modal-footer">
-        <span class="status-msg status-msg--saved">✓ Secrets saved</span>
+      <div class="secrets-modal__footer">
+        <span class="secrets-modal__status secrets-modal__status--saved">Secrets saved</span>
       </div>
     {:else if status === 'error'}
-      <div class="modal-footer">
-        <span class="status-msg status-msg--error">Error: {errorMsg}</span>
+      <div class="secrets-modal__footer">
+        <span class="secrets-modal__status secrets-modal__status--error">Error: {errorMsg}</span>
       </div>
     {/if}
 
-    <div class="modal-buttons">
+    <div class="secrets-modal__buttons">
       <button
         type="button"
-        class="btn btn-secondary"
+        class="secrets-modal__btn secrets-modal__btn--secondary"
         on:click={onClose}
         disabled={saving}
         aria-label="Cancel"
@@ -114,7 +115,7 @@
       </button>
       <button
         type="button"
-        class="btn btn-primary"
+        class="secrets-modal__btn secrets-modal__btn--primary"
         on:click={handleSave}
         disabled={saving || secretNames.length === 0}
         aria-label="Save secrets"

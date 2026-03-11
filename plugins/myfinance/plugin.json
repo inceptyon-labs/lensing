@@ -1,0 +1,11 @@
+{
+  "id": "myfinance",
+  "name": "MyFinance",
+  "version": "1.0.0",
+  "description": "MyFinance",
+  "permissions": {
+    "allowed_domains": ["www.alphavantage.co"],
+    "max_refresh_ms": 3600000,
+    "secrets": ["API_KEY"]
+  }
+}

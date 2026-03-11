@@ -267,6 +267,49 @@ export function createPluginAdminHandlers(options: PluginAdminHandlersOptions) {
       };
     },
 
+    async getPluginSource(pluginId: string): Promise<
+      | {
+          html: string;
+          css: string;
+          connector?: {
+            type: string;
+            url: string;
+            method?: string;
+            headers?: Record<string, string>;
+            refreshInterval?: number;
+          };
+        }
+      | undefined
+    > {
+      if (!pluginsDir) return undefined;
+      const htmlPath = path.join(pluginsDir, pluginId, 'template.html');
+      const cssPath = path.join(pluginsDir, pluginId, 'template.css');
+      if (!fs.existsSync(htmlPath) || !fs.existsSync(cssPath)) return undefined;
+      const result: {
+        html: string;
+        css: string;
+        connector?: {
+          type: string;
+          url: string;
+          method?: string;
+          headers?: Record<string, string>;
+          refreshInterval?: number;
+        };
+      } = {
+        html: fs.readFileSync(htmlPath, 'utf-8'),
+        css: fs.readFileSync(cssPath, 'utf-8'),
+      };
+      const connectorPath = path.join(pluginsDir, pluginId, 'connector.json');
+      if (fs.existsSync(connectorPath)) {
+        try {
+          result.connector = JSON.parse(fs.readFileSync(connectorPath, 'utf-8'));
+        } catch {
+          // Non-fatal: malformed connector.json
+        }
+      }
+      return result;
+    },
+
     async saveBuiltPlugin(input: BuilderSaveInput): Promise<PluginAdminEntry> {
       if (!pluginsDir) {
         throw new Error('Plugin save not configured (no pluginsDir)');
@@ -293,6 +336,27 @@ export function createPluginAdminHandlers(options: PluginAdminHandlersOptions) {
         throw new Error('Secret store not configured');
       }
       secretStore.set(id, key, value);
+
+      // Restart the connector so it picks up the new secret immediately
+      // (without this, the connector waits for the next scheduled tick which
+      // can be hours away, or stays in error state from a previous failed fetch)
+      if (connectorRunner && pluginsDir) {
+        const connectorPath = path.join(pluginsDir, id, 'connector.json');
+        if (fs.existsSync(connectorPath)) {
+          try {
+            const config = JSON.parse(
+              fs.readFileSync(connectorPath, 'utf-8')
+            ) as ConnectorRunnerConfig;
+            const plugin = pluginLoader.getPlugin(id);
+            if (plugin) {
+              connectorRunner.register(id, plugin.manifest, config);
+            }
+          } catch {
+            // Non-fatal: malformed connector.json
+          }
+        }
+      }
+
       onChange?.(id, 'secret_updated');
     },
 
@@ -302,6 +366,33 @@ export function createPluginAdminHandlers(options: PluginAdminHandlersOptions) {
       }
       secretStore.delete(id, key);
       onChange?.(id, 'secret_deleted');
+    },
+
+    async deletePlugin(id: string): Promise<void> {
+      if (!pluginsDir) {
+        throw new Error('Plugin deletion not configured (no pluginsDir)');
+      }
+      if (isModuleId(id)) {
+        throw new Error('Cannot delete built-in modules');
+      }
+      const pluginDir = path.join(pluginsDir, id);
+      if (!fs.existsSync(pluginDir)) {
+        throw new Error(`Plugin "${id}" not found`);
+      }
+      // Unregister from connector runner
+      if (connectorRunner) {
+        connectorRunner.unregister(id);
+      }
+      // Remove plugin files
+      fs.rmSync(pluginDir, { recursive: true, force: true });
+      // Clean up persisted state and secrets
+      db.deletePluginState(id);
+      if (secretStore) {
+        secretStore.deleteAll(id);
+      }
+      // Reload so the plugin loader drops it
+      await pluginLoader.reload();
+      onChange?.(id, 'deleted');
     },
   };
 }

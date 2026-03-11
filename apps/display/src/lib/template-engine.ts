@@ -59,9 +59,45 @@ export function parseTemplate(template: string): Token[] {
   return tokens;
 }
 
-/** Resolve a dot-path (with optional array indices) against a data object. */
+/**
+ * Resolve a path against a data object.
+ * Supports: dot notation (a.b), array indices (a[0]), bracket notation for
+ * keys with special characters (["key with spaces"]["01. symbol"]).
+ */
 function resolvePath(obj: Record<string, unknown>, path: string): unknown {
-  const parts = path.replace(/\[(\d+)\]/g, '.$1').split('.');
+  const parts: string[] = [];
+  let i = 0;
+  while (i < path.length) {
+    if (path[i] === '[') {
+      // Bracket notation: ["key"] or [0]
+      const closeBracket = path.indexOf(']', i);
+      if (closeBracket === -1) break;
+      let key = path.slice(i + 1, closeBracket);
+      // Strip surrounding quotes: ["key"] or ['key']
+      if (
+        (key.startsWith('"') && key.endsWith('"')) ||
+        (key.startsWith("'") && key.endsWith("'"))
+      ) {
+        key = key.slice(1, -1);
+      }
+      parts.push(key);
+      i = closeBracket + 1;
+      // Skip trailing dot
+      if (i < path.length && path[i] === '.') i++;
+    } else {
+      // Dot notation segment — ends at next dot or bracket
+      let end = path.length;
+      const nextDot = path.indexOf('.', i);
+      const nextBracket = path.indexOf('[', i);
+      if (nextDot !== -1) end = Math.min(end, nextDot);
+      if (nextBracket !== -1) end = Math.min(end, nextBracket);
+      const key = path.slice(i, end);
+      if (key) parts.push(key);
+      i = end;
+      if (i < path.length && path[i] === '.') i++;
+    }
+  }
+
   return parts.reduce<unknown>((acc, key) => {
     if (acc == null || typeof acc !== 'object') return undefined;
     return (acc as Record<string, unknown>)[key];

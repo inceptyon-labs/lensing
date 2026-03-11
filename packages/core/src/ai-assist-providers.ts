@@ -15,10 +15,17 @@ export interface GenerateOptions {
   timeoutMs?: number;
 }
 
+/** Model info returned by listModels */
+export interface AiModelInfo {
+  id: string;
+  name: string;
+}
+
 /** LLM provider interface */
 export interface AiProvider {
   provider: AiProviderId;
   generate(messages: Message[], model: string, options?: GenerateOptions): Promise<string>;
+  listModels(options?: GenerateOptions): Promise<AiModelInfo[]>;
 }
 
 /** Configuration for creating a provider */
@@ -58,6 +65,33 @@ export function createAiProvider(config: AiProviderConfig): AiProvider {
 function createAnthropicProvider(apiKey: string): AiProvider {
   return {
     provider: 'anthropic',
+
+    async listModels(options: GenerateOptions = {}): Promise<AiModelInfo[]> {
+      const { fetchFn = fetch, timeoutMs = DEFAULT_TIMEOUT_MS } = options;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const response = await fetchFn('https://api.anthropic.com/v1/models?limit=100', {
+          method: 'GET',
+          headers: {
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01',
+          },
+          signal: controller.signal as any,
+        } as any);
+        if (!response.ok) return [];
+        const data = (await response.json()) as any;
+        return (data.data || []).map((m: any) => ({
+          id: m.id,
+          name: m.display_name || m.id,
+        }));
+      } catch {
+        return [];
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    },
+
     async generate(
       messages: Message[],
       model: string,
@@ -113,6 +147,30 @@ function createAnthropicProvider(apiKey: string): AiProvider {
 function createDeepSeekProvider(apiKey: string): AiProvider {
   return {
     provider: 'deepseek',
+
+    async listModels(options: GenerateOptions = {}): Promise<AiModelInfo[]> {
+      const { fetchFn = fetch, timeoutMs = DEFAULT_TIMEOUT_MS } = options;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const response = await fetchFn('https://api.deepseek.com/models', {
+          method: 'GET',
+          headers: { Authorization: `Bearer ${apiKey}` },
+          signal: controller.signal as any,
+        } as any);
+        if (!response.ok) return [];
+        const data = (await response.json()) as any;
+        return (data.data || []).map((m: any) => ({
+          id: m.id,
+          name: m.id,
+        }));
+      } catch {
+        return [];
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    },
+
     async generate(
       messages: Message[],
       model: string,
@@ -165,6 +223,35 @@ function createDeepSeekProvider(apiKey: string): AiProvider {
 function createGeminiProvider(apiKey: string): AiProvider {
   return {
     provider: 'gemini',
+
+    async listModels(options: GenerateOptions = {}): Promise<AiModelInfo[]> {
+      const { fetchFn = fetch, timeoutMs = DEFAULT_TIMEOUT_MS } = options;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const response = await fetchFn(
+          `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}&pageSize=100`,
+          {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            signal: controller.signal as any,
+          } as any
+        );
+        if (!response.ok) return [];
+        const data = (await response.json()) as any;
+        return (data.models || [])
+          .filter((m: any) => m.supportedGenerationMethods?.includes('generateContent'))
+          .map((m: any) => ({
+            id: (m.name as string).replace(/^models\//, ''),
+            name: m.displayName || m.name,
+          }));
+      } catch {
+        return [];
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    },
+
     async generate(
       messages: Message[],
       model: string,

@@ -50,12 +50,10 @@ describe('AdminPluginList builder integration', () => {
     });
     await fireEvent.click(screen.getByRole('button', { name: /next/i }));
 
-    // Add HTML
+    // Switch to Manual, fill HTML + pick data source
+    await fireEvent.click(screen.getByText('Manual'));
     const htmlArea = screen.getByLabelText('HTML') as HTMLTextAreaElement;
     await fireEvent.input(htmlArea, { target: { value: '<div>test</div>' } });
-    await fireEvent.click(screen.getByRole('button', { name: /next/i }));
-
-    // Pick data source
     await fireEvent.click(screen.getByText('Static Data'));
     await fireEvent.click(screen.getByRole('button', { name: /next/i }));
 

@@ -238,5 +238,31 @@ describe('Template Engine', () => {
       const result = renderTemplate('Active: {{active}}', { active: true });
       expect(result).toBe('Active: true');
     });
+
+    it('resolves bracket notation for keys with spaces', () => {
+      const result = renderTemplate('{{["Global Quote"]["01. symbol"]}}', {
+        'Global Quote': { '01. symbol': 'AAPL' },
+      });
+      expect(result).toBe('AAPL');
+    });
+
+    it('resolves bracket notation with single quotes', () => {
+      const result = renderTemplate("{{['data']['key name']}}", {
+        data: { 'key name': 'value' },
+      });
+      expect(result).toBe('value');
+    });
+
+    it('mixes dot and bracket notation', () => {
+      const result = renderTemplate('{{response["Global Quote"]["05. price"]}}', {
+        response: { 'Global Quote': { '05. price': '150.25' } },
+      });
+      expect(result).toBe('150.25');
+    });
+
+    it('resolves bracket notation with numeric index', () => {
+      const result = renderTemplate('{{items[1]}}', { items: ['a', 'b', 'c'] });
+      expect(result).toBe('b');
+    });
   });
 });

@@ -26,13 +26,17 @@ export interface SportsData {
 /** League identifier for ESPN API */
 export interface LeagueConfig {
   sport: string; // e.g., "football", "basketball"
-  league: string; // e.g., "nfl", "nba"
+  league: string; // ESPN API slug, e.g., "nfl", "mens-college-basketball"
+  /** Display label for the league badge (e.g., "NCAAB"). Falls back to league slug if omitted. */
+  label?: string;
 }
 
 /** Configuration for createSportsServer */
 export interface SportsServerOptions {
   /** List of leagues to poll (must come from trusted admin config, not user input) */
   leagues: LeagueConfig[];
+  /** Team name filters — only show games involving these teams (case-insensitive substring match). Empty = show all. */
+  teams?: string[];
   /** Max staleness in ms before cache is stale (default: 120000 = 2 min) */
   maxStale_ms?: number;
   /** Data bus instance for publishing scores */
