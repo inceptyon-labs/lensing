@@ -81,25 +81,5 @@
   {serverLayout}
   onsave={handleLayoutSave}
   onconfigsaved={handleConfigSaved}
+  adminHref="/admin"
 />
-<a href="/admin" class="admin-link">Admin</a>
-
-<style>
-  .admin-link {
-    position: fixed;
-    top: var(--space-2);
-    right: var(--space-2);
-    z-index: 100;
-    font-size: var(--text-xs);
-    color: var(--dim-light);
-    text-decoration: none;
-    font-family: var(--font-mono);
-    padding: var(--space-1) var(--space-2);
-    border-radius: var(--radius-sm);
-    transition: color var(--duration-fast) var(--ease-out);
-  }
-
-  .admin-link:hover {
-    color: var(--ember);
-  }
-</style>

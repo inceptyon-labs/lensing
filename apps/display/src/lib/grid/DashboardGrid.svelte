@@ -28,9 +28,10 @@
     serverLayout?: GridWidget[] | null;
     onsave?: (widgets: GridWidget[]) => void;
     onconfigsaved?: () => void;
+    adminHref?: string;
   }
 
-  let { plugins, allPlugins = [], serverLayout = null, onsave, onconfigsaved }: Props = $props();
+  let { plugins, allPlugins = [], serverLayout = null, onsave, onconfigsaved, adminHref }: Props = $props();
 
   let dashboardRef: HTMLDivElement;
   let editMode = $state(false);
@@ -433,6 +434,9 @@
         dirty={isDirty}
       />
     {:else}
+      {#if adminHref}
+        <a href={adminHref} class="dashboard-admin-link">Admin</a>
+      {/if}
       <button
         class="dashboard-edit-toggle"
         type="button"
@@ -681,6 +685,27 @@
     transition:
       background var(--duration-fast) var(--ease-out),
       border-color var(--duration-fast) var(--ease-out);
+  }
+
+  .dashboard-admin-link {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-sm);
+    background: var(--event-horizon);
+    border: 1px solid var(--edge);
+    color: var(--dim-light);
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      border-color var(--duration-fast) var(--ease-out),
+      color var(--duration-fast) var(--ease-out);
+  }
+
+  .dashboard-admin-link:hover {
+    border-color: var(--ember-dim);
+    color: var(--ember);
   }
 
   .dashboard-edit-toggle {
