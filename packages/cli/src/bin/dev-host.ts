@@ -31,6 +31,7 @@ if (isLinux && existsSync('/dev/gpiochip0')) {
 
 const host = createHostService({
   port: 3100,
+  bindAddress: '0.0.0.0',
   pluginsDir: resolve(root, 'plugins'),
   dbPath: resolve(dataDir, 'lensing.db'),
   staticDir: resolve(root, 'apps/display/build'),
