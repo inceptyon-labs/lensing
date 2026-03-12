@@ -170,13 +170,14 @@
           maxH: w.maxH,
         });
       } else {
-        // Add new widget with empty content placeholder
+        // Add new widget with empty content placeholder.
+        // autoPosition lets GridStack find the first open slot without
+        // displacing existing widgets (avoids top-left collision).
         gridInstance.addWidget({
           id: safeId,
-          x: w.x,
-          y: w.y,
           w: w.w,
           h: w.h,
+          autoPosition: true,
           minW: w.minW,
           minH: w.minH,
           maxW: w.maxW,

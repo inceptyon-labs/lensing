@@ -20,14 +20,18 @@
     currentVariant = KEN_BURNS_VARIANTS[variantIndex];
   }
 
-  // Start slideshow timer when multiple photos available
-  let timerStarted = false;
-  $: if (!timerStarted && photoPaths.length > 1 && typeof window !== 'undefined') {
-    timerStarted = true;
-    const timer = setInterval(advance, cycleInterval);
-    // Note: timer clears on full page navigation; for SPA transitions
-    // the component is destroyed and recreated by Svelte
+  import { onDestroy } from 'svelte';
+
+  // Start slideshow timer — recreate when cycleInterval or photoPaths change
+  let timer: ReturnType<typeof setInterval> | undefined;
+  $: if (photoPaths.length > 1 && typeof window !== 'undefined') {
+    if (timer) clearInterval(timer);
+    timer = setInterval(advance, cycleInterval);
   }
+
+  onDestroy(() => {
+    if (timer) clearInterval(timer);
+  });
 
   $: currentPhoto = photoPaths.length > 0 ? photoPaths[currentIndex] : null;
 </script>

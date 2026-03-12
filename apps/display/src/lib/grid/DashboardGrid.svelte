@@ -224,18 +224,12 @@
     }
   }
 
-  /** Find the y position just below all existing widgets */
-  function getBottomY(): number {
-    if (localWidgets.length === 0) return 0;
-    return Math.max(...localWidgets.map((w) => (w.y ?? 0) + (w.h ?? 1)));
-  }
-
   function handleAddWidget(plugin: PluginAdminEntry) {
     const preferred = getPreferredSize(plugin.plugin_id, plugin.manifest);
     const newWidget: GridWidget = {
       id: plugin.plugin_id,
       x: 0,
-      y: getBottomY(),
+      y: 0,
       w: preferred.w,
       h: preferred.h,
     };
@@ -246,7 +240,6 @@
   }
 
   function handleAddUtilityWidget(widget: GridWidget) {
-    widget.y = getBottomY();
     const updated = [...localWidgets, widget];
     history.pushState(updated);
     localWidgets = updated;
