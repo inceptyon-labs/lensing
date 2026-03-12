@@ -63,7 +63,7 @@ Requires the gpiod package: sudo apt install gpiod`,fields:[{key:"gpioPin",type:
 
 Enter the full path to a directory containing images (e.g. /home/pi/photos). Supported formats: jpg, jpeg, png, webp, gif.
 
-Photos rotate every 10 minutes. Subdirectories are included.`,fields:[{key:"photoDirectory",type:"string",label:"Photo Directory",description:"Absolute path to the directory containing photos",required:!0,category:"integration"}]},{id:"ai-news",name:"AI News Summary",description:"AI-powered headline summaries from RSS feeds",setupGuide:`Pick news categories below and choose how often to refresh.
+Photos rotate every 10 minutes. Subdirectories are included.`,fields:[{key:"cycleSeconds",type:"number",label:"Photo Duration (seconds)",description:"How long each photo is shown before advancing",default:30,min:5,max:600,category:"widget"},{key:"photoDirectory",type:"string",label:"Photo Directory",description:"Absolute path to the directory containing photos",required:!0,category:"integration"}]},{id:"ai-news",name:"AI News Summary",description:"AI-powered headline summaries from RSS feeds",setupGuide:`Pick news categories below and choose how often to refresh.
 
 Uses the same API key from your .env file (ANTHROPIC_API_KEY, DEEPSEEK_API_KEY, or GEMINI_API_KEY) — no extra key needed.
 

@@ -403,6 +403,16 @@ export const MODULE_SCHEMAS: readonly ModuleSettingsSchema[] = [
       'Photos rotate every 10 minutes. Subdirectories are included.',
     fields: [
       {
+        key: 'cycleSeconds',
+        type: 'number',
+        label: 'Photo Duration (seconds)',
+        description: 'How long each photo is shown before advancing',
+        default: 30,
+        min: 5,
+        max: 600,
+        category: 'widget',
+      },
+      {
         key: 'photoDirectory',
         type: 'string',
         label: 'Photo Directory',

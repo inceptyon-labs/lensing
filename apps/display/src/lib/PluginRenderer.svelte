@@ -82,7 +82,10 @@
       <button class="not-configured__link" onclick={handleGoToSettings}>Go to Settings</button>
     </div>
   {:else if pluginId === 'photo-slideshow'}
-    <PhotoSlideshow photoPaths={photoData?.photoPaths ?? []} />
+    <PhotoSlideshow
+      photoPaths={photoData?.photoPaths ?? []}
+      cycleInterval={(Number(plugin.config['cycleSeconds']) || 30) * 1000}
+    />
   {:else if pluginId === 'news'}
     <NewsHeadlines headlines={newsData?.articles ?? []} />
   {:else if pluginId === 'sports'}
