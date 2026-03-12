@@ -1,8 +1,8 @@
 <script lang="ts">
-  import type { CoinPrice } from '@lensing/types';
+  import type { StockQuote } from '@lensing/types';
   import Sparkline from './Sparkline.svelte';
 
-  export let coins: CoinPrice[] = [];
+  export let stocks: StockQuote[] = [];
   export let show1h: boolean = false;
   export let show24h: boolean = true;
   export let show7d: boolean = false;
@@ -16,16 +16,14 @@
     show7d && { key: '7d' as const, label: '7D' },
   ].filter(Boolean) as Period[];
 
-  function getChange(coin: CoinPrice, key: '1h' | '24h' | '7d'): number {
-    if (key === '1h') return coin.change_1h;
-    if (key === '7d') return coin.change_7d;
-    return coin.change_24h;
+  function getChange(stock: StockQuote, key: '1h' | '24h' | '7d'): number {
+    if (key === '1h') return stock.change_1h;
+    if (key === '7d') return stock.change_7d;
+    return stock.change_24h;
   }
 
-  function getSparklineSlice(coin: CoinPrice): number[] {
-    const data = coin.sparkline ?? [];
-    if (data.length === 0) return [];
-    return data;
+  function getSparklineData(stock: StockQuote): number[] {
+    return stock.sparkline.length > 0 ? stock.sparkline : [];
   }
 
   function formatPrice(price: number): string {
@@ -42,38 +40,38 @@
   }
 
   function changeClass(pct: number): string {
-    if (pct > 0) return 'crypto-widget__change--positive';
-    if (pct < 0) return 'crypto-widget__change--negative';
-    return 'crypto-widget__change--neutral';
+    if (pct > 0) return 'finance-widget__change--positive';
+    if (pct < 0) return 'finance-widget__change--negative';
+    return 'finance-widget__change--neutral';
   }
 </script>
 
-<div class="crypto-widget">
-  {#if coins.length === 0}
-    <div class="crypto-widget__empty">
-      <span>No crypto data available</span>
+<div class="finance-widget">
+  {#if stocks.length === 0}
+    <div class="finance-widget__empty">
+      <span>No stock data available</span>
     </div>
   {:else}
-    <div class="crypto-widget__list">
-      {#each coins as coin (coin.id)}
-        {@const sparkData = getSparklineSlice(coin)}
-        <div class="crypto-widget__row">
-          <div class="crypto-widget__info">
-            <span class="crypto-widget__symbol">{coin.symbol.toUpperCase()}</span>
-            <span class="crypto-widget__name">{coin.name}</span>
+    <div class="finance-widget__list">
+      {#each stocks as stock (stock.symbol)}
+        {@const sparkData = getSparklineData(stock)}
+        <div class="finance-widget__row">
+          <div class="finance-widget__info">
+            <span class="finance-widget__symbol">{stock.symbol}</span>
+            <span class="finance-widget__name">{stock.name}</span>
           </div>
           {#if showSparkline && sparkData.length >= 2}
-            <div class="crypto-widget__chart">
-              <Sparkline data={sparkData} width={80} height={28} positive={coin.change_24h >= 0} />
+            <div class="finance-widget__chart">
+              <Sparkline data={sparkData} width={80} height={28} positive={stock.change_24h >= 0} />
             </div>
           {/if}
-          <div class="crypto-widget__values">
-            <span class="crypto-widget__price">${formatPrice(coin.price)}</span>
-            <div class="crypto-widget__changes">
+          <div class="finance-widget__values">
+            <span class="finance-widget__price">${formatPrice(stock.price)}</span>
+            <div class="finance-widget__changes">
               {#each periods as period (period.key)}
-                {@const change = getChange(coin, period.key)}
-                <span class="crypto-widget__change {changeClass(change)}" title="{period.label} change">
-                  <span class="crypto-widget__change-label">{period.label}</span>
+                {@const change = getChange(stock, period.key)}
+                <span class="finance-widget__change {changeClass(change)}" title="{period.label} change">
+                  <span class="finance-widget__change-label">{period.label}</span>
                   {formatChange(change)}
                 </span>
               {/each}
@@ -86,7 +84,7 @@
 </div>
 
 <style>
-  .crypto-widget {
+  .finance-widget {
     background: var(--event-horizon, hsl(240, 6%, 7%));
     border: 1px solid var(--edge, hsla(220, 10%, 50%, 0.12));
     border-radius: var(--radius-md, 8px);
@@ -98,13 +96,13 @@
 
   /* ── List layout ───────────────────────────────────────────────────────── */
 
-  .crypto-widget__list {
+  .finance-widget__list {
     display: flex;
     flex-direction: column;
     gap: var(--space-2, 8px);
   }
 
-  .crypto-widget__row {
+  .finance-widget__row {
     display: flex;
     align-items: center;
     gap: var(--space-3, 12px);
@@ -112,12 +110,12 @@
     border-bottom: 1px solid var(--edge-soft, hsla(220, 10%, 50%, 0.07));
   }
 
-  .crypto-widget__row:last-child {
+  .finance-widget__row:last-child {
     border-bottom: none;
     padding-bottom: 0;
   }
 
-  .crypto-widget__info {
+  .finance-widget__info {
     display: flex;
     flex-direction: column;
     gap: 2px;
@@ -125,33 +123,14 @@
     flex: 1;
   }
 
-  .crypto-widget__chart {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 60px;
-  }
-
-  .crypto-widget__values {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 2px;
-    flex-shrink: 0;
-  }
-
-  /* ── Coin identity ─────────────────────────────────────────────────────── */
-
-  .crypto-widget__symbol {
+  .finance-widget__symbol {
     font-size: var(--text-sm, 0.875rem);
     font-weight: var(--weight-semi, 600);
     color: var(--ember, hsl(28, 85%, 55%));
     letter-spacing: var(--tracking-wide, 0.04em);
-    text-transform: uppercase;
   }
 
-  .crypto-widget__name {
+  .finance-widget__name {
     font-size: var(--text-xs, 0.75rem);
     color: var(--dim-light, hsl(220, 10%, 62%));
     white-space: nowrap;
@@ -160,9 +139,23 @@
     max-width: 8rem;
   }
 
-  /* ── Price ──────────────────────────────────────────────────────────────── */
+  .finance-widget__chart {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 60px;
+  }
 
-  .crypto-widget__price {
+  .finance-widget__values {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+
+  .finance-widget__price {
     font-size: var(--text-sm, 0.875rem);
     font-weight: var(--weight-semi, 600);
     color: var(--starlight, hsl(220, 15%, 90%));
@@ -171,12 +164,12 @@
 
   /* ── Change indicators ─────────────────────────────────────────────────── */
 
-  .crypto-widget__changes {
+  .finance-widget__changes {
     display: flex;
     gap: var(--space-2, 8px);
   }
 
-  .crypto-widget__change {
+  .finance-widget__change {
     font-size: var(--text-xs, 0.75rem);
     font-weight: var(--weight-medium, 500);
     font-variant-numeric: tabular-nums;
@@ -185,27 +178,27 @@
     gap: 2px;
   }
 
-  .crypto-widget__change-label {
+  .finance-widget__change-label {
     font-size: 0.6rem;
     color: var(--faint-light, hsl(220, 10%, 42%));
     letter-spacing: var(--tracking-wide, 0.04em);
   }
 
-  .crypto-widget__change--positive {
+  .finance-widget__change--positive {
     color: var(--alert-success, hsl(160, 45%, 45%));
   }
 
-  .crypto-widget__change--negative {
+  .finance-widget__change--negative {
     color: var(--alert-urgent, hsl(0, 60%, 55%));
   }
 
-  .crypto-widget__change--neutral {
+  .finance-widget__change--neutral {
     color: var(--dim-light, hsl(220, 10%, 62%));
   }
 
   /* ── Empty state ───────────────────────────────────────────────────────── */
 
-  .crypto-widget__empty {
+  .finance-widget__empty {
     display: flex;
     align-items: center;
     justify-content: center;

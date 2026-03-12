@@ -22,6 +22,8 @@ export interface GridWidget {
   locked?: boolean;
   /** Whether to show the header bar (default: true) */
   showHeader?: boolean;
+  /** Utility-specific configuration */
+  config?: Record<string, string | number | boolean>;
 }
 
 /** Grid layout policy / options */

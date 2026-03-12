@@ -1,4 +1,10 @@
 <script lang="ts">
+  interface Props {
+    hour12?: boolean;
+  }
+
+  let { hour12 = true }: Props = $props();
+
   let now = $state(new Date());
 
   $effect(() => {
@@ -8,7 +14,7 @@
     return () => clearInterval(id);
   });
 
-  let time = $derived(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+  let time = $derived(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12 }));
   let seconds = $derived(now.toLocaleTimeString([], { second: '2-digit' }).slice(-2));
   let date = $derived(
     now.toLocaleDateString([], {

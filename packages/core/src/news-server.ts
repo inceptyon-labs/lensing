@@ -32,10 +32,13 @@ function decodeEntities(str: string): string {
   return str
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
-    .replace(/&amp;/g, '&')
     .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
     .replace(/&#39;/g, "'")
-    .replace(/&nbsp;/g, ' ');
+    .replace(/&#149;/g, '•')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&#\d+;/g, (m) => String.fromCharCode(parseInt(m.slice(2, -1))))
+    .replace(/&amp;/g, '&');
 }
 
 function extractTag(xml: string, tag: string): string {

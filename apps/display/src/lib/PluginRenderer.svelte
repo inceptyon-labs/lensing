@@ -12,6 +12,8 @@
     PhotoSlideshowData,
     AllergyData,
     AiNewsData,
+    WordOfDayData,
+    FinanceData,
   } from '@lensing/types';
   import PhotoSlideshow from './PhotoSlideshow.svelte';
   import NewsHeadlines from './NewsHeadlines.svelte';
@@ -22,6 +24,8 @@
   import CalendarWidget from './CalendarWidget.svelte';
   import AllergiesWidget from './AllergiesWidget.svelte';
   import AiNewsWidget from './AiNewsWidget.svelte';
+  import WordOfDayWidget from './WordOfDayWidget.svelte';
+  import FinanceWidget from './FinanceWidget.svelte';
   import PluginWidget from './PluginWidget.svelte';
   import { getChannelData } from './stores/dataBusStore';
 
@@ -29,6 +33,13 @@
 
   $: pluginId = plugin.plugin_id;
   $: integration_status = plugin.integration_status;
+
+  /** Parse a config value that may be boolean or string into a boolean */
+  function cfgBool(val: unknown, fallback: boolean): boolean {
+    if (val === true || val === 'true') return true;
+    if (val === false || val === 'false') return false;
+    return fallback;
+  }
 
   function handleGoToSettings() {
     // eslint-disable-next-line svelte/no-navigation-without-resolve
@@ -46,6 +57,8 @@
   const photoStore = getChannelData('photo-slideshow-server');
   const allergiesStore = getChannelData('allergies-server');
   const aiNewsStore = getChannelData('ai-news-server');
+  const wotdStore = getChannelData('word-of-day-server');
+  const financeStore = getChannelData('finance-server');
 
   $: newsData = $newsStore as NewsData | null;
   $: sportsData = $sportsStore as SportsData | null;
@@ -56,6 +69,8 @@
   $: photoData = $photoStore as PhotoSlideshowData | null;
   $: allergiesData = $allergiesStore as AllergyData | null;
   $: aiNewsData = $aiNewsStore as AiNewsData | null;
+  $: wotdData = $wotdStore as WordOfDayData | null;
+  $: financeData = $financeStore as FinanceData | null;
 </script>
 
 <div class="plugin-renderer-wrap">
@@ -75,7 +90,13 @@
   {:else if pluginId === 'home-assistant'}
     <HomeAssistantDevices devices={haData?.devices ?? []} sensors={haData?.sensors ?? []} />
   {:else if pluginId === 'crypto'}
-    <CryptoWidget coins={cryptoData?.coins ?? []} />
+    <CryptoWidget
+      coins={cryptoData?.coins ?? []}
+      show1h={cfgBool(plugin.config['show1h'], false)}
+      show24h={cfgBool(plugin.config['show24h'], true)}
+      show7d={cfgBool(plugin.config['show7d'], false)}
+      showSparkline={cfgBool(plugin.config['showSparkline'], true)}
+    />
   {:else if pluginId === 'weather'}
     <WeatherWidget current={weatherData?.current ?? null} forecast={weatherData?.forecast ?? []} />
   {:else if pluginId === 'calendar'}
@@ -88,6 +109,16 @@
       location={allergiesData?.location ?? ''}
       triggers={allergiesData?.triggers ?? []}
       periods={allergiesData?.periods ?? []}
+    />
+  {:else if pluginId === 'word-of-day'}
+    <WordOfDayWidget data={wotdData} />
+  {:else if pluginId === 'finance'}
+    <FinanceWidget
+      stocks={financeData?.stocks ?? []}
+      show1h={cfgBool(plugin.config['show1h'], false)}
+      show24h={cfgBool(plugin.config['show24h'], true)}
+      show7d={cfgBool(plugin.config['show7d'], false)}
+      showSparkline={cfgBool(plugin.config['showSparkline'], true)}
     />
   {:else if pluginId === 'ai-news'}
     <AiNewsWidget

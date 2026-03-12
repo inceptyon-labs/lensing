@@ -18,6 +18,16 @@ export const WIDGET_SIZE_REGISTRY: Record<string, GridSpan> = {
     preferred: [2, 4],
     max: [6, 8],
   },
+  'word-of-day': {
+    min: [2, 2],
+    preferred: [3, 3],
+    max: [6, 6],
+  },
+  finance: {
+    min: [2, 2],
+    preferred: [3, 4],
+    max: [6, 8],
+  },
   // Medium widgets
   'ai-news': {
     min: [2, 3],

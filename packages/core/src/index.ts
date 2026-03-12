@@ -130,6 +130,14 @@ export type {
 } from '@lensing/types';
 export { DEFAULT_AI_NEWS_MAX_ITEMS, DEFAULT_AI_NEWS_MAX_STALE_MS } from '@lensing/types';
 
+// ── Word of the Day ─────────────────────────────────────────────────────────
+export { createWordOfDayServer } from './word-of-day-server';
+export type { WordOfDayServerOptions, WordOfDayServerInstance, WordOfDayData } from '@lensing/types';
+
+// ── Finance / Stocks ─────────────────────────────────────────────────────────
+export { createFinanceServer } from './finance-server';
+export type { FinanceServerOptions, FinanceServerInstance, FinanceData, StockQuote } from '@lensing/types';
+
 // ── Sports Scores ───────────────────────────────────────────────────────────
 export { createSportsServer } from './sports-server';
 export type {

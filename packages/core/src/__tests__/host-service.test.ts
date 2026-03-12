@@ -336,7 +336,7 @@ describe('HostService (host-service.ts)', () => {
       manifest: { version: string };
     }>;
     const builtins = plugins.filter((p) => p.builtin);
-    expect(builtins.length).toBe(10);
+    expect(builtins.length).toBe(12);
 
     const weather = builtins.find((p) => p.plugin_id === 'weather');
     expect(weather).toBeDefined();

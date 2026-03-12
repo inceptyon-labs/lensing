@@ -14,10 +14,35 @@
   import WidgetContextMenu from './WidgetContextMenu.svelte';
   import WidgetResizeModal from './WidgetResizeModal.svelte';
   import WidgetConfigPanel from './WidgetConfigPanel.svelte';
+  import UtilityConfigPanel from './UtilityConfigPanel.svelte';
+  import type { UtilityType } from './layout-utilities';
   import EditBar from './EditBar.svelte';
   import { createEditHistory } from './edit-history';
   import { tick } from 'svelte';
   import Settings from '@lucide/svelte/icons/settings';
+  import Sun from '@lucide/svelte/icons/sun';
+  import Newspaper from '@lucide/svelte/icons/newspaper';
+  import Trophy from '@lucide/svelte/icons/trophy';
+  import Home from '@lucide/svelte/icons/home';
+  import Coins from '@lucide/svelte/icons/coins';
+  import CalendarDays from '@lucide/svelte/icons/calendar-days';
+  import Flower2 from '@lucide/svelte/icons/flower-2';
+  import Sparkles from '@lucide/svelte/icons/sparkles';
+  import BookOpen from '@lucide/svelte/icons/book-open';
+  import TrendingUp from '@lucide/svelte/icons/trending-up';
+
+  const WIDGET_ICONS: Record<string, typeof Sun> = {
+    weather: Sun,
+    news: Newspaper,
+    sports: Trophy,
+    'home-assistant': Home,
+    crypto: Coins,
+    calendar: CalendarDays,
+    allergies: Flower2,
+    'ai-news': Sparkles,
+    'word-of-day': BookOpen,
+    finance: TrendingUp,
+  };
   import '../styles/grid-layout.css';
 
   const LAYOUT_KEY = 'lensing-dashboard-layout';
@@ -40,6 +65,7 @@
   let contextMenuPos = $state<{ x: number; y: number } | null>(null);
   let activeResizeWidget = $state<GridWidget | null>(null);
   let activeConfigPlugin = $state<PluginAdminEntry | null>(null);
+  let activeUtilConfig = $state<{ widgetId: string; utilType: UtilityType } | null>(null);
   let localWidgets = $state<GridWidget[]>([]);
   let savedLayout = $state<GridWidget[] | null>(null);
   let history = $state(createEditHistory([]));
@@ -168,6 +194,7 @@
     activeContextWidget = null;
     activeResizeWidget = null;
     activeConfigPlugin = null;
+    activeUtilConfig = null;
   }
 
   function handleKeydown(event: KeyboardEvent) {
@@ -235,6 +262,20 @@
     }
   }
 
+  function handleConfigureUtility(widgetId: string, utilType: UtilityType) {
+    activeContextWidget = null;
+    activeUtilConfig = { widgetId, utilType };
+  }
+
+  function handleUtilConfigSave(config: Record<string, string | number | boolean>) {
+    if (!activeUtilConfig) return;
+    const id = activeUtilConfig.widgetId;
+    const updated = localWidgets.map((w) => (w.id === id ? { ...w, config } : w));
+    history.pushState(updated);
+    localWidgets = updated;
+    activeUtilConfig = null;
+  }
+
   function handleToggleHeader(widgetId: string) {
     const updated = localWidgets.map((w) =>
       w.id === widgetId ? { ...w, showHeader: w.showHeader === false ? true : false } : w
@@ -273,6 +314,7 @@
     activeContextWidget = null;
     activeResizeWidget = null;
     activeConfigPlugin = null;
+    activeUtilConfig = null;
   }
 
   // Portal: move Svelte-rendered plugin content into GridStack item containers.
@@ -375,7 +417,11 @@
           </button>
         {/if}
         {#if widget.showHeader !== false}
+          {@const IconComponent = WIDGET_ICONS[widget.id]}
           <div class="widget-header">
+            {#if IconComponent}
+              <span class="widget-header__icon"><IconComponent size={14} /></span>
+            {/if}
             <span class="widget-header__title">{plugin.manifest.name}</span>
           </div>
         {/if}
@@ -405,7 +451,7 @@
           {:else if utilType === 'vdiv'}
             <div class="util-vdiv"></div>
           {:else if utilType === 'clock'}
-            <UtilityClock />
+            <UtilityClock hour12={widget.config?.['hour12'] !== false} />
           {/if}
         </div>
       </div>
@@ -471,9 +517,11 @@
       showHeader={activeContextWidget.showHeader !== false}
       x={contextMenuPos?.x ?? 0}
       y={contextMenuPos?.y ?? 0}
-      onconfigure={contextUtilType
-        ? undefined
-        : () => handleConfigureWidget(activeContextWidget!.id)}
+      onconfigure={contextUtilType === 'clock'
+        ? () => handleConfigureUtility(activeContextWidget!.id, 'clock')
+        : contextUtilType
+          ? undefined
+          : () => handleConfigureWidget(activeContextWidget!.id)}
       ondelete={() => handleDeleteWidget(activeContextWidget!.id)}
       onresize={() => handleResizeWidget(activeContextWidget!)}
       ontoggleheader={contextUtilType
@@ -506,6 +554,16 @@
       plugin={activeConfigPlugin}
       onclose={() => (activeConfigPlugin = null)}
       onsaved={onconfigsaved}
+    />
+  {/if}
+
+  <!-- Utility config panel (e.g. clock settings) -->
+  {#if activeUtilConfig}
+    <UtilityConfigPanel
+      utilityType={activeUtilConfig.utilType}
+      config={localWidgets.find((w) => w.id === activeUtilConfig!.widgetId)?.config ?? {}}
+      onclose={() => (activeUtilConfig = null)}
+      onsave={handleUtilConfigSave}
     />
   {/if}
 
@@ -565,14 +623,23 @@
     min-height: 36px;
     display: flex;
     align-items: center;
+    gap: var(--space-2);
     padding: 0 var(--space-3);
     border-bottom: 1px solid var(--edge);
   }
 
+  .widget-header__icon {
+    display: inline-flex;
+    color: var(--ember);
+    flex-shrink: 0;
+  }
+
   .widget-header__title {
-    font-size: var(--text-sm);
-    font-weight: var(--weight-semibold);
-    color: var(--starlight);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--dim-light);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

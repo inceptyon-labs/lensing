@@ -80,19 +80,19 @@
     color: var(--starlight, hsl(220, 15%, 90%));
   }
 
-  .allergies-widget__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--space-1, 4px);
-  }
-
   .allergies-widget__title {
     font-size: var(--text-sm, 0.875rem);
     font-weight: var(--weight-medium, 500);
     color: var(--dim-light, hsl(220, 10%, 62%));
     letter-spacing: var(--tracking-wide, 0.04em);
     text-transform: uppercase;
+  }
+
+  .allergies-widget__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-1, 4px);
   }
 
   .allergies-widget__label {

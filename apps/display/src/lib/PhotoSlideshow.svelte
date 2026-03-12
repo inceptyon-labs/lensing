@@ -38,7 +38,7 @@
       <img
         src={currentPhoto}
         alt="Ambient slideshow"
-        style="object-fit: cover; position: absolute; inset: 0;"
+        style="object-fit: cover; position: absolute; inset: 0; width: 100%; height: 100%;"
       />
     </div>
   {:else}
@@ -54,7 +54,8 @@
     overflow: hidden;
     background: var(--void, hsl(240, 8%, 4%));
     border-radius: var(--radius-xl, 16px);
-    inset: 0;
+    width: 100%;
+    height: 100%;
   }
 
   .photo-slideshow__slide {

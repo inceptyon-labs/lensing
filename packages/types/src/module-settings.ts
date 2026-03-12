@@ -11,7 +11,9 @@ export type ModuleId =
   | 'allergies'
   | 'pir'
   | 'photo-slideshow'
-  | 'ai-news';
+  | 'ai-news'
+  | 'word-of-day'
+  | 'finance';
 
 /** All module IDs as a constant array */
 export const MODULE_IDS: readonly ModuleId[] = [
@@ -25,6 +27,8 @@ export const MODULE_IDS: readonly ModuleId[] = [
   'pir',
   'photo-slideshow',
   'ai-news',
+  'word-of-day',
+  'finance',
 ] as const;
 
 /** Schema describing a built-in module's user-configurable settings */
@@ -124,6 +128,38 @@ export const MODULE_SCHEMAS: readonly ModuleSettingsSchema[] = [
         label: 'Watchlist',
         description: 'Comma-separated coin IDs (e.g. bitcoin,ethereum,solana)',
         default: 'bitcoin,ethereum',
+        category: 'widget',
+      },
+      {
+        key: 'show1h',
+        type: 'boolean',
+        label: 'Show 1H Change',
+        description: 'Display 1-hour price change',
+        default: false,
+        category: 'widget',
+      },
+      {
+        key: 'show24h',
+        type: 'boolean',
+        label: 'Show 24H Change',
+        description: 'Display 24-hour price change',
+        default: true,
+        category: 'widget',
+      },
+      {
+        key: 'show7d',
+        type: 'boolean',
+        label: 'Show 7D Change',
+        description: 'Display 7-day price change',
+        default: false,
+        category: 'widget',
+      },
+      {
+        key: 'showSparkline',
+        type: 'boolean',
+        label: 'Show Sparkline Charts',
+        description: 'Display inline price charts next to each coin',
+        default: true,
         category: 'widget',
       },
     ],
@@ -457,6 +493,63 @@ export const MODULE_SCHEMAS: readonly ModuleSettingsSchema[] = [
         description: 'AI model to use for summarization',
         category: 'integration',
         options: [],
+      },
+    ],
+  },
+  {
+    id: 'word-of-day',
+    name: 'Word of the Day',
+    description: 'Daily vocabulary from Merriam-Webster',
+    fields: [],
+  },
+  {
+    id: 'finance',
+    name: 'Finance',
+    description: 'Stock prices and charts via Yahoo Finance (free, no key required)',
+    setupGuide:
+      'Uses Yahoo Finance — no API key needed.\n\n' +
+      'Enter stock ticker symbols separated by commas.\n\n' +
+      'Common symbols: AAPL, MSFT, GOOGL, AMZN, TSLA, NVDA, META.',
+    fields: [
+      {
+        key: 'watchlist',
+        type: 'string',
+        label: 'Watchlist',
+        description: 'Comma-separated ticker symbols (e.g. AAPL,MSFT,GOOGL)',
+        default: 'AAPL,MSFT,GOOGL',
+        category: 'widget',
+      },
+      {
+        key: 'show1h',
+        type: 'boolean',
+        label: 'Show 1H Change',
+        description: 'Display 1-hour price change',
+        default: false,
+        category: 'widget',
+      },
+      {
+        key: 'show24h',
+        type: 'boolean',
+        label: 'Show 24H Change',
+        description: 'Display 24-hour price change',
+        default: true,
+        category: 'widget',
+      },
+      {
+        key: 'show7d',
+        type: 'boolean',
+        label: 'Show 7D Change',
+        description: 'Display 7-day price change',
+        default: false,
+        category: 'widget',
+      },
+      {
+        key: 'showSparkline',
+        type: 'boolean',
+        label: 'Show Sparkline Charts',
+        description: 'Display inline price charts next to each stock',
+        default: true,
+        category: 'widget',
       },
     ],
   },

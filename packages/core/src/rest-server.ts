@@ -112,8 +112,8 @@ export interface RestServerOptions {
   corsOrigins?: string[];
   /** Structured log callback. Receives one entry per request */
   logger?: (entry: LogEntry) => void;
-  /** Directory to serve static photos from at /photos/* */
-  photoDir?: string;
+  /** Directory to serve static photos from at /photos/*. Can be a string or a getter function. */
+  photoDir?: string | (() => string | undefined);
   /** Directory containing pre-built static files (SPA) to serve as fallback */
   staticDir?: string;
   /** Bearer token required for protected routes. If omitted, auth is disabled. */
@@ -270,11 +270,13 @@ export function createRestServer(
     port = 0,
     corsOrigins,
     logger,
-    photoDir,
+    photoDir: photoDirOption,
     staticDir,
     authToken,
     bindAddress = '127.0.0.1',
   } = options;
+  const resolvePhotoDir = (): string | undefined =>
+    typeof photoDirOption === 'function' ? photoDirOption() : photoDirOption;
   const startedAt = Date.now();
   let boundPort = 0;
   let closed = false;
@@ -1178,6 +1180,7 @@ export function createRestServer(
 
         // GET /photos/:filename — static photo serving
         if (cleanPath.startsWith('/photos/') && method === 'GET') {
+          const photoDir = resolvePhotoDir();
           if (!photoDir) {
             writeJson(res, 404, { error: 'Not Found' });
             return;

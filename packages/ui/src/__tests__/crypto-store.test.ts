@@ -15,6 +15,7 @@ function createCryptoData(btcPrice = 50000, btcChange24h = 2.5): CryptoData {
         change_1h: 0.3,
         change_24h: btcChange24h,
         change_7d: -1.2,
+        sparkline: [],
       },
       {
         id: 'ethereum',
@@ -24,6 +25,7 @@ function createCryptoData(btcPrice = 50000, btcChange24h = 2.5): CryptoData {
         change_1h: -0.1,
         change_24h: 1.8,
         change_7d: 5.0,
+        sparkline: [],
       },
     ],
     lastUpdated: Date.now(),

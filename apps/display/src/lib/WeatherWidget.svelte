@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { WeatherCurrent, WeatherForecastDay } from '@lensing/types';
+  import WeatherIcon from './WeatherIcon.svelte';
 
   export let current: WeatherCurrent | null = null;
   export let forecast: WeatherForecastDay[] = [];
@@ -13,22 +14,6 @@
     const date = new Date(dateStr + 'T00:00:00');
     return date.toLocaleDateString('en-US', { weekday: 'short' });
   }
-
-  function conditionsIcon(conditions: string): string {
-    const c = conditions.toLowerCase();
-    if (c.includes('thunderstorm')) return '⛈️';
-    if (c.includes('freezing rain') || c.includes('freezing drizzle')) return '🌧️';
-    if (c.includes('snow shower')) return '🌨️';
-    if (c.includes('snow') || c.includes('snow grains')) return '❄️';
-    if (c.includes('rain shower')) return '🌦️';
-    if (c.includes('rain') || c.includes('drizzle')) return '🌧️';
-    if (c.includes('fog') || c.includes('mist') || c.includes('haze')) return '🌫️';
-    if (c.includes('overcast') || c.includes('broken clouds')) return '☁️';
-    if (c.includes('partly cloudy') || c.includes('scattered clouds') || c.includes('few clouds')) return '⛅';
-    if (c.includes('mostly clear')) return '🌤️';
-    if (c.includes('clear')) return '☀️';
-    return '🌡️';
-  }
 </script>
 
 <div class="weather-widget" class:weather-widget--compact={compact}>
@@ -38,14 +23,14 @@
     </div>
   {:else if compact}
     <div class="weather-widget__compact-row">
-      <span class="weather-widget__compact-icon">{conditionsIcon(current.conditions)}</span>
+      <span class="weather-widget__compact-icon"><WeatherIcon conditions={current.conditions} size={32} /></span>
       <span class="weather-widget__compact-temp">{formatTemp(current.temp)}</span>
       <span class="weather-widget__compact-conditions">{current.conditions}</span>
     </div>
   {:else}
     <div class="weather-widget__current">
       <div class="weather-widget__hero">
-        <span class="weather-widget__icon">{conditionsIcon(current.conditions)}</span>
+        <span class="weather-widget__icon"><WeatherIcon conditions={current.conditions} size={40} /></span>
         <span class="weather-widget__temp">{formatTemp(current.temp)}</span>
         <div class="weather-widget__conditions-block">
           <span class="weather-widget__conditions">{current.conditions}</span>
@@ -65,7 +50,7 @@
         {#each forecast.slice(0, 5) as day (day.date)}
           <div class="weather-widget__forecast-row">
             <span class="weather-widget__forecast-day">{formatDate(day.date)}</span>
-            <span class="weather-widget__forecast-icon">{conditionsIcon(day.conditions)}</span>
+            <span class="weather-widget__forecast-icon"><WeatherIcon conditions={day.conditions} size={16} /></span>
             <span class="weather-widget__forecast-conditions">{day.conditions}</span>
             <span class="weather-widget__forecast-temps">
               <span class="weather-widget__forecast-high">{formatTemp(day.high)}</span>
@@ -105,8 +90,9 @@
   }
 
   .weather-widget__icon {
-    font-size: var(--text-3xl, 3rem);
-    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    color: var(--ember, hsl(25, 90%, 55%));
   }
 
   .weather-widget__temp {
@@ -179,10 +165,12 @@
   }
 
   .weather-widget__forecast-icon {
-    font-size: var(--text-base, 1rem);
+    display: inline-flex;
+    align-items: center;
     width: 1.5rem;
     flex-shrink: 0;
-    text-align: center;
+    justify-content: center;
+    color: var(--dim-light, hsl(220, 10%, 62%));
   }
 
   .weather-widget__forecast-day {
@@ -229,8 +217,9 @@
   }
 
   .weather-widget__compact-icon {
-    font-size: var(--text-2xl, 2rem);
-    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    color: var(--ember, hsl(25, 90%, 55%));
   }
 
   .weather-widget__compact-temp {

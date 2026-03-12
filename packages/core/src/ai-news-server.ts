@@ -21,10 +21,13 @@ function decodeEntities(str: string): string {
   return str
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
-    .replace(/&amp;/g, '&')
     .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
     .replace(/&#39;/g, "'")
-    .replace(/&nbsp;/g, ' ');
+    .replace(/&#149;/g, '•')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&#\d+;/g, (m) => String.fromCharCode(parseInt(m.slice(2, -1))))
+    .replace(/&amp;/g, '&');
 }
 
 function extractTag(xml: string, tag: string): string {
@@ -229,8 +232,30 @@ export function createAiNewsServer(options: AiNewsServerOptions): AiNewsServerIn
 
       if (!anySuccess) return;
 
-      // 2. Trim to maxItems
-      const trimmed = allArticles.slice(0, maxItems);
+      // 2. Interleave articles across feeds so each source gets fair representation,
+      // then trim to maxItems. Without this, the first feed's articles dominate.
+      const byFeed = new Map<string, ParsedArticle[]>();
+      for (const a of allArticles) {
+        const key = a.source;
+        if (!byFeed.has(key)) byFeed.set(key, []);
+        byFeed.get(key)!.push(a);
+      }
+      const feedQueues = [...byFeed.values()];
+      const interleaved: ParsedArticle[] = [];
+      let round = 0;
+      while (interleaved.length < maxItems) {
+        let added = false;
+        for (const queue of feedQueues) {
+          if (round < queue.length) {
+            interleaved.push(queue[round]);
+            added = true;
+            if (interleaved.length >= maxItems) break;
+          }
+        }
+        if (!added) break;
+        round++;
+      }
+      const trimmed = interleaved;
 
       // 3. Summarize via LLM
       let aiSummaries: string[];

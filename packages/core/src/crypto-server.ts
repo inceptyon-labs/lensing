@@ -24,6 +24,7 @@ interface ApiCoin {
   price_change_percentage_1h_in_currency: unknown;
   price_change_percentage_24h_in_currency: unknown;
   price_change_percentage_7d_in_currency: unknown;
+  sparkline_in_7d?: { price?: number[] };
 }
 
 // ── Transform ──────────────────────────────────────────────────────────────
@@ -34,6 +35,8 @@ function safeNumber(val: unknown): number {
 }
 
 function transformCoin(raw: ApiCoin): CoinPrice {
+  const rawSparkline = raw.sparkline_in_7d?.price ?? [];
+  const sparkline = rawSparkline.filter((v) => typeof v === 'number' && Number.isFinite(v));
   return {
     id: typeof raw.id === 'string' ? raw.id : '',
     symbol: typeof raw.symbol === 'string' ? raw.symbol : '',
@@ -42,11 +45,12 @@ function transformCoin(raw: ApiCoin): CoinPrice {
     change_1h: safeNumber(raw.price_change_percentage_1h_in_currency),
     change_24h: safeNumber(raw.price_change_percentage_24h_in_currency),
     change_7d: safeNumber(raw.price_change_percentage_7d_in_currency),
+    sparkline,
   };
 }
 
 function copyCoin(coin: CoinPrice): CoinPrice {
-  return { ...coin };
+  return { ...coin, sparkline: [...coin.sparkline] };
 }
 
 // ── Factory ────────────────────────────────────────────────────────────────
@@ -99,7 +103,8 @@ export function createCryptoServer(options: CryptoServerOptions): CryptoServerIn
       `https://api.coingecko.com/api/v3/coins/markets` +
       `?vs_currency=usd` +
       `&ids=${ids}` +
-      `&price_change_percentage=1h,24h,7d`
+      `&price_change_percentage=1h,24h,7d` +
+      `&sparkline=true`
     );
   }
 

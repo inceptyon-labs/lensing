@@ -291,7 +291,13 @@ export function createHostService(options: HostServiceOptions = {}): HostService
               }
             : undefined,
         },
-        { port, staticDir, authToken, bindAddress }
+        {
+          port,
+          staticDir,
+          authToken,
+          bindAddress,
+          photoDir: () => _db!.getSetting('photo-slideshow.photoDirectory') ?? undefined,
+        }
       );
 
       await _rest.ready();

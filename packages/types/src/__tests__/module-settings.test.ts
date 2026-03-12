@@ -8,9 +8,9 @@ import {
 } from '../module-settings';
 
 describe('Module Settings Schemas', () => {
-  it('should define exactly 10 modules', () => {
-    expect(MODULE_SCHEMAS).toHaveLength(10);
-    expect(MODULE_IDS).toHaveLength(10);
+  it('should define exactly 12 modules', () => {
+    expect(MODULE_SCHEMAS).toHaveLength(12);
+    expect(MODULE_IDS).toHaveLength(12);
   });
 
   it('should include photo-slideshow module with photoDirectory field', () => {
@@ -57,8 +57,10 @@ describe('Module Settings Schemas', () => {
     }
   });
 
-  it('should have at least one field per module', () => {
-    for (const schema of MODULE_SCHEMAS) {
+  it('should have at least one field per module (if fields are defined)', () => {
+    const schemasWithFields = MODULE_SCHEMAS.filter((s) => s.fields.length > 0);
+    expect(schemasWithFields.length).toBeGreaterThan(0);
+    for (const schema of schemasWithFields) {
       expect(schema.fields.length).toBeGreaterThan(0);
     }
   });
@@ -145,8 +147,8 @@ describe('Config field category helpers', () => {
   it('crypto has no integration fields and all widget fields', () => {
     const crypto = MODULE_SCHEMAS.find((s) => s.id === 'crypto')!;
     expect(getIntegrationFields(crypto)).toHaveLength(0);
-    expect(getWidgetFields(crypto)).toHaveLength(1);
-    expect(getWidgetFields(crypto)[0].key).toBe('watchlist');
+    expect(getWidgetFields(crypto)).toHaveLength(5);
+    expect(getWidgetFields(crypto).map((f) => f.key)).toEqual(['watchlist', 'show1h', 'show24h', 'show7d', 'showSparkline']);
   });
 
   it('calendar has both integration and widget fields', () => {

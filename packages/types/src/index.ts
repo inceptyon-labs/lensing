@@ -807,6 +807,7 @@ export interface CoinPrice {
   change_1h: number; // percent change in 1 hour
   change_24h: number; // percent change in 24 hours
   change_7d: number; // percent change in 7 days
+  sparkline: number[]; // 7d close prices for chart
 }
 
 /** Full crypto prices payload */
@@ -888,6 +889,14 @@ export {
   resolveCategoriesToFeeds,
 } from './ai-news';
 
+// ── Word of the Day ─────────────────────────────────────────────────────────
+export type {
+  WordOfDayData,
+  WotdFetchFn,
+  WordOfDayServerOptions,
+  WordOfDayServerInstance,
+} from './word-of-day';
+
 // ── Sports Scores ───────────────────────────────────────────────────────────
 export type {
   SportsGame,
@@ -955,6 +964,14 @@ export {
   getWidgetFields,
   moduleNeedsIntegration,
 } from './module-settings';
+
+// ── Finance / Stocks ─────────────────────────────────────────────────────────
+export type {
+  StockQuote,
+  FinanceData,
+  FinanceServerOptions,
+  FinanceServerInstance,
+} from './finance';
 
 // ── Marketplace Browse Types ─────────────────────────────────────────────────
 

@@ -18,32 +18,52 @@
     return `${hour12}:${m} ${ampm}`;
   }
 
+  /** Get today's date string YYYY-MM-DD in local time */
+  function todayStr(): string {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  /** Check if an event is still relevant (not in the past) */
+  function isUpcoming(e: CalendarEvent): boolean {
+    if (e.allDay) {
+      // All-day events: compare date strings to avoid timezone issues
+      // DTEND in iCal is exclusive, so an all-day event on Mar 10 has end "2026-03-11"
+      // Show it if end date string > today string (meaning it hasn't fully passed)
+      const endDate = e.end.slice(0, 10);
+      return endDate > todayStr();
+    }
+    // Timed events: compare timestamps
+    return new Date(e.end).getTime() >= Date.now();
+  }
+
   function getDayLabel(isoStr: string): string {
-    const date = new Date(isoStr);
-    const today = new Date();
-    const tomorrow = new Date();
-    tomorrow.setDate(today.getDate() + 1);
+    // For date-only strings, parse components directly to avoid UTC shift
+    const dateStr = isoStr.slice(0, 10);
+    const today = todayStr();
+    const tom = new Date();
+    tom.setDate(tom.getDate() + 1);
+    const tomorrowStr = `${tom.getFullYear()}-${String(tom.getMonth() + 1).padStart(2, '0')}-${String(tom.getDate()).padStart(2, '0')}`;
 
-    const toDateStr = (d: Date) =>
-      d.toLocaleDateString('en-US', { year: 'numeric', month: 'numeric', day: 'numeric' });
+    if (dateStr === today) return 'Today';
+    if (dateStr === tomorrowStr) return 'Tomorrow';
 
-    if (toDateStr(date) === toDateStr(today)) return 'Today';
-    if (toDateStr(date) === toDateStr(tomorrow)) return 'Tomorrow';
-    return date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+    // Parse date parts to format without timezone issues
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const display = new Date(y, m - 1, d);
+    return display.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
   }
 
   function getUpcoming(evts: CalendarEvent[], limit: number): CalendarEvent[] {
-    const now = Date.now();
     return evts
-      .filter((e) => new Date(e.end).getTime() >= now)
+      .filter(isUpcoming)
       .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
       .slice(0, limit);
   }
 
   function groupByDay(evts: CalendarEvent[]): DayGroup[] {
-    const now = Date.now();
     const upcoming = evts
-      .filter((e) => new Date(e.end).getTime() >= now)
+      .filter(isUpcoming)
       .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
 
     const groups = new Map<string, CalendarEvent[]>();

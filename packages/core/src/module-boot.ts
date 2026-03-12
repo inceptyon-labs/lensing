@@ -24,6 +24,8 @@ import { createAllergiesServer } from './allergies-server';
 import { createPIRServer } from './pir-server';
 import { createPhotoSlideshowServer } from './photo-slideshow-server';
 import { createAiNewsServer } from './ai-news-server';
+import { createWordOfDayServer } from './word-of-day-server';
+import { createFinanceServer } from './finance-server';
 import type { AiProvider } from './ai-assist-providers';
 import type { AiProviderId } from '@lensing/types';
 
@@ -54,6 +56,8 @@ const MODULE_REFRESH_MS: Partial<Record<ModuleId, number>> = {
   allergies: 3_600_000, // 1 hour
   // pir: event-driven, no polling
   'photo-slideshow': 600_000, // 10 min
+  'word-of-day': 3_600_000, // 1 hour (skips refresh if already have today's word)
+  finance: 300_000, // 5 min
   // ai-news: schedule-driven, interval comes from config
 };
 
@@ -396,6 +400,16 @@ function bootModule(
         },
       });
     }
+
+    case 'word-of-day': {
+      return createWordOfDayServer({ dataBus });
+    }
+
+    case 'finance':
+      return createFinanceServer({
+        watchlist: csvToArray(values['watchlist']),
+        dataBus,
+      });
 
     default:
       return null;
