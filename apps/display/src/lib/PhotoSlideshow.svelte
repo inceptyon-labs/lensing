@@ -1,39 +1,42 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
-
   function getNextPhotoIndex(current: number, total: number): number {
     if (total <= 1) return 0;
     return (current + 1) % total;
   }
 
-  export let photoPaths: string[] = [];
-  export let cycleInterval: number = 8000;
+  interface Props {
+    photoPaths?: string[];
+    cycleInterval?: number;
+  }
+
+  const { photoPaths = [], cycleInterval = 30000 }: Props = $props();
 
   const KEN_BURNS_VARIANTS = ['ken-burns-1', 'ken-burns-2', 'ken-burns-3'];
 
-  let currentIndex = 0;
-  let variantIndex = 0;
-  let currentVariant = KEN_BURNS_VARIANTS[0];
+  let currentIndex = $state(0);
+  let variantIndex = $state(0);
+  let currentVariant = $derived(KEN_BURNS_VARIANTS[variantIndex]);
 
   function advance() {
-    if (!photoPaths || photoPaths.length === 0) return;
-    currentIndex = getNextPhotoIndex(currentIndex, photoPaths.length);
+    const paths = photoPaths ?? [];
+    if (paths.length === 0) return;
+    currentIndex = getNextPhotoIndex(currentIndex, paths.length);
     variantIndex = (variantIndex + 1) % KEN_BURNS_VARIANTS.length;
-    currentVariant = KEN_BURNS_VARIANTS[variantIndex];
   }
 
   // Start slideshow timer — recreate when cycleInterval or photoPaths change
-  let timer: ReturnType<typeof setInterval> | undefined;
-  $: if (photoPaths && photoPaths.length > 1 && typeof window !== 'undefined') {
-    if (timer) clearInterval(timer);
-    timer = setInterval(advance, cycleInterval);
-  }
+  $effect(() => {
+    const paths = photoPaths ?? [];
+    const interval = cycleInterval ?? 30000;
+    if (paths.length <= 1) return;
 
-  onDestroy(() => {
-    if (timer) clearInterval(timer);
+    const timer = setInterval(advance, interval);
+    return () => clearInterval(timer);
   });
 
-  $: currentPhoto = photoPaths && photoPaths.length > 0 ? photoPaths[currentIndex] : null;
+  let currentPhoto = $derived(
+    (photoPaths ?? []).length > 0 ? (photoPaths ?? [])[currentIndex] ?? null : null
+  );
 </script>
 
 <div class="photo-slideshow">
