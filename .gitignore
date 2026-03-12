@@ -18,9 +18,9 @@ dist-turbo/
 .sublime-workspace
 *.code-workspace
 
-# Build outputs
-dist/
-/build
+# Build outputs (kept in repo for Pi deployment — build on Mac, pull on Pi)
+# dist/
+# /build
 /.next
 .svelte-kit/
 .vercel/

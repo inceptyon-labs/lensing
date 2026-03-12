@@ -1,0 +1,1 @@
+{"version":3,"file":"plugin-install.d.ts","sourceRoot":"","sources":["../src/plugin-install.ts"],"names":[],"mappings":"AAGA,OAAO,KAAK,EAAE,cAAc,EAAE,MAAM,gBAAgB,CAAC;AAErD,MAAM,WAAW,aAAa;IAC5B,QAAQ,EAAE,MAAM,CAAC;IACjB,QAAQ,EAAE,cAAc,CAAC;CAC1B;AAED;;;;;GAKG;AACH,wBAAgB,oBAAoB,CAAC,SAAS,EAAE,MAAM,EAAE,UAAU,EAAE,MAAM,GAAG,aAAa,CA+EzF"}

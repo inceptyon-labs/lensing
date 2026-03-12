@@ -7,10 +7,7 @@ echo "Pulling latest changes..."
 git pull
 
 echo "Installing dependencies..."
-pnpm install
-
-echo "Building..."
-pnpm build
+pnpm install --frozen-lockfile
 
 echo "Restarting services..."
 sudo systemctl restart lensing-host

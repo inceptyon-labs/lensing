@@ -1,0 +1,1 @@
+{"version":3,"file":"allergies-server.d.ts","sourceRoot":"","sources":["../src/allergies-server.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EACV,sBAAsB,EACtB,uBAAuB,EAIvB,WAAW,EAGZ,MAAM,gBAAgB,CAAC;AAmDxB,wBAAgB,cAAc,CAAC,KAAK,EAAE,MAAM,GAAG,WAAW,CAKzD;AAED,wBAAgB,cAAc,CAAC,KAAK,EAAE,MAAM,GAAG,MAAM,CAKpD;AAqCD,wBAAgB,qBAAqB,CAAC,OAAO,EAAE,sBAAsB,GAAG,uBAAuB,CA0J9F"}

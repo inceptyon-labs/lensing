@@ -1,0 +1,176 @@
+import { isBlockedUrl } from './url-blocklist';
+/**
+ * Validates that a network URL is in the plugin's allowed domains list
+ */
+export function validateNetworkDomain(url, permissions) {
+    // Blocklist check: always block SSRF-prone addresses regardless of allowed_domains
+    if (isBlockedUrl(url)) {
+        return false;
+    }
+    // If no domain restrictions, allow all
+    if (!permissions.allowed_domains || permissions.allowed_domains.length === 0) {
+        return true;
+    }
+    try {
+        const urlObj = new URL(url);
+        const hostname = urlObj.hostname;
+        // Check if hostname matches any allowed domain
+        return permissions.allowed_domains.some((domain) => {
+            // Exact match
+            if (hostname === domain) {
+                return true;
+            }
+            // Subdomain match (e.g., api.example.com matches *.example.com if domain is example.com)
+            if (hostname.endsWith('.' + domain)) {
+                return true;
+            }
+            return false;
+        });
+    }
+    catch {
+        // Invalid URL - block by default
+        return false;
+    }
+}
+/**
+ * Validates that a refresh operation respects the plugin's rate limit
+ */
+export function validateRefreshRate(lastRefreshMs, permissions) {
+    // If no rate limit, allow
+    if (!permissions.max_refresh_ms || permissions.max_refresh_ms <= 0) {
+        return true;
+    }
+    // First refresh always allowed (explicit undefined/null check)
+    if (lastRefreshMs === undefined || lastRefreshMs === null) {
+        return true;
+    }
+    // Validate lastRefreshMs is a valid timestamp
+    if (!Number.isFinite(lastRefreshMs) || lastRefreshMs < 0) {
+        // Invalid timestamp - block as safety measure
+        return false;
+    }
+    const now = Date.now();
+    const timeSinceLastRefresh = now - lastRefreshMs;
+    return timeSinceLastRefresh >= permissions.max_refresh_ms;
+}
+/**
+ * Validates that a secret name is in the plugin's allowed secrets list
+ */
+export function validateSecretAccess(secretName, permissions) {
+    // If no secrets declared, block all access
+    if (!permissions.secrets) {
+        return false;
+    }
+    // Empty array = no secrets allowed
+    if (permissions.secrets.length === 0) {
+        return false;
+    }
+    return permissions.secrets.includes(secretName);
+}
+/**
+ * Creates a permission enforcer for a plugin instance
+ * Enforces permissions at the host level before plugin receives any APIs
+ */
+export function createPermissionEnforcer(manifest, options) {
+    const violations = [];
+    function recordViolation(type, details) {
+        const violation = {
+            plugin_id: manifest.id,
+            type,
+            timestamp: new Date().toISOString(),
+            details,
+        };
+        violations.push(violation);
+        options?.onViolation?.(violation);
+    }
+    return {
+        /**
+         * Creates a proxied fetch function that enforces domain restrictions
+         */
+        createFetchProxy(originalFetch = globalThis.fetch) {
+            return async (url, init) => {
+                // Extract URL string from string, Request, or URL object
+                let urlStr;
+                if (typeof url === 'string') {
+                    urlStr = url;
+                }
+                else if (url instanceof Request) {
+                    urlStr = url.url;
+                }
+                else if (url instanceof URL) {
+                    urlStr = url.href;
+                }
+                else {
+                    // Fallback for other types
+                    urlStr = String(url);
+                }
+                // Validate domain before making request
+                if (!validateNetworkDomain(urlStr, manifest.permissions || {})) {
+                    try {
+                        const hostname = new URL(urlStr).hostname;
+                        recordViolation('network', `Request to ${hostname} not allowed`);
+                    }
+                    catch {
+                        // If URL parsing fails, still record violation with raw URL
+                        recordViolation('network', `Invalid or disallowed URL: ${urlStr}`);
+                    }
+                    throw new Error('Permission denied: domain not allowed');
+                }
+                // Force redirect:error to prevent redirect-based SSRF bypasses
+                // (a public URL could otherwise 302 to a private/loopback address)
+                const safeInit = { ...init, redirect: 'error' };
+                return originalFetch(url, safeInit);
+            };
+        },
+        /**
+         * Validates a data refresh operation against rate limit
+         */
+        validateRefresh(lastRefreshMs) {
+            const permissions = manifest.permissions || {};
+            const allowed = validateRefreshRate(lastRefreshMs, permissions);
+            if (!allowed && permissions.max_refresh_ms) {
+                const timeSinceLastRefresh = lastRefreshMs ? Date.now() - lastRefreshMs : 0;
+                const retryAfter = permissions.max_refresh_ms - timeSinceLastRefresh;
+                recordViolation('refresh_rate', `Refresh rate exceeded (limit: ${permissions.max_refresh_ms}ms)`);
+                return {
+                    allowed: false,
+                    retryAfter: Math.max(1, retryAfter),
+                };
+            }
+            return { allowed };
+        },
+        /**
+         * Filters secrets to only those declared in plugin manifest
+         * Returns only authorized secrets; records violations for unauthorized access attempts
+         */
+        getAuthorizedSecrets(availableSecrets) {
+            const permissions = manifest.permissions || {};
+            const authorized = {};
+            for (const [key, value] of Object.entries(availableSecrets)) {
+                if (validateSecretAccess(key, permissions)) {
+                    authorized[key] = value;
+                }
+                else {
+                    recordViolation('secret_access', `Unauthorized secret access: ${key}`);
+                }
+            }
+            return authorized;
+        },
+        /**
+         * INTERNAL ONLY: Used by tests and admin panel
+         * Plugins should NOT have access to this
+         */
+        getManifestPermissions() {
+            throw new Error('Plugin cannot access manifest permissions directly');
+        },
+        /** Access violation history (for admin panel) */
+        getViolations() {
+            return [...violations];
+        },
+        /** Clear violation history */
+        clearViolations() {
+            violations.length = 0;
+        },
+    };
+}
+//# sourceMappingURL=plugin-permissions.js.map

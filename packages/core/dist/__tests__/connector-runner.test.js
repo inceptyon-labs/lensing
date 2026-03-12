@@ -1,0 +1,331 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createConnectorRunner } from '../connector-runner';
+function stubManifest(overrides = {}) {
+    return {
+        id: 'test-plugin',
+        name: 'Test Plugin',
+        version: '1.0.0',
+        permissions: { allowed_domains: ['api.example.com'], max_refresh_ms: 30_000 },
+        ...overrides,
+    };
+}
+function jsonApiConfig(overrides = {}) {
+    return {
+        type: 'json_api',
+        url: 'https://api.example.com/data',
+        method: 'GET',
+        refreshInterval: 60,
+        ...overrides,
+    };
+}
+function stubScheduler() {
+    const handlers = new Map();
+    const started = new Set();
+    return {
+        _handlers: handlers,
+        _started: started,
+        register: vi.fn((id, _manifest, handler) => {
+            handlers.set(id, handler);
+        }),
+        unregister: vi.fn((id) => {
+            handlers.delete(id);
+            started.delete(id);
+        }),
+        start: vi.fn((id) => {
+            started.add(id);
+        }),
+        stop: vi.fn((id) => {
+            started.delete(id);
+        }),
+        restart: vi.fn(),
+        startAll: vi.fn(),
+        stopAll: vi.fn(),
+        getState: vi.fn(() => new Map()),
+        getPluginState: vi.fn(),
+        close: vi.fn(),
+    };
+}
+function stubDataBus() {
+    const published = [];
+    return {
+        _published: published,
+        publish: vi.fn((channel, pluginId, data) => {
+            published.push({ channel, pluginId, data });
+        }),
+        subscribe: vi.fn(() => () => { }),
+        getLatest: vi.fn(),
+        getChannels: vi.fn(() => []),
+        onMessage: vi.fn(() => () => { }),
+        clear: vi.fn(),
+        close: vi.fn(),
+    };
+}
+function okJsonResponse(data) {
+    return {
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        json: async () => data,
+        text: async () => JSON.stringify(data),
+    };
+}
+function okTextResponse(text) {
+    return {
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        json: async () => {
+            throw new Error('Not JSON');
+        },
+        text: async () => text,
+    };
+}
+describe('createConnectorRunner', () => {
+    let scheduler;
+    let dataBus;
+    let fetchFn;
+    let runner;
+    beforeEach(() => {
+        scheduler = stubScheduler();
+        dataBus = stubDataBus();
+        fetchFn = vi.fn();
+        runner = createConnectorRunner({ dataBus, scheduler, fetchFn });
+    });
+    describe('register', () => {
+        it('registers plugin with scheduler using refreshInterval * 1000', () => {
+            runner.register('weather', stubManifest(), jsonApiConfig({ refreshInterval: 30 }));
+            expect(scheduler.register).toHaveBeenCalledWith('weather', expect.any(Object), expect.any(Function), 30_000);
+        });
+        it('auto-starts the plugin after registration', () => {
+            runner.register('weather', stubManifest(), jsonApiConfig());
+            expect(scheduler.start).toHaveBeenCalledWith('weather');
+        });
+        it('passes manifest to scheduler.register', () => {
+            const manifest = stubManifest({ id: 'my-plugin' });
+            runner.register('my-plugin', manifest, jsonApiConfig());
+            expect(scheduler.register).toHaveBeenCalledWith('my-plugin', manifest, expect.any(Function), expect.any(Number));
+        });
+    });
+    describe('json_api handler', () => {
+        it('fetches URL and publishes JSON data to data bus', async () => {
+            const apiData = { temperature: 72, humidity: 45 };
+            fetchFn.mockResolvedValueOnce(okJsonResponse(apiData));
+            runner.register('weather', stubManifest(), jsonApiConfig());
+            const handler = scheduler._handlers.get('weather');
+            await handler();
+            expect(fetchFn).toHaveBeenCalledWith('https://api.example.com/data', expect.objectContaining({ method: 'GET' }));
+            expect(dataBus._published).toHaveLength(1);
+            expect(dataBus._published[0].channel).toBe('plugin:weather');
+            expect(dataBus._published[0].pluginId).toBe('weather');
+            expect(dataBus._published[0].data).toEqual(apiData);
+        });
+        it('uses configured method and headers', async () => {
+            fetchFn.mockResolvedValueOnce(okJsonResponse({}));
+            runner.register('test', stubManifest(), jsonApiConfig({
+                method: 'POST',
+                headers: { Authorization: 'Bearer token123' },
+            }));
+            const handler = scheduler._handlers.get('test');
+            await handler();
+            expect(fetchFn).toHaveBeenCalledWith('https://api.example.com/data', expect.objectContaining({
+                method: 'POST',
+                headers: expect.objectContaining({ Authorization: 'Bearer token123' }),
+            }));
+        });
+        it('throws on HTTP error', async () => {
+            fetchFn.mockResolvedValueOnce({
+                ok: false,
+                status: 500,
+                statusText: 'Internal Server Error',
+                json: async () => ({}),
+                text: async () => '',
+            });
+            runner.register('test', stubManifest(), jsonApiConfig());
+            const handler = scheduler._handlers.get('test');
+            await expect(handler()).rejects.toThrow(/500/);
+        });
+    });
+    describe('rss_feed handler', () => {
+        it('fetches URL and publishes text to data bus', async () => {
+            const rssXml = '<rss><channel><title>News</title></channel></rss>';
+            fetchFn.mockResolvedValueOnce(okTextResponse(rssXml));
+            runner.register('news', stubManifest(), jsonApiConfig({ type: 'rss_feed', url: 'https://feeds.example.com/rss' }));
+            const handler = scheduler._handlers.get('news');
+            await handler();
+            expect(dataBus._published).toHaveLength(1);
+            expect(dataBus._published[0].channel).toBe('plugin:news');
+            expect(dataBus._published[0].data).toHaveProperty('raw');
+        });
+    });
+    describe('static handler', () => {
+        it('publishes static data immediately without scheduler', () => {
+            runner.register('static-widget', stubManifest(), {
+                type: 'static',
+                url: '',
+                data: { title: 'Hello', message: 'World' },
+            });
+            expect(dataBus._published).toHaveLength(1);
+            expect(dataBus._published[0].channel).toBe('plugin:static-widget');
+            expect(dataBus._published[0].data).toEqual({ title: 'Hello', message: 'World' });
+            // Should NOT register with scheduler
+            expect(scheduler.register).not.toHaveBeenCalled();
+        });
+    });
+    describe('SSRF protection', () => {
+        it('blocks private URLs in handler', async () => {
+            runner.register('evil', stubManifest(), jsonApiConfig({ url: 'http://192.168.1.1/admin' }));
+            const handler = scheduler._handlers.get('evil');
+            await expect(handler()).rejects.toThrow(/blocked|private/i);
+            expect(dataBus._published).toHaveLength(0);
+        });
+        it('blocks localhost in handler', async () => {
+            runner.register('evil', stubManifest(), jsonApiConfig({ url: 'http://localhost:3000/secret' }));
+            const handler = scheduler._handlers.get('evil');
+            await expect(handler()).rejects.toThrow(/blocked|localhost/i);
+        });
+        it('allows private URLs when allowPrivate is true', async () => {
+            const privateRunner = createConnectorRunner({
+                dataBus,
+                scheduler,
+                fetchFn,
+                allowPrivate: true,
+            });
+            fetchFn.mockResolvedValueOnce(okJsonResponse({ ok: true }));
+            privateRunner.register('homelab', stubManifest(), jsonApiConfig({ url: 'http://192.168.1.100/api' }));
+            const handler = scheduler._handlers.get('homelab');
+            await handler(); // Should not throw
+            expect(dataBus._published).toHaveLength(1);
+        });
+    });
+    describe('unregister', () => {
+        it('stops and unregisters from scheduler', () => {
+            runner.register('weather', stubManifest(), jsonApiConfig());
+            runner.unregister('weather');
+            expect(scheduler.stop).toHaveBeenCalledWith('weather');
+            expect(scheduler.unregister).toHaveBeenCalledWith('weather');
+        });
+        it('is safe to call for non-registered plugin', () => {
+            expect(() => runner.unregister('nonexistent')).not.toThrow();
+        });
+    });
+    describe('close', () => {
+        it('stops and unregisters all plugins', () => {
+            runner.register('p1', stubManifest({ id: 'p1' }), jsonApiConfig());
+            runner.register('p2', stubManifest({ id: 'p2' }), jsonApiConfig());
+            runner.close();
+            expect(scheduler.stop).toHaveBeenCalledWith('p1');
+            expect(scheduler.stop).toHaveBeenCalledWith('p2');
+            expect(scheduler.unregister).toHaveBeenCalledWith('p1');
+            expect(scheduler.unregister).toHaveBeenCalledWith('p2');
+        });
+        it('handles close when no plugins registered', () => {
+            expect(() => runner.close()).not.toThrow();
+        });
+    });
+    describe('secret resolution', () => {
+        it('resolves {{PLACEHOLDER}} in URL before fetch', async () => {
+            const secretResolver = vi.fn(async (pluginId, name) => {
+                if (name === 'API_KEY')
+                    return 'resolved-key';
+                throw new Error(`Unknown secret: ${name}`);
+            });
+            const secretRunner = createConnectorRunner({
+                dataBus,
+                scheduler,
+                fetchFn,
+                secretResolver,
+            });
+            fetchFn.mockResolvedValueOnce(okJsonResponse({ ok: true }));
+            secretRunner.register('weather', stubManifest({
+                permissions: { allowed_domains: ['api.example.com'], secrets: ['API_KEY'] },
+            }), jsonApiConfig({ url: 'https://api.example.com/data?key={{API_KEY}}' }));
+            const handler = scheduler._handlers.get('weather');
+            await handler();
+            expect(fetchFn).toHaveBeenCalledWith('https://api.example.com/data?key=resolved-key', expect.any(Object));
+            expect(secretResolver).toHaveBeenCalledWith('weather', 'API_KEY');
+        });
+        it('resolves {{PLACEHOLDER}} in headers before fetch', async () => {
+            const secretResolver = vi.fn(async (_pluginId, name) => {
+                if (name === 'TOKEN')
+                    return 'bearer-secret';
+                throw new Error(`Unknown secret: ${name}`);
+            });
+            const secretRunner = createConnectorRunner({
+                dataBus,
+                scheduler,
+                fetchFn,
+                secretResolver,
+            });
+            fetchFn.mockResolvedValueOnce(okJsonResponse({ ok: true }));
+            secretRunner.register('api-plugin', stubManifest({ permissions: { allowed_domains: ['api.example.com'], secrets: ['TOKEN'] } }), jsonApiConfig({ headers: { Authorization: 'Bearer {{TOKEN}}' } }));
+            const handler = scheduler._handlers.get('api-plugin');
+            await handler();
+            expect(fetchFn).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({
+                headers: expect.objectContaining({ Authorization: 'Bearer bearer-secret' }),
+            }));
+        });
+        it('resolves multiple placeholders in the same string', async () => {
+            const secretResolver = vi.fn(async (_pluginId, name) => {
+                const secrets = { USER: 'admin', PASS: 's3cret' };
+                return secrets[name] ?? '';
+            });
+            const secretRunner = createConnectorRunner({
+                dataBus,
+                scheduler,
+                fetchFn,
+                secretResolver,
+            });
+            fetchFn.mockResolvedValueOnce(okJsonResponse({}));
+            secretRunner.register('test', stubManifest({
+                permissions: { allowed_domains: ['api.example.com'], secrets: ['USER', 'PASS'] },
+            }), jsonApiConfig({ url: 'https://api.example.com/login?u={{USER}}&p={{PASS}}' }));
+            const handler = scheduler._handlers.get('test');
+            await handler();
+            expect(fetchFn).toHaveBeenCalledWith('https://api.example.com/login?u=admin&p=s3cret', expect.any(Object));
+        });
+        it('skips resolution when no secretResolver provided', async () => {
+            fetchFn.mockResolvedValueOnce(okJsonResponse({}));
+            runner.register('test', stubManifest(), jsonApiConfig({ url: 'https://api.example.com/data?key={{API_KEY}}' }));
+            const handler = scheduler._handlers.get('test');
+            await handler();
+            // Should pass the raw URL with unresolved placeholders
+            expect(fetchFn).toHaveBeenCalledWith('https://api.example.com/data?key={{API_KEY}}', expect.any(Object));
+        });
+        it('does not resolve placeholders for RSS connectors', async () => {
+            const secretResolver = vi.fn(async () => 'resolved');
+            const secretRunner = createConnectorRunner({
+                dataBus,
+                scheduler,
+                fetchFn,
+                secretResolver,
+            });
+            fetchFn.mockResolvedValueOnce(okTextResponse('<rss></rss>'));
+            secretRunner.register('rss-plugin', stubManifest({ permissions: { secrets: ['KEY'] } }), jsonApiConfig({ type: 'rss_feed', url: 'https://feeds.example.com/rss' }));
+            const handler = scheduler._handlers.get('rss-plugin');
+            await handler();
+            // RSS feeds use GET with no headers, so no resolution needed
+            expect(fetchFn).toHaveBeenCalledWith('https://feeds.example.com/rss', expect.objectContaining({ method: 'GET', headers: {} }));
+        });
+    });
+    describe('error handling', () => {
+        it('propagates network errors from fetch', async () => {
+            fetchFn.mockRejectedValueOnce(new Error('ECONNREFUSED'));
+            runner.register('test', stubManifest(), jsonApiConfig());
+            const handler = scheduler._handlers.get('test');
+            await expect(handler()).rejects.toThrow('ECONNREFUSED');
+        });
+        it('does not publish to data bus on error', async () => {
+            fetchFn.mockRejectedValueOnce(new Error('Network failure'));
+            runner.register('test', stubManifest(), jsonApiConfig());
+            const handler = scheduler._handlers.get('test');
+            try {
+                await handler();
+            }
+            catch {
+                // Expected
+            }
+            expect(dataBus._published).toHaveLength(0);
+        });
+    });
+});
+//# sourceMappingURL=connector-runner.test.js.map
