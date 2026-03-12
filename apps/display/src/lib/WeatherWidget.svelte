@@ -52,6 +52,11 @@
             <span class="weather-widget__forecast-day">{formatDate(day.date)}</span>
             <span class="weather-widget__forecast-icon"><WeatherIcon conditions={day.conditions} size={16} /></span>
             <span class="weather-widget__forecast-conditions">{day.conditions}</span>
+            {#if day.precipChance != null}
+              <span class="weather-widget__forecast-rain" class:weather-widget__forecast-rain--high={day.precipChance >= 50}>
+                {day.precipChance}%
+              </span>
+            {/if}
             <span class="weather-widget__forecast-temps">
               <span class="weather-widget__forecast-high">{formatTemp(day.high)}</span>
               <span class="weather-widget__forecast-sep">/</span>
@@ -186,6 +191,19 @@
     color: var(--dim-light, hsl(220, 10%, 62%));
     flex: 1;
     text-transform: capitalize;
+  }
+
+  .weather-widget__forecast-rain {
+    font-size: var(--text-xs, 0.75rem);
+    color: var(--dim-light, hsl(220, 10%, 62%));
+    font-variant-numeric: tabular-nums;
+    width: 2.5rem;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .weather-widget__forecast-rain--high {
+    color: hsl(210, 60%, 60%);
   }
 
   .weather-widget__forecast-temps {

@@ -18,6 +18,8 @@ export interface WeatherForecastDay {
   low: number;
   conditions: string;
   icon: string;
+  /** Probability of precipitation as a percentage (0–100) */
+  precipChance?: number;
 }
 
 /** Full weather data payload */
@@ -133,6 +135,7 @@ interface OpenMeteoDaily {
   temperature_2m_max: number[];
   temperature_2m_min: number[];
   weather_code: number[];
+  precipitation_probability_max?: number[];
 }
 
 interface OpenMeteoResponse {
@@ -158,6 +161,7 @@ function transformOpenMeteoForecast(daily: OpenMeteoDaily): WeatherForecastDay[]
     low: daily.temperature_2m_min[i],
     conditions: wmoToConditions(daily.weather_code[i]),
     icon: '',
+    precipChance: daily.precipitation_probability_max?.[i],
   }));
 }
 
@@ -167,7 +171,7 @@ function buildOpenMeteoUrl(location: WeatherLocation, units: 'imperial' | 'metri
     `https://api.open-meteo.com/v1/forecast` +
     `?latitude=${location.lat}&longitude=${location.lon}` +
     `&current=temperature_2m,apparent_temperature,weather_code,relative_humidity_2m` +
-    `&daily=temperature_2m_max,temperature_2m_min,weather_code` +
+    `&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max` +
     `&timezone=auto&forecast_days=5&temperature_unit=${tempUnit}`
   );
 }
@@ -195,6 +199,7 @@ interface OWMDaily {
   dt: number;
   temp: { max: number; min: number };
   weather: OWMDailyWeather[];
+  pop?: number; // probability of precipitation (0–1)
 }
 
 interface OWMResponse {
@@ -224,6 +229,7 @@ function transformForecast(daily: OWMDaily[]): WeatherForecastDay[] {
       low: d.temp.min,
       conditions: w.description,
       icon: w.icon,
+      precipChance: d.pop != null ? Math.round(d.pop * 100) : undefined,
     };
   });
 }

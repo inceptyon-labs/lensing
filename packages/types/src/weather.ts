@@ -17,6 +17,8 @@ export interface WeatherForecastDay {
   low: number;
   conditions: string;
   icon: string;
+  /** Probability of precipitation as a percentage (0–100) */
+  precipChance?: number;
 }
 
 /** Full weather data payload */
