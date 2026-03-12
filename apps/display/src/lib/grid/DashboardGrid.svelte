@@ -30,6 +30,7 @@
   import Sparkles from '@lucide/svelte/icons/sparkles';
   import BookOpen from '@lucide/svelte/icons/book-open';
   import TrendingUp from '@lucide/svelte/icons/trending-up';
+  import Pencil from '@lucide/svelte/icons/pencil';
 
   const WIDGET_ICONS: Record<string, typeof Sun> = {
     weather: Sun,
@@ -480,16 +481,13 @@
         dirty={isDirty}
       />
     {:else}
-      {#if adminHref}
-        <a href={adminHref} class="dashboard-admin-link">Admin</a>
-      {/if}
       <button
-        class="dashboard-edit-toggle"
+        class="dashboard-edit-icon"
         type="button"
-        aria-pressed={editMode}
+        aria-label="Edit Layout"
         onclick={toggleEditMode}
       >
-        Edit Layout
+        <Pencil size={14} strokeWidth={1.5} />
       </button>
     {/if}
   </div>
@@ -763,36 +761,19 @@
       border-color var(--duration-fast) var(--ease-out);
   }
 
-  .dashboard-admin-link {
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    letter-spacing: var(--tracking-wide);
-    padding: var(--space-2) var(--space-4);
-    border-radius: var(--radius-sm);
-    background: var(--event-horizon);
-    border: 1px solid var(--edge);
-    color: var(--dim-light);
-    text-decoration: none;
+  .dashboard-edit-icon {
+    padding: var(--space-1);
+    background: none;
+    border: none;
+    color: var(--faint-light, hsl(220, 10%, 28%));
     cursor: pointer;
-    transition:
-      border-color var(--duration-fast) var(--ease-out),
-      color var(--duration-fast) var(--ease-out);
+    opacity: 0.4;
+    transition: opacity var(--duration-fast) var(--ease-out);
+    line-height: 0;
   }
 
-  .dashboard-admin-link:hover {
-    border-color: var(--ember-dim);
-    color: var(--ember);
-  }
-
-  .dashboard-edit-toggle {
-    background: var(--event-horizon);
-    border: 1px solid var(--edge);
-    color: var(--dim-light);
-  }
-
-  .dashboard-edit-toggle:hover,
-  .dashboard-edit-toggle[aria-pressed='true'] {
-    border-color: var(--ember-dim);
+  .dashboard-edit-icon:hover {
+    opacity: 1;
     color: var(--ember);
   }
 
