@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { onDestroy } from 'svelte';
+
   function getNextPhotoIndex(current: number, total: number): number {
     if (total <= 1) return 0;
     return (current + 1) % total;
@@ -14,17 +16,15 @@
   let currentVariant = KEN_BURNS_VARIANTS[0];
 
   function advance() {
-    if (photoPaths.length === 0) return;
+    if (!photoPaths || photoPaths.length === 0) return;
     currentIndex = getNextPhotoIndex(currentIndex, photoPaths.length);
     variantIndex = (variantIndex + 1) % KEN_BURNS_VARIANTS.length;
     currentVariant = KEN_BURNS_VARIANTS[variantIndex];
   }
 
-  import { onDestroy } from 'svelte';
-
   // Start slideshow timer — recreate when cycleInterval or photoPaths change
   let timer: ReturnType<typeof setInterval> | undefined;
-  $: if (photoPaths.length > 1 && typeof window !== 'undefined') {
+  $: if (photoPaths && photoPaths.length > 1 && typeof window !== 'undefined') {
     if (timer) clearInterval(timer);
     timer = setInterval(advance, cycleInterval);
   }
@@ -33,7 +33,7 @@
     if (timer) clearInterval(timer);
   });
 
-  $: currentPhoto = photoPaths.length > 0 ? photoPaths[currentIndex] : null;
+  $: currentPhoto = photoPaths && photoPaths.length > 0 ? photoPaths[currentIndex] : null;
 </script>
 
 <div class="photo-slideshow">
