@@ -497,4 +497,75 @@
   .state-message--error {
     color: var(--nova);
   }
+
+  .section-description {
+    font-size: var(--text-sm);
+    color: var(--dim-light);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .section-description a {
+    color: var(--nebula);
+  }
+
+  .section-description code {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--starlight);
+    background: var(--glass-bg);
+    padding: 0.1em 0.4em;
+    border-radius: var(--radius-sm);
+  }
+
+  .marketplace-input {
+    background: var(--deep-space);
+    color: var(--starlight);
+    border: 1px solid var(--edge);
+    border-radius: var(--radius-sm);
+    padding: var(--space-1) var(--space-2);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+  }
+
+  .marketplace-input:disabled {
+    cursor: not-allowed;
+    color: var(--dim);
+  }
+
+  .control-hint {
+    font-size: var(--text-xs);
+    font-family: var(--font-mono);
+    color: var(--dim);
+  }
+
+  .save-button {
+    background: var(--glass-bg);
+    color: var(--starlight);
+    border: 1px solid var(--edge);
+    border-radius: var(--radius-sm);
+    padding: var(--space-2) var(--space-4);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  .save-button:hover:not(:disabled) {
+    background: var(--edge);
+  }
+
+  .save-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+
+  .error-message {
+    font-size: var(--text-sm);
+    font-family: var(--font-mono);
+    color: var(--nova);
+    padding: var(--space-2);
+    background: rgba(255, 59, 48, 0.1);
+    border-radius: var(--radius-sm);
+  }
 </style>
