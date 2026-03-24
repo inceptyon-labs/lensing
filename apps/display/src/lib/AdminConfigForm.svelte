@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { PluginAdminEntry, ConfigField } from '@lensing/types';
-  import { getIntegrationFields } from '@lensing/types';
+  import { getIntegrationFields, getWidgetFields } from '@lensing/types';
   import NewsFeedPresets from './NewsFeedPresets.svelte';
   import AiNewsCategoryPicker from './AiNewsCategoryPicker.svelte';
 
@@ -11,7 +11,7 @@
   $: schema = plugin.manifest.config_schema;
   // Show integration-category fields + uncategorized fields (backward compatibility)
   $: fields = schema
-    ? [...getIntegrationFields(schema), ...schema.fields.filter((f) => !f.category)]
+    ? [...getIntegrationFields(schema), ...getWidgetFields(schema), ...schema.fields.filter((f) => !f.category)]
     : [];
 
   // Build local copy of config values — only re-init when the plugin identity changes
