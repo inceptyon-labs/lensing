@@ -61,8 +61,23 @@
     overflow: hidden;
     background: var(--void, hsl(240, 8%, 4%));
     border-radius: var(--radius-xl, 16px);
+    border: 1px solid var(--edge-soft, hsla(220, 10%, 50%, 0.07));
+    box-shadow:
+      inset 0 0 0 1px hsla(0, 0%, 100%, 0.04),
+      0 2px 16px hsla(0, 0%, 0%, 0.4);
     width: 100%;
     height: 100%;
+  }
+
+  /* Soft vignette overlay to feather the edges */
+  .photo-slideshow::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 0 40px 8px var(--void, hsl(240, 8%, 4%));
+    pointer-events: none;
+    z-index: 1;
   }
 
   .photo-slideshow__slide {
