@@ -169,8 +169,14 @@ function parseVEvent(veventStr: string, calendarName: string): CalendarEvent {
   return event;
 }
 
+/** Unfold RFC 5545 line folding (continuation lines start with a space or tab). */
+function unfoldICalLines(text: string): string {
+  return text.replace(/\r?\n[ \t]/g, '');
+}
+
 function parseCalendarData(icalData: string, calendarName: string): CalendarEvent[] {
-  const veventBlocks = icalData.match(/BEGIN:VEVENT[\s\S]*?END:VEVENT/g) ?? [];
+  const unfolded = unfoldICalLines(icalData);
+  const veventBlocks = unfolded.match(/BEGIN:VEVENT[\s\S]*?END:VEVENT/g) ?? [];
   return veventBlocks.map((block) => parseVEvent(block, calendarName));
 }
 
