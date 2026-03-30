@@ -9,9 +9,6 @@ git pull
 echo "Installing dependencies..."
 pnpm install --frozen-lockfile
 
-echo "Building packages..."
-pnpm build
-
 echo "Restarting services..."
 sudo systemctl restart lensing-host
 sudo systemctl restart lensing-kiosk
