@@ -72,6 +72,12 @@ export interface RestServerHandlers {
     setPluginSecret?: (id: string, key: string, value: string) => Promise<void>;
     deletePluginSecret?: (id: string, key: string) => Promise<void>;
     deletePlugin?: (id: string) => Promise<void>;
+    getDataBusSnapshot?: () => Promise<Array<{
+        channel: string;
+        plugin_id: string;
+        data: unknown;
+        timestamp: string;
+    }>>;
 }
 /** Configuration options for the REST server */
 export interface RestServerOptions {

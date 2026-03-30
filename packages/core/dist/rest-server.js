@@ -131,6 +131,14 @@ export function createRestServer(handlers, options = {}) {
     addRoute('/health', 'GET', async (_req, res) => {
         writeJson(res, 200, { status: 'ok', uptime: (Date.now() - startedAt) / 1000 });
     });
+    addRoute('/data-bus', 'GET', async (_req, res) => {
+        if (!handlers.getDataBusSnapshot) {
+            writeJson(res, 404, { error: 'Not available' });
+            return;
+        }
+        const snapshot = await handlers.getDataBusSnapshot();
+        writeJson(res, 200, snapshot);
+    });
     addRoute('/settings', 'GET', async (_req, res) => {
         const settings = await handlers.getSettings();
         writeJson(res, 200, settings);

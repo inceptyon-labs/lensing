@@ -148,6 +148,15 @@ export function createHostService(options = {}) {
                     }
                 },
                 getLayout: async () => _db.getLayout('default') ?? [],
+                getDataBusSnapshot: async () => {
+                    const messages = [];
+                    for (const channel of dataBus.getChannels()) {
+                        const latest = dataBus.getLatest(channel);
+                        if (latest)
+                            messages.push(latest);
+                    }
+                    return messages;
+                },
                 putLayout: async (layout) => {
                     _db.setLayout('default', layout);
                 },

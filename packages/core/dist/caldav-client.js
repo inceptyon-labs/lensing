@@ -45,7 +45,15 @@ function extractCalendarData(xml) {
 function getICalProp(vevent, prop) {
     const re = new RegExp(`^${prop}(?:;[^:]*)?:(.*)$`, 'm');
     const m = vevent.match(re);
-    return m ? m[1].trim() : undefined;
+    return m ? unescapeICalText(m[1].trim()) : undefined;
+}
+/** Unescape RFC 5545 text escape sequences */
+function unescapeICalText(text) {
+    return text
+        .replace(/\\n/gi, '\n')
+        .replace(/\\,/g, ',')
+        .replace(/\\;/g, ';')
+        .replace(/\\\\/g, '\\');
 }
 function parseICalDate(val, params) {
     const isDate = params.includes('VALUE=DATE');
@@ -85,8 +93,13 @@ function parseVEvent(veventStr, calendarName) {
         event.allDay = true;
     return event;
 }
+/** Unfold RFC 5545 line folding (continuation lines start with a space or tab). */
+function unfoldICalLines(text) {
+    return text.replace(/\r?\n[ \t]/g, '');
+}
 function parseCalendarData(icalData, calendarName) {
-    const veventBlocks = icalData.match(/BEGIN:VEVENT[\s\S]*?END:VEVENT/g) ?? [];
+    const unfolded = unfoldICalLines(icalData);
+    const veventBlocks = unfolded.match(/BEGIN:VEVENT[\s\S]*?END:VEVENT/g) ?? [];
     return veventBlocks.map((block) => parseVEvent(block, calendarName));
 }
 function sleep(ms) {

@@ -579,10 +579,16 @@
 <style>
   .dashboard-grid {
     width: 100vw;
-    height: 100vh;
-    overflow: hidden;
+    min-height: 100vh;
+    overflow: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
     position: relative;
     background-color: var(--void);
+  }
+
+  .dashboard-grid::-webkit-scrollbar {
+    display: none; /* Chrome / Safari */
   }
 
   /* Allow scrolling in edit mode but hide the scrollbar */
