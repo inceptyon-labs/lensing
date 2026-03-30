@@ -110,7 +110,16 @@ function extractCalendarData(xml: string): string[] {
 function getICalProp(vevent: string, prop: string): string | undefined {
   const re = new RegExp(`^${prop}(?:;[^:]*)?:(.*)$`, 'm');
   const m = vevent.match(re);
-  return m ? m[1].trim() : undefined;
+  return m ? unescapeICalText(m[1].trim()) : undefined;
+}
+
+/** Unescape RFC 5545 text escape sequences */
+function unescapeICalText(text: string): string {
+  return text
+    .replace(/\\n/gi, '\n')
+    .replace(/\\,/g, ',')
+    .replace(/\\;/g, ';')
+    .replace(/\\\\/g, '\\');
 }
 
 interface ICalDateResult {

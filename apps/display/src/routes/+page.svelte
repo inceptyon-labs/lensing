@@ -38,10 +38,29 @@
     void saveLayout(widgets).then(() => loadPlugins());
   }
 
+  /**
+   * Fetch current data bus state via REST so widgets have data immediately,
+   * even if the WebSocket connection or cached-data broadcast was missed.
+   */
+  async function loadDataBusSnapshot() {
+    try {
+      // eslint-disable-next-line no-undef
+      const res = await fetch('/data-bus');
+      if (!res.ok) return;
+      const messages = (await res.json()) as DataBusMessage[];
+      for (const msg of messages) {
+        handlePluginData(msg);
+      }
+    } catch {
+      // non-critical — WebSocket will deliver updates
+    }
+  }
+
   // Initialize on mount: load plugins and connect WebSocket for live updates.
   // Uses $effect instead of onMount due to Svelte 5 hydration lifecycle issue.
   $effect(() => {
     void loadPlugins();
+    void loadDataBusSnapshot();
 
     // eslint-disable-next-line no-undef
     const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';

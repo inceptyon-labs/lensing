@@ -102,6 +102,10 @@ export interface RestServerHandlers {
   deletePluginSecret?: (id: string, key: string) => Promise<void>;
   // Plugin deletion (optional — omit to disable plugin delete endpoint)
   deletePlugin?: (id: string) => Promise<void>;
+  // Data bus snapshot (optional — returns cached data bus state for initial page load)
+  getDataBusSnapshot?: () => Promise<
+    Array<{ channel: string; plugin_id: string; data: unknown; timestamp: string }>
+  >;
 }
 
 /** Configuration options for the REST server */
@@ -302,6 +306,15 @@ export function createRestServer(
   // Register routes
   addRoute('/health', 'GET', async (_req, res) => {
     writeJson(res, 200, { status: 'ok', uptime: (Date.now() - startedAt) / 1000 });
+  });
+
+  addRoute('/data-bus', 'GET', async (_req, res) => {
+    if (!handlers.getDataBusSnapshot) {
+      writeJson(res, 404, { error: 'Not available' });
+      return;
+    }
+    const snapshot = await handlers.getDataBusSnapshot();
+    writeJson(res, 200, snapshot);
   });
 
   addRoute('/settings', 'GET', async (_req, res) => {
