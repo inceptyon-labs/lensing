@@ -1,3 +1,9 @@
+@AGENTS.md
+
+---
+
+# Claude-specific additions
+
 ## PASIV
 
 ### Session Start
