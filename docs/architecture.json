@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Lensing Runtime Overview",
+    "output": ".archify/architecture-lensing-overview-20261003-201055/lensing-overview.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "git@github.com:inceptyon-labs/lensing.git",
+      "link_mode": "local-only",
+      "revision": "ce1246283e6e7bb3381e7b2a75d0e9a26e84d941"
+    }
+  },
+  "components": [
+    { "id": "apis", "type": "external", "label": "Data APIs", "sublabel": "weather, coins, scores", "pos": [40, 200], "size": [140, 62],
+      "sources": [
+        { "path": "packages/core/src/weather-server.ts", "line": 171, "label": "Open-Meteo" },
+        { "path": "packages/core/src/crypto-server.ts", "line": 103, "label": "CoinGecko" },
+        { "path": "packages/core/src/sports-server.ts", "line": 50, "label": "ESPN" }
+      ] },
+    { "id": "modules", "type": "backend", "label": "Built-in Modules", "sublabel": "timed pollers", "pos": [280, 200], "size": [140, 62], "tag": "host",
+      "sources": [
+        { "path": "packages/core/src/module-boot.ts", "line": 49, "end_line": 62, "label": "refresh intervals" },
+        { "path": "packages/core/src/module-boot.ts", "line": 111, "end_line": 125, "label": "startPolling" }
+      ] },
+    { "id": "databus", "type": "messagebus", "label": "Data Bus", "sublabel": "latest per channel", "pos": [520, 200], "size": [140, 62], "tag": "host",
+      "sources": [
+        { "path": "packages/core/src/data-bus.ts", "line": 30, "end_line": 34, "label": "publish" },
+        { "path": "packages/core/src/host-service.ts", "line": 321, "end_line": 323, "label": "forward to WS" }
+      ] },
+    { "id": "ws", "type": "backend", "label": "WebSocket Server", "sublabel": "broadcast /ws", "pos": [760, 200], "size": [140, 62], "tag": "host",
+      "sources": [
+        { "path": "packages/core/src/ws-server.ts", "line": 63, "end_line": 85, "label": "optional bearer check" },
+        { "path": "packages/core/src/ws-server.ts", "line": 176, "label": "broadcast" }
+      ] },
+    { "id": "display", "type": "frontend", "label": "Display App", "sublabel": "SvelteKit in Chromium", "pos": [1010, 200], "size": [150, 62], "tag": "kiosk",
+      "sources": [
+        { "path": "apps/display/src/routes/+page.svelte", "line": 66, "end_line": 80, "label": "WS client" },
+        { "path": "apps/display/src/lib/IframeWidget.svelte", "line": 47, "label": "sandboxed widgets" },
+        { "path": "deploy/lensing-kiosk.service", "line": 12, "label": "kiosk launch" }
+      ] },
+    { "id": "connectors", "type": "backend", "label": "Plugin Connectors", "sublabel": "loader + runner", "pos": [520, 40], "size": [140, 62], "tag": "host",
+      "sources": [
+        { "path": "packages/core/src/plugin-loader.ts", "line": 117, "end_line": 130, "label": "plugin.json scan" },
+        { "path": "packages/core/src/connector-runner.ts", "line": 86, "end_line": 111, "label": "SSRF check, fetch, publish" }
+      ] },
+    { "id": "rest", "type": "backend", "label": "REST Server", "sublabel": "API + static app", "pos": [760, 360], "size": [140, 62], "tag": "host",
+      "sources": [
+        { "path": "packages/core/src/rest-server.ts", "line": 741, "end_line": 744, "label": "bearer auth" },
+        { "path": "packages/core/src/rest-server.ts", "line": 1371, "end_line": 1376, "label": "static serving" },
+        { "path": "packages/core/src/rest-server.ts", "line": 1425, "label": "listen" }
+      ] },
+    { "id": "db", "type": "database", "label": "SQLite", "sublabel": "settings, layouts", "pos": [520, 360], "size": [140, 62], "tag": "host",
+      "sources": [
+        { "path": "packages/core/src/database.ts", "line": 1, "label": "better-sqlite3" },
+        { "path": "packages/core/src/database.ts", "line": 17, "end_line": 60, "label": "schema" }
+      ] },
+    { "id": "secrets", "type": "security", "label": "Secret Store", "sublabel": "encrypted at rest", "pos": [280, 360], "size": [140, 62], "tag": "host",
+      "sources": [
+        { "path": "packages/core/src/secret-store.ts", "line": 43, "end_line": 76, "label": "encrypt then persist" }
+      ] },
+    { "id": "ai", "type": "external", "label": "AI Providers", "sublabel": "Anthropic, DeepSeek, Gemini", "pos": [750, 540], "size": [160, 62],
+      "sources": [
+        { "path": "packages/core/src/host-service.ts", "line": 86, "end_line": 107, "label": "keys from env" },
+        { "path": "packages/core/src/ai-assist-providers.ts", "line": 106, "label": "Anthropic call" }
+      ] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "Host process (Node, port 3100)", "wraps": ["modules", "databus", "ws", "connectors", "rest", "db", "secrets"], "pad": 22 },
+    { "kind": "security-group", "label": "Chromium kiosk", "wraps": ["display"], "pad": 16 }
+  ],
+  "connections": [
+    { "from": "modules", "to": "apis", "label": "poll HTTPS" },
+    { "from": "connectors", "to": "apis", "label": "fetch", "variant": "dashed" },
+    { "from": "modules", "to": "databus", "label": "publish", "variant": "emphasis" },
+    { "from": "connectors", "to": "databus", "label": "publish", "variant": "dashed" },
+    { "from": "databus", "to": "ws", "label": "onMessage", "variant": "emphasis" },
+    { "from": "ws", "to": "display", "label": "plugin_data", "variant": "emphasis" },
+    { "from": "display", "to": "rest", "label": "GET app, layout" },
+    { "from": "rest", "to": "db", "label": "settings, layout" },
+    { "from": "secrets", "to": "db", "label": "ciphertext", "variant": "security" },
+    { "from": "rest", "to": "ai", "label": "AI assist", "variant": "dashed" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Primary path", "items": ["Modules poll on timers and publish to the data bus", "The bus forwards every message to WebSocket clients", "The display renders plugin_data into widgets", "New clients get the latest message per channel"] },
+    { "dot": "rose", "title": "Trust boundaries", "items": ["REST and WS bearer auth applies only if authToken is set", "Connector fetches pass an SSRF blocklist", "Plugin secrets are encrypted in SQLite, declared per plugin", "Plugin widgets render in sandboxed iframes"] },
+    { "dot": "amber", "title": "Also in the host", "items": ["PIR sensor via gpiomon publishes presence to the bus", "Display control sends xset DPMS on presence", "Marketplace index fetched from raw.githubusercontent.com", "CalDAV, Home Assistant and RSS are configured per user"] }
+  ]
+}

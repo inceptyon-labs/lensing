@@ -67,3 +67,6 @@ Thumbs.db
 .cache/
 .eslintcache
 NOTES.md
+
+# Archify diagram output (local, regenerated on demand)
+.archify/
