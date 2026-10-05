@@ -50,12 +50,14 @@ export default tseslint.config(
 
   // Ignore patterns
   {
+    // Flat-config patterns are relative to this file, so generated dirs need **/ to match in workspaces
     ignores: [
-      'node_modules/',
-      'dist/',
-      '.svelte-kit/',
-      'build/',
-      '.turbo/',
+      '**/node_modules/',
+      '**/dist/',
+      '**/.svelte-kit/',
+      '**/build/',
+      '**/.turbo/',
+      '**/*.timestamp-*.mjs',
       '*.config.js',
       '*.config.ts',
       'pnpm-lock.yaml',
