@@ -24,7 +24,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['src/__tests__/setup.ts'],
   },
-  resolve: {
-    conditions: process.env.VITEST ? ['browser'] : [],
-  },
+  // Only override under vitest: an empty list replaces Vite's default client conditions,
+  // which made production bundles import Svelte's server lifecycle functions
+  ...(process.env.VITEST ? { resolve: { conditions: ['browser'] } } : {}),
 });

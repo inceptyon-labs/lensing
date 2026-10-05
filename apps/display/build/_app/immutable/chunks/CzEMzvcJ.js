@@ -1,1 +1,0 @@
-import"./jXY9Blq1.js";function o(t){return function(...e){var r=e[0];return r.stopPropagation(),t==null?void 0:t.apply(this,e)}}function a(t){return function(...e){var r=e[0];return r.preventDefault(),t==null?void 0:t.apply(this,e)}}export{a as p,o as s};
