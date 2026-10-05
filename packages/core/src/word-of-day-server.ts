@@ -90,6 +90,7 @@ function parseWotdFeed(xml: string): WordOfDayData | null {
     if (capturing) {
       if (/^(See the entry|Examples?:|Did you know\?)/i.test(line)) break;
       if (line.startsWith('"') || line.startsWith('\u201C')) break; // quote = example
+      if (line.startsWith('//')) break; // MW marks example sentences with "//"
       definition += (definition ? ' ' : '') + line;
     }
   }
