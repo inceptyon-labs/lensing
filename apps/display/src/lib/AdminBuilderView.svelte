@@ -260,7 +260,6 @@
       for (const h of connectorHeaders) {
         if (h.key.trim()) headersObj[h.key.trim()] = h.value;
       }
-      // eslint-disable-next-line no-undef
       const res = await fetch('/api/admin/builder/test-connector', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -357,7 +356,6 @@
     saveError = null;
     secretWarning = null;
     try {
-      // eslint-disable-next-line no-undef
       const res = await fetch('/api/admin/builder/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -383,7 +381,6 @@
         const failures: string[] = [];
         for (const [key, value] of secretEntries) {
           try {
-            // eslint-disable-next-line no-undef
             const secretRes = await fetch(
               `/plugins/${encodeURIComponent(pluginId)}/secrets/${encodeURIComponent(key)}`,
               {

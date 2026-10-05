@@ -79,7 +79,6 @@
     abortController = new AbortController();
 
     try {
-      // eslint-disable-next-line no-undef
       const res = await fetch('/api/admin/builder/ai-assist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

@@ -24,7 +24,6 @@
     try {
       await onSave(secretValues);
       status = 'saved';
-      // eslint-disable-next-line no-undef
       setTimeout(() => {
         status = 'idle';
         onClose();
@@ -36,7 +35,6 @@
     }
   }
 
-  // eslint-disable-next-line no-undef
   function handleKeydown(event: KeyboardEvent) {
     if (event.key === 'Escape') onClose();
   }

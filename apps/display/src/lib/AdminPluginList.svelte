@@ -81,7 +81,6 @@
     marketplaceLoading = true;
     marketplaceLoadFailed = false;
     try {
-      // eslint-disable-next-line no-undef
       const res = await fetch('/marketplace');
       if (!res.ok) throw new Error(`Failed to load marketplace (${res.status})`);
       const data = (await res.json()) as MarketplaceListResponse;
@@ -95,7 +94,6 @@
   }
 
   async function handleMarketplaceInstall(plugin: MarketplacePlugin) {
-    // eslint-disable-next-line no-undef
     const res = await fetch(`/marketplace/${encodeURIComponent(plugin.id)}/install`, {
       method: 'POST',
     });
@@ -112,7 +110,6 @@
 
   async function handleToggleEnabled(id: string, enabled: boolean) {
     try {
-      // eslint-disable-next-line no-undef
       const res = await fetch(`/plugins/${encodeURIComponent(id)}/enabled`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -128,7 +125,6 @@
 
   async function refreshPlugins() {
     try {
-      // eslint-disable-next-line no-undef
       const res = await fetch('/plugins');
       if (!res.ok) throw new Error(`Failed to load plugins (${res.status})`);
       plugins = (await res.json()) as PluginAdminEntry[];
@@ -140,7 +136,6 @@
 
   async function handleConfigSave(id: string, config: Record<string, string | number | boolean>) {
     try {
-      // eslint-disable-next-line no-undef
       const res = await fetch(`/plugins/${encodeURIComponent(id)}/config`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -156,7 +151,6 @@
   }
 
   async function handleRestart(id: string) {
-    // eslint-disable-next-line no-undef
     const res = await fetch(`/modules/${encodeURIComponent(id)}/restart`, { method: 'POST' });
     if (!res.ok) {
       const body = (await res.json().catch(() => ({}))) as { error?: string };

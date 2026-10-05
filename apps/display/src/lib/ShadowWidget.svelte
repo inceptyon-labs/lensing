@@ -6,7 +6,6 @@
   export let css: string;
   export let data: Record<string, unknown> | null = null;
 
-  // eslint-disable-next-line no-undef
   let hostEl: HTMLDivElement;
   let lastKey: string | null = null;
 
@@ -19,7 +18,6 @@
     const key = content + '\u0000' + css;
     if (key !== lastKey) {
       lastKey = key;
-      // eslint-disable-next-line no-undef
       const style = document.createElement('style');
       style.textContent = css;
       const fragment = DOMPurify.sanitize(content, { RETURN_DOM_FRAGMENT: true });

@@ -15,7 +15,6 @@
 
     try {
       const buffer = await file.arrayBuffer();
-      // eslint-disable-next-line no-undef
       const res = await fetch('/plugins/install', {
         method: 'POST',
         headers: { 'Content-Type': 'application/zip' },
@@ -34,16 +33,13 @@
     }
   }
 
-  // eslint-disable-next-line no-undef
   function handleFileInput(e: Event) {
-    // eslint-disable-next-line no-undef
     const input = e.target as HTMLInputElement;
     const file = input.files?.[0];
     if (file) void uploadFile(file);
     input.value = '';
   }
 
-  // eslint-disable-next-line no-undef
   function handleDrop(e: DragEvent) {
     e.preventDefault();
     dragOver = false;
@@ -51,7 +47,6 @@
     if (file) void uploadFile(file);
   }
 
-  // eslint-disable-next-line no-undef
   function handleDragOver(e: DragEvent) {
     e.preventDefault();
     dragOver = true;

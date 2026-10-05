@@ -44,7 +44,6 @@
     try {
       await onRestart!(plugin.plugin_id);
       restartStatus = 'restarted';
-      // eslint-disable-next-line no-undef
       setTimeout(() => (restartStatus = 'idle'), 2000);
     } catch (err) {
       restartError = err instanceof Error ? err.message : 'Restart failed';

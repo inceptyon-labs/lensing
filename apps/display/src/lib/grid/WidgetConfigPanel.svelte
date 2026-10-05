@@ -51,7 +51,6 @@
     error = '';
     saved = false;
     try {
-      // eslint-disable-next-line no-undef
       const res = await fetch(`/plugins/${encodeURIComponent(plugin.plugin_id)}/config`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -63,7 +62,6 @@
       }
       // Restart built-in modules so config takes effect immediately
       if (plugin.builtin) {
-        // eslint-disable-next-line no-undef
         const restartRes = await fetch(`/modules/${encodeURIComponent(plugin.plugin_id)}/restart`, {
           method: 'POST',
         });
@@ -75,7 +73,6 @@
       saved = true;
       // Brief delay so user sees success message, then close.
       // Widget data arrives asynchronously via the data bus → WebSocket pipeline.
-      // eslint-disable-next-line no-undef
       setTimeout(() => {
         onsaved?.();
         onclose();
@@ -87,7 +84,6 @@
     }
   }
 
-  // eslint-disable-next-line no-undef
   function handleKeydown(event: KeyboardEvent) {
     if (event.key === 'Escape') onclose();
   }

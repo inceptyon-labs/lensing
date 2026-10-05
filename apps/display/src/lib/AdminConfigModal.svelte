@@ -17,7 +17,6 @@
     try {
       await onSave(config);
       restartStatus = 'restarted';
-      // eslint-disable-next-line no-undef
       setTimeout(() => {
         restartStatus = 'idle';
         onClose();
@@ -30,7 +29,6 @@
     }
   }
 
-  // eslint-disable-next-line no-undef
   function handleKeydown(event: KeyboardEvent) {
     if (event.key === 'Escape') onClose();
   }

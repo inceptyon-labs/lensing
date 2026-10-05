@@ -8,7 +8,6 @@
     value = '';
   }
 
-  // eslint-disable-next-line no-undef
   function handleKeydown(event: KeyboardEvent) {
     if (!$tokenPromptOpen) return;
     if (event.key === 'Escape') cancelToken();

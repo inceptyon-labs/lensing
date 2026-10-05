@@ -16,7 +16,6 @@
   let widgetPlugins = $derived(plugins.filter((p) => !systemIds.has(p.plugin_id)));
 
   async function loadPlugins() {
-    // eslint-disable-next-line no-undef
     const res = await fetch('/plugins');
     if (!res.ok) return;
     plugins = (await res.json()) as PluginAdminEntry[];
@@ -45,7 +44,6 @@
    */
   async function loadDataBusSnapshot() {
     try {
-      // eslint-disable-next-line no-undef
       const res = await fetch('/data-bus');
       if (!res.ok) return;
       const messages = (await res.json()) as DataBusMessage[];
@@ -63,10 +61,8 @@
     void loadPlugins();
     void loadDataBusSnapshot();
 
-    // eslint-disable-next-line no-undef
     const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
     const socket = createReconnectingSocket({
-      // eslint-disable-next-line no-undef
       url: `${wsProto}//${location.host}/ws`,
       // On every (re)open, refetch state so updates missed while disconnected are recovered
       onOpen: () => {

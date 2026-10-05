@@ -9,7 +9,6 @@
   export let rotateSeconds: number = 30;
 
   let pageIndex = 0;
-  // eslint-disable-next-line no-undef
   let timer: ReturnType<typeof setInterval> | undefined;
   let lastStoryKey = '';
 
@@ -35,11 +34,9 @@
   }
 
   function restartTimer(seconds: number, pages: number) {
-    // eslint-disable-next-line no-undef
     if (timer !== undefined) clearInterval(timer);
     timer = undefined;
     if (seconds > 0 && pages > 1) {
-      // eslint-disable-next-line no-undef
       timer = setInterval(advance, seconds * 1000);
     }
   }
@@ -60,7 +57,6 @@
   }
 
   onDestroy(() => {
-    // eslint-disable-next-line no-undef
     if (timer !== undefined) clearInterval(timer);
   });
 

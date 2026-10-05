@@ -5,9 +5,7 @@
   export let data: WordOfDayData | null = null;
 
   const MIN_SCALE = 0.7;
-  // eslint-disable-next-line no-undef
   let root: HTMLDivElement | undefined;
-  // eslint-disable-next-line no-undef
   let definitionEl: HTMLParagraphElement | undefined;
   let scale = 1;
   let clamp = 'none';
@@ -33,7 +31,6 @@
     }
     // Still too tall at the smallest size: end the definition with an ellipsis
     if (run === fitRun && definitionEl && overflowing()) {
-      // eslint-disable-next-line no-undef
       const lineHeight = parseFloat(getComputedStyle(definitionEl).lineHeight);
       clamp = String(Math.max(1, Math.floor(definitionEl.clientHeight / lineHeight)));
     }
@@ -43,7 +40,6 @@
 
   onMount(() => {
     if (!root || typeof ResizeObserver === 'undefined') return;
-    // eslint-disable-next-line no-undef
     const observer = new ResizeObserver(() => void fitText());
     observer.observe(root);
     return () => observer.disconnect();

@@ -9,11 +9,9 @@
   // Tick so ended events drop off and Today/Tomorrow labels roll over at midnight
   let now = new Date();
   onMount(() => {
-    // eslint-disable-next-line no-undef
     const timer = setInterval(() => {
       now = new Date();
     }, 60_000);
-    // eslint-disable-next-line no-undef
     return () => clearInterval(timer);
   });
 
