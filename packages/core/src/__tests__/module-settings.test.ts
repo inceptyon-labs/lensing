@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { readModuleConfig, writeModuleConfig } from '../module-settings';
+import {
+  readModuleConfig,
+  writeModuleConfig,
+  clearSecretsForChangedUrls,
+} from '../module-settings';
 import type { DatabaseInstance, ModuleSettingsSchema } from '@lensing/types';
 
 /** Minimal in-memory DB stub for settings */
@@ -130,5 +134,38 @@ describe('writeModuleConfig', () => {
     expect(result.values['apiKey']).toBe('abc');
     expect(result.values['lat']).toBe(51.5);
     expect(result.values['units']).toBe('metric');
+  });
+});
+
+describe('clearSecretsForChangedUrls', () => {
+  it('clears the token when the URL changes without a new token, keeps it otherwise', () => {
+    const db = createMockDb();
+    db.setSetting('home-assistant.url', 'http://ha.local:8123');
+    db.setSetting('home-assistant.token', 'tok');
+    db.setSetting('calendar.serverUrl', 'https://cal.example.com');
+    db.setSetting('calendar.password', 'pw');
+
+    // same URL, redacted placeholder: kept
+    clearSecretsForChangedUrls(db, {
+      'home-assistant.url': 'http://ha.local:8123',
+      'home-assistant.token': '••••••••',
+    });
+    expect(db.getSetting('home-assistant.token')).toBe('tok');
+
+    // changed URL, new token supplied: kept for the caller to write
+    clearSecretsForChangedUrls(db, {
+      'home-assistant.url': 'http://evil.example.com',
+      'home-assistant.token': 'new',
+    });
+    expect(db.getSetting('home-assistant.token')).toBe('tok');
+
+    // changed URL, token absent or redacted: cleared
+    clearSecretsForChangedUrls(db, { 'home-assistant.url': 'http://evil.example.com' });
+    expect(db.getSetting('home-assistant.token')).toBeUndefined();
+    clearSecretsForChangedUrls(db, {
+      'calendar.serverUrl': 'https://evil.example.com',
+      'calendar.password': '••••••••',
+    });
+    expect(db.getSetting('calendar.password')).toBeUndefined();
   });
 });

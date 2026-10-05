@@ -10,7 +10,8 @@ function request(
   method: string,
   path: string,
   body?: unknown,
-  token?: string
+  token?: string,
+  extraHeaders: Record<string, string> = {}
 ): Promise<{ status: number; headers: http.IncomingHttpHeaders; body: string }> {
   return new Promise((resolve, reject) => {
     const data = body !== undefined ? JSON.stringify(body) : undefined;
@@ -23,6 +24,7 @@ function request(
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...extraHeaders,
           ...(data ? { 'Content-Length': Buffer.byteLength(data) } : {}),
         },
       },
@@ -77,6 +79,7 @@ describe('RestServer auth integration', () => {
       server = createRestServer(createStubHandlers(), {
         port: 0,
         authToken: AUTH_TOKEN,
+        trustLoopback: false,
       });
       await server.ready();
       port = server.port;
@@ -90,6 +93,7 @@ describe('RestServer auth integration', () => {
       server = createRestServer(createStubHandlers(), {
         port: 0,
         authToken: AUTH_TOKEN,
+        trustLoopback: false,
       });
       await server.ready();
       port = server.port;
@@ -102,6 +106,7 @@ describe('RestServer auth integration', () => {
       server = createRestServer(createStubHandlers(), {
         port: 0,
         authToken: AUTH_TOKEN,
+        trustLoopback: false,
       });
       await server.ready();
       port = server.port;
@@ -114,6 +119,7 @@ describe('RestServer auth integration', () => {
       server = createRestServer(createStubHandlers(), {
         port: 0,
         authToken: AUTH_TOKEN,
+        trustLoopback: false,
       });
       await server.ready();
       port = server.port;
@@ -127,6 +133,7 @@ describe('RestServer auth integration', () => {
       server = createRestServer(createStubHandlers(), {
         port: 0,
         authToken: AUTH_TOKEN,
+        trustLoopback: false,
       });
       await server.ready();
       port = server.port;
@@ -139,6 +146,7 @@ describe('RestServer auth integration', () => {
       server = createRestServer(createStubHandlers(), {
         port: 0,
         authToken: AUTH_TOKEN,
+        trustLoopback: false,
       });
       await server.ready();
       port = server.port;
@@ -151,6 +159,7 @@ describe('RestServer auth integration', () => {
       server = createRestServer(createStubHandlers(), {
         port: 0,
         authToken: AUTH_TOKEN,
+        trustLoopback: false,
       });
       await server.ready();
       port = server.port;
@@ -164,6 +173,7 @@ describe('RestServer auth integration', () => {
       server = createRestServer(createStubHandlers(), {
         port: 0,
         authToken: AUTH_TOKEN,
+        trustLoopback: false,
       });
       await server.ready();
       port = server.port;
@@ -176,12 +186,83 @@ describe('RestServer auth integration', () => {
       server = createRestServer(createStubHandlers(), {
         port: 0,
         authToken: AUTH_TOKEN,
+        trustLoopback: false,
       });
       await server.ready();
       port = server.port;
 
       const res = await request(port, 'POST', '/ask', { question: 'hello' }, AUTH_TOKEN);
       expect(res.status).toBe(200);
+    });
+  });
+
+  describe('loopback, Host and Origin checks', () => {
+    it('should skip auth for loopback clients by default', async () => {
+      server = createRestServer(createStubHandlers(), { port: 0, authToken: AUTH_TOKEN });
+      await server.ready();
+
+      const res = await request(server.port, 'PUT', '/settings', { theme: 'light' });
+      expect(res.status).toBe(200);
+    });
+
+    it('should keep GET /data-bus public for non-loopback clients', async () => {
+      server = createRestServer(
+        { ...createStubHandlers(), getDataBusSnapshot: async () => [] },
+        { port: 0, authToken: AUTH_TOKEN, trustLoopback: false }
+      );
+      await server.ready();
+
+      const res = await request(server.port, 'GET', '/data-bus');
+      expect(res.status).toBe(200);
+    });
+
+    it('should reject a public Host header with 403 (DNS rebinding)', async () => {
+      server = createRestServer(createStubHandlers(), { port: 0 });
+      await server.ready();
+
+      const res = await request(server.port, 'GET', '/health', undefined, undefined, {
+        Host: 'evil.example.com',
+      });
+      expect(res.status).toBe(403);
+      expect(JSON.parse(res.body)).toEqual({ error: 'Host not allowed' });
+    });
+
+    it('should allow a public Host header listed in allowedHosts', async () => {
+      server = createRestServer(createStubHandlers(), {
+        port: 0,
+        allowedHosts: ['dash.example.com'],
+      });
+      await server.ready();
+
+      const res = await request(server.port, 'GET', '/health', undefined, undefined, {
+        Host: 'dash.example.com',
+      });
+      expect(res.status).toBe(200);
+    });
+
+    it('should reject a cross-origin write with 403', async () => {
+      server = createRestServer(createStubHandlers(), { port: 0 });
+      await server.ready();
+
+      const res = await request(server.port, 'PUT', '/settings', { a: 1 }, undefined, {
+        Origin: 'http://evil.example.com',
+      });
+      expect(res.status).toBe(403);
+    });
+
+    it('should allow a same-origin write and cross-origin GET', async () => {
+      server = createRestServer(createStubHandlers(), { port: 0 });
+      await server.ready();
+      const host = `127.0.0.1:${server.port}`;
+
+      const put = await request(server.port, 'PUT', '/settings', { a: 1 }, undefined, {
+        Origin: `http://${host}`,
+      });
+      expect(put.status).toBe(200);
+      const get = await request(server.port, 'GET', '/health', undefined, undefined, {
+        Origin: 'http://evil.example.com',
+      });
+      expect(get.status).toBe(200);
     });
   });
 

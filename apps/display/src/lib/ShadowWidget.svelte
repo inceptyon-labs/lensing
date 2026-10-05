@@ -1,18 +1,30 @@
 <script lang="ts">
+  import DOMPurify from 'dompurify';
   import { renderTemplate } from './template-engine';
 
   export let html: string;
   export let css: string;
   export let data: Record<string, unknown> | null = null;
 
+  // eslint-disable-next-line no-undef
   let hostEl: HTMLDivElement;
+  let lastKey: string | null = null;
 
   $: if (hostEl) {
     if (!hostEl.shadowRoot) {
       hostEl.attachShadow({ mode: 'open' });
     }
     const content = renderTemplate(html, data);
-    hostEl.shadowRoot!.innerHTML = '<' + 'style>' + css + '</' + 'style>' + content;
+    // Data bus messages re-run this often; skip the DOM write when nothing changed
+    const key = content + '\u0000' + css;
+    if (key !== lastKey) {
+      lastKey = key;
+      // eslint-disable-next-line no-undef
+      const style = document.createElement('style');
+      style.textContent = css;
+      const fragment = DOMPurify.sanitize(content, { RETURN_DOM_FRAGMENT: true });
+      hostEl.shadowRoot!.replaceChildren(style, fragment);
+    }
   }
 </script>
 

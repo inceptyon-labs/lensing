@@ -53,10 +53,14 @@ describe('WebSocket server auth', () => {
   /**
    * Helper to attempt WebSocket connection with optional Authorization header.
    */
-  async function attemptConnection(port: number, token?: string): Promise<WebSocket> {
+  async function attemptConnection(
+    port: number,
+    token?: string,
+    extraHeaders: Record<string, string> = {}
+  ): Promise<WebSocket> {
     return new Promise((resolve, reject) => {
       const url = `ws://127.0.0.1:${port}`;
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const headers = { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...extraHeaders };
       const ws = new WebSocket(url, { headers });
 
       const openHandler = () => {
@@ -128,6 +132,32 @@ describe('WebSocket server auth', () => {
       const ws = await attemptConnection(port);
       expect(ws.readyState).toBe(WebSocket.OPEN);
       ws.close();
+    });
+  });
+
+  describe('Host and Origin checks', () => {
+    it('should reject a cross-origin upgrade', async () => {
+      const { port } = await startServer();
+
+      await expect(
+        attemptConnection(port, undefined, { Origin: 'http://evil.example.com' })
+      ).rejects.toThrow();
+    });
+
+    it('should accept a same-origin upgrade', async () => {
+      const { port } = await startServer();
+
+      const ws = await attemptConnection(port, undefined, { Origin: `http://127.0.0.1:${port}` });
+      expect(ws.readyState).toBe(WebSocket.OPEN);
+      ws.close();
+    });
+
+    it('should reject an unknown public Host header', async () => {
+      const { port } = await startServer();
+
+      await expect(
+        attemptConnection(port, undefined, { Host: 'evil.example.com' })
+      ).rejects.toThrow();
     });
   });
 });

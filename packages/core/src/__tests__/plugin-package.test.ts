@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import AdmZip from 'adm-zip';
-import { packagePlugin, type PackageInput } from '../plugin-package';
+import { packagePlugin, isValidPluginId, type PackageInput } from '../plugin-package';
 
 /** Minimal valid input for packaging */
 function validInput(overrides: Partial<PackageInput> = {}): PackageInput {
@@ -201,5 +201,31 @@ describe('packagePlugin', () => {
     const manifest = JSON.parse(zip.getEntry('plugin.json')!.getData().toString('utf-8'));
 
     expect(manifest.permissions.max_refresh_ms).toBeUndefined();
+  });
+
+  describe('isValidPluginId', () => {
+    it('accepts slug ids and rejects path-like ids', () => {
+      for (const id of ['clock', 'myfinance', 'weather-pro', 'a_b-1', 'f']) {
+        expect(isValidPluginId(id)).toBe(true);
+      }
+      for (const id of [
+        '',
+        '.',
+        '..',
+        '../x',
+        'a/b',
+        'a\\b',
+        '-x',
+        'A b',
+        'x'.repeat(65),
+        5 as never,
+      ]) {
+        expect(isValidPluginId(id)).toBe(false);
+      }
+    });
+
+    it('packagePlugin rejects an invalid id', () => {
+      expect(() => packagePlugin(validInput({ id: '..' }))).toThrow(/invalid plugin id/i);
+    });
   });
 });

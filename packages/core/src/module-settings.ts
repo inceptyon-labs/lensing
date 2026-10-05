@@ -25,6 +25,31 @@ export function readModuleConfig(db: DatabaseInstance, schema: ModuleSettingsSch
   return { enabled, values };
 }
 
+/** Secret settings that are only valid for the URL they were saved with */
+const URL_BOUND_SECRETS: Array<{ urlKey: string; secretKey: string }> = [
+  { urlKey: 'home-assistant.url', secretKey: 'home-assistant.token' },
+  { urlKey: 'calendar.serverUrl', secretKey: 'calendar.password' },
+];
+
+const REDACTED_PLACEHOLDER = '••••••••';
+
+/**
+ * Call before saving flat settings (keys like "home-assistant.url"). If a URL changes and
+ * no new secret is supplied, the stored secret is deleted so it can't be sent to the new host.
+ */
+export function clearSecretsForChangedUrls(
+  db: DatabaseInstance,
+  incoming: Record<string, unknown>
+): void {
+  for (const { urlKey, secretKey } of URL_BOUND_SECRETS) {
+    if (!(urlKey in incoming)) continue;
+    if (String(incoming[urlKey]) === (db.getSetting(urlKey) ?? '')) continue;
+    const supplied = incoming[secretKey];
+    if (supplied !== undefined && String(supplied) !== REDACTED_PLACEHOLDER) continue;
+    db.deleteSetting(secretKey);
+  }
+}
+
 /** Write a module's config as flat DB settings keys */
 export function writeModuleConfig(
   db: DatabaseInstance,

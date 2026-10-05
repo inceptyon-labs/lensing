@@ -13,6 +13,7 @@ import { createAiAssist } from './ai-assist';
 import { createSecretStore } from './secret-store';
 import { createConnectorRunner } from './connector-runner';
 import { createPluginScheduler } from './plugin-scheduler';
+import { clearSecretsForChangedUrls } from './module-settings';
 import { validateSecretAccess } from './plugin-permissions';
 import type { SecretStore } from './secret-store';
 import type { ConnectorRunnerInstance } from './connector-runner';
@@ -65,6 +66,7 @@ export function createHostService(options: HostServiceOptions = {}): HostService
     gpioFactory,
     displayControl: enableDisplayControl,
     authToken,
+    allowedHosts,
     bindAddress,
   } = options;
 
@@ -192,7 +194,11 @@ export function createHostService(options: HostServiceOptions = {}): HostService
           getSettings: async () => {
             const all = _db!.getAllSettings();
             // Redact password-typed fields so plaintext secrets are never sent to the client
-            const redacted: Record<string, unknown> = { ...all };
+            const redacted: Record<string, unknown> = {};
+            for (const [key, value] of Object.entries(all)) {
+              // Internal keys (e.g. the secret store master key seed) never leave the host
+              if (!key.startsWith('secret_store.')) redacted[key] = value;
+            }
             for (const schema of MODULE_SCHEMAS) {
               for (const field of schema.fields) {
                 if (field.type === 'password') {
@@ -206,6 +212,7 @@ export function createHostService(options: HostServiceOptions = {}): HostService
             return redacted;
           },
           putSettings: async (settings) => {
+            clearSecretsForChangedUrls(_db!, settings);
             for (const [key, value] of Object.entries(settings)) {
               // Skip redacted placeholders so we never overwrite real secrets
               if (String(value) === '••••••••') continue;
@@ -303,6 +310,8 @@ export function createHostService(options: HostServiceOptions = {}): HostService
           port,
           staticDir,
           authToken,
+          allowedHosts,
+          warn: (msg) => log.info(msg),
           bindAddress,
           photoDir: () => _db!.getSetting('photo-slideshow.photoDirectory') ?? undefined,
         }
@@ -313,7 +322,13 @@ export function createHostService(options: HostServiceOptions = {}): HostService
       log.info('REST server ready', { port: _port });
 
       // 7. WebSocket server (attached to REST's HTTP server)
-      _ws = createWsServer({ server: _rest.server, authToken });
+      // Inbound WS messages are ping-only and broadcasts mirror the public GET /data-bus,
+      // so no token here; Host and Origin are still checked.
+      _ws = createWsServer({
+        server: _rest.server,
+        allowedHosts,
+        warn: (msg) => log.info(msg),
+      });
       await _ws.ready();
       log.info('WebSocket server ready');
 

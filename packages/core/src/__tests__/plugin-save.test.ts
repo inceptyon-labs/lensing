@@ -147,4 +147,14 @@ describe('savePluginFromBuilder', () => {
     expect(content.url).toBe('https://feeds.example.com/rss');
     expect(content.refreshInterval).toBe(600);
   });
+
+  it('rejects an id that would resolve outside the plugins dir without deleting anything', async () => {
+    const pluginsDir = path.join(tmpDir, 'plugins');
+    fs.mkdirSync(pluginsDir);
+    fs.writeFileSync(path.join(tmpDir, 'keep.txt'), 'x');
+    await expect(
+      savePluginFromBuilder(validInput({ id: '..' }), pluginsDir, { overwrite: true })
+    ).rejects.toThrow(/invalid plugin id/i);
+    expect(fs.existsSync(path.join(tmpDir, 'keep.txt'))).toBe(true);
+  });
 });

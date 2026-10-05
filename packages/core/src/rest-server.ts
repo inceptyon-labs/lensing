@@ -1,7 +1,14 @@
 import http from 'node:http';
 import fs from 'node:fs';
 import nodePath from 'node:path';
-import { extractBearerToken, isProtectedRoute } from './auth-middleware';
+import {
+  extractBearerToken,
+  isProtectedRoute,
+  isLoopbackAddress,
+  isOriginAllowed,
+  createHostCheck,
+} from './auth-middleware';
+import { isValidPluginId } from './plugin-package';
 import type {
   ZoneConfig,
   ConversationEntry,
@@ -51,9 +58,7 @@ export interface RestServerHandlers {
   getPlugins?: () => Promise<PluginAdminEntry[]>;
   getPlugin?: (id: string) => Promise<PluginAdminEntry | undefined>;
   getPluginTemplate?: (id: string) => Promise<{ html: string; css: string } | undefined>;
-  getPluginSource?: (
-    id: string
-  ) => Promise<
+  getPluginSource?: (id: string) => Promise<
     | {
         html: string;
         css: string;
@@ -112,7 +117,7 @@ export interface RestServerHandlers {
 export interface RestServerOptions {
   /** Port to listen on. Defaults to 0 (OS-assigned) */
   port?: number;
-  /** Allowed CORS origins. Defaults to ['*'] (wildcard) */
+  /** Allowed CORS origins. When omitted, no Access-Control-Allow-Origin header is sent (same-origin only) */
   corsOrigins?: string[];
   /** Structured log callback. Receives one entry per request */
   logger?: (entry: LogEntry) => void;
@@ -122,6 +127,12 @@ export interface RestServerOptions {
   staticDir?: string;
   /** Bearer token required for protected routes. If omitted, auth is disabled. */
   authToken?: string;
+  /** Skip the token check for requests from loopback addresses. Defaults to true */
+  trustLoopback?: boolean;
+  /** Extra hostnames accepted in the Host header (beyond IPs, localhost, LAN-style names) */
+  allowedHosts?: string[];
+  /** Receives one-time warnings, e.g. a rejected Host header */
+  warn?: (message: string) => void;
   /** Network address to bind to. Defaults to '127.0.0.1' */
   bindAddress?: string;
 }
@@ -277,18 +288,27 @@ export function createRestServer(
     photoDir: photoDirOption,
     staticDir,
     authToken,
+    trustLoopback = true,
+    allowedHosts,
+    warn,
     bindAddress = '127.0.0.1',
   } = options;
+  const isHostOk = createHostCheck(allowedHosts, warn);
+
+  // AI assist spends API credit: 10 requests per rolling minute for the whole server
+  const AI_ASSIST_LIMIT = 10;
+  const AI_ASSIST_WINDOW_MS = 60_000;
+  let aiAssistCalls: number[] = [];
   const resolvePhotoDir = (): string | undefined =>
     typeof photoDirOption === 'function' ? photoDirOption() : photoDirOption;
   const startedAt = Date.now();
   let boundPort = 0;
   let closed = false;
 
-  const corsOrigin = corsOrigins && corsOrigins.length > 0 ? corsOrigins[0] : '*';
-
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': corsOrigin,
+  const corsHeaders: Record<string, string> = {
+    ...(corsOrigins && corsOrigins.length > 0
+      ? { 'Access-Control-Allow-Origin': corsOrigins[0]! }
+      : {}),
     'Access-Control-Allow-Methods': 'GET, PUT, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   };
@@ -627,6 +647,13 @@ export function createRestServer(
       writeJson(res, 404, { error: 'Not Found' });
       return;
     }
+    const now = Date.now();
+    aiAssistCalls = aiAssistCalls.filter((t) => now - t < AI_ASSIST_WINDOW_MS);
+    if (aiAssistCalls.length >= AI_ASSIST_LIMIT) {
+      writeJson(res, 429, { error: 'Rate limited' });
+      return;
+    }
+    aiAssistCalls.push(now);
     let input: import('@lensing/types').AiAssistRequest;
     try {
       input = JSON.parse(body) as import('@lensing/types').AiAssistRequest;
@@ -685,9 +712,7 @@ export function createRestServer(
       return;
     }
     try {
-      const models = await handlers.listAiModels(
-        provider as import('@lensing/types').AiProviderId
-      );
+      const models = await handlers.listAiModels(provider as import('@lensing/types').AiProviderId);
       writeJson(res, 200, { models });
     } catch {
       writeJson(res, 502, { error: 'Failed to list models' });
@@ -720,6 +745,21 @@ export function createRestServer(
     const path = req.url ?? '/';
     const start = Date.now();
 
+    const forbid = (error: string): void => {
+      writeJson(res, 403, { error });
+      try {
+        logger?.({ method, path, status: 403, duration_ms: Date.now() - start });
+      } catch {
+        // Ignore logger errors
+      }
+    };
+
+    // DNS rebinding defense: only accept expected Host headers
+    if (!isHostOk(req.headers.host)) {
+      forbid('Host not allowed');
+      return;
+    }
+
     // Apply CORS headers to all responses
     for (const [key, value] of Object.entries(corsHeaders)) {
       res.setHeader(key, value);
@@ -737,8 +777,22 @@ export function createRestServer(
       return;
     }
 
-    // Auth check for protected routes
-    if (authToken && isProtectedRoute(path.split('?')[0], method)) {
+    // CSRF defense: state-changing requests from a foreign origin are refused
+    if (
+      method !== 'GET' &&
+      method !== 'HEAD' &&
+      !isOriginAllowed(req.headers.origin, req.headers.host)
+    ) {
+      forbid('Origin not allowed');
+      return;
+    }
+
+    // Auth check for protected routes (loopback clients, e.g. the kiosk, are trusted)
+    if (
+      authToken &&
+      !(trustLoopback && isLoopbackAddress(req.socket.remoteAddress)) &&
+      isProtectedRoute(path.split('?')[0], method)
+    ) {
       const token = extractBearerToken(req.headers.authorization);
       if (token !== authToken) {
         writeJson(res, 401, { error: 'Unauthorized' });
@@ -846,6 +900,10 @@ export function createRestServer(
         if (pluginMatch) {
           const pluginId = decodeURIComponent(pluginMatch[1]!);
           const fullAction = pluginMatch[2];
+          if (!isValidPluginId(pluginId)) {
+            writeJson(res, 400, { error: 'Invalid plugin ID' });
+            return;
+          }
 
           // Parse action and subAction (e.g., "secrets/KEY" → action="secrets", subAction="KEY")
           let action: string | undefined;
@@ -1198,19 +1256,21 @@ export function createRestServer(
             writeJson(res, 404, { error: 'Not Found' });
             return;
           }
-          const filename = decodeURIComponent(cleanPath.slice('/photos/'.length));
-          const resolved = nodePath.resolve(photoDir, filename);
-          if (!resolved.startsWith(nodePath.resolve(photoDir))) {
+          let filename: string;
+          try {
+            filename = decodeURIComponent(cleanPath.slice('/photos/'.length));
+          } catch {
+            writeJson(res, 400, { error: 'Invalid path' });
+            return;
+          }
+          const root = nodePath.resolve(photoDir);
+          const resolved = nodePath.resolve(root, filename);
+          const rel = nodePath.relative(root, resolved);
+          if (rel.startsWith('..') || nodePath.isAbsolute(rel)) {
             res.writeHead(403);
             res.end();
             return;
           }
-          if (!fs.existsSync(resolved)) {
-            res.writeHead(404);
-            res.end();
-            return;
-          }
-          const ext = nodePath.extname(resolved).toLowerCase();
           const mimeTypes: Record<string, string> = {
             '.jpg': 'image/jpeg',
             '.jpeg': 'image/jpeg',
@@ -1218,7 +1278,12 @@ export function createRestServer(
             '.webp': 'image/webp',
             '.gif': 'image/gif',
           };
-          const contentType = mimeTypes[ext] ?? 'application/octet-stream';
+          const contentType = mimeTypes[nodePath.extname(resolved).toLowerCase()];
+          if (!contentType || !fs.existsSync(resolved)) {
+            res.writeHead(404);
+            res.end();
+            return;
+          }
           const data = fs.readFileSync(resolved);
           res.writeHead(200, { 'Content-Type': contentType, 'Content-Length': data.length });
           res.end(data);
@@ -1287,6 +1352,7 @@ export function createRestServer(
           let pluginId: string;
           try {
             pluginId = decodeURIComponent(marketplaceInstallMatch[1]!);
+            if (!isValidPluginId(pluginId)) throw new Error('Invalid plugin ID');
           } catch {
             writeJson(res, 400, { error: 'Invalid plugin ID in URL' });
             try {
@@ -1333,6 +1399,7 @@ export function createRestServer(
           let pluginId: string;
           try {
             pluginId = decodeURIComponent(marketplaceUpdateMatch[1]!);
+            if (!isValidPluginId(pluginId)) throw new Error('Invalid plugin ID');
           } catch {
             writeJson(res, 400, { error: 'Invalid plugin ID in URL' });
             return;

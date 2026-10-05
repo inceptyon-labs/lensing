@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { escapeHtml } from './template-engine';
   import type { AiAssistResponse, AiAssistPluginContext, AiProviderId } from '@lensing/types';
 
   export let pluginContext: AiAssistPluginContext;
@@ -45,7 +46,11 @@
   }
 
   function highlightSecrets(text: string): string {
-    return text.replace(/\{\{(\w+)\}\}/g, '<span class="ai-assist__secret-hl">{{$1}}</span>');
+    // Escape model output first so only our own span markup reaches {@html}
+    return escapeHtml(text).replace(
+      /\{\{(\w+)\}\}/g,
+      '<span class="ai-assist__secret-hl">{{$1}}</span>'
+    );
   }
 
   function handleProviderChange(e: Event) {

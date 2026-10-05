@@ -10,8 +10,9 @@ import type {
   ConfigField,
 } from '@lensing/types';
 import { MODULE_SCHEMAS, MODULE_IDS, getIntegrationFields } from '@lensing/types';
-import { readModuleConfig } from './module-settings';
+import { readModuleConfig, clearSecretsForChangedUrls } from './module-settings';
 import { installPluginFromZip } from './plugin-install';
+import { isValidPluginId } from './plugin-package';
 import { savePluginFromBuilder, type BuilderSaveInput } from './plugin-save';
 import type { ConnectorRunnerInstance, ConnectorRunnerConfig } from './connector-runner';
 import type { SecretStore } from './secret-store';
@@ -201,6 +202,10 @@ export function createPluginAdminHandlers(options: PluginAdminHandlersOptions) {
 
     async updatePluginConfig(id: string, config: Record<string, unknown>): Promise<void> {
       if (isModuleId(id)) {
+        clearSecretsForChangedUrls(
+          db,
+          Object.fromEntries(Object.entries(config).map(([k, v]) => [`${id}.${k}`, v]))
+        );
         for (const [key, value] of Object.entries(config)) {
           // Skip redacted placeholders
           if (String(value) === REDACTED) continue;
@@ -374,6 +379,9 @@ export function createPluginAdminHandlers(options: PluginAdminHandlersOptions) {
       }
       if (isModuleId(id)) {
         throw new Error('Cannot delete built-in modules');
+      }
+      if (!isValidPluginId(id)) {
+        throw new Error(`Invalid plugin id '${id}'`);
       }
       const pluginDir = path.join(pluginsDir, id);
       if (!fs.existsSync(pluginDir)) {

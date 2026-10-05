@@ -111,4 +111,41 @@ describe('REST Server Photo Static Serving', () => {
     const res = await request(port, 'GET', '/photos/sunset.jpg');
     expect(res.status).toBe(404);
   });
+
+  it('should return 400 for a malformed percent-encoding', async () => {
+    server = createRestServer(createStubHandlers(), { port: 0, photoDir: tmpDir });
+    await server.ready();
+
+    const res = await request(server.port, 'GET', '/photos/%E0%A4%A');
+    expect(res.status).toBe(400);
+  });
+
+  it('should not serve sibling directories that share the photoDir prefix', async () => {
+    const sibling = `${tmpDir}-secret`;
+    fs.mkdirSync(sibling);
+    fs.writeFileSync(path.join(sibling, 'leak.jpg'), 'leak');
+    try {
+      server = createRestServer(createStubHandlers(), { port: 0, photoDir: tmpDir });
+      await server.ready();
+
+      const res = await request(
+        server.port,
+        'GET',
+        `/photos/..%2F${path.basename(sibling)}%2Fleak.jpg`
+      );
+      expect(res.status).toBe(403);
+    } finally {
+      fs.rmSync(sibling, { recursive: true, force: true });
+    }
+  });
+
+  it('should only serve image extensions', async () => {
+    fs.writeFileSync(path.join(tmpDir, '.env'), 'SECRET=1');
+    fs.writeFileSync(path.join(tmpDir, 'notes.txt'), 'hi');
+    server = createRestServer(createStubHandlers(), { port: 0, photoDir: tmpDir });
+    await server.ready();
+
+    expect((await request(server.port, 'GET', '/photos/.env')).status).toBe(404);
+    expect((await request(server.port, 'GET', '/photos/notes.txt')).status).toBe(404);
+  });
 });

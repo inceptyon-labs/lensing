@@ -157,6 +157,12 @@ pnpm --filter @lensing/ui build
 3. Launch Chromium in kiosk mode pointed at the display app
 4. Optional: configure as a systemd service for auto-start
 
+### Admin token
+
+Changes (saving settings, installing plugins, the builder) require a token unless the request comes from the Pi itself (loopback, so the kiosk needs nothing). The host reads `LENSING_ADMIN_TOKEN`, or generates one on first run and stores it in `data/admin-token` (mode 600). Enter it in the admin UI when opening it from another machine. Viewing the dashboard needs no token.
+
+Requests whose `Host` header is a public DNS name are refused; add one with `LENSING_ALLOWED_HOSTS=name1,name2`.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, plugin guidelines, and PR process.

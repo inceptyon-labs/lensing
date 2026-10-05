@@ -141,13 +141,13 @@ describe('RestServer', () => {
       expect(res.headers['access-control-allow-headers']).toContain('Content-Type');
     });
 
-    it('should use wildcard when no origins specified', async () => {
+    it('should send no Allow-Origin when no origins specified', async () => {
       await server.close();
       server = createRestServer(createStubHandlers(), { port: 0 });
       await server.ready();
       port = server.port;
       const res = await request(port, 'GET', '/health');
-      expect(res.headers['access-control-allow-origin']).toBe('*');
+      expect(res.headers['access-control-allow-origin']).toBeUndefined();
     });
   });
 

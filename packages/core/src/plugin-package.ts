@@ -3,6 +3,13 @@ import type { PluginManifest } from '@lensing/types';
 
 const MAX_ZIP_BYTES = 10 * 1024 * 1024; // 10MB
 
+const PLUGIN_ID_PATTERN = /^[a-z0-9][a-z0-9_-]{0,63}$/;
+
+/** Plugin ids become directory names and DB keys, so they must be plain slugs. */
+export function isValidPluginId(id: unknown): id is string {
+  return typeof id === 'string' && PLUGIN_ID_PATTERN.test(id);
+}
+
 export interface ConnectorInput {
   type: string;
   url: string;
@@ -39,6 +46,7 @@ function extractHostname(url: string): string {
 
 export function packagePlugin(input: PackageInput): PackageResult {
   if (!input.id) throw new Error('id is required');
+  if (!isValidPluginId(input.id)) throw new Error(`Invalid plugin id '${input.id}'`);
   if (!input.name) throw new Error('name is required');
   if (!input.version) throw new Error('version is required');
 

@@ -2,7 +2,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 import type { WsMessage } from '@lensing/types';
 import type { IncomingMessage } from 'node:http';
 import type { Server as HttpServer } from 'node:http';
-import { extractBearerToken } from './auth-middleware';
+import { extractBearerToken, isOriginAllowed, createHostCheck } from './auth-middleware';
 
 /** Options for creating the WebSocket server */
 export interface WsServerOptions {
@@ -14,6 +14,10 @@ export interface WsServerOptions {
   heartbeatInterval?: number;
   /** Bearer token required for WebSocket connections. If omitted, auth is disabled. */
   authToken?: string;
+  /** Extra hostnames accepted in the Host header (beyond IPs, localhost, LAN-style names) */
+  allowedHosts?: string[];
+  /** Receives one-time warnings, e.g. a rejected Host header */
+  warn?: (message: string) => void;
 }
 
 /** Event types emitted by WsServerInstance */
@@ -43,7 +47,8 @@ export interface WsServerInstance {
  * Supports layout changes, plugin data updates, and scene changes.
  */
 export function createWsServer(options: WsServerOptions = {}): WsServerInstance {
-  const { port = 0, server, heartbeatInterval = 30000, authToken } = options;
+  const { port = 0, server, heartbeatInterval = 30000, authToken, allowedHosts, warn } = options;
+  const isHostOk = createHostCheck(allowedHosts, warn);
 
   const clients = new Set<WebSocket>();
   const listeners: Record<string, Array<(...args: unknown[]) => void>> = {};
@@ -60,26 +65,34 @@ export function createWsServer(options: WsServerOptions = {}): WsServerInstance 
     onError = reject;
   });
 
-  // Verify client for auth (if authToken is configured)
-  const verifyClient = authToken
-    ? (
-        info: {
-          origin: string;
-          secure: boolean;
-          req: IncomingMessage;
-        },
-        callback: (res: boolean, code?: number, message?: string) => void
-      ) => {
-        const authHeader = info.req.headers.authorization;
-        const headerStr = Array.isArray(authHeader) ? authHeader[0] : authHeader;
-        const token = extractBearerToken(headerStr);
-        if (token !== authToken) {
-          callback(false, 401, 'Unauthorized');
-          return;
-        }
-        callback(true);
+  // Verify every upgrade: Host (DNS rebinding), Origin (cross-site WebSocket hijacking), token if configured
+  const verifyClient = (
+    info: {
+      origin: string;
+      secure: boolean;
+      req: IncomingMessage;
+    },
+    callback: (res: boolean, code?: number, message?: string) => void
+  ) => {
+    const { host, origin } = info.req.headers;
+    if (!isHostOk(host)) {
+      callback(false, 403, 'Host not allowed');
+      return;
+    }
+    if (!isOriginAllowed(origin, host)) {
+      callback(false, 403, 'Origin not allowed');
+      return;
+    }
+    if (authToken) {
+      const authHeader = info.req.headers.authorization;
+      const headerStr = Array.isArray(authHeader) ? authHeader[0] : authHeader;
+      if (extractBearerToken(headerStr) !== authToken) {
+        callback(false, 401, 'Unauthorized');
+        return;
       }
-    : undefined;
+    }
+    callback(true);
+  };
 
   if (server) {
     wss = new WebSocketServer({ server, verifyClient });
