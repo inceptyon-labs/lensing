@@ -190,6 +190,7 @@ export function createAllergiesServer(options: AllergiesServerOptions): Allergie
       return;
     }
 
+    const startedAt = Date.now();
     let response: Awaited<ReturnType<FetchFn>>;
     try {
       response = await fetchFn(buildUrl(), {
@@ -230,7 +231,7 @@ export function createAllergiesServer(options: AllergiesServerOptions): Allergie
     }
 
     lastData = copyData(data);
-    lastFetchedAt = Date.now();
+    lastFetchedAt = startedAt;
 
     (dataBus as DataBusInstance).publish(DATA_BUS_CHANNEL, PLUGIN_ID, data);
     checkAndEmitAlert(data);

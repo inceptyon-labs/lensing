@@ -10,7 +10,6 @@ import { DEFAULT_HA_MAX_STALE_MS, DEFAULT_HA_DOMAINS } from '@lensing/types';
 
 const PLUGIN_ID = 'home-assistant-server';
 const DATA_BUS_DEVICES_CHANNEL = 'home.devices';
-const DATA_BUS_SENSORS_CHANNEL = 'home.sensors';
 
 const SENSOR_DOMAINS = new Set(['sensor', 'binary_sensor']);
 
@@ -118,7 +117,6 @@ export function createHomeAssistantServer(
 
   function publishAndNotify(data: HomeAssistantData): void {
     (dataBus as DataBusInstance).publish(DATA_BUS_DEVICES_CHANNEL, PLUGIN_ID, data);
-    (dataBus as DataBusInstance).publish(DATA_BUS_SENSORS_CHANNEL, PLUGIN_ID, data);
     notifyUpdate(data);
   }
 
@@ -229,6 +227,7 @@ export function createHomeAssistantServer(
     }
 
     refreshing = true;
+    const startedAt = Date.now();
 
     try {
       let response: Awaited<ReturnType<FetchWithOptions>>;
@@ -285,7 +284,7 @@ export function createHomeAssistantServer(
         sensors: sensors.map(copyEntity),
         lastUpdated: now,
       };
-      lastFetchedAt = now;
+      lastFetchedAt = startedAt;
 
       const publishData: HomeAssistantData = {
         devices: devices.map(copyEntity),
@@ -294,7 +293,6 @@ export function createHomeAssistantServer(
       };
 
       (dataBus as DataBusInstance).publish(DATA_BUS_DEVICES_CHANNEL, PLUGIN_ID, publishData);
-      (dataBus as DataBusInstance).publish(DATA_BUS_SENSORS_CHANNEL, PLUGIN_ID, publishData);
 
       notifyUpdate(publishData);
     } finally {

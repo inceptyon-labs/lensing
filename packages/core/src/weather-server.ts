@@ -379,6 +379,7 @@ export function createWeatherServer(options: WeatherServerOptions): WeatherServe
       return;
     }
 
+    const startedAt = Date.now();
     let response: Awaited<ReturnType<FetchFn>>;
     try {
       response = await fetchFn(buildUrl());
@@ -408,7 +409,7 @@ export function createWeatherServer(options: WeatherServerOptions): WeatherServe
     if (!data) return;
 
     lastData = data;
-    lastFetchedAt = Date.now();
+    lastFetchedAt = startedAt;
     notifyUpdate(data);
     if (dataBus) {
       dataBus.publish('weather.current', 'weather-server', data);

@@ -350,6 +350,28 @@ describe('News Server', () => {
     server.close();
   });
 
+  it('should measure staleness from fetch start, not fetch end', async () => {
+    const fetchFn = vi.fn().mockImplementation(async () => {
+      vi.advanceTimersByTime(5_000); // slow fetch
+      return { ok: true, text: () => Promise.resolve(SAMPLE_RSS) };
+    });
+    const server = createNewsServer({
+      feedUrls: ['https://example.com/feed.xml'],
+      maxStale_ms: 60_000,
+      dataBus,
+      notifications,
+      fetchFn,
+    });
+
+    await server.refresh();
+    vi.advanceTimersByTime(55_000); // exactly maxStale_ms after the first fetch started
+    await server.refresh();
+
+    expect(fetchFn).toHaveBeenCalledTimes(2);
+
+    server.close();
+  });
+
   // ── Concurrency ──────────────────────────────────────────────────────────
 
   it('should prevent concurrent refreshes', async () => {

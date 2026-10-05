@@ -6,6 +6,7 @@ import type {
   GameStatus,
   DataBusInstance,
   FetchFn,
+  FetchInit,
 } from '@lensing/types';
 import { DEFAULT_SPORTS_MAX_STALE_MS } from '@lensing/types';
 import type { NotificationQueueInstance } from './notification-queue.js';
@@ -182,43 +183,53 @@ export function createSportsServer(options: SportsServerOptions): SportsServerIn
     const url = buildEspnUrl(sport, league);
     let response: Awaited<ReturnType<FetchFn>>;
 
-    try {
-      response = await Promise.race([
-        effectiveFetch(url),
-        new Promise<never>((_, reject) =>
-          setTimeout(
-            () => reject(new Error(`timeout after ${FETCH_TIMEOUT_MS}ms`)),
-            FETCH_TIMEOUT_MS
-          )
-        ),
-      ]);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      notifyError(`Sports fetch failed [${league}]: ${message}`);
-      return null;
-    }
+    // One timer covers headers and body; aborting cancels the underlying request
+    const controller = new AbortController();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => {
+        controller.abort();
+        reject(new Error(`timeout after ${FETCH_TIMEOUT_MS}ms`));
+      }, FETCH_TIMEOUT_MS);
+    });
+    timeout.catch(() => {}); // avoid unhandled rejection when the timer fires after the race settled
 
-    if (!response.ok) {
-      // ESPN returns 400 for off-season leagues — treat as empty, not an error
-      if (response.status === 400) {
-        return [];
+    try {
+      try {
+        response = await Promise.race([
+          effectiveFetch(url, { signal: controller.signal } as unknown as FetchInit),
+          timeout,
+        ]);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        notifyError(`Sports fetch failed [${league}]: ${message}`);
+        return null;
       }
-      notifyError(
-        `Sports API error ${response.status ?? ''} [${league}]: ${response.statusText ?? 'unknown'}`
-      );
-      return null;
-    }
 
-    let raw: unknown;
-    try {
-      raw = await response.json();
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      notifyError(`Sports response parse error [${league}]: ${message}`);
-      return null;
-    }
+      if (!response.ok) {
+        // ESPN returns 400 for off-season leagues — treat as empty, not an error
+        if (response.status === 400) {
+          return [];
+        }
+        notifyError(
+          `Sports API error ${response.status ?? ''} [${league}]: ${response.statusText ?? 'unknown'}`
+        );
+        return null;
+      }
 
-    return transformScoreboard(raw as EspnScoreboard, label ?? league);
+      let raw: unknown;
+      try {
+        raw = await Promise.race([response.json(), timeout]);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        notifyError(`Sports response parse error [${league}]: ${message}`);
+        return null;
+      }
+
+      return transformScoreboard(raw as EspnScoreboard, label ?? league);
+    } finally {
+      clearTimeout(timer);
+    }
   }
 
   async function refresh(): Promise<void> {
@@ -230,6 +241,7 @@ export function createSportsServer(options: SportsServerOptions): SportsServerIn
     }
 
     refreshing = true;
+    const startedAt = Date.now();
 
     try {
       const allGames: SportsGame[] = [];
@@ -255,7 +267,7 @@ export function createSportsServer(options: SportsServerOptions): SportsServerIn
         games: filteredGames.map(copyGame),
         lastUpdated: now,
       };
-      lastFetchedAt = now;
+      lastFetchedAt = startedAt;
 
       const publishData: SportsData = {
         games: filteredGames.map(copyGame),

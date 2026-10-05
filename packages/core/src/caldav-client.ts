@@ -75,16 +75,20 @@ function formatICalDate(d: Date): string {
 }
 
 function buildCalendarQuery(start: Date, end: Date): string {
+  const s = formatICalDate(start);
+  const e = formatICalDate(end);
   return `<?xml version="1.0" encoding="utf-8"?>
 <C:calendar-query xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">
   <D:prop>
     <D:getetag/>
-    <C:calendar-data/>
+    <C:calendar-data>
+      <C:expand start="${s}" end="${e}"/>
+    </C:calendar-data>
   </D:prop>
   <C:filter>
     <C:comp-filter name="VCALENDAR">
       <C:comp-filter name="VEVENT">
-        <C:time-range start="${formatICalDate(start)}" end="${formatICalDate(end)}"/>
+        <C:time-range start="${s}" end="${e}"/>
       </C:comp-filter>
     </C:comp-filter>
   </C:filter>
@@ -163,7 +167,10 @@ function parseVEvent(veventStr: string, calendarName: string): CalendarEvent {
   const { isoStr: start, allDay } = parseICalDate(startVal, startParams);
   const { isoStr: end } = parseICalDate(endVal, endParams);
 
-  const event: CalendarEvent = { id: uid, title: summary, start, end, calendar: calendarName };
+  // Expanded recurring instances share a UID; key them by occurrence start
+  const isInstance = /^RECURRENCE-ID[;:]/m.test(veventStr);
+  const id = isInstance ? `${uid}_${start}` : uid;
+  const event: CalendarEvent = { id, title: summary, start, end, calendar: calendarName };
   if (location) event.location = location;
   if (allDay) event.allDay = true;
   return event;
@@ -419,74 +426,77 @@ export function createCalendarServer(options: CalendarServerOptions): CalendarSe
     now: Date,
     end: Date,
     attempt: number = 0
-  ): Promise<CalendarEvent[]> {
+  ): Promise<CalendarEvent[] | null> {
     const url = `${target.baseUrl}${target.path}`;
     const body = buildCalendarQuery(now, end);
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-    let response: CalDAVResponse;
     try {
-      response = await fetchFn(url, {
-        method: 'REPORT',
-        headers: {
-          Authorization: authHeader,
-          'Content-Type': 'application/xml; charset=utf-8',
-          Depth: '1',
-        },
-        body,
-        signal: controller.signal,
-      });
-    } catch (err) {
-      const isTimeout = err instanceof DOMException && err.name === 'AbortError';
-      const message = isTimeout
-        ? `CalDAV request timeout after ${timeoutMs}ms`
-        : err instanceof Error
-          ? err.message
-          : String(err);
-      if (attempt < MAX_RETRIES) {
-        await sleep(RETRY_BASE_DELAY_MS * Math.pow(2, attempt));
-        return fetchOneCalendar(target, now, end, attempt + 1);
+      let response: CalDAVResponse;
+      try {
+        response = await fetchFn(url, {
+          method: 'REPORT',
+          headers: {
+            Authorization: authHeader,
+            'Content-Type': 'application/xml; charset=utf-8',
+            Depth: '1',
+          },
+          body,
+          signal: controller.signal,
+        });
+      } catch (err) {
+        const isTimeout = err instanceof DOMException && err.name === 'AbortError';
+        const message = isTimeout
+          ? `CalDAV request timeout after ${timeoutMs}ms`
+          : err instanceof Error
+            ? err.message
+            : String(err);
+        if (attempt < MAX_RETRIES) {
+          clearTimeout(timeoutId);
+          await sleep(RETRY_BASE_DELAY_MS * Math.pow(2, attempt));
+          return fetchOneCalendar(target, now, end, attempt + 1);
+        }
+        notifyError(`CalDAV fetch failed (${target.name}): ${message}`);
+        return null;
       }
-      notifyError(`CalDAV fetch failed (${target.name}): ${message}`);
-      return [];
+
+      if (response.status === 401 || response.status === 403) {
+        console.log(`[CalDAV] ${target.name}: AUTH ERROR ${response.status}`);
+        notifyError(`CalDAV auth error ${response.status}: ${response.statusText}`);
+        return null;
+      }
+      if (response.status === 429) {
+        notifyError(`CalDAV rate limited ${response.status}: ${response.statusText}`);
+        return null;
+      }
+      if (!response.ok && response.status !== 207) {
+        console.log(`[CalDAV] ${target.name}: HTTP ERROR ${response.status}`);
+        notifyError(`CalDAV error ${response.status} (${target.name}): ${response.statusText}`);
+        return null;
+      }
+
+      let xml: string;
+      try {
+        xml = await response.text();
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        notifyError(`CalDAV response parse error (${target.name}): ${message}`);
+        return null;
+      }
+
+      console.log(`[CalDAV] ${target.name}: status=${response.status}, body=${xml.slice(0, 500)}`);
+
+      const events: CalendarEvent[] = [];
+      const calDataBlocks = extractCalendarData(xml);
+      for (const block of calDataBlocks) {
+        events.push(...parseCalendarData(block, target.name));
+      }
+      return events;
     } finally {
       clearTimeout(timeoutId);
     }
-
-    if (response.status === 401 || response.status === 403) {
-      console.log(`[CalDAV] ${target.name}: AUTH ERROR ${response.status}`);
-      notifyError(`CalDAV auth error ${response.status}: ${response.statusText}`);
-      return [];
-    }
-    if (response.status === 429) {
-      notifyError(`CalDAV rate limited ${response.status}: ${response.statusText}`);
-      return [];
-    }
-    if (!response.ok && response.status !== 207) {
-      console.log(`[CalDAV] ${target.name}: HTTP ERROR ${response.status}`);
-      notifyError(`CalDAV error ${response.status} (${target.name}): ${response.statusText}`);
-      return [];
-    }
-
-    let xml: string;
-    try {
-      xml = await response.text();
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      notifyError(`CalDAV response parse error (${target.name}): ${message}`);
-      return [];
-    }
-
-    console.log(`[CalDAV] ${target.name}: status=${response.status}, body=${xml.slice(0, 500)}`);
-
-    const events: CalendarEvent[] = [];
-    const calDataBlocks = extractCalendarData(xml);
-    for (const block of calDataBlocks) {
-      events.push(...parseCalendarData(block, target.name));
-    }
-    return events;
   }
 
   async function doFetch(): Promise<void> {
@@ -496,6 +506,7 @@ export function createCalendarServer(options: CalendarServerOptions): CalendarSe
       resolvedTargets = discovered;
     }
 
+    const startedAt = Date.now();
     const now = new Date();
     const end = new Date(now.getTime() + rangeDays * 24 * 60 * 60 * 1000);
 
@@ -505,14 +516,21 @@ export function createCalendarServer(options: CalendarServerOptions): CalendarSe
       resolvedTargets.map((t) => t.name)
     );
     const results = await Promise.all(resolvedTargets.map((t) => fetchOneCalendar(t, now, end)));
-    const events = results.flat();
+
+    // Every calendar failed — keep previous events, don't publish, don't stamp the cache
+    if (results.every((r) => r === null)) return;
+
+    // Partial failure — reuse previous events for the calendars that failed
+    const events = results.flatMap((r, i) =>
+      r !== null ? r : (lastEvents ?? []).filter((e) => e.calendar === resolvedTargets![i]!.name)
+    );
     console.log(
       `[CalDAV] Total events found: ${events.length}`,
       events.map((e) => `${e.calendar}: ${e.title}`)
     );
 
     lastEvents = events;
-    lastFetchedAt = Date.now();
+    lastFetchedAt = startedAt;
     notifyUpdate(events);
     if (dataBus) {
       dataBus.publish('calendar.events', 'calendar-server', {

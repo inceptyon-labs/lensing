@@ -444,6 +444,19 @@ describe('Crypto Server', () => {
       expect(fetchFn).toHaveBeenCalledTimes(2);
     });
 
+    it('should measure staleness from fetch start, not fetch end', async () => {
+      const fetchFn = vi.fn().mockImplementation(async () => {
+        vi.advanceTimersByTime(5_000); // slow fetch
+        return { ok: true, json: () => Promise.resolve(createMockCoinGeckoResponse()) };
+      });
+      const server = createServer({ fetchFn, maxStale_ms: 60_000 });
+
+      await server.refresh();
+      vi.advanceTimersByTime(55_000);
+      await server.refresh();
+      expect(fetchFn).toHaveBeenCalledTimes(2);
+    });
+
     it('should return null until first fetch', () => {
       const server = createServer();
       expect(server.getPrices()).toBeNull();

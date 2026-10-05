@@ -168,6 +168,7 @@ export function createFinanceServer(options: FinanceServerOptions): FinanceServe
     }
 
     refreshing = true;
+    const startedAt = Date.now();
 
     try {
       const results = await Promise.all(watchlist.map(fetchSymbol));
@@ -183,7 +184,7 @@ export function createFinanceServer(options: FinanceServerOptions): FinanceServe
         stocks: stocks.map(copyQuote),
         lastUpdated: now,
       };
-      lastFetchedAt = now;
+      lastFetchedAt = startedAt;
 
       const publishData: FinanceData = {
         stocks: stocks.map(copyQuote),

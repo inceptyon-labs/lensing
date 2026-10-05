@@ -376,6 +376,35 @@ describe('WeatherServer', () => {
       expect(fetchFn).toHaveBeenCalledTimes(1);
     });
 
+    it('should measure staleness from fetch start, not fetch end', async () => {
+      vi.useFakeTimers();
+      try {
+        const fetchFn = vi.fn().mockImplementation(async () => {
+          vi.advanceTimersByTime(5_000); // slow fetch
+          return {
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                current: {
+                  temp: 70,
+                  feels_like: 68,
+                  humidity: 50,
+                  weather: [{ description: 'clear', icon: '01d' }],
+                },
+                daily: [],
+              }),
+          };
+        });
+        const server = createWeatherServer(validOptions({ fetchFn, maxStale_ms: 60000 }));
+        await server.refresh();
+        vi.advanceTimersByTime(55_000);
+        await server.refresh();
+        expect(fetchFn).toHaveBeenCalledTimes(2);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
     it('should re-fetch after cache expires', async () => {
       const fetchFn = vi.fn().mockResolvedValue({
         ok: true,

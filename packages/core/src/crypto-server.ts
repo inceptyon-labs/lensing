@@ -150,6 +150,7 @@ export function createCryptoServer(options: CryptoServerOptions): CryptoServerIn
     }
 
     refreshing = true;
+    const startedAt = Date.now();
 
     try {
       let response: Awaited<ReturnType<FetchFn>>;
@@ -190,7 +191,7 @@ export function createCryptoServer(options: CryptoServerOptions): CryptoServerIn
         coins: coins.map(copyCoin),
         lastUpdated: now,
       };
-      lastFetchedAt = now;
+      lastFetchedAt = startedAt;
 
       // Publish a copy to the data bus
       const publishData: CryptoData = {

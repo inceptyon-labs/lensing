@@ -207,6 +207,7 @@ export function createNewsServer(options: NewsServerOptions): NewsServerInstance
     }
 
     refreshing = true;
+    const startedAt = Date.now();
 
     try {
       const allArticles: NewsArticle[] = [];
@@ -232,7 +233,7 @@ export function createNewsServer(options: NewsServerOptions): NewsServerInstance
         articles: trimmed.map(copyArticle),
         lastUpdated: now,
       };
-      lastFetchedAt = now;
+      lastFetchedAt = startedAt;
 
       const publishData: NewsData = {
         articles: trimmed.map(copyArticle),
