@@ -23,15 +23,19 @@
   let editor: Editor | null = null;
   let activeSize: CanvasSize = DEFAULT_CANVAS_SIZE;
 
+  // One GrapesJS device per canvas size. widthMedia '' keeps edited styles global;
+  // left unset, GrapesJS wraps them in @media (max-width: <device width>).
+  const devices = CANVAS_SIZE_KEYS.map((key) => ({
+    id: key,
+    name: key,
+    width: `${CANVAS_SIZES[key].width}px`,
+    height: `${CANVAS_SIZES[key].height}px`,
+    widthMedia: '',
+  }));
+
   function handleSizeChange(size: CanvasSize) {
     activeSize = size;
-    const { width: w, height: h } = CANVAS_SIZES[size];
-    // setDimensions is not in the typed Canvas API; keep the optional call
-    (
-      editor?.Canvas as
-        | { setDimensions?: (dims: { width: number; height: number }) => void }
-        | undefined
-    )?.setDimensions?.({ width: w, height: h });
+    editor?.setDevice(size);
     onSizeChange?.(size);
   }
 
@@ -54,6 +58,10 @@
       },
       storageManager: {
         type: '',
+      },
+      deviceManager: {
+        default: DEFAULT_CANVAS_SIZE,
+        devices,
       },
       blockManager: {
         appendTo: '#blocks',

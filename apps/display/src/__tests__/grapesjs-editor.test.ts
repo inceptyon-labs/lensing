@@ -7,7 +7,6 @@ function createMockEditor(html = '<div></div>', css = 'div {}') {
   const registeredBlocks: string[] = [];
   const registeredProperties: Array<{ section: string; name: string }> = [];
   const sectors: string[] = [];
-  const canvasDimensions = { width: 300, height: 225 };
 
   return {
     on: vi.fn((event: string, cb: () => void) => {
@@ -30,12 +29,7 @@ function createMockEditor(html = '<div></div>', css = 'div {}') {
         registeredProperties.push({ section, name: config.name as string });
       }),
     },
-    Canvas: {
-      setDimensions: vi.fn((dims: { width: number; height: number }) => {
-        canvasDimensions.width = dims.width;
-        canvasDimensions.height = dims.height;
-      }),
-    },
+    setDevice: vi.fn(),
     /** Test helper: emit a registered event */
     emit(event: string) {
       for (const cb of listeners[event] ?? []) cb();
@@ -44,7 +38,6 @@ function createMockEditor(html = '<div></div>', css = 'div {}') {
     _blocks: registeredBlocks,
     _properties: registeredProperties,
     _sectors: sectors,
-    _canvasDimensions: canvasDimensions,
   };
 }
 
@@ -185,24 +178,30 @@ describe('GrapesJSEditor size toggle', () => {
     expect(buttons[2].getAttribute('aria-pressed')).toBe('false');
   });
 
-  it('should call Canvas.setDimensions when size changes', async () => {
+  it('should register one device per canvas size without media queries', async () => {
+    const grapesjs = (await import('grapesjs')).default;
+    await renderEditor({});
+    const config = vi.mocked(grapesjs.init).mock.calls[0]![0]!;
+    expect(config.deviceManager).toEqual({
+      default: 'medium',
+      devices: [
+        { id: 'small', name: 'small', width: '200px', height: '150px', widthMedia: '' },
+        { id: 'medium', name: 'medium', width: '300px', height: '225px', widthMedia: '' },
+        { id: 'large', name: 'large', width: '400px', height: '300px', widthMedia: '' },
+      ],
+    });
+  });
+
+  it('should switch the editor device when size changes', async () => {
     await renderEditor({});
     const group = document.querySelector('[role="group"]')!;
     const buttons = group.querySelectorAll('button');
 
-    // Click "small"
     await fireEvent.click(buttons[0]);
-    expect(mockEditor.Canvas.setDimensions).toHaveBeenCalledWith({
-      width: 200,
-      height: 150,
-    });
+    expect(mockEditor.setDevice).toHaveBeenCalledWith('small');
 
-    // Click "large"
     await fireEvent.click(buttons[2]);
-    expect(mockEditor.Canvas.setDimensions).toHaveBeenCalledWith({
-      width: 400,
-      height: 300,
-    });
+    expect(mockEditor.setDevice).toHaveBeenCalledWith('large');
   });
 
   it('should call onSizeChange callback with the new size key', async () => {
