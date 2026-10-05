@@ -49,6 +49,13 @@ export function isProtectedRoute(path, method) {
         return false;
     if (method === 'GET' && path === '/data-bus')
         return false;
+    // The app shell itself (SPA pages and built assets) carries no data
+    if (method === 'GET' && (path === '/' || path === '/index.html'))
+        return false;
+    if (method === 'GET' && (path === '/admin' || path.startsWith('/admin/')))
+        return false;
+    if (method === 'GET' && path.startsWith('/_app/'))
+        return false;
     if (method === 'GET' && path.startsWith('/photos/'))
         return false;
     return true;

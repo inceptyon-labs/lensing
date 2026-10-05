@@ -1,6 +1,9 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { createRestServer } from '../rest-server';
 import http from 'node:http';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 const AUTH_TOKEN = 'test-secret-token-abc123';
 /** Helper to make HTTP requests with optional auth token */
 function request(port, method, path, body, token, extraHeaders = {}) {
@@ -71,6 +74,23 @@ describe('RestServer auth integration', () => {
             const res = await request(port, 'GET', '/settings');
             expect(res.status).toBe(401);
             expect(JSON.parse(res.body)).toEqual({ error: 'Unauthorized' });
+        });
+        it('should serve the app shell to non-loopback clients without a token', async () => {
+            const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lensing-static-'));
+            fs.writeFileSync(path.join(dir, 'index.html'), '<html></html>');
+            fs.mkdirSync(path.join(dir, '_app'));
+            fs.writeFileSync(path.join(dir, '_app', 'app.js'), 'export {}');
+            server = createRestServer(createStubHandlers(), {
+                port: 0,
+                authToken: AUTH_TOKEN,
+                trustLoopback: false,
+                staticDir: dir,
+            });
+            await server.ready();
+            port = server.port;
+            for (const p of ['/', '/admin', '/_app/app.js']) {
+                expect((await request(port, 'GET', p)).status, p).toBe(200);
+            }
         });
         it('should return 401 for PUT /settings without token', async () => {
             server = createRestServer(createStubHandlers(), {
