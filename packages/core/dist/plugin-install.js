@@ -1,6 +1,7 @@
 import AdmZip from 'adm-zip';
 import * as fs from 'fs';
 import * as path from 'path';
+import { isValidPluginId } from './plugin-package';
 /**
  * Install a plugin from a zip buffer into the plugins directory.
  *
@@ -53,14 +54,17 @@ export function installPluginFromZip(zipBuffer, pluginsDir) {
     if (!manifest.version || typeof manifest.version !== 'string') {
         throw new Error('plugin.json missing required field: version');
     }
+    if (!isValidPluginId(manifest.id)) {
+        throw new Error(`Invalid plugin id '${manifest.id}'`);
+    }
     const pluginId = manifest.id;
-    const targetDir = path.join(pluginsDir, pluginId);
+    const targetDir = path.resolve(pluginsDir, pluginId);
     // Check for duplicate
     if (fs.existsSync(targetDir)) {
         throw new Error(`Plugin '${pluginId}' already exists at ${targetDir}`);
     }
-    // Extract files
-    fs.mkdirSync(targetDir, { recursive: true });
+    // Resolve and validate every destination before writing anything (zip-slip)
+    const files = [];
     for (const entry of entries) {
         if (entry.isDirectory)
             continue;
@@ -69,10 +73,23 @@ export function installPluginFromZip(zipBuffer, pluginsDir) {
         if (prefix && relativePath.startsWith(prefix)) {
             relativePath = relativePath.slice(prefix.length);
         }
-        const destPath = path.join(targetDir, relativePath);
-        const destDir = path.dirname(destPath);
-        fs.mkdirSync(destDir, { recursive: true });
-        fs.writeFileSync(destPath, entry.getData());
+        const destPath = path.resolve(targetDir, relativePath);
+        const rel = path.relative(targetDir, destPath);
+        if (rel === '' || rel.startsWith('..') || path.isAbsolute(rel)) {
+            throw new Error(`Unsafe path in zip: ${entry.entryName}`);
+        }
+        files.push({ destPath, data: entry.getData() });
+    }
+    try {
+        fs.mkdirSync(targetDir, { recursive: true });
+        for (const { destPath, data } of files) {
+            fs.mkdirSync(path.dirname(destPath), { recursive: true });
+            fs.writeFileSync(destPath, data);
+        }
+    }
+    catch (err) {
+        fs.rmSync(targetDir, { recursive: true, force: true });
+        throw err;
     }
     return { pluginId, manifest };
 }

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { extractBearerToken, isProtectedRoute } from '../auth-middleware';
+import { extractBearerToken, isProtectedRoute, isLoopbackAddress, isHostAllowed, isOriginAllowed, } from '../auth-middleware';
+import { hostname } from 'node:os';
 describe('auth-middleware', () => {
     describe('extractBearerToken', () => {
         it('should extract token from valid Bearer header', () => {
@@ -107,6 +108,56 @@ describe('auth-middleware', () => {
         });
         it('should protect POST /ask', () => {
             expect(isProtectedRoute('/ask', 'POST')).toBe(true);
+        });
+    });
+    describe('isLoopbackAddress', () => {
+        it('should accept loopback forms and reject others', () => {
+            expect(isLoopbackAddress('127.0.0.1')).toBe(true);
+            expect(isLoopbackAddress('127.5.5.5')).toBe(true);
+            expect(isLoopbackAddress('::1')).toBe(true);
+            expect(isLoopbackAddress('::ffff:127.0.0.1')).toBe(true);
+            expect(isLoopbackAddress('192.168.1.5')).toBe(false);
+            expect(isLoopbackAddress('::ffff:192.168.1.5')).toBe(false);
+            expect(isLoopbackAddress(undefined)).toBe(false);
+        });
+    });
+    describe('isHostAllowed', () => {
+        it('should allow LAN-style hosts', () => {
+            for (const h of [
+                undefined,
+                '192.168.2.10:3100',
+                '[::1]:3100',
+                'localhost:3100',
+                'raspberrypi:3100',
+                'pi.local',
+                'pi.home.arpa',
+                'pi.lan:3100',
+                hostname().toUpperCase(),
+            ]) {
+                expect(isHostAllowed(h, [])).toBe(true);
+            }
+        });
+        it('should reject public names unless allowlisted', () => {
+            expect(isHostAllowed('evil.example.com', [])).toBe(false);
+            expect(isHostAllowed('evil.example.com:3100', [])).toBe(false);
+            expect(isHostAllowed('dash.example.com:3100', ['Dash.Example.com'])).toBe(true);
+        });
+    });
+    describe('isOriginAllowed', () => {
+        it('should require Origin host to match Host when present', () => {
+            expect(isOriginAllowed(undefined, 'pi:3100')).toBe(true);
+            expect(isOriginAllowed('http://pi:3100', 'pi:3100')).toBe(true);
+            expect(isOriginAllowed('http://evil.com', 'pi:3100')).toBe(false);
+            expect(isOriginAllowed('http://pi:3000', 'pi:3100')).toBe(false);
+            expect(isOriginAllowed('null', 'pi:3100')).toBe(false);
+        });
+    });
+    describe('public display reads', () => {
+        it('should not protect GET /data-bus or /photos/*', () => {
+            expect(isProtectedRoute('/data-bus', 'GET')).toBe(false);
+            expect(isProtectedRoute('/photos/a.jpg', 'GET')).toBe(false);
+            expect(isProtectedRoute('/settings', 'GET')).toBe(true);
+            expect(isProtectedRoute('/plugins/x/config', 'GET')).toBe(true);
         });
     });
 });

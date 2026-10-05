@@ -79,5 +79,19 @@ describe('HostService Secrets Integration', () => {
         const all = hostService.db.getPluginSecrets(pluginId);
         expect(all).toEqual({});
     });
+    it('clears the HA token when PUT /settings changes the URL, and hides internal keys on GET', async () => {
+        hostService.db.setSetting('home-assistant.url', 'http://ha.local:8123');
+        hostService.db.setSetting('home-assistant.token', 'tok');
+        hostService.db.setSetting('secret_store.master_key_seed', 'seed');
+        const base = `http://127.0.0.1:${hostService.port}`;
+        const put = await fetch(`${base}/settings`, {
+            method: 'PUT',
+            body: JSON.stringify({ 'home-assistant.url': 'http://evil.example.com' }),
+        });
+        expect(put.status).toBe(200);
+        expect(hostService.db.getSetting('home-assistant.token')).toBeUndefined();
+        const all = (await (await fetch(`${base}/settings`)).json());
+        expect(Object.keys(all).some((k) => k.startsWith('secret_store.'))).toBe(false);
+    });
 });
 //# sourceMappingURL=host-service-secrets-integration.test.js.map

@@ -182,7 +182,7 @@ describe('Home Assistant Server', () => {
         expect(deviceCall).toBeDefined();
         expect(deviceCall[2].devices).toHaveLength(1);
     });
-    it('should publish to home.sensors data bus channel', async () => {
+    it('should publish each update once, including sensors, on home.devices', async () => {
         const publishSpy = vi.spyOn(dataBus, 'publish');
         const server = createHomeAssistantServer({
             url: HA_URL,
@@ -193,9 +193,9 @@ describe('Home Assistant Server', () => {
         });
         await server.refresh();
         const calls = publishSpy.mock.calls;
-        const sensorCall = calls.find((c) => c[0] === 'home.sensors');
-        expect(sensorCall).toBeDefined();
-        expect(sensorCall[2].sensors).toHaveLength(1);
+        expect(calls).toHaveLength(1);
+        expect(calls[0][0]).toBe('home.devices');
+        expect(calls[0][2].sensors).toHaveLength(1);
     });
     // ── Stale guard ───────────────────────────────────────────────────────────────
     it('should skip refresh if data is not stale', async () => {
@@ -224,6 +224,24 @@ describe('Home Assistant Server', () => {
         });
         await server.refresh();
         vi.advanceTimersByTime(61_000);
+        await server.refresh();
+        expect(fetchFn).toHaveBeenCalledTimes(2);
+    });
+    it('should measure staleness from fetch start, not fetch end', async () => {
+        const fetchFn = vi.fn().mockImplementation(async () => {
+            vi.advanceTimersByTime(5_000); // slow fetch
+            return { ok: true, status: 200, json: async () => [] };
+        });
+        const server = createHomeAssistantServer({
+            url: HA_URL,
+            token: HA_TOKEN,
+            dataBus,
+            notifications,
+            fetchFn: fetchFn,
+            maxStale_ms: 60_000,
+        });
+        await server.refresh();
+        vi.advanceTimersByTime(55_000);
         await server.refresh();
         expect(fetchFn).toHaveBeenCalledTimes(2);
     });

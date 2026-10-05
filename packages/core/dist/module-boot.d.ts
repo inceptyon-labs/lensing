@@ -9,13 +9,16 @@ export interface BootDeps {
     /** AI providers loaded from env vars (shared with AI assist) */
     aiProviders?: Map<AiProviderId, AiProvider>;
 }
+/** Shape shared by all module instances (onError is optional and returns vary by module) */
+type ModuleInstance = {
+    close(): void;
+    refresh?(): Promise<void>;
+    onError?(callback: (error: string) => void): unknown;
+};
 /** A successfully booted module */
 export interface BootedModule {
     id: ModuleId;
-    instance: {
-        close(): void;
-        refresh?(): Promise<void>;
-    };
+    instance: ModuleInstance;
     timer?: ReturnType<typeof setInterval>;
 }
 /**
@@ -34,4 +37,5 @@ export declare function bootEnabledModules(db: DatabaseInstance, deps: BootDeps,
  * Returns updated BootedModule array.
  */
 export declare function syncModulesWithLayout(layoutIds: string[], modules: BootedModule[], db: DatabaseInstance, deps: BootDeps, log?: HostServiceLogger): BootedModule[];
+export {};
 //# sourceMappingURL=module-boot.d.ts.map

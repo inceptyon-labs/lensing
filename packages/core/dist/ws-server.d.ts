@@ -10,6 +10,10 @@ export interface WsServerOptions {
     heartbeatInterval?: number;
     /** Bearer token required for WebSocket connections. If omitted, auth is disabled. */
     authToken?: string;
+    /** Extra hostnames accepted in the Host header (beyond IPs, localhost, LAN-style names) */
+    allowedHosts?: string[];
+    /** Receives one-time warnings, e.g. a rejected Host header */
+    warn?: (message: string) => void;
 }
 /** Event types emitted by WsServerInstance */
 export interface WsServerEvents {

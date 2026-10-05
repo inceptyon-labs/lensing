@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createRestServer } from '../rest-server';
 describe('REST Server — AI Assist Endpoints', () => {
     let handlers;
     let mockAiAssist;
@@ -45,6 +46,31 @@ describe('REST Server — AI Assist Endpoints', () => {
                 docsTextOrUrl: 'Invalid docs',
                 pluginContext: { name: 'Test' },
             })).rejects.toThrow('Invalid docs');
+        });
+    });
+    describe('rate limit', () => {
+        it('returns 429 after 10 requests in a minute', async () => {
+            mockAiAssist.mockResolvedValue({ connector: {}, html: '', css: '' });
+            const server = createRestServer(handlers, { port: 0 });
+            await server.ready();
+            try {
+                const post = () => fetch(`http://127.0.0.1:${server.port}/api/admin/builder/ai-assist`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        provider: 'anthropic',
+                        docsTextOrUrl: 'docs',
+                        pluginContext: { name: 'T' },
+                    }),
+                });
+                for (let n = 0; n < 10; n++)
+                    expect((await post()).status).toBe(200);
+                const res = await post();
+                expect(res.status).toBe(429);
+                expect(await res.json()).toEqual({ error: 'Rate limited' });
+            }
+            finally {
+                await server.close();
+            }
         });
     });
 });

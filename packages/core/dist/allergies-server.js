@@ -124,6 +124,7 @@ export function createAllergiesServer(options) {
         if (lastFetchedAt !== null && maxStale_ms > 0 && Date.now() - lastFetchedAt < maxStale_ms) {
             return;
         }
+        const startedAt = Date.now();
         let response;
         try {
             response = await fetchFn(buildUrl(), {
@@ -161,7 +162,7 @@ export function createAllergiesServer(options) {
             return;
         }
         lastData = copyData(data);
-        lastFetchedAt = Date.now();
+        lastFetchedAt = startedAt;
         dataBus.publish(DATA_BUS_CHANNEL, PLUGIN_ID, data);
         checkAndEmitAlert(data);
         notifyUpdate(data);

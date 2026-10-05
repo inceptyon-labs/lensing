@@ -119,6 +119,7 @@ export function createFinanceServer(options) {
             return;
         }
         refreshing = true;
+        const startedAt = Date.now();
         try {
             const results = await Promise.all(watchlist.map(fetchSymbol));
             const stocks = results.filter((r) => r !== null);
@@ -131,7 +132,7 @@ export function createFinanceServer(options) {
                 stocks: stocks.map(copyQuote),
                 lastUpdated: now,
             };
-            lastFetchedAt = now;
+            lastFetchedAt = startedAt;
             const publishData = {
                 stocks: stocks.map(copyQuote),
                 lastUpdated: now,

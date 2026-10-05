@@ -107,6 +107,7 @@ export function createCryptoServer(options) {
             return;
         }
         refreshing = true;
+        const startedAt = Date.now();
         try {
             let response;
             try {
@@ -141,7 +142,7 @@ export function createCryptoServer(options) {
                 coins: coins.map(copyCoin),
                 lastUpdated: now,
             };
-            lastFetchedAt = now;
+            lastFetchedAt = startedAt;
             // Publish a copy to the data bus
             const publishData = {
                 coins: coins.map(copyCoin),

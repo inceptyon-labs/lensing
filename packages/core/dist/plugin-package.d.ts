@@ -1,4 +1,6 @@
 import type { PluginManifest } from '@lensing/types';
+/** Plugin ids become directory names and DB keys, so they must be plain slugs. */
+export declare function isValidPluginId(id: unknown): id is string;
 export interface ConnectorInput {
     type: string;
     url: string;

@@ -226,5 +226,16 @@ describe('RestServer Plugin Endpoints', () => {
             expect(res.status).toBe(404);
         });
     });
+    describe('plugin id validation', () => {
+        it('should return 400 for a path-like id on DELETE', async () => {
+            const deletePlugin = vi.fn();
+            await server.close();
+            server = createRestServer({ ...handlers, deletePlugin }, { port: 0 });
+            await server.ready();
+            const res = await request(server.port, 'DELETE', '/plugins/%2E%2E');
+            expect(res.status).toBe(400);
+            expect(deletePlugin).not.toHaveBeenCalled();
+        });
+    });
 });
 //# sourceMappingURL=rest-server-plugins.test.js.map

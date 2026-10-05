@@ -12,6 +12,10 @@ import { createPhotoSlideshowServer } from './photo-slideshow-server';
 import { createAiNewsServer } from './ai-news-server';
 import { createWordOfDayServer } from './word-of-day-server';
 import { createFinanceServer } from './finance-server';
+/** Per-request timeout so a hung upstream can't stall a poller for Node's 300 s default */
+const FETCH_TIMEOUT_MS = 15_000;
+/** fetch with a default timeout covering headers and body; a caller-supplied signal wins */
+const timeoutFetch = (url, init) => fetch(url, { ...init, signal: init?.signal ?? AbortSignal.timeout(FETCH_TIMEOUT_MS) });
 /** Polling intervals per module (ms). Modules without an entry are event-driven. */
 const MODULE_REFRESH_MS = {
     weather: 3_600_000, // 1 hour
@@ -58,12 +62,17 @@ export function rebootModule(id, modules, db, deps, log) {
     const instance = bootModule(id, config.values, deps);
     if (!instance)
         return null;
+    registerModuleErrorLogging(id, instance, log);
     const booted = { id, instance };
     const overrideMs = id === 'ai-news' ? getAiNewsRefreshMs(config.values) : undefined;
     startPolling(booted, log, overrideMs);
     modules.push(booted);
     log?.info(`Module rebooted: ${id}`);
     return booted;
+}
+/** Log errors reported by a module so failed polls aren't silent. */
+function registerModuleErrorLogging(id, instance, log) {
+    instance.onError?.((error) => log?.error(`Module error: ${id}`, error));
 }
 /** Fire initial refresh and set up periodic polling timer for a booted module. */
 function startPolling(booted, log, overrideMs) {
@@ -90,6 +99,7 @@ export function bootEnabledModules(db, deps, log) {
         try {
             const instance = bootModule(schema.id, config.values, deps);
             if (instance) {
+                registerModuleErrorLogging(schema.id, instance, log);
                 const booted_module = { id: schema.id, instance };
                 const overrideMs = schema.id === 'ai-news' ? getAiNewsRefreshMs(config.values) : undefined;
                 startPolling(booted_module, log, overrideMs);
@@ -144,6 +154,7 @@ export function syncModulesWithLayout(layoutIds, modules, db, deps, log) {
             const config = readModuleConfig(db, schema);
             const instance = bootModule(id, config.values, deps);
             if (instance) {
+                registerModuleErrorLogging(id, instance, log);
                 const booted = { id: id, instance };
                 const overrideMs = id === 'ai-news' ? getAiNewsRefreshMs(config.values) : undefined;
                 startPolling(booted, log, overrideMs);
@@ -195,12 +206,14 @@ function bootModule(id, values, deps) {
                     : undefined,
                 units: values['units'] ?? 'imperial',
                 dataBus,
+                fetchFn: timeoutFetch,
             });
         case 'crypto':
             return createCryptoServer({
                 watchlist: csvToArray(values['watchlist']),
                 dataBus,
                 notifications,
+                fetchFn: timeoutFetch,
             });
         case 'news':
             return createNewsServer({
@@ -208,6 +221,7 @@ function bootModule(id, values, deps) {
                 maxItems: values['maxItems'] != null ? Number(values['maxItems']) : undefined,
                 dataBus,
                 notifications,
+                fetchFn: timeoutFetch,
             });
         case 'sports': {
             const leagueIds = csvToArray(values['leagues']);
@@ -224,6 +238,7 @@ function bootModule(id, values, deps) {
                 teams: teamNames.length > 0 ? teamNames : undefined,
                 dataBus,
                 notifications,
+                fetchFn: timeoutFetch,
             });
         }
         case 'calendar': {
@@ -235,6 +250,7 @@ function bootModule(id, values, deps) {
                 ...(calPath ? { calendarPath: calPath } : {}),
                 rangeDays: values['rangeDays'] != null ? Number(values['rangeDays']) : undefined,
                 dataBus,
+                fetchFn: timeoutFetch,
             };
             return createCalendarServer(calOpts);
         }
@@ -245,6 +261,7 @@ function bootModule(id, values, deps) {
                 domains: values['domains'] ? csvToArray(values['domains']) : undefined,
                 dataBus,
                 notifications,
+                fetchFn: timeoutFetch,
             });
         case 'allergies':
             return createAllergiesServer({
@@ -252,6 +269,7 @@ function bootModule(id, values, deps) {
                 alertThreshold: values['alertThreshold'] != null ? Number(values['alertThreshold']) : undefined,
                 dataBus,
                 notifications,
+                fetchFn: timeoutFetch,
             });
         case 'pir':
             return createPIRServer({
@@ -323,12 +341,13 @@ function bootModule(id, values, deps) {
             });
         }
         case 'word-of-day': {
-            return createWordOfDayServer({ dataBus });
+            return createWordOfDayServer({ dataBus, fetchFn: timeoutFetch });
         }
         case 'finance':
             return createFinanceServer({
                 watchlist: csvToArray(values['watchlist']),
                 dataBus,
+                fetchFn: timeoutFetch,
             });
         default:
             return null;

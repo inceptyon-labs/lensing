@@ -1,5 +1,10 @@
 import AdmZip from 'adm-zip';
 const MAX_ZIP_BYTES = 10 * 1024 * 1024; // 10MB
+const PLUGIN_ID_PATTERN = /^[a-z0-9][a-z0-9_-]{0,63}$/;
+/** Plugin ids become directory names and DB keys, so they must be plain slugs. */
+export function isValidPluginId(id) {
+    return typeof id === 'string' && PLUGIN_ID_PATTERN.test(id);
+}
 function extractHostname(url) {
     try {
         return new URL(url).hostname;
@@ -11,6 +16,8 @@ function extractHostname(url) {
 export function packagePlugin(input) {
     if (!input.id)
         throw new Error('id is required');
+    if (!isValidPluginId(input.id))
+        throw new Error(`Invalid plugin id '${input.id}'`);
     if (!input.name)
         throw new Error('name is required');
     if (!input.version)

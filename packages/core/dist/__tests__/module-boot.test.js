@@ -116,6 +116,33 @@ describe('bootEnabledModules', () => {
         expect(modules).toHaveLength(0);
         expect(log.error).toHaveBeenCalledWith('Module boot failed: weather', expect.any(Error));
     });
+    it('should pass a timeout-bound fetchFn to modules', () => {
+        db.setSetting('crypto.enabled', 'true');
+        db.setSetting('crypto.watchlist', 'bitcoin');
+        bootEnabledModules(db, deps);
+        const opts = vi.mocked(createCryptoServer).mock.calls[0][0];
+        const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('{}'));
+        void opts.fetchFn('https://example.com');
+        const init = fetchSpy.mock.calls[0][1];
+        expect(init.signal).toBeInstanceOf(AbortSignal);
+        fetchSpy.mockRestore();
+    });
+    it('should log module errors with the module id', () => {
+        db.setSetting('crypto.enabled', 'true');
+        db.setSetting('crypto.watchlist', 'bitcoin');
+        let onErr;
+        vi.mocked(createCryptoServer).mockImplementationOnce((() => ({
+            close: vi.fn(),
+            refresh: vi.fn(() => Promise.resolve()),
+            onError: (cb) => {
+                onErr = cb;
+            },
+        })));
+        const log = { info: vi.fn(), error: vi.fn(), debug: vi.fn() };
+        bootEnabledModules(db, deps, log);
+        onErr('boom');
+        expect(log.error).toHaveBeenCalledWith('Module error: crypto', 'boom');
+    });
     it('should boot multiple modules', () => {
         db.setSetting('weather.enabled', 'true');
         db.setSetting('weather.apiKey', 'key');

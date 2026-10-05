@@ -152,6 +152,7 @@ export function createNewsServer(options) {
             return;
         }
         refreshing = true;
+        const startedAt = Date.now();
         try {
             const allArticles = [];
             let anySuccess = false;
@@ -172,7 +173,7 @@ export function createNewsServer(options) {
                 articles: trimmed.map(copyArticle),
                 lastUpdated: now,
             };
-            lastFetchedAt = now;
+            lastFetchedAt = startedAt;
             const publishData = {
                 articles: trimmed.map(copyArticle),
                 lastUpdated: now,

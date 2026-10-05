@@ -252,9 +252,54 @@ END:VEVENT</calendar-data>
             await server.refresh();
             expect(fetchFn).toHaveBeenCalled();
             const body = fetchFn.mock.calls[0][1].body || '';
-            // Should contain DTSTART and DTEND filters in CalDAV REPORT body
-            expect(body).toMatch(/DTSTART/);
-            expect(body).toMatch(/DTEND/);
+            // REPORT body carries a time-range filter spanning rangeDays
+            const m = body.match(/<C:time-range start="(\d{8})T\d{6}Z" end="(\d{8})T\d{6}Z"\/>/);
+            expect(m).not.toBeNull();
+            const toDate = (d) => Date.UTC(+d.slice(0, 4), +d.slice(4, 6) - 1, +d.slice(6, 8));
+            expect((toDate(m[2]) - toDate(m[1])) / 86_400_000).toBeGreaterThanOrEqual(14);
+        });
+    });
+    describe('recurring events', () => {
+        it('should request server-side expansion over the same range as the time filter', async () => {
+            const fetchFn = vi.fn().mockResolvedValue({
+                ok: true,
+                status: 207,
+                statusText: 'Multi-Status',
+                text: () => Promise.resolve('<multistatus></multistatus>'),
+            });
+            const server = createCalendarServer(validOptions({ fetchFn, rangeDays: 14 }));
+            await server.refresh();
+            const body = fetchFn.mock.calls[0][1].body || '';
+            const range = body.match(/<C:time-range start="(\w+)" end="(\w+)"/);
+            expect(body).toContain(`<C:expand start="${range[1]}" end="${range[2]}"/>`);
+        });
+        it('should give each expanded occurrence a unique id', async () => {
+            const fetchFn = vi.fn().mockResolvedValue({
+                ok: true,
+                status: 207,
+                statusText: 'Multi-Status',
+                text: () => Promise.resolve(`<multistatus><response><propstat><prop><calendar-data>BEGIN:VCALENDAR
+BEGIN:VEVENT
+UID:weekly
+RECURRENCE-ID:20260217T100000Z
+SUMMARY:Standup
+DTSTART:20260217T100000Z
+DTEND:20260217T103000Z
+END:VEVENT
+BEGIN:VEVENT
+UID:weekly
+RECURRENCE-ID:20260224T100000Z
+SUMMARY:Standup
+DTSTART:20260224T100000Z
+DTEND:20260224T103000Z
+END:VEVENT
+END:VCALENDAR</calendar-data></prop></propstat></response></multistatus>`),
+            });
+            const server = createCalendarServer(validOptions({ fetchFn }));
+            await server.refresh();
+            const events = server.getEvents();
+            expect(events).toHaveLength(2);
+            expect(new Set(events.map((e) => e.id)).size).toBe(2);
         });
     });
     describe('listeners', () => {
@@ -379,6 +424,28 @@ END:VEVENT</calendar-data>
             await server.refresh(); // within staleness window
             expect(fetchFn).toHaveBeenCalledTimes(1);
         });
+        it('should measure staleness from fetch start, not fetch end', async () => {
+            vi.useFakeTimers();
+            try {
+                const fetchFn = vi.fn().mockImplementation(async () => {
+                    vi.advanceTimersByTime(5_000); // slow fetch
+                    return {
+                        ok: true,
+                        status: 207,
+                        statusText: 'Multi-Status',
+                        text: () => Promise.resolve('<multistatus></multistatus>'),
+                    };
+                });
+                const server = createCalendarServer(validOptions({ fetchFn, maxStale_ms: 60000 }));
+                await server.refresh();
+                vi.advanceTimersByTime(55_000);
+                await server.refresh();
+                expect(fetchFn).toHaveBeenCalledTimes(2);
+            }
+            finally {
+                vi.useRealTimers();
+            }
+        });
         it('should refetch when data is stale', async () => {
             const fetchFn = vi.fn().mockResolvedValue({
                 ok: true,
@@ -497,13 +564,37 @@ END:VEVENT</calendar-data>
                 lastUpdated: expect.any(Number),
             }));
         });
-        it('should publish empty events to dataBus on fetch failure', async () => {
+        it('should keep previous events and not publish when every calendar fetch fails', async () => {
             const publish = vi.fn();
             const dataBus = { publish };
-            const fetchFn = vi.fn().mockRejectedValue(new Error('network error'));
-            const server = createCalendarServer(validOptions({ dataBus, fetchFn }));
+            const ok = {
+                ok: true,
+                status: 207,
+                statusText: 'Multi-Status',
+                text: () => Promise.resolve(`<multistatus><response><propstat><prop><calendar-data>BEGIN:VEVENT
+UID:keep-me
+SUMMARY:Keep
+DTSTART:20260217T100000Z
+DTEND:20260217T110000Z
+END:VEVENT</calendar-data></prop></propstat></response></multistatus>`),
+            };
+            const fail = { ok: false, status: 500, statusText: 'Server Error' };
+            const fetchFn = vi.fn().mockResolvedValueOnce(ok).mockResolvedValue(fail);
+            const server = createCalendarServer(validOptions({ dataBus, fetchFn, maxStale_ms: 0 }));
+            const errorListener = vi.fn();
+            server.onError(errorListener);
             await server.refresh();
-            expect(publish).toHaveBeenCalledWith('calendar.events', 'calendar-server', expect.objectContaining({ events: [] }));
+            await server.refresh();
+            expect(publish).toHaveBeenCalledTimes(1);
+            expect(server.getEvents()).toHaveLength(1);
+            expect(errorListener).toHaveBeenCalled();
+        });
+        it('should not stamp the cache when every calendar fetch fails', async () => {
+            const fetchFn = vi.fn().mockResolvedValue({ ok: false, status: 500, statusText: 'Err' });
+            const server = createCalendarServer(validOptions({ fetchFn, maxStale_ms: 60000 }));
+            await server.refresh();
+            await server.refresh();
+            expect(fetchFn).toHaveBeenCalledTimes(2);
         });
         it('should not throw when dataBus is not provided', async () => {
             const server = createCalendarServer(validOptions());

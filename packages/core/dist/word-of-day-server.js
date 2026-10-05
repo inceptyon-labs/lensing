@@ -73,6 +73,8 @@ function parseWotdFeed(xml) {
                 break;
             if (line.startsWith('"') || line.startsWith('\u201C'))
                 break; // quote = example
+            if (line.startsWith('//'))
+                break; // MW marks example sentences with "//"
             definition += (definition ? ' ' : '') + line;
         }
     }

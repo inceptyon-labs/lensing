@@ -83,7 +83,7 @@ export interface RestServerHandlers {
 export interface RestServerOptions {
     /** Port to listen on. Defaults to 0 (OS-assigned) */
     port?: number;
-    /** Allowed CORS origins. Defaults to ['*'] (wildcard) */
+    /** Allowed CORS origins. When omitted, no Access-Control-Allow-Origin header is sent (same-origin only) */
     corsOrigins?: string[];
     /** Structured log callback. Receives one entry per request */
     logger?: (entry: LogEntry) => void;
@@ -93,6 +93,12 @@ export interface RestServerOptions {
     staticDir?: string;
     /** Bearer token required for protected routes. If omitted, auth is disabled. */
     authToken?: string;
+    /** Skip the token check for requests from loopback addresses. Defaults to true */
+    trustLoopback?: boolean;
+    /** Extra hostnames accepted in the Host header (beyond IPs, localhost, LAN-style names) */
+    allowedHosts?: string[];
+    /** Receives one-time warnings, e.g. a rejected Host header */
+    warn?: (message: string) => void;
     /** Network address to bind to. Defaults to '127.0.0.1' */
     bindAddress?: string;
 }

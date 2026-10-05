@@ -210,6 +210,7 @@ export function createWeatherServer(options) {
         if (lastFetchedAt !== null && maxStale_ms > 0 && Date.now() - lastFetchedAt < maxStale_ms) {
             return;
         }
+        const startedAt = Date.now();
         let response;
         try {
             response = await fetchFn(buildUrl());
@@ -236,7 +237,7 @@ export function createWeatherServer(options) {
         if (!data)
             return;
         lastData = data;
-        lastFetchedAt = Date.now();
+        lastFetchedAt = startedAt;
         notifyUpdate(data);
         if (dataBus) {
             dataBus.publish('weather.current', 'weather-server', data);

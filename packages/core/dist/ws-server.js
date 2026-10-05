@@ -1,11 +1,12 @@
 import { WebSocketServer, WebSocket } from 'ws';
-import { extractBearerToken } from './auth-middleware';
+import { extractBearerToken, isOriginAllowed, createHostCheck } from './auth-middleware';
 /**
  * Creates a WebSocket server that pushes real-time updates to connected clients.
  * Supports layout changes, plugin data updates, and scene changes.
  */
 export function createWsServer(options = {}) {
-    const { port = 0, server, heartbeatInterval = 30000, authToken } = options;
+    const { port = 0, server, heartbeatInterval = 30000, authToken, allowedHosts, warn } = options;
+    const isHostOk = createHostCheck(allowedHosts, warn);
     const clients = new Set();
     const listeners = {};
     let heartbeatTimer = null;
@@ -18,19 +19,27 @@ export function createWsServer(options = {}) {
         onReady = resolve;
         onError = reject;
     });
-    // Verify client for auth (if authToken is configured)
-    const verifyClient = authToken
-        ? (info, callback) => {
+    // Verify every upgrade: Host (DNS rebinding), Origin (cross-site WebSocket hijacking), token if configured
+    const verifyClient = (info, callback) => {
+        const { host, origin } = info.req.headers;
+        if (!isHostOk(host)) {
+            callback(false, 403, 'Host not allowed');
+            return;
+        }
+        if (!isOriginAllowed(origin, host)) {
+            callback(false, 403, 'Origin not allowed');
+            return;
+        }
+        if (authToken) {
             const authHeader = info.req.headers.authorization;
             const headerStr = Array.isArray(authHeader) ? authHeader[0] : authHeader;
-            const token = extractBearerToken(headerStr);
-            if (token !== authToken) {
+            if (extractBearerToken(headerStr) !== authToken) {
                 callback(false, 401, 'Unauthorized');
                 return;
             }
-            callback(true);
         }
-        : undefined;
+        callback(true);
+    };
     if (server) {
         wss = new WebSocketServer({ server, verifyClient });
         listeningPort = port;

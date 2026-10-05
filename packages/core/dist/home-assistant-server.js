@@ -1,7 +1,6 @@
 import { DEFAULT_HA_MAX_STALE_MS, DEFAULT_HA_DOMAINS } from '@lensing/types';
 const PLUGIN_ID = 'home-assistant-server';
 const DATA_BUS_DEVICES_CHANNEL = 'home.devices';
-const DATA_BUS_SENSORS_CHANNEL = 'home.sensors';
 const SENSOR_DOMAINS = new Set(['sensor', 'binary_sensor']);
 // ── Transform helpers ──────────────────────────────────────────────────────
 function transformEntity(raw) {
@@ -64,7 +63,6 @@ export function createHomeAssistantServer(options) {
     }
     function publishAndNotify(data) {
         dataBus.publish(DATA_BUS_DEVICES_CHANNEL, PLUGIN_ID, data);
-        dataBus.publish(DATA_BUS_SENSORS_CHANNEL, PLUGIN_ID, data);
         notifyUpdate(data);
     }
     function handleStateChanged(raw) {
@@ -166,6 +164,7 @@ export function createHomeAssistantServer(options) {
             return;
         }
         refreshing = true;
+        const startedAt = Date.now();
         try {
             let response;
             try {
@@ -212,14 +211,13 @@ export function createHomeAssistantServer(options) {
                 sensors: sensors.map(copyEntity),
                 lastUpdated: now,
             };
-            lastFetchedAt = now;
+            lastFetchedAt = startedAt;
             const publishData = {
                 devices: devices.map(copyEntity),
                 sensors: sensors.map(copyEntity),
                 lastUpdated: now,
             };
             dataBus.publish(DATA_BUS_DEVICES_CHANNEL, PLUGIN_ID, publishData);
-            dataBus.publish(DATA_BUS_SENSORS_CHANNEL, PLUGIN_ID, publishData);
             notifyUpdate(publishData);
         }
         finally {

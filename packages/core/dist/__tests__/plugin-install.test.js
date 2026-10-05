@@ -78,5 +78,22 @@ describe('installPluginFromZip', () => {
     it('should reject non-zip data', () => {
         expect(() => installPluginFromZip(Buffer.from('not a zip'), tmpDir)).toThrow();
     });
+    it('should reject a manifest id that is not a valid plugin id', () => {
+        const zip = makeZip({ 'plugin.json': JSON.stringify({ id: '..', name: 'x', version: '1' }) });
+        expect(() => installPluginFromZip(zip, tmpDir)).toThrow(/invalid plugin id/i);
+    });
+    it('should reject zip-slip entries and write nothing', () => {
+        const pluginsDir = path.join(tmpDir, 'plugins');
+        fs.mkdirSync(pluginsDir);
+        const zip = new AdmZip();
+        zip.addFile('plugin.json', Buffer.from(VALID_MANIFEST));
+        zip.addFile('ok.txt', Buffer.from('ok'));
+        zip.addFile('x', Buffer.from('pwned'));
+        // addFile normalizes names, so set the raw entry name afterwards
+        zip.getEntries().find((e) => e.entryName === 'x').entryName = '../../evil.txt';
+        expect(() => installPluginFromZip(zip.toBuffer(), pluginsDir)).toThrow(/unsafe/i);
+        expect(fs.existsSync(path.join(tmpDir, 'evil.txt'))).toBe(false);
+        expect(fs.existsSync(path.join(pluginsDir, 'test-plugin'))).toBe(false);
+    });
 });
 //# sourceMappingURL=plugin-install.test.js.map
