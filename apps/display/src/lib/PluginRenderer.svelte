@@ -41,6 +41,13 @@
     return fallback;
   }
 
+  /** Parse a numeric config value, using the fallback when unset or not a number */
+  function cfgNum(val: unknown, fallback: number): number {
+    if (val === undefined || val === null || val === '') return fallback;
+    const n = Number(val);
+    return Number.isFinite(n) ? n : fallback;
+  }
+
   function handleGoToSettings() {
     // eslint-disable-next-line svelte/no-navigation-without-resolve
     return goto(`${base}/admin`);
@@ -127,7 +134,7 @@
     <AiNewsWidget
       summaries={aiNewsData?.summaries ?? []}
       pageSize={Number(plugin.config['pageSize']) || 5}
-      rotateSeconds={Number(plugin.config['rotateSeconds']) ?? 30}
+      rotateSeconds={cfgNum(plugin.config['rotateSeconds'], 30)}
     />
   {:else}
     <PluginWidget {pluginId} />

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onDestroy } from 'svelte';
   import type { AiNewsSummary } from '@lensing/types';
 
   export let summaries: AiNewsSummary[] = [];
@@ -8,31 +9,60 @@
   export let rotateSeconds: number = 30;
 
   let pageIndex = 0;
+  // eslint-disable-next-line no-undef
   let timer: ReturnType<typeof setInterval> | undefined;
+  let lastStoryKey = '';
 
   $: totalPages = Math.max(1, Math.ceil(summaries.length / pageSize));
 
-  // Reset page when summaries change
-  $: if (summaries) pageIndex = 0;
+  // Back to page 1 only when the stories change, not when the same data is re-delivered
+  $: storyKey = summaries.map((s) => s.id).join('\n');
+  $: resetForNewStories(storyKey);
+  $: clampPage(totalPages);
+  $: restartTimer(rotateSeconds, totalPages);
 
   $: page = summaries.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize);
 
-  function nextPage() {
+  function resetForNewStories(key: string) {
+    if (key === lastStoryKey) return;
+    lastStoryKey = key;
+    pageIndex = 0;
+    restartTimer(rotateSeconds, totalPages);
+  }
+
+  function clampPage(pages: number) {
+    if (pageIndex >= pages) pageIndex = 0;
+  }
+
+  function restartTimer(seconds: number, pages: number) {
+    // eslint-disable-next-line no-undef
+    if (timer !== undefined) clearInterval(timer);
+    timer = undefined;
+    if (seconds > 0 && pages > 1) {
+      // eslint-disable-next-line no-undef
+      timer = setInterval(advance, seconds * 1000);
+    }
+  }
+
+  function advance() {
     pageIndex = (pageIndex + 1) % totalPages;
+  }
+
+  // Manual navigation gives the chosen page a full interval
+  function nextPage() {
+    advance();
+    restartTimer(rotateSeconds, totalPages);
   }
 
   function prevPage() {
     pageIndex = (pageIndex - 1 + totalPages) % totalPages;
+    restartTimer(rotateSeconds, totalPages);
   }
 
-  // Auto-rotate — restart timer when config changes
-  $: {
+  onDestroy(() => {
+    // eslint-disable-next-line no-undef
     if (timer !== undefined) clearInterval(timer);
-    timer = undefined;
-    if (rotateSeconds > 0 && totalPages > 1) {
-      timer = setInterval(nextPage, rotateSeconds * 1000);
-    }
-  }
+  });
 
   function formatAge(published: number): string {
     const ageMs = Math.max(0, Date.now() - published);

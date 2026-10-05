@@ -10,6 +10,8 @@ import { DEFAULT_AI_NEWS_MAX_ITEMS, DEFAULT_AI_NEWS_MAX_STALE_MS } from '@lensin
 
 const PLUGIN_ID = 'ai-news-server';
 const DATA_BUS_CHANNEL = 'ai-news.summaries';
+/** Articles older than this are skipped while fresher ones are available */
+const MAX_ARTICLE_AGE_MS = 48 * 3_600_000;
 
 // ── RSS Parsing (subset from news-server) ───────────────────────────────────
 
@@ -82,10 +84,15 @@ function parseItems(
     const description = stripHtml(decodeEntities(rawDesc)).trim();
     const link =
       extractCdata(extractTag(itemXml, 'link')).trim() || extractTag(itemXml, 'guid').trim();
+    const guid = extractCdata(extractTag(itemXml, 'guid')).trim();
     const pubDate = extractCdata(extractTag(itemXml, 'pubDate'));
 
+    // Key by guid/link so a story keeps its id when newer items push it down the feed
+    const key = guid || link || String(index);
+    index++;
+
     items.push({
-      id: `${feedUrl}#${index++}`,
+      id: `${feedUrl}#${key}`,
       title,
       description,
       link,
@@ -216,31 +223,27 @@ export function createAiNewsServer(options: AiNewsServerOptions): AiNewsServerIn
     }
 
     refreshing = true;
+    const startedAt = Date.now();
 
     try {
-      // 1. Fetch all RSS feeds
-      const allArticles: ParsedArticle[] = [];
-      let anySuccess = false;
+      // 1. Fetch all RSS feeds, one queue per feed URL
+      const fetchedQueues: ParsedArticle[][] = [];
 
       for (const url of feedUrls) {
         const articles = await fetchFeed(url);
-        if (articles !== null) {
-          allArticles.push(...articles);
-          anySuccess = true;
-        }
+        if (articles !== null) fetchedQueues.push(articles);
       }
 
-      if (!anySuccess) return;
+      if (fetchedQueues.length === 0) return;
 
-      // 2. Interleave articles across feeds so each source gets fair representation,
+      // 2. Skip stale articles, unless nothing fresh came back at all
+      const cutoff = startedAt - MAX_ARTICLE_AGE_MS;
+      const freshQueues = fetchedQueues.map((q) => q.filter((a) => a.published >= cutoff));
+      const feedQueues = freshQueues.some((q) => q.length > 0) ? freshQueues : fetchedQueues;
+
+      // 3. Interleave articles across feeds so each feed gets fair representation,
       // then trim to maxItems. Without this, the first feed's articles dominate.
-      const byFeed = new Map<string, ParsedArticle[]>();
-      for (const a of allArticles) {
-        const key = a.source;
-        if (!byFeed.has(key)) byFeed.set(key, []);
-        byFeed.get(key)!.push(a);
-      }
-      const feedQueues = [...byFeed.values()];
+      // Grouped by feed URL, not channel title: all BBC feeds are titled "BBC News".
       const interleaved: ParsedArticle[] = [];
       let round = 0;
       while (interleaved.length < maxItems) {
@@ -257,7 +260,7 @@ export function createAiNewsServer(options: AiNewsServerOptions): AiNewsServerIn
       }
       const trimmed = interleaved;
 
-      // 3. Summarize via LLM
+      // 4. Summarize via LLM
       let aiSummaries: string[];
       try {
         aiSummaries = await summarize(
@@ -269,7 +272,7 @@ export function createAiNewsServer(options: AiNewsServerOptions): AiNewsServerIn
         return;
       }
 
-      // 4. Build AiNewsSummary items
+      // 5. Build AiNewsSummary items
       const now = Date.now();
       const summaries: AiNewsSummary[] = trimmed.map((article, i) => ({
         id: article.id,
@@ -282,7 +285,7 @@ export function createAiNewsServer(options: AiNewsServerOptions): AiNewsServerIn
       }));
 
       lastData = { summaries: summaries.map(copySummary), lastUpdated: now };
-      lastFetchedAt = now;
+      lastFetchedAt = startedAt;
 
       const publishData: AiNewsData = {
         summaries: summaries.map(copySummary),

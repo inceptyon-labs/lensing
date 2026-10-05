@@ -315,6 +315,90 @@ describe('AI News Server', () => {
     expect(data.summaries.length).toBe(4);
   });
 
+  it('should interleave feeds that share a channel title', async () => {
+    const feedXml = (n: number) => `<rss><channel><title>BBC News</title>
+      <item><title>Feed ${n} A</title><link>https://bbc.example/${n}/a</link></item>
+      <item><title>Feed ${n} B</title><link>https://bbc.example/${n}/b</link></item>
+    </channel></rss>`;
+    const fetchFn = vi.fn(async (url: string) => ({
+      ok: true,
+      text: async () => feedXml(url.endsWith('1') ? 1 : 2),
+    }));
+    const summarize = vi.fn(async (a: unknown[]) => a.map(() => 's'));
+    const server = createAiNewsServer(
+      makeOptions({
+        feedUrls: ['https://bbc.example/feed1', 'https://bbc.example/feed2'],
+        fetchFn,
+        summarize,
+        maxItems: 2,
+      })
+    );
+
+    await server.refresh();
+
+    expect(server.getData()!.summaries.map((s) => s.title)).toEqual(['Feed 1 A', 'Feed 2 A']);
+  });
+
+  it('should drop articles older than 48 hours when fresher ones exist', async () => {
+    const now = Date.now();
+    const xml = `<rss><channel><title>Mixed</title>
+      <item><title>Old</title><link>https://example.com/old</link><pubDate>${new Date(now - 72 * 3_600_000).toUTCString()}</pubDate></item>
+      <item><title>Fresh</title><link>https://example.com/fresh</link><pubDate>${new Date(now - 3_600_000).toUTCString()}</pubDate></item>
+    </channel></rss>`;
+    const summarize = vi.fn(async (a: unknown[]) => a.map(() => 's'));
+    const server = createAiNewsServer(makeOptions({ fetchFn: makeFetchFn(xml), summarize }));
+
+    await server.refresh();
+
+    expect(server.getData()!.summaries.map((s) => s.title)).toEqual(['Fresh']);
+  });
+
+  it('should keep a story id stable when newer stories are added above it', async () => {
+    const withNewer = RSS_XML.replace(
+      '<item>',
+      '<item><title>Breaking</title><link>https://example.com/0</link><pubDate>Mon, 01 Jan 2024 02:00:00 GMT</pubDate></item><item>'
+    );
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: true, text: async () => RSS_XML })
+      .mockResolvedValueOnce({ ok: true, text: async () => withNewer });
+    const summarize = vi.fn(async (a: unknown[]) => a.map(() => 's'));
+    const server = createAiNewsServer(makeOptions({ fetchFn, summarize }));
+
+    await server.refresh();
+    const before = server.getData()!.summaries.find((s) => s.title === 'Headline One')!.id;
+    await server.refresh();
+    const after = server.getData()!.summaries.find((s) => s.title === 'Headline One')!.id;
+
+    expect(after).toBe(before);
+  });
+
+  it('should refresh again exactly maxStale_ms after the previous refresh started', async () => {
+    vi.useFakeTimers();
+    try {
+      let resolveText: (xml: string) => void = () => {};
+      const fetchFn = vi.fn().mockImplementation(async () => ({
+        ok: true,
+        text: () => new Promise<string>((r) => (resolveText = r)),
+      }));
+      const server = createAiNewsServer(makeOptions({ fetchFn, maxStale_ms: 60_000 }));
+
+      const first = server.refresh();
+      await vi.advanceTimersByTimeAsync(5_000); // slow feed
+      resolveText(RSS_XML);
+      await first;
+
+      await vi.advanceTimersByTimeAsync(55_000);
+      const second = server.refresh();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(fetchFn).toHaveBeenCalledTimes(2);
+      resolveText(RSS_XML);
+      await second;
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   // ── Category mapping ──────────────────────────────────────────────────
 
   it('should apply category overrides from options', async () => {

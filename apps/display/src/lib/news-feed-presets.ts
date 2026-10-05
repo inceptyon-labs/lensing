@@ -15,7 +15,10 @@ export const FEED_PRESETS: FeedCategory[] = [
     feeds: [
       { label: 'BBC Top Stories', url: 'https://feeds.bbci.co.uk/news/rss.xml' },
       { label: 'NPR News', url: 'https://feeds.npr.org/1001/rss.xml' },
-      { label: 'AP News', url: 'https://rsshub.app/apnews/topics/apf-topnews' },
+      {
+        label: 'NYT Top Stories',
+        url: 'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml',
+      },
     ],
   },
   {
@@ -29,7 +32,7 @@ export const FEED_PRESETS: FeedCategory[] = [
     label: 'World',
     feeds: [
       { label: 'BBC World', url: 'https://feeds.bbci.co.uk/news/world/rss.xml' },
-      { label: 'Reuters', url: 'https://www.reutersagency.com/feed/' },
+      { label: 'Guardian World', url: 'https://www.theguardian.com/world/rss' },
     ],
   },
   {

@@ -3,7 +3,8 @@ import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
-  preprocess: vitePreprocess(),
+  // Style preprocessing crashes under vitest and no component uses a CSS preprocessor
+  preprocess: vitePreprocess({ style: !process.env.VITEST }),
   onwarn(warning, handler) {
     if (warning.code.startsWith('a11y_')) return;
     handler(warning);

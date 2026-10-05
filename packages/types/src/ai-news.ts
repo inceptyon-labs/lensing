@@ -86,7 +86,7 @@ export const AI_NEWS_CATEGORIES: AiNewsCategory[] = [
     feeds: [
       'https://feeds.bbci.co.uk/news/rss.xml',
       'https://feeds.npr.org/1001/rss.xml',
-      'https://rsshub.app/apnews/topics/apf-topnews',
+      'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml',
     ],
   },
   {
@@ -102,7 +102,7 @@ export const AI_NEWS_CATEGORIES: AiNewsCategory[] = [
     label: 'World',
     feeds: [
       'https://feeds.bbci.co.uk/news/world/rss.xml',
-      'https://www.reutersagency.com/feed/',
+      'https://www.theguardian.com/world/rss',
     ],
   },
   {
