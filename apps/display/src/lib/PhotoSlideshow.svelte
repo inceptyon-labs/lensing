@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { untrack } from 'svelte';
+
   function getNextPhotoIndex(current: number, total: number): number {
     if (total <= 1) return 0;
     return (current + 1) % total;
@@ -18,24 +20,27 @@
   let currentVariant = $derived(KEN_BURNS_VARIANTS[variantIndex]);
 
   function advance() {
-    const paths = photoPaths ?? [];
-    if (paths.length === 0) return;
-    currentIndex = getNextPhotoIndex(currentIndex, paths.length);
+    const total = untrack(() => (photoPaths ?? []).length);
+    if (total === 0) return;
+    currentIndex = getNextPhotoIndex(currentIndex, total);
     variantIndex = (variantIndex + 1) % KEN_BURNS_VARIANTS.length;
   }
 
-  // Start slideshow timer — recreate when cycleInterval or photoPaths change
+  // $derived only notifies when the count changes, so re-setting an identical
+  // array on every data bus message doesn't restart the timer.
+  const photoCount = $derived((photoPaths ?? []).length);
+  const interval = $derived(cycleInterval ?? 30000);
+
+  // Start slideshow timer — recreate only when the photo count or cycleInterval change
   $effect(() => {
-    const paths = photoPaths ?? [];
-    const interval = cycleInterval ?? 30000;
-    if (paths.length <= 1) return;
+    if (photoCount <= 1) return;
 
     const timer = setInterval(advance, interval);
     return () => clearInterval(timer);
   });
 
   let currentPhoto = $derived(
-    (photoPaths ?? []).length > 0 ? (photoPaths ?? [])[currentIndex] ?? null : null
+    (photoPaths ?? []).length > 0 ? ((photoPaths ?? [])[currentIndex] ?? null) : null
   );
 </script>
 

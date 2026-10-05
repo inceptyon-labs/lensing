@@ -1,8 +1,21 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import type { CalendarEvent } from '@lensing/types';
+  import { getDayLabel, isUpcoming } from './calendar-dates';
 
   export let events: CalendarEvent[] = [];
   export let compact: boolean = false;
+
+  // Tick so ended events drop off and Today/Tomorrow labels roll over at midnight
+  let now = new Date();
+  onMount(() => {
+    // eslint-disable-next-line no-undef
+    const timer = setInterval(() => {
+      now = new Date();
+    }, 60_000);
+    // eslint-disable-next-line no-undef
+    return () => clearInterval(timer);
+  });
 
   interface DayGroup {
     label: string;
@@ -18,57 +31,21 @@
     return `${hour12}:${m} ${ampm}`;
   }
 
-  /** Get today's date string YYYY-MM-DD in local time */
-  function todayStr(): string {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  }
-
-  /** Check if an event is still relevant (not in the past) */
-  function isUpcoming(e: CalendarEvent): boolean {
-    if (e.allDay) {
-      // All-day events: compare date strings to avoid timezone issues
-      // DTEND in iCal is exclusive, so an all-day event on Mar 10 has end "2026-03-11"
-      // Show it if end date string > today string (meaning it hasn't fully passed)
-      const endDate = e.end.slice(0, 10);
-      return endDate > todayStr();
-    }
-    // Timed events: compare timestamps
-    return new Date(e.end).getTime() >= Date.now();
-  }
-
-  function getDayLabel(isoStr: string): string {
-    // For date-only strings, parse components directly to avoid UTC shift
-    const dateStr = isoStr.slice(0, 10);
-    const today = todayStr();
-    const tom = new Date();
-    tom.setDate(tom.getDate() + 1);
-    const tomorrowStr = `${tom.getFullYear()}-${String(tom.getMonth() + 1).padStart(2, '0')}-${String(tom.getDate()).padStart(2, '0')}`;
-
-    if (dateStr === today) return 'Today';
-    if (dateStr === tomorrowStr) return 'Tomorrow';
-
-    // Parse date parts to format without timezone issues
-    const [y, m, d] = dateStr.split('-').map(Number);
-    const display = new Date(y, m - 1, d);
-    return display.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
-  }
-
-  function getUpcoming(evts: CalendarEvent[], limit: number): CalendarEvent[] {
+  function getUpcoming(evts: CalendarEvent[], limit: number, at: Date): CalendarEvent[] {
     return evts
-      .filter(isUpcoming)
+      .filter((e) => isUpcoming(e, at))
       .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
       .slice(0, limit);
   }
 
-  function groupByDay(evts: CalendarEvent[]): DayGroup[] {
+  function groupByDay(evts: CalendarEvent[], at: Date): DayGroup[] {
     const upcoming = evts
-      .filter(isUpcoming)
+      .filter((e) => isUpcoming(e, at))
       .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
 
     const groups = new Map<string, CalendarEvent[]>();
     for (const evt of upcoming) {
-      const label = getDayLabel(evt.start);
+      const label = getDayLabel(evt.start, at);
       if (!groups.has(label)) groups.set(label, []);
       groups.get(label)!.push(evt);
     }
@@ -76,8 +53,8 @@
     return Array.from(groups.entries()).map(([label, evts]) => ({ label, events: evts }));
   }
 
-  $: compactEvents = getUpcoming(events, 5);
-  $: dayGroups = groupByDay(events);
+  $: compactEvents = getUpcoming(events, 5, now);
+  $: dayGroups = groupByDay(events, now);
 </script>
 
 <div class="calendar-widget" class:calendar-widget--compact={compact}>

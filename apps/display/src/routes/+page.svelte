@@ -6,6 +6,7 @@
   import type { GridWidget } from '../lib/grid/types';
   import { saveLayout, loadLayout } from '../lib/grid/layout-persistence';
   import { handlePluginData } from '../lib/stores/dataBusStore';
+  import { createReconnectingSocket } from '../lib/ws-reconnect';
 
   let plugins: PluginAdminEntry[] = $state([]);
   let serverLayout: GridWidget[] | null = $state(null);
@@ -64,27 +65,36 @@
 
     // eslint-disable-next-line no-undef
     const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    // eslint-disable-next-line no-undef
-    const ws = new WebSocket(`${wsProto}//${location.host}/ws`);
-
-    ws.addEventListener('message', (event) => {
-      try {
-        const msg = JSON.parse(String(event.data)) as WsMessage;
-        if (msg.type === 'layout_change') {
-          void loadPlugins();
-          void loadLayout().then((layout) => {
-            if (layout) serverLayout = layout;
-          });
-        } else if (msg.type === 'plugin_data') {
-          handlePluginData(msg.payload as DataBusMessage);
+    const socket = createReconnectingSocket({
+      // eslint-disable-next-line no-undef
+      url: `${wsProto}//${location.host}/ws`,
+      // On every (re)open, refetch state so updates missed while disconnected are recovered
+      onOpen: () => {
+        void loadPlugins();
+        void loadLayout().then((layout) => {
+          if (layout) serverLayout = layout;
+        });
+        void loadDataBusSnapshot();
+      },
+      onMessage: (event) => {
+        try {
+          const msg = JSON.parse(String(event.data)) as WsMessage;
+          if (msg.type === 'layout_change') {
+            void loadPlugins();
+            void loadLayout().then((layout) => {
+              if (layout) serverLayout = layout;
+            });
+          } else if (msg.type === 'plugin_data') {
+            handlePluginData(msg.payload as DataBusMessage);
+          }
+        } catch {
+          // ignore malformed messages
         }
-      } catch {
-        // ignore malformed messages
-      }
+      },
     });
 
     return () => {
-      ws.close();
+      socket.close();
     };
   });
 </script>

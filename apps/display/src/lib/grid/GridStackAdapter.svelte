@@ -1,5 +1,7 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import { GridStack } from 'gridstack';
+  import 'gridstack/dist/gridstack.min.css';
   import type { GridWidget, GridPolicy } from './types';
   import { DEFAULT_GRID_POLICY } from './types';
   import { isMobileViewport, MOBILE_COLUMNS, getMobileGridPolicy } from './mobile-config';
@@ -54,13 +56,6 @@
   function initGrid() {
     if (!gridEl) return;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const GridStack = (globalThis as any).GridStack;
-    if (!GridStack) {
-      // GridStack.js not loaded — static fallback will render
-      return;
-    }
-
     try {
       // Use mobile policy when viewport is small (responsive column count)
       const mobile = isMobileViewport();
@@ -80,9 +75,9 @@
           staticGrid: !editMode,
           minRow: activeOptions.minRow ?? 1,
           // Touch support: hold delay and movement tolerance
-          draggable: {
-            touchDelay,
-          },
+          // touchDelay is supported at runtime but missing from DDDragOpt typings
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          draggable: { touchDelay } as any,
           ...(moveTolerance > 0 ? { moveTolerance } : {}),
         },
         gridEl
