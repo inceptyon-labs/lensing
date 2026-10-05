@@ -19,7 +19,7 @@ export function createConnectorRunner(options) {
             const isRss = config.type === 'rss_feed' || config.type === 'rss';
             // Resolve {{SECRET}} placeholders in URL and headers (JSON API only)
             let url = config.url;
-            let headers = { ...(config.headers ?? {}) };
+            const headers = { ...(config.headers ?? {}) };
             if (secretResolver && !isRss) {
                 url = await resolvePlaceholders(url, pluginId, secretResolver);
                 for (const [key, value] of Object.entries(headers)) {

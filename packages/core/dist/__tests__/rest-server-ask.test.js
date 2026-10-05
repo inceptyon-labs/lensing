@@ -84,7 +84,7 @@ describe('REST POST /ask', () => {
             expect(body.error).toBeDefined();
         });
         it('should return 400 for invalid JSON', async () => {
-            const res = await request(port, 'POST', '/ask', undefined);
+            await request(port, 'POST', '/ask', undefined);
             // Send raw string instead of JSON
             const rawRes = await new Promise((resolve, reject) => {
                 const req = http.request({

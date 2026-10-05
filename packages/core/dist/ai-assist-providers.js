@@ -77,7 +77,8 @@ function createAnthropicProvider(apiKey) {
                 });
                 if (!response.ok) {
                     const error = await response.json().catch(() => ({}));
-                    const message = error?.error?.message || `HTTP ${response.status}`;
+                    const message = error?.error?.message ||
+                        `HTTP ${response.status}`;
                     throw new Error(message);
                 }
                 const data = (await response.json());
@@ -149,7 +150,8 @@ function createDeepSeekProvider(apiKey) {
                 });
                 if (!response.ok) {
                     const error = await response.json().catch(() => ({}));
-                    const message = error?.error?.message || `HTTP ${response.status}`;
+                    const message = error?.error?.message ||
+                        `HTTP ${response.status}`;
                     throw new Error(message);
                 }
                 const data = (await response.json());
@@ -224,7 +226,8 @@ function createGeminiProvider(apiKey) {
                 });
                 if (!response.ok) {
                     const error = await response.json().catch(() => ({}));
-                    const message = error?.error?.message || `HTTP ${response.status}`;
+                    const message = error?.error?.message ||
+                        `HTTP ${response.status}`;
                     throw new Error(message);
                 }
                 const data = (await response.json());

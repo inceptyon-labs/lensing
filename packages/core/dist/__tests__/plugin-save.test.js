@@ -51,14 +51,14 @@ describe('savePluginFromBuilder', () => {
     });
     it('includes thumbnail when provided', async () => {
         const thumbnail = Buffer.from('fake-png-data');
-        const result = await savePluginFromBuilder(validInput({ thumbnail }), tmpDir);
+        await savePluginFromBuilder(validInput({ thumbnail }), tmpDir);
         const pluginDir = path.join(tmpDir, 'test-plugin');
         expect(fs.existsSync(path.join(pluginDir, 'thumbnail.png'))).toBe(true);
         const thumbnailData = fs.readFileSync(path.join(pluginDir, 'thumbnail.png'));
         expect(thumbnailData).toEqual(thumbnail);
     });
     it('omits thumbnail when not provided', async () => {
-        const result = await savePluginFromBuilder(validInput(), tmpDir);
+        await savePluginFromBuilder(validInput(), tmpDir);
         const pluginDir = path.join(tmpDir, 'test-plugin');
         expect(fs.existsSync(path.join(pluginDir, 'thumbnail.png'))).toBe(false);
     });
@@ -90,14 +90,14 @@ describe('savePluginFromBuilder', () => {
     });
     it('writes correct HTML content to template.html', async () => {
         const html = '<div>Hello {{name}}</div>';
-        const result = await savePluginFromBuilder(validInput({ html }), tmpDir);
+        await savePluginFromBuilder(validInput({ html }), tmpDir);
         const pluginDir = path.join(tmpDir, 'test-plugin');
         const content = fs.readFileSync(path.join(pluginDir, 'template.html'), 'utf-8');
         expect(content).toBe(html);
     });
     it('writes correct CSS content to template.css', async () => {
         const css = '.widget { background: black; }';
-        const result = await savePluginFromBuilder(validInput({ css }), tmpDir);
+        await savePluginFromBuilder(validInput({ css }), tmpDir);
         const pluginDir = path.join(tmpDir, 'test-plugin');
         const content = fs.readFileSync(path.join(pluginDir, 'template.css'), 'utf-8');
         expect(content).toBe(css);
@@ -108,7 +108,7 @@ describe('savePluginFromBuilder', () => {
             url: 'https://feeds.example.com/rss',
             refreshInterval: 600,
         };
-        const result = await savePluginFromBuilder(validInput({ connector }), tmpDir);
+        await savePluginFromBuilder(validInput({ connector }), tmpDir);
         const pluginDir = path.join(tmpDir, 'test-plugin');
         const content = JSON.parse(fs.readFileSync(path.join(pluginDir, 'connector.json'), 'utf-8'));
         expect(content.type).toBe('rss_feed');

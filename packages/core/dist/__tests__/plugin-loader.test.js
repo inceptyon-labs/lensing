@@ -71,7 +71,7 @@ describe('Plugin Loader', () => {
                 version: '1.0.0',
             }));
             loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR });
-            const discovered = await loader.discover();
+            await loader.discover();
             // Should discover it but validation should fail
             const plugins = await loader.load();
             expect(plugins).toHaveLength(0);

@@ -16,18 +16,12 @@ export const AI_NEWS_CATEGORIES = [
     {
         id: 'technology',
         label: 'Technology',
-        feeds: [
-            'https://hnrss.org/frontpage',
-            'https://feeds.arstechnica.com/arstechnica/index',
-        ],
+        feeds: ['https://hnrss.org/frontpage', 'https://feeds.arstechnica.com/arstechnica/index'],
     },
     {
         id: 'world',
         label: 'World',
-        feeds: [
-            'https://feeds.bbci.co.uk/news/world/rss.xml',
-            'https://www.theguardian.com/world/rss',
-        ],
+        feeds: ['https://feeds.bbci.co.uk/news/world/rss.xml', 'https://www.theguardian.com/world/rss'],
     },
     {
         id: 'business',

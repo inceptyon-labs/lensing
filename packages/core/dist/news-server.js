@@ -81,7 +81,7 @@ function copyData(d) {
 }
 // ── Factory ───────────────────────────────────────────────────────────────────
 export function createNewsServer(options) {
-    const { feedUrls, categories = {}, dataBus, notifications: _notifications, maxItems = DEFAULT_NEWS_MAX_ITEMS, maxStale_ms = DEFAULT_NEWS_MAX_STALE_MS, fetchFn, } = options;
+    const { feedUrls, categories = {}, dataBus, maxItems = DEFAULT_NEWS_MAX_ITEMS, maxStale_ms = DEFAULT_NEWS_MAX_STALE_MS, fetchFn, } = options;
     if (!feedUrls || feedUrls.length === 0) {
         throw new Error('NewsServer: feedUrls is required and must not be empty');
     }
@@ -89,7 +89,6 @@ export function createNewsServer(options) {
         throw new Error(`NewsServer: maxItems must be a positive number, got ${maxItems}`);
     }
     const effectiveFetch = (fetchFn ?? fetch);
-    const _notificationQueue = _notifications;
     let lastData = null;
     let lastFetchedAt = null;
     let closed = false;

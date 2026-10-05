@@ -122,7 +122,7 @@ describe('Crypto Server', () => {
             const server = createServer({ fetchFn });
             await server.refresh();
             expect(fetchFn).toHaveBeenCalled();
-            const url = fetchFn.mock.calls[0][0];
+            const url = vi.mocked(fetchFn).mock.calls[0][0];
             expect(url).toContain('bitcoin');
             expect(url).toContain('ethereum');
             expect(url).toContain('vs_currency=usd');
@@ -195,14 +195,14 @@ describe('Crypto Server', () => {
         it('should publish prices to data bus', async () => {
             const server = createServer();
             await server.refresh();
-            expect(dataBus.publish.mock.calls.length).toBeGreaterThan(0);
-            const publishCall = dataBus.publish.mock.calls[0];
+            expect(vi.mocked(dataBus.publish).mock.calls.length).toBeGreaterThan(0);
+            const publishCall = vi.mocked(dataBus.publish).mock.calls[0];
             expect(publishCall[0]).toBe('crypto.prices');
         });
         it('should include coin data in publication', async () => {
             const server = createServer();
             await server.refresh();
-            const publishCall = dataBus.publish.mock.calls[0];
+            const publishCall = vi.mocked(dataBus.publish).mock.calls[0];
             const data = publishCall[2];
             expect(data.coins).toHaveLength(2);
             expect(data.coins[0].id).toBe('bitcoin');
@@ -210,7 +210,7 @@ describe('Crypto Server', () => {
         it('should not corrupt internal cache when published data is mutated', async () => {
             let publishedData;
             const mockDataBus = createMockDataBus();
-            mockDataBus.publish.mockImplementation((_channel, _source, data) => {
+            vi.mocked(mockDataBus.publish).mockImplementation((_channel, _source, data) => {
                 publishedData = data;
             });
             const server = createCryptoServer({
@@ -245,7 +245,7 @@ describe('Crypto Server', () => {
                 alertConfigs: [{ coinId: 'bitcoin', threshold_pct: 5, window: '24h' }],
             });
             await server.refresh();
-            expect(notifications.emit.mock.calls.length).toBeGreaterThan(0);
+            expect(vi.mocked(notifications.emit).mock.calls.length).toBeGreaterThan(0);
         });
         it('should not emit alert when change is below threshold', async () => {
             const fetchFn = createMockFetch([
@@ -265,7 +265,7 @@ describe('Crypto Server', () => {
                 alertConfigs: [{ coinId: 'bitcoin', threshold_pct: 5, window: '24h' }],
             });
             await server.refresh();
-            expect(notifications.emit.mock.calls.length).toBe(0);
+            expect(vi.mocked(notifications.emit).mock.calls.length).toBe(0);
         });
         it('should emit alert for negative changes exceeding threshold', async () => {
             const fetchFn = createMockFetch([
@@ -285,7 +285,7 @@ describe('Crypto Server', () => {
                 alertConfigs: [{ coinId: 'bitcoin', threshold_pct: 5, window: '24h' }],
             });
             await server.refresh();
-            expect(notifications.emit.mock.calls.length).toBeGreaterThan(0);
+            expect(vi.mocked(notifications.emit).mock.calls.length).toBeGreaterThan(0);
         });
         it('should publish alerts to crypto.alerts channel', async () => {
             const fetchFn = createMockFetch([
@@ -305,7 +305,9 @@ describe('Crypto Server', () => {
                 alertConfigs: [{ coinId: 'bitcoin', threshold_pct: 5, window: '24h' }],
             });
             await server.refresh();
-            const alertPublish = dataBus.publish.mock.calls.find((c) => c[0] === 'crypto.alerts');
+            const alertPublish = vi
+                .mocked(dataBus.publish)
+                .mock.calls.find((c) => c[0] === 'crypto.alerts');
             expect(alertPublish).toBeDefined();
         });
     });

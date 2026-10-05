@@ -51,7 +51,7 @@ function parseXmlSimple(xml) {
         throw new Error('Failed to parse RSS/Atom feed: malformed XML');
     }
     // Remove XML declaration and comments
-    let cleaned = xml.replace(/<\?.*?\?>/g, '').replace(/<!--.*?-->/gs, '');
+    const cleaned = xml.replace(/<\?.*?\?>/g, '').replace(/<!--.*?-->/gs, '');
     // Find root element
     const rootMatch = cleaned.match(/<([\w:]+)[\s>]/);
     if (!rootMatch) {

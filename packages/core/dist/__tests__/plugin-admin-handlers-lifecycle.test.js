@@ -118,7 +118,7 @@ describe('Plugin Admin Handlers — Connector Lifecycle', () => {
                 connectorRunner: mockConnectorRunner,
             });
             await loader.load();
-            const handlers = createPluginAdminHandlers({
+            createPluginAdminHandlers({
                 pluginLoader: loader,
                 db: mockDb,
                 pluginsDir: TEMP_PLUGINS_DIR,

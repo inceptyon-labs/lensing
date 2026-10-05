@@ -67,14 +67,13 @@ function copyData(d) {
 }
 // ── Factory ────────────────────────────────────────────────────────────────
 export function createSportsServer(options) {
-    const { leagues, teams, dataBus, notifications: _notifications, maxStale_ms = DEFAULT_SPORTS_MAX_STALE_MS, fetchFn, } = options;
+    const { leagues, teams, dataBus, maxStale_ms = DEFAULT_SPORTS_MAX_STALE_MS, fetchFn, } = options;
     // Pre-compute lowercase team filters for case-insensitive substring matching
     const teamFilters = (teams ?? []).map((t) => t.toLowerCase().trim()).filter(Boolean);
     if (!leagues || leagues.length === 0) {
         throw new Error('SportsServer: leagues is required and must not be empty');
     }
     const effectiveFetch = (fetchFn ?? fetch);
-    const _notificationQueue = _notifications;
     let lastData = null;
     let lastFetchedAt = null;
     let closed = false;

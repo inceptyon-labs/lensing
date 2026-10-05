@@ -148,9 +148,9 @@ describe('Allergies Server (pollen.com)', () => {
             const server = createServer({ fetchFn });
             await server.refresh();
             expect(fetchFn).toHaveBeenCalled();
-            const url = fetchFn.mock.calls[0][0];
+            const url = vi.mocked(fetchFn).mock.calls[0][0];
             expect(url).toBe('https://www.pollen.com/api/forecast/current/pollen/90210');
-            const init = fetchFn.mock.calls[0][1];
+            const init = vi.mocked(fetchFn).mock.calls[0][1];
             expect(init.headers.Referer).toContain('pollen.com');
             expect(init.headers['User-Agent']).toBeDefined();
         });
@@ -242,14 +242,14 @@ describe('Allergies Server (pollen.com)', () => {
         it('should publish pollen data to data bus', async () => {
             const server = createServer();
             await server.refresh();
-            expect(dataBus.publish.mock.calls.length).toBeGreaterThan(0);
-            const publishCall = dataBus.publish.mock.calls[0];
+            expect(vi.mocked(dataBus.publish).mock.calls.length).toBeGreaterThan(0);
+            const publishCall = vi.mocked(dataBus.publish).mock.calls[0];
             expect(publishCall[0]).toBe('allergies.current');
         });
         it('should include pollen data in publication', async () => {
             const server = createServer();
             await server.refresh();
-            const publishCall = dataBus.publish.mock.calls[0];
+            const publishCall = vi.mocked(dataBus.publish).mock.calls[0];
             const data = publishCall[2];
             expect(data.index).toBe(5.5);
             expect(data.triggers).toBeDefined();
@@ -263,7 +263,7 @@ describe('Allergies Server (pollen.com)', () => {
                 alertThreshold: 7.3,
             });
             await server.refresh();
-            expect(notifications.emit.mock.calls.length).toBeGreaterThan(0);
+            expect(vi.mocked(notifications.emit).mock.calls.length).toBeGreaterThan(0);
         });
         it('should not emit alert when index below threshold', async () => {
             const server = createServer({
@@ -271,14 +271,14 @@ describe('Allergies Server (pollen.com)', () => {
                 alertThreshold: 7.3,
             });
             await server.refresh();
-            expect(notifications.emit.mock.calls.length).toBe(0);
+            expect(vi.mocked(notifications.emit).mock.calls.length).toBe(0);
         });
         it('should use default alert threshold of 7.3', async () => {
             const server = createServer({
                 fetchFn: createMockFetch(createMockPollenResponse(8.0)),
             }); // no alertThreshold
             await server.refresh();
-            expect(notifications.emit.mock.calls.length).toBeGreaterThan(0);
+            expect(vi.mocked(notifications.emit).mock.calls.length).toBeGreaterThan(0);
         });
         it('should set urgent priority for High level', async () => {
             const server = createServer({
@@ -286,7 +286,7 @@ describe('Allergies Server (pollen.com)', () => {
                 alertThreshold: 7.3,
             });
             await server.refresh();
-            const emitCall = notifications.emit.mock.calls[0][0];
+            const emitCall = vi.mocked(notifications.emit).mock.calls[0][0];
             expect(emitCall.priority).toBe('urgent');
         });
     });
@@ -368,7 +368,7 @@ describe('Allergies Server (pollen.com)', () => {
         it('should not corrupt internal cache when published data is mutated', async () => {
             let publishedData;
             const mockDataBus = createMockDataBus();
-            mockDataBus.publish.mockImplementation((_channel, _source, data) => {
+            vi.mocked(mockDataBus.publish).mockImplementation((_channel, _source, data) => {
                 publishedData = data;
             });
             const server = createAllergiesServer({

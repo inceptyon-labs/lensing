@@ -477,7 +477,6 @@ describe('Agent Gateway', () => {
             const ws = getLatestMockWs();
             ws.simulateOpen();
             // Mock send to fail
-            const originalSend = ws.send.bind(ws);
             ws.send = vi.fn(() => {
                 throw new Error('WebSocket is not open');
             });

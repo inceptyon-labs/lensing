@@ -59,7 +59,7 @@ export function decrypt(encrypted, key) {
         decrypted = Buffer.concat([decrypted, decipher.final()]);
         return decrypted.toString('utf8');
     }
-    catch (error) {
+    catch {
         // Auth tag verification failed — indicates tampering or wrong key
         throw new Error(`Decryption failed: authentication tag verification failed`);
     }

@@ -166,7 +166,7 @@ describe('bootEnabledModules', () => {
         db.setSetting('weather.lat', '0');
         db.setSetting('weather.lon', '0');
         db.setSetting('pir.enabled', 'true');
-        const modules = bootEnabledModules(db, deps);
+        bootEnabledModules(db, deps);
         // Give async refresh time to execute
         await new Promise((r) => setTimeout(r, 50));
         const weatherMock = vi.mocked(createWeatherServer);
@@ -199,7 +199,11 @@ describe('bootEnabledModules', () => {
         const oldRefresh = vi.fn(() => Promise.resolve());
         const oldClose = vi.fn();
         const modules = [
-            { id: 'weather', instance: { close: oldClose, refresh: oldRefresh }, timer: 12345 },
+            {
+                id: 'weather',
+                instance: { close: oldClose, refresh: oldRefresh },
+                timer: 12345,
+            },
         ];
         db.setSetting('weather.enabled', 'true');
         db.setSetting('weather.apiKey', 'new-key');

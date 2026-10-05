@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createDatabase } from '../database';
+import Database from 'better-sqlite3';
 describe('Database', () => {
     let db;
     beforeEach(() => {
@@ -169,7 +170,7 @@ describe('Database', () => {
         });
         it('should throw when encountering corrupted JSON in getLayout', () => {
             // Manually insert corrupted JSON
-            const rawDb = new (require('better-sqlite3'))(':memory:');
+            const rawDb = new Database(':memory:');
             rawDb.exec(`
         CREATE TABLE layouts (
           name TEXT PRIMARY KEY,

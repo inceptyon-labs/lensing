@@ -1,7 +1,6 @@
 import type { PluginManifest } from '@lensing/types';
 import { type PackageInput } from './plugin-package';
-export interface BuilderSaveInput extends PackageInput {
-}
+export type BuilderSaveInput = PackageInput;
 export interface SaveOptions {
     overwrite?: boolean;
 }
