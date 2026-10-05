@@ -4,7 +4,7 @@
   import { DEFAULT_GRID_POLICY } from './types';
   import { pluginsToGridWidgets } from './default-layouts';
   import { getPreferredSize } from './widget-sizes';
-  import { isUtilityWidget, getUtilityType, getUtilityDefinition } from './layout-utilities';
+  import { getUtilityType, getUtilityDefinition } from './layout-utilities';
   import type { WidgetPosition } from './resize-modal-validation';
   import GridStackAdapter from './GridStackAdapter.svelte';
   import PluginRenderer from '../PluginRenderer.svelte';
@@ -57,7 +57,7 @@
     adminHref?: string;
   }
 
-  let { plugins, allPlugins = [], serverLayout = null, onsave, onconfigsaved, adminHref }: Props = $props();
+  let { plugins, allPlugins = [], serverLayout = null, onsave, onconfigsaved }: Props = $props();
 
   let dashboardRef: HTMLDivElement;
   let editMode = $state(false);

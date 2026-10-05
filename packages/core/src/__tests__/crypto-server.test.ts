@@ -4,8 +4,6 @@ import type {
   CryptoServerOptions,
   CryptoServerInstance,
   CryptoData,
-  CoinPrice,
-  CryptoAlertConfig,
   FetchFn,
   DataBusInstance,
   NotificationQueueInstance,
@@ -43,7 +41,7 @@ function createMockFetch(response: unknown): FetchFn {
     ok: true,
     status: 200,
     json: async () => response,
-  } as any);
+  });
 }
 
 function createMockCoinGeckoResponse() {
@@ -154,7 +152,7 @@ describe('Crypto Server', () => {
       await server.refresh();
 
       expect(fetchFn).toHaveBeenCalled();
-      const url = (fetchFn as any).mock.calls[0][0];
+      const url = vi.mocked(fetchFn).mock.calls[0][0];
       expect(url).toContain('bitcoin');
       expect(url).toContain('ethereum');
       expect(url).toContain('vs_currency=usd');
@@ -177,7 +175,7 @@ describe('Crypto Server', () => {
         ok: false,
         status: 429,
         statusText: 'Too Many Requests',
-      } as any);
+      });
       const onError = vi.fn();
       const server = createServer({ fetchFn });
       server.onError(onError);
@@ -194,7 +192,7 @@ describe('Crypto Server', () => {
         json: async () => {
           throw new Error('Invalid JSON');
         },
-      } as any);
+      });
       const onError = vi.fn();
       const server = createServer({ fetchFn });
       server.onError(onError);
@@ -245,8 +243,8 @@ describe('Crypto Server', () => {
 
       await server.refresh();
 
-      expect((dataBus.publish as any).mock.calls.length).toBeGreaterThan(0);
-      const publishCall = (dataBus.publish as any).mock.calls[0];
+      expect(vi.mocked(dataBus.publish).mock.calls.length).toBeGreaterThan(0);
+      const publishCall = vi.mocked(dataBus.publish).mock.calls[0];
       expect(publishCall[0]).toBe('crypto.prices');
     });
 
@@ -255,18 +253,18 @@ describe('Crypto Server', () => {
 
       await server.refresh();
 
-      const publishCall = (dataBus.publish as any).mock.calls[0];
+      const publishCall = vi.mocked(dataBus.publish).mock.calls[0];
       const data = publishCall[2] as CryptoData;
       expect(data.coins).toHaveLength(2);
       expect(data.coins[0].id).toBe('bitcoin');
     });
 
     it('should not corrupt internal cache when published data is mutated', async () => {
-      let publishedData: any;
+      let publishedData!: CryptoData;
       const mockDataBus = createMockDataBus();
-      (mockDataBus.publish as any).mockImplementation(
-        (_channel: string, _source: string, data: any) => {
-          publishedData = data;
+      vi.mocked(mockDataBus.publish).mockImplementation(
+        (_channel: string, _source: string, data: unknown) => {
+          publishedData = data as CryptoData;
         }
       );
 
@@ -309,7 +307,7 @@ describe('Crypto Server', () => {
 
       await server.refresh();
 
-      expect((notifications.emit as any).mock.calls.length).toBeGreaterThan(0);
+      expect(vi.mocked(notifications.emit).mock.calls.length).toBeGreaterThan(0);
     });
 
     it('should not emit alert when change is below threshold', async () => {
@@ -332,7 +330,7 @@ describe('Crypto Server', () => {
 
       await server.refresh();
 
-      expect((notifications.emit as any).mock.calls.length).toBe(0);
+      expect(vi.mocked(notifications.emit).mock.calls.length).toBe(0);
     });
 
     it('should emit alert for negative changes exceeding threshold', async () => {
@@ -355,7 +353,7 @@ describe('Crypto Server', () => {
 
       await server.refresh();
 
-      expect((notifications.emit as any).mock.calls.length).toBeGreaterThan(0);
+      expect(vi.mocked(notifications.emit).mock.calls.length).toBeGreaterThan(0);
     });
 
     it('should publish alerts to crypto.alerts channel', async () => {
@@ -378,9 +376,9 @@ describe('Crypto Server', () => {
 
       await server.refresh();
 
-      const alertPublish = (dataBus.publish as any).mock.calls.find(
-        (c: any[]) => c[0] === 'crypto.alerts'
-      );
+      const alertPublish = vi
+        .mocked(dataBus.publish)
+        .mock.calls.find((c: unknown[]) => c[0] === 'crypto.alerts');
       expect(alertPublish).toBeDefined();
     });
   });
@@ -482,7 +480,7 @@ describe('Crypto Server', () => {
 
   describe('Concurrency', () => {
     it('should not make concurrent fetch calls when refresh is already in flight', async () => {
-      let resolveFetch!: (val: any) => void;
+      let resolveFetch!: (val: unknown) => void;
       const fetchFn = vi.fn().mockImplementation(
         () =>
           new Promise((resolve) => {

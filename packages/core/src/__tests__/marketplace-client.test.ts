@@ -13,7 +13,7 @@ describe('MarketplaceClient', () => {
 
     // Mock fetch globally
     mockFetch = vi.fn();
-    global.fetch = mockFetch as any;
+    global.fetch = mockFetch as unknown as typeof fetch;
   });
 
   afterEach(async () => {

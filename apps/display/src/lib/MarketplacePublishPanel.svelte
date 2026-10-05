@@ -84,6 +84,7 @@
     <p class="progress-text">{publishingText}</p>
   {:else if stage === 'success'}
     <p class="success-msg">Published — awaiting review</p>
+    <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- external GitHub PR URL -->
     <a class="pr-link" href={prUrl} target="_blank" rel="noopener noreferrer">View pull request</a>
   {:else if stage === 'error'}
     <p class="error-msg">{errorMessage}</p>

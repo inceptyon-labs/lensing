@@ -26,7 +26,6 @@
 
   let marketplacePlugins: MarketplacePlugin[] | null = null;
   let marketplaceLoading = false;
-  let marketplaceLoadFailed = false;
 
   /** Track which plugins have been saved since last restart */
   let dirtyIds = new Set<string>();
@@ -79,7 +78,6 @@
   async function fetchMarketplace() {
     if (marketplacePlugins !== null || marketplaceLoading) return; // already loaded or in progress
     marketplaceLoading = true;
-    marketplaceLoadFailed = false;
     try {
       const res = await fetch('/marketplace');
       if (!res.ok) throw new Error(`Failed to load marketplace (${res.status})`);
@@ -87,7 +85,7 @@
       marketplacePlugins = data.plugins;
       marketplaceCount = data.total;
     } catch {
-      marketplaceLoadFailed = true; // allow retry on next tab visit
+      // leave marketplacePlugins null so the next tab visit retries
     } finally {
       marketplaceLoading = false;
     }

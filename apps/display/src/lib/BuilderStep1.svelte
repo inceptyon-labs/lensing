@@ -104,7 +104,7 @@
   </div>
 
   <label for="plugin-id">Plugin ID</label>
-  <input id="plugin-id" type="text" disabled bind:value={pluginId} />
+  <input id="plugin-id" type="text" disabled value={pluginId} />
 
   <button type="button" disabled={!isValid} on:click={handleNext}>Next</button>
 </form>

@@ -77,11 +77,13 @@ function createAnthropicProvider(apiKey: string): AiProvider {
             'x-api-key': apiKey,
             'anthropic-version': '2023-06-01',
           },
-          signal: controller.signal as any,
-        } as any);
+          signal: controller.signal,
+        });
         if (!response.ok) return [];
-        const data = (await response.json()) as any;
-        return (data.data || []).map((m: any) => ({
+        const data = (await response.json()) as {
+          data?: { id: string; display_name?: string }[];
+        };
+        return (data.data || []).map((m) => ({
           id: m.id,
           name: m.display_name || m.id,
         }));
@@ -118,18 +120,22 @@ function createAnthropicProvider(apiKey: string): AiProvider {
               content: m.content,
             })),
           }),
-          signal: controller.signal as any,
-        } as any);
+          signal: controller.signal,
+        });
 
         if (!response.ok) {
           const error = await response.json().catch(() => ({}));
-          const message = (error as any)?.error?.message || `HTTP ${response.status}`;
+          const message =
+            (error as { error?: { message?: string } })?.error?.message ||
+            `HTTP ${response.status}`;
           throw new Error(message);
         }
 
-        const data = (await response.json()) as any;
-        const textBlocks = (data.content || []).filter((b: any) => b.type === 'text');
-        return textBlocks.map((b: any) => b.text).join('');
+        const data = (await response.json()) as {
+          content?: { type: string; text?: string }[];
+        };
+        const textBlocks = (data.content || []).filter((b) => b.type === 'text');
+        return textBlocks.map((b) => b.text).join('');
       } catch (err) {
         // Re-throw abort errors as timeout
         if (err instanceof Error && err.name === 'AbortError') {
@@ -156,11 +162,11 @@ function createDeepSeekProvider(apiKey: string): AiProvider {
         const response = await fetchFn('https://api.deepseek.com/models', {
           method: 'GET',
           headers: { Authorization: `Bearer ${apiKey}` },
-          signal: controller.signal as any,
-        } as any);
+          signal: controller.signal,
+        });
         if (!response.ok) return [];
-        const data = (await response.json()) as any;
-        return (data.data || []).map((m: any) => ({
+        const data = (await response.json()) as { data?: { id: string }[] };
+        return (data.data || []).map((m) => ({
           id: m.id,
           name: m.id,
         }));
@@ -196,16 +202,20 @@ function createDeepSeekProvider(apiKey: string): AiProvider {
             })),
             temperature: 0.7,
           }),
-          signal: controller.signal as any,
-        } as any);
+          signal: controller.signal,
+        });
 
         if (!response.ok) {
           const error = await response.json().catch(() => ({}));
-          const message = (error as any)?.error?.message || `HTTP ${response.status}`;
+          const message =
+            (error as { error?: { message?: string } })?.error?.message ||
+            `HTTP ${response.status}`;
           throw new Error(message);
         }
 
-        const data = (await response.json()) as any;
+        const data = (await response.json()) as {
+          choices?: { message?: { content?: string } }[];
+        };
         return data.choices?.[0]?.message?.content || '';
       } catch (err) {
         if (err instanceof Error && err.name === 'AbortError') {
@@ -234,15 +244,17 @@ function createGeminiProvider(apiKey: string): AiProvider {
           {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
-            signal: controller.signal as any,
-          } as any
+            signal: controller.signal,
+          }
         );
         if (!response.ok) return [];
-        const data = (await response.json()) as any;
+        const data = (await response.json()) as {
+          models?: { name: string; displayName?: string; supportedGenerationMethods?: string[] }[];
+        };
         return (data.models || [])
-          .filter((m: any) => m.supportedGenerationMethods?.includes('generateContent'))
-          .map((m: any) => ({
-            id: (m.name as string).replace(/^models\//, ''),
+          .filter((m) => m.supportedGenerationMethods?.includes('generateContent'))
+          .map((m) => ({
+            id: m.name.replace(/^models\//, ''),
             name: m.displayName || m.name,
           }));
       } catch {
@@ -283,19 +295,23 @@ function createGeminiProvider(apiKey: string): AiProvider {
                 maxOutputTokens: 4096,
               },
             }),
-            signal: controller.signal as any,
-          } as any
+            signal: controller.signal,
+          }
         );
 
         if (!response.ok) {
           const error = await response.json().catch(() => ({}));
-          const message = (error as any)?.error?.message || `HTTP ${response.status}`;
+          const message =
+            (error as { error?: { message?: string } })?.error?.message ||
+            `HTTP ${response.status}`;
           throw new Error(message);
         }
 
-        const data = (await response.json()) as any;
-        const textParts = (data.candidates?.[0]?.content?.parts || []).filter((p: any) => p.text);
-        return textParts.map((p: any) => p.text).join('');
+        const data = (await response.json()) as {
+          candidates?: { content?: { parts?: { text?: string }[] } }[];
+        };
+        const textParts = (data.candidates?.[0]?.content?.parts || []).filter((p) => p.text);
+        return textParts.map((p) => p.text).join('');
       } catch (err) {
         if (err instanceof Error && err.name === 'AbortError') {
           throw new Error(`Request timeout after ${timeoutMs}ms`);

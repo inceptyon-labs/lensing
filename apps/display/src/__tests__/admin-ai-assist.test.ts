@@ -161,7 +161,7 @@ describe('AdminAiAssist', () => {
         expect(mockFetch).toHaveBeenCalledWith('/api/admin/builder/ai-assist', expect.anything());
       });
 
-      const [_url, options] = mockFetch.mock.calls[0];
+      const [, options] = mockFetch.mock.calls[0];
       const body = JSON.parse((options as RequestInit).body as string);
 
       expect(body).toMatchObject({
@@ -186,7 +186,7 @@ describe('AdminAiAssist', () => {
       await fireEvent.click(generateBtn);
 
       await waitFor(() => {
-        const [_url, options] = mockFetch.mock.calls[0];
+        const [, options] = mockFetch.mock.calls[0];
         const body = JSON.parse((options as RequestInit).body as string);
         expect(body.provider).toBe('deepseek');
       });

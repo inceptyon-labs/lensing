@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createNotificationQueue } from '../notification-queue';
 import type { NotificationQueueOptions, NotificationQueueInstance } from '../notification-queue';
 

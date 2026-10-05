@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { NewsArticle, NewsData, NewsServerOptions, NewsServerInstance } from '../news';
+import type { NewsArticle, NewsData } from '../news';
 import { DEFAULT_NEWS_MAX_ITEMS, DEFAULT_NEWS_MAX_STALE_MS } from '../news';
 
 describe('News Types & Constants', () => {

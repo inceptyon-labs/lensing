@@ -6,7 +6,6 @@ import type {
   AgentTaskResult,
   DataBusInstance,
   DataBusMessage,
-  ConnectionStatus,
   WsMessage,
 } from '@lensing/types';
 
@@ -610,7 +609,6 @@ describe('Agent Gateway', () => {
       ws.simulateOpen();
 
       // Mock send to fail
-      const originalSend = ws.send.bind(ws);
       ws.send = vi.fn(() => {
         throw new Error('WebSocket is not open');
       });

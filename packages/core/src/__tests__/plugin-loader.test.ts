@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createPluginLoader } from '../plugin-loader';
-import type { PluginLoader, LoadedPlugin } from '@lensing/types';
+import type { PluginLoader } from '@lensing/types';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
@@ -101,7 +101,7 @@ describe('Plugin Loader', () => {
       );
 
       loader = createPluginLoader({ pluginsDir: TEMP_PLUGINS_DIR });
-      const discovered = await loader.discover();
+      await loader.discover();
 
       // Should discover it but validation should fail
       const plugins = await loader.load();

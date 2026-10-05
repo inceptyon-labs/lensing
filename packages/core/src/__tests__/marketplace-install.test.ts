@@ -4,7 +4,6 @@ import * as path from 'path';
 import * as os from 'os';
 import AdmZip from 'adm-zip';
 import { downloadAndInstallPlugin } from '../marketplace-install';
-import type { ConnectorFetchFn } from '../connector-proxy';
 
 function makeZip(files: Record<string, string>): Buffer {
   const zip = new AdmZip();

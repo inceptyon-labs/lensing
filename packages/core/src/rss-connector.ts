@@ -1,4 +1,4 @@
-import type { RssConnectorConfig, ConnectorMapping } from '@lensing/types';
+import type { RssConnectorConfig } from '@lensing/types';
 import type { ConnectorFetchFn } from './connector-proxy';
 import { getBlockReason } from './url-blocklist';
 
@@ -85,7 +85,7 @@ function parseXmlSimple(xml: string): Record<string, unknown> {
   }
 
   // Remove XML declaration and comments
-  let cleaned = xml.replace(/<\?.*?\?>/g, '').replace(/<!--.*?-->/gs, '');
+  const cleaned = xml.replace(/<\?.*?\?>/g, '').replace(/<!--.*?-->/gs, '');
 
   // Find root element
   const rootMatch = cleaned.match(/<([\w:]+)[\s>]/);
@@ -209,7 +209,7 @@ export function createRssConnector(
   options: RssConnectorOptions = {}
 ): RssConnector {
   const { fetchFn = fetch, timeoutMs = DEFAULT_TIMEOUT_MS, allowPrivate = false } = options;
-  const limit = (config as any).limit || DEFAULT_ITEM_LIMIT;
+  const limit = config.limit || DEFAULT_ITEM_LIMIT;
 
   let cachedResponse: { items: Array<Record<string, unknown>> } | undefined;
 

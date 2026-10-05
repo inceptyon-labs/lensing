@@ -38,6 +38,7 @@ vi.mock('../photo-slideshow-server', () => ({
 }));
 
 import { bootEnabledModules, rebootModule, syncModulesWithLayout } from '../module-boot';
+import type { ModuleId } from '@lensing/types';
 import type { BootedModule } from '../module-boot';
 import { createWeatherServer } from '../weather-server';
 import { createCalendarServer } from '../caldav-client';
@@ -192,7 +193,7 @@ describe('bootEnabledModules', () => {
     db.setSetting('weather.lon', '0');
     db.setSetting('pir.enabled', 'true');
 
-    const modules = bootEnabledModules(db, deps);
+    bootEnabledModules(db, deps);
 
     // Give async refresh time to execute
     await new Promise((r) => setTimeout(r, 50));
@@ -205,7 +206,7 @@ describe('bootEnabledModules', () => {
     // PIR has no refresh method — should not be called
     const pirInstance = vi.mocked(createPIRServer).mock.results[0]?.value;
     if (pirInstance) {
-      expect((pirInstance as any).refresh).toBeUndefined();
+      expect((pirInstance as { refresh?: unknown }).refresh).toBeUndefined();
     }
   });
 
@@ -237,7 +238,11 @@ describe('bootEnabledModules', () => {
     const oldRefresh = vi.fn(() => Promise.resolve());
     const oldClose = vi.fn();
     const modules: BootedModule[] = [
-      { id: 'weather', instance: { close: oldClose, refresh: oldRefresh }, timer: 12345 as any },
+      {
+        id: 'weather',
+        instance: { close: oldClose, refresh: oldRefresh },
+        timer: 12345 as unknown as BootedModule['timer'],
+      },
     ];
 
     db.setSetting('weather.enabled', 'true');
@@ -355,7 +360,7 @@ describe('rebootModule', () => {
   it('should return null for unknown module ID', () => {
     const modules: BootedModule[] = [];
 
-    const result = rebootModule('nonexistent' as any, modules, db, deps);
+    const result = rebootModule('nonexistent' as ModuleId, modules, db, deps);
 
     expect(result).toBeNull();
     expect(modules).toHaveLength(0);

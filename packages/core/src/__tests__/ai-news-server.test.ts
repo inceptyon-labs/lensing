@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createAiNewsServer } from '../ai-news-server';
 import type {
   AiNewsServerOptions,
-  AiNewsData,
   DataBusInstance,
   NotificationQueueInstance,
 } from '@lensing/types';
@@ -96,9 +95,11 @@ describe('AI News Server', () => {
   });
 
   it('should throw if summarize is not provided', () => {
-    expect(() => createAiNewsServer(makeOptions({ summarize: undefined as any }))).toThrow(
-      'summarize function is required'
-    );
+    expect(() =>
+      createAiNewsServer(
+        makeOptions({ summarize: undefined as unknown as AiNewsServerOptions['summarize'] })
+      )
+    ).toThrow('summarize function is required');
   });
 
   it('should throw if maxItems is invalid', () => {

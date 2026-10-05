@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { createAiProvider } from '../ai-assist-providers';
 import type { AiProviderId } from '@lensing/types';
 
@@ -70,7 +70,7 @@ describe('AI Assist Providers', () => {
       const result = await provider.generate(
         [{ role: 'user', content: 'Test prompt' }],
         'claude-sonnet-4-20250514',
-        { fetchFn: mockFetch as any }
+        { fetchFn: mockFetch as unknown as typeof fetch }
       );
 
       expect(result).toBeDefined();
@@ -93,7 +93,7 @@ describe('AI Assist Providers', () => {
       await provider.generate(
         [{ role: 'user', content: 'Prompt' }],
         'claude-haiku-4-5-20251001', // Different model
-        { fetchFn: mockFetch as any }
+        { fetchFn: mockFetch as unknown as typeof fetch }
       );
 
       expect(mockFetch).toHaveBeenCalled();
@@ -109,7 +109,7 @@ describe('AI Assist Providers', () => {
 
       await expect(
         provider.generate([{ role: 'user', content: 'Test' }], 'claude-sonnet-4-20250514', {
-          fetchFn: mockFetch as any,
+          fetchFn: mockFetch as unknown as typeof fetch,
         })
       ).rejects.toThrow();
     });
@@ -128,14 +128,14 @@ describe('AI Assist Providers', () => {
 
       await expect(
         provider.generate([{ role: 'user', content: 'Test' }], 'claude-sonnet-4-20250514', {
-          fetchFn: mockFetch as any,
+          fetchFn: mockFetch as unknown as typeof fetch,
         })
       ).rejects.toThrow('Unauthorized');
     });
 
     it('enforces request timeout', async () => {
       const mockFetch = vi.fn(
-        (url: string, options: any) =>
+        (url: string, options?: { signal?: AbortSignal }) =>
           new Promise((resolve, reject) => {
             // Simulate abort signal handling
             if (options?.signal) {
@@ -155,7 +155,7 @@ describe('AI Assist Providers', () => {
 
       await expect(
         provider.generate([{ role: 'user', content: 'Test' }], 'claude-sonnet-4-20250514', {
-          fetchFn: mockFetch as any,
+          fetchFn: mockFetch as unknown as typeof fetch,
           timeoutMs: 100,
         })
       ).rejects.toThrow(/timeout|Timeout/i);
@@ -180,7 +180,7 @@ describe('AI Assist Providers', () => {
       const result = await provider.generate(
         [{ role: 'user', content: 'Test' }],
         'claude-sonnet-4-20250514',
-        { fetchFn: mockFetch as any }
+        { fetchFn: mockFetch as unknown as typeof fetch }
       );
 
       expect(result).toContain('Hello');

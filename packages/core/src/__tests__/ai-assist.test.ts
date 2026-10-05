@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { createAiAssist } from '../ai-assist';
-import type { AiProvider, Message, GenerateOptions } from '../ai-assist-providers';
-import type { AiAssistResponse, AiProviderId } from '@lensing/types';
+import type { AiProvider, Message } from '../ai-assist-providers';
+import type { AiProviderId } from '@lensing/types';
 
 /** Create a mock provider that returns a pre-set response */
 function stubProvider(response: string): AiProvider {

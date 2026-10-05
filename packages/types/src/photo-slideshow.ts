@@ -1,5 +1,3 @@
-import type { PluginManifestWithConfig } from './index';
-
 /** Current state of the photo slideshow */
 export interface PhotoSlideshow {
   photoPaths: string[];

@@ -1,7 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createRestServer, type RestServerInstance, type RestServerHandlers } from '../rest-server';
 import http from 'node:http';
-import type { AgentTaskResult } from '@lensing/types';
 
 /** Helper to make HTTP requests to the test server */
 function request(
@@ -101,7 +100,7 @@ describe('REST POST /ask', () => {
     });
 
     it('should return 400 for invalid JSON', async () => {
-      const res = await request(port, 'POST', '/ask', undefined);
+      await request(port, 'POST', '/ask', undefined);
       // Send raw string instead of JSON
       const rawRes = await new Promise<{ status: number; body: string }>((resolve, reject) => {
         const req = http.request(

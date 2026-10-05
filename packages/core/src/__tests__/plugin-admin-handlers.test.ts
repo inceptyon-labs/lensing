@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createPluginAdminHandlers } from '../plugin-admin-handlers';
 import { createPluginLoader } from '../plugin-loader';
 import { createDatabase } from '../database';
-import type { PluginManifestWithConfig, ZoneName } from '@lensing/types';
+import type { ZoneName } from '@lensing/types';
 import { MODULE_SCHEMAS } from '@lensing/types';
 import path from 'node:path';
 import os from 'node:os';

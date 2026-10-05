@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { createPluginAdminHandlers } from '../plugin-admin-handlers';
 import { createPluginLoader } from '../plugin-loader';
-import type { PluginLoader, DatabaseInstance } from '@lensing/types';
+import type { DatabaseInstance } from '@lensing/types';
 import type { ConnectorRunnerInstance } from '../connector-runner';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -17,7 +17,8 @@ function createMockDb(): DatabaseInstance {
     setSetting: (key: string, value: string) => {
       state.set(key, value);
     },
-    getPluginState: (id: string) => state.get(`plugin:${id}`) as any,
+    getPluginState: (id: string) =>
+      state.get(`plugin:${id}`) as unknown as ReturnType<DatabaseInstance['getPluginState']>,
     setPluginState: (id: string, value: unknown) => {
       state.set(`plugin:${id}`, value);
     },
@@ -27,7 +28,7 @@ function createMockDb(): DatabaseInstance {
     getScene: () => undefined,
     upsertScene: vi.fn(),
     deleteScene: vi.fn(),
-  } as any;
+  } as unknown as DatabaseInstance;
 }
 
 describe('Plugin Admin Handlers — Connector Lifecycle', () => {
@@ -148,7 +149,7 @@ describe('Plugin Admin Handlers — Connector Lifecycle', () => {
       });
       await loader.load();
 
-      const handlers = createPluginAdminHandlers({
+      createPluginAdminHandlers({
         pluginLoader: loader,
         db: mockDb,
         pluginsDir: TEMP_PLUGINS_DIR,

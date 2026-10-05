@@ -22,7 +22,7 @@ describe('Widget Size Registry', () => {
 
     it('should have valid GridSpan for every registry entry (min <= preferred <= max)', async () => {
       const { WIDGET_SIZE_REGISTRY } = await import('../src/lib/grid/widget-sizes');
-      for (const [pluginId, span] of Object.entries(WIDGET_SIZE_REGISTRY)) {
+      for (const span of Object.values(WIDGET_SIZE_REGISTRY)) {
         // Cols: min <= preferred <= max
         expect(span.min[0]).toBeLessThanOrEqual(span.preferred[0]);
         expect(span.preferred[0]).toBeLessThanOrEqual(span.max[0]);

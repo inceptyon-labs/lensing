@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import type { PluginManifest } from '@lensing/types';
 import { initialize, handleRequest, onActivate, onDeactivate } from '../server.js';
-import type { ServerConfig, RequestPayload, RequestResult } from '../server.js';
+import type { ServerConfig, RequestPayload } from '../server.js';
 
 /**
  * Plugin Template Package Tests

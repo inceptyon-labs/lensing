@@ -26,7 +26,8 @@
   }
 
   function removeMapping(id: string) {
-    const { [id]: _, ...rest } = mappings;
+    const rest = { ...mappings };
+    delete rest[id];
     mappings = rest;
   }
 

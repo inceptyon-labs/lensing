@@ -7,7 +7,6 @@ vi.mock('@lensing/core', () => ({
 
 import { createHostService } from '@lensing/core';
 import { startServer } from '../commands/start';
-import type { StartServerOptions, StartServerResult } from '../commands/start';
 
 const mockCreateHostService = vi.mocked(createHostService);
 

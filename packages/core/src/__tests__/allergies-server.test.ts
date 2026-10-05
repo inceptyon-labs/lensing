@@ -35,7 +35,7 @@ function createMockFetch(response: unknown): FetchFn {
     ok: true,
     status: 200,
     json: async () => response,
-  } as any);
+  });
 }
 
 function createMockPollenResponse(todayIndex = 5.5) {
@@ -173,9 +173,9 @@ describe('Allergies Server (pollen.com)', () => {
       await server.refresh();
 
       expect(fetchFn).toHaveBeenCalled();
-      const url = (fetchFn as any).mock.calls[0][0];
+      const url = vi.mocked(fetchFn).mock.calls[0][0];
       expect(url).toBe('https://www.pollen.com/api/forecast/current/pollen/90210');
-      const init = (fetchFn as any).mock.calls[0][1];
+      const init = vi.mocked(fetchFn).mock.calls[0][1] as { headers: Record<string, string> };
       expect(init.headers.Referer).toContain('pollen.com');
       expect(init.headers['User-Agent']).toBeDefined();
     });
@@ -197,7 +197,7 @@ describe('Allergies Server (pollen.com)', () => {
         ok: false,
         status: 403,
         statusText: 'Forbidden',
-      } as any);
+      });
       const onError = vi.fn();
       const server = createServer({ fetchFn });
       server.onError(onError);
@@ -214,7 +214,7 @@ describe('Allergies Server (pollen.com)', () => {
         json: async () => {
           throw new Error('Invalid JSON');
         },
-      } as any);
+      });
       const onError = vi.fn();
       const server = createServer({ fetchFn });
       server.onError(onError);
@@ -287,8 +287,8 @@ describe('Allergies Server (pollen.com)', () => {
 
       await server.refresh();
 
-      expect((dataBus.publish as any).mock.calls.length).toBeGreaterThan(0);
-      const publishCall = (dataBus.publish as any).mock.calls[0];
+      expect(vi.mocked(dataBus.publish).mock.calls.length).toBeGreaterThan(0);
+      const publishCall = vi.mocked(dataBus.publish).mock.calls[0];
       expect(publishCall[0]).toBe('allergies.current');
     });
 
@@ -297,8 +297,8 @@ describe('Allergies Server (pollen.com)', () => {
 
       await server.refresh();
 
-      const publishCall = (dataBus.publish as any).mock.calls[0];
-      const data = publishCall[2];
+      const publishCall = vi.mocked(dataBus.publish).mock.calls[0];
+      const data = publishCall[2] as { index: number; triggers: unknown; periods: unknown };
       expect(data.index).toBe(5.5);
       expect(data.triggers).toBeDefined();
       expect(data.periods).toBeDefined();
@@ -314,7 +314,7 @@ describe('Allergies Server (pollen.com)', () => {
 
       await server.refresh();
 
-      expect((notifications.emit as any).mock.calls.length).toBeGreaterThan(0);
+      expect(vi.mocked(notifications.emit).mock.calls.length).toBeGreaterThan(0);
     });
 
     it('should not emit alert when index below threshold', async () => {
@@ -325,7 +325,7 @@ describe('Allergies Server (pollen.com)', () => {
 
       await server.refresh();
 
-      expect((notifications.emit as any).mock.calls.length).toBe(0);
+      expect(vi.mocked(notifications.emit).mock.calls.length).toBe(0);
     });
 
     it('should use default alert threshold of 7.3', async () => {
@@ -335,7 +335,7 @@ describe('Allergies Server (pollen.com)', () => {
 
       await server.refresh();
 
-      expect((notifications.emit as any).mock.calls.length).toBeGreaterThan(0);
+      expect(vi.mocked(notifications.emit).mock.calls.length).toBeGreaterThan(0);
     });
 
     it('should set urgent priority for High level', async () => {
@@ -346,7 +346,7 @@ describe('Allergies Server (pollen.com)', () => {
 
       await server.refresh();
 
-      const emitCall = (notifications.emit as any).mock.calls[0][0];
+      const emitCall = vi.mocked(notifications.emit).mock.calls[0][0];
       expect(emitCall.priority).toBe('urgent');
     });
   });
@@ -448,11 +448,11 @@ describe('Allergies Server (pollen.com)', () => {
 
   describe('Data isolation', () => {
     it('should not corrupt internal cache when published data is mutated', async () => {
-      let publishedData: any;
+      let publishedData!: { index: number; triggers: Array<{ name: string }> };
       const mockDataBus = createMockDataBus();
-      (mockDataBus.publish as any).mockImplementation(
-        (_channel: string, _source: string, data: any) => {
-          publishedData = data;
+      vi.mocked(mockDataBus.publish).mockImplementation(
+        (_channel: string, _source: string, data: unknown) => {
+          publishedData = data as typeof publishedData;
         }
       );
 

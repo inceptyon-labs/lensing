@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseTemplate, renderTemplate, escapeHtml } from '../lib/template-engine';
+import { parseTemplate, renderTemplate, escapeHtml, type BlockToken } from '../lib/template-engine';
 
 describe('Template Engine', () => {
   describe('escapeHtml', () => {
@@ -85,7 +85,7 @@ describe('Template Engine', () => {
     it('parses {{#each items}}...{{/each}} block', () => {
       const tokens = parseTemplate('{{#each items}}<div>{{name}}</div>{{/each}}');
       expect(tokens.some((t) => t.type === 'block')).toBe(true);
-      const block = tokens.find((t) => t.type === 'block') as any;
+      const block = tokens.find((t) => t.type === 'block') as BlockToken;
       expect(block.variable).toBe('items');
       expect(block.content).toContain('{{name}}');
     });

@@ -83,7 +83,7 @@
       <div class="border-t border-edge-soft pt-2">
         <p class="text-xs text-alert-urgent mb-1">Latest errors:</p>
         <ul class="space-y-1">
-          {#each health.errors.slice(0, 3) as error}
+          {#each health.errors.slice(0, 3) as error, i (i)}
             <li class="text-xs text-faint-light">{error}</li>
           {/each}
         </ul>

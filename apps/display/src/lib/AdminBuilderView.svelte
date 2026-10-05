@@ -71,7 +71,6 @@
   let saving = false;
   let saveError: string | null = null;
   let secretWarning: string | null = null;
-  let currentStep = 0;
   let loadingEdit = false;
 
   // Preview fetch state
@@ -157,6 +156,7 @@
   // Reactively detect {{NAME}} placeholders in connector URL and headers
   $: detectedSecrets = (() => {
     const secretPattern = /\{\{(\w+)\}\}/g;
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity -- local dedupe inside the reactive IIFE, never exposed or mutated later
     const names = new Set<string>();
     for (const match of connectorUrl.matchAll(secretPattern)) {
       names.add(match[1]!);
@@ -623,15 +623,7 @@
     </div>
   {/if}
 {:else}
-  <BuilderWizard
-    steps={STEPS}
-    {stepValid}
-    {dirty}
-    onStepChange={(step) => (currentStep = step)}
-    {onCancel}
-    onFinish={handleFinish}
-    let:step
-  >
+  <BuilderWizard steps={STEPS} {stepValid} {dirty} {onCancel} onFinish={handleFinish} let:step>
     {#if step === 0}
       <form class="builder-meta-form" on:submit|preventDefault>
         <div class="builder-field">
@@ -684,7 +676,7 @@
             id="plugin-id"
             type="text"
             disabled
-            bind:value={pluginId}
+            value={pluginId}
           />
           <p class="builder-hint">Auto-generated from the plugin name</p>
         </div>

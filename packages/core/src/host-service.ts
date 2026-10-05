@@ -5,7 +5,7 @@ import { createRestServer } from './rest-server';
 import { createWsServer } from './ws-server';
 import { createPluginAdminHandlers } from './plugin-admin-handlers';
 import { createNotificationQueue } from './notification-queue';
-import { bootEnabledModules, rebootModule, syncModulesWithLayout } from './module-boot';
+import { rebootModule, syncModulesWithLayout } from './module-boot';
 import { createDisplayControl } from './display-control';
 import { createDisplayHardware } from './display-hardware';
 import { createAiProvider } from './ai-assist-providers';

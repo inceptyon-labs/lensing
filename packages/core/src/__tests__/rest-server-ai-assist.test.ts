@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createRestServer } from '../rest-server';
 import type { RestServerHandlers } from '../rest-server';
-import type { AiAssistResponse } from '@lensing/types';
+import type { AiAssistResponse, ConversationEntry } from '@lensing/types';
 
 describe('REST Server — AI Assist Endpoints', () => {
   let handlers: RestServerHandlers;
@@ -14,7 +14,7 @@ describe('REST Server — AI Assist Endpoints', () => {
       putSettings: vi.fn(async () => {}),
       getLayout: vi.fn(async () => []),
       putLayout: vi.fn(async () => {}),
-      postAsk: vi.fn(async () => ({}) as any),
+      postAsk: vi.fn(async () => ({}) as unknown as ConversationEntry),
       aiAssist: mockAiAssist,
     };
   });

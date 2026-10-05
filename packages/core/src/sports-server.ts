@@ -9,7 +9,6 @@ import type {
   FetchInit,
 } from '@lensing/types';
 import { DEFAULT_SPORTS_MAX_STALE_MS } from '@lensing/types';
-import type { NotificationQueueInstance } from './notification-queue.js';
 
 const PLUGIN_ID = 'sports-server';
 const DATA_BUS_SCORES_CHANNEL = 'sports.scores';
@@ -126,7 +125,7 @@ export function createSportsServer(options: SportsServerOptions): SportsServerIn
     leagues,
     teams,
     dataBus,
-    notifications: _notifications,
+
     maxStale_ms = DEFAULT_SPORTS_MAX_STALE_MS,
     fetchFn,
   } = options;
@@ -139,7 +138,6 @@ export function createSportsServer(options: SportsServerOptions): SportsServerIn
   }
 
   const effectiveFetch = (fetchFn ?? fetch) as unknown as FetchFn;
-  const _notificationQueue = _notifications as NotificationQueueInstance;
 
   let lastData: SportsData | null = null;
   let lastFetchedAt: number | null = null;

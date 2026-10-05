@@ -50,8 +50,9 @@ export function loadWizardState(pluginId: string): WizardState | null {
     const raw = localStorage.getItem(storageKey(pluginId));
     if (!raw) return null;
     const parsed: StoredState = JSON.parse(raw);
-    const { timestamp: _, ...state } = parsed;
-    return state;
+    const state: Partial<StoredState> = { ...parsed };
+    delete state.timestamp;
+    return state as WizardState;
   } catch {
     return null;
   }

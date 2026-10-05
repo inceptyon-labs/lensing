@@ -27,7 +27,7 @@ describe('WebSocket server auth', () => {
    */
   async function startServer(options?: {
     authToken?: string;
-  }): Promise<{ port: number; wsServer: any }> {
+  }): Promise<{ port: number; wsServer: ReturnType<typeof createWsServer> }> {
     const restServer = http.createServer();
     const wsServer = createWsServer({
       server: restServer,
@@ -69,7 +69,7 @@ describe('WebSocket server auth', () => {
       };
 
       const errorHandler = (_event: unknown) => {
-        (ws.removeEventListener as any)('open', openHandler);
+        ws.removeEventListener('open', openHandler);
         reject(new Error('Connection rejected'));
       };
 

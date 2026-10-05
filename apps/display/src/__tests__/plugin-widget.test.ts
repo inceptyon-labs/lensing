@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, fireEvent, waitFor } from '@testing-library/svelte';
+import { render, waitFor } from '@testing-library/svelte';
 import PluginWidget from '../lib/PluginWidget.svelte';
 import { handlePluginData } from '../lib/stores/dataBusStore';
 

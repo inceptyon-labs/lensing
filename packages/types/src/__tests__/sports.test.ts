@@ -1,12 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type {
-  SportsGame,
-  GameStatus,
-  LeagueConfig,
-  SportsData,
-  SportsServerOptions,
-  SportsServerInstance,
-} from '../sports';
+import type { SportsGame, SportsData } from '../sports';
 import { DEFAULT_SPORTS_MAX_STALE_MS, DEFAULT_SPORTS_LEAGUES } from '../sports';
 
 describe('Sports Types & Constants', () => {

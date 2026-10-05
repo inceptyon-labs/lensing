@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { RssConnectorConfig } from '@lensing/types';
-import { createRssConnector, type RssConnector, type RssConnectorOptions } from '../rss-connector';
+import { createRssConnector, type RssConnectorOptions } from '../rss-connector';
 
 /** Helper to create a minimal RSS 2.0 feed */
 function createRss2Feed(items: string): string {

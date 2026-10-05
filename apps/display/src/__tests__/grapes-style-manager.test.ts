@@ -11,9 +11,19 @@ interface MockEditor {
   StyleManager: MockStyleManager;
 }
 
+interface StyleProp {
+  name: string;
+  section?: string;
+  options?: Array<{ value?: string }>;
+  min?: number;
+  max?: number;
+  step?: number;
+  [key: string]: unknown;
+}
+
 describe('GrapesJS Style Manager Configuration', () => {
   let mockEditor: MockEditor;
-  let properties: Array<{ name: string; section?: string; [key: string]: unknown }> = [];
+  let properties: StyleProp[] = [];
   let sectors: Array<{ id: string; label: string }> = [];
 
   beforeEach(() => {
@@ -25,19 +35,19 @@ describe('GrapesJS Style Manager Configuration', () => {
           sectors.push({ id, ...config });
         }),
         addProperty: vi.fn((section: string, config: Record<string, unknown>) => {
-          properties.push({ ...config, section } as any);
+          properties.push({ name: '', ...config, section });
         }),
       },
     };
   });
 
   it('should configure style manager without error', () => {
-    expect(() => configureStyleManager(mockEditor as any)).not.toThrow();
+    expect(() => configureStyleManager(mockEditor)).not.toThrow();
   });
 
   describe('Color pickers', () => {
     beforeEach(() => {
-      configureStyleManager(mockEditor as any);
+      configureStyleManager(mockEditor);
     });
 
     it('should have text color picker property', () => {
@@ -73,7 +83,7 @@ describe('GrapesJS Style Manager Configuration', () => {
 
   describe('Font family selector', () => {
     beforeEach(() => {
-      configureStyleManager(mockEditor as any);
+      configureStyleManager(mockEditor);
     });
 
     it('should have font-family select property', () => {
@@ -84,17 +94,15 @@ describe('GrapesJS Style Manager Configuration', () => {
     });
 
     it('should include Inter font option', () => {
-      const fontFamily = properties.find((p) => p.name === 'font-family') as any;
+      const fontFamily = properties.find((p) => p.name === 'font-family');
       expect(fontFamily?.options).toBeDefined();
-      const interOption = (fontFamily?.options || []).find((opt: any) =>
-        opt.value?.includes('Inter')
-      );
+      const interOption = (fontFamily?.options || []).find((opt) => opt.value?.includes('Inter'));
       expect(interOption).toBeDefined();
     });
 
     it('should include JetBrains Mono font option', () => {
-      const fontFamily = properties.find((p) => p.name === 'font-family') as any;
-      const monoOption = (fontFamily?.options || []).find((opt: any) =>
+      const fontFamily = properties.find((p) => p.name === 'font-family');
+      const monoOption = (fontFamily?.options || []).find((opt) =>
         opt.value?.includes('JetBrains Mono')
       );
       expect(monoOption).toBeDefined();
@@ -108,7 +116,7 @@ describe('GrapesJS Style Manager Configuration', () => {
 
   describe('Typography controls', () => {
     beforeEach(() => {
-      configureStyleManager(mockEditor as any);
+      configureStyleManager(mockEditor);
     });
 
     it('should have font-size property with slider', () => {
@@ -126,8 +134,8 @@ describe('GrapesJS Style Manager Configuration', () => {
     });
 
     it('should include all design system font weights', () => {
-      const fontWeight = properties.find((p) => p.name === 'font-weight') as any;
-      const weights = (fontWeight?.options || []).map((opt: any) => opt.value);
+      const fontWeight = properties.find((p) => p.name === 'font-weight');
+      const weights = (fontWeight?.options || []).map((opt) => opt.value);
       expect(weights).toContain('400');
       expect(weights).toContain('500');
       expect(weights).toContain('600');
@@ -142,8 +150,8 @@ describe('GrapesJS Style Manager Configuration', () => {
     });
 
     it('should include left, center, right alignment options', () => {
-      const textAlign = properties.find((p) => p.name === 'text-align') as any;
-      const alignments = (textAlign?.options || []).map((opt: any) => opt.value);
+      const textAlign = properties.find((p) => p.name === 'text-align');
+      const alignments = (textAlign?.options || []).map((opt) => opt.value);
       expect(alignments).toContain('left');
       expect(alignments).toContain('center');
       expect(alignments).toContain('right');
@@ -152,7 +160,7 @@ describe('GrapesJS Style Manager Configuration', () => {
 
   describe('Spacing controls', () => {
     beforeEach(() => {
-      configureStyleManager(mockEditor as any);
+      configureStyleManager(mockEditor);
     });
 
     it('should have padding property with slider', () => {
@@ -170,7 +178,7 @@ describe('GrapesJS Style Manager Configuration', () => {
     });
 
     it('should allow 0-32px spacing range', () => {
-      const padding = properties.find((p) => p.name === 'padding') as any;
+      const padding = properties.find((p) => p.name === 'padding');
       expect(padding?.min).toBe(0);
       expect(padding?.max).toBeGreaterThanOrEqual(32);
       expect(padding?.step).toBe(4);
@@ -184,7 +192,7 @@ describe('GrapesJS Style Manager Configuration', () => {
 
   describe('Border radius control', () => {
     beforeEach(() => {
-      configureStyleManager(mockEditor as any);
+      configureStyleManager(mockEditor);
     });
 
     it('should have border-radius property', () => {
@@ -195,8 +203,8 @@ describe('GrapesJS Style Manager Configuration', () => {
     });
 
     it('should include design system radius options', () => {
-      const borderRadius = properties.find((p) => p.name === 'border-radius') as any;
-      const radii = (borderRadius?.options || []).map((opt: any) => opt.value);
+      const borderRadius = properties.find((p) => p.name === 'border-radius');
+      const radii = (borderRadius?.options || []).map((opt) => opt.value);
       expect(radii).toContain('4px');
       expect(radii).toContain('8px');
       expect(radii).toContain('12px');
@@ -211,7 +219,7 @@ describe('GrapesJS Style Manager Configuration', () => {
 
   describe('Opacity control', () => {
     beforeEach(() => {
-      configureStyleManager(mockEditor as any);
+      configureStyleManager(mockEditor);
     });
 
     it('should have opacity property with slider', () => {
@@ -222,7 +230,7 @@ describe('GrapesJS Style Manager Configuration', () => {
     });
 
     it('should allow 0.0-1.0 opacity range', () => {
-      const opacity = properties.find((p) => p.name === 'opacity') as any;
+      const opacity = properties.find((p) => p.name === 'opacity');
       expect(opacity?.min).toBe(0);
       expect(opacity?.max).toBe(1);
       expect(opacity?.step).toBe(0.1);
@@ -236,7 +244,7 @@ describe('GrapesJS Style Manager Configuration', () => {
 
   describe('Sector organization', () => {
     beforeEach(() => {
-      configureStyleManager(mockEditor as any);
+      configureStyleManager(mockEditor);
     });
 
     it('should create sectors for property organization', () => {
@@ -258,7 +266,7 @@ describe('GrapesJS Style Manager Configuration', () => {
 
   describe('Dark theme defaults', () => {
     beforeEach(() => {
-      configureStyleManager(mockEditor as any);
+      configureStyleManager(mockEditor);
     });
 
     it('should initialize with dark display theme values', () => {

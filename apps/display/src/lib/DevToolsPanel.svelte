@@ -67,7 +67,7 @@
                 <div>
                   <p class="text-xs text-alert-urgent mb-1">Errors ({plugin.errors.length})</p>
                   <ul class="space-y-1 max-h-32 overflow-y-auto">
-                    {#each plugin.errors as error}
+                    {#each plugin.errors as error, i (i)}
                       <li class="text-xs text-faint-light bg-event-horizon p-1 rounded">{error}</li>
                     {/each}
                   </ul>

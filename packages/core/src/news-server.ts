@@ -6,7 +6,6 @@ import type {
   DataBusInstance,
 } from '@lensing/types';
 import { DEFAULT_NEWS_MAX_ITEMS, DEFAULT_NEWS_MAX_STALE_MS } from '@lensing/types';
-import type { NotificationQueueInstance } from './notification-queue.js';
 
 const PLUGIN_ID = 'news-server';
 const DATA_BUS_HEADLINES_CHANNEL = 'news.headlines';
@@ -125,7 +124,7 @@ export function createNewsServer(options: NewsServerOptions): NewsServerInstance
     feedUrls,
     categories = {},
     dataBus,
-    notifications: _notifications,
+
     maxItems = DEFAULT_NEWS_MAX_ITEMS,
     maxStale_ms = DEFAULT_NEWS_MAX_STALE_MS,
     fetchFn,
@@ -140,7 +139,6 @@ export function createNewsServer(options: NewsServerOptions): NewsServerInstance
   }
 
   const effectiveFetch = (fetchFn ?? fetch) as unknown as RssFetchFn;
-  const _notificationQueue = _notifications as NotificationQueueInstance;
 
   let lastData: NewsData | null = null;
   let lastFetchedAt: number | null = null;

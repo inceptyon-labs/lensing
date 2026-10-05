@@ -1,6 +1,5 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createHostService } from '../host-service';
-import type { AiAssistRequest, AiAssistResponse } from '@lensing/types';
 
 describe('HostService AI Assist Integration', () => {
   const originalEnv = process.env;

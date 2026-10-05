@@ -333,10 +333,10 @@ describe('WeatherServer', () => {
       });
       const server = createWeatherServer(validOptions({ fetchFn }));
       server.refresh();
-      const calledUrl: string = (fetchFn as any).mock.calls[0][0];
+      const calledUrl: string = vi.mocked(fetchFn).mock.calls[0][0];
       expect(calledUrl).toContain('appid=test-api-key');
       // No request init should be passed — OWM key is URL-only
-      const calledInit = (fetchFn as any).mock.calls[0][1];
+      const calledInit = vi.mocked(fetchFn).mock.calls[0][1];
       expect(calledInit).toBeUndefined();
     });
 

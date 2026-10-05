@@ -1,15 +1,27 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createDisplayControl } from '../display-control';
 import * as childProcess from 'node:child_process';
-import type { DataBusInstance, PresenceData } from '@lensing/types';
+import type { DataBusInstance, DataBusMessage, PresenceData } from '@lensing/types';
 
 vi.mock('node:child_process');
 
+function mockExecFileSuccess() {
+  vi.mocked(childProcess.execFile).mockImplementation(((
+    _cmd: string,
+    _args: unknown,
+    _opts: unknown,
+    callback?: unknown
+  ) => {
+    if (typeof callback === 'function') callback(null);
+    return {} as childProcess.ChildProcess;
+  }) as unknown as typeof childProcess.execFile);
+}
+
 function createMockDataBus(): DataBusInstance & { emit(channel: string, data: unknown): void } {
-  const listeners: Array<(msg: any) => void> = [];
+  const listeners: Array<(msg: DataBusMessage) => void> = [];
 
   return {
-    onMessage(callback: (msg: any) => void) {
+    onMessage(callback: (msg: DataBusMessage) => void) {
       listeners.push(callback);
       return () => {
         const idx = listeners.indexOf(callback);
@@ -36,7 +48,7 @@ function createMockDataBus(): DataBusInstance & { emit(channel: string, data: un
       // stub
     },
     emit(channel: string, data: unknown) {
-      listeners.forEach((cb) => cb({ channel, data }));
+      listeners.forEach((cb) => cb({ channel, data } as DataBusMessage));
     },
   };
 }
@@ -49,24 +61,14 @@ describe('createDisplayControl', () => {
     vi.clearAllMocks();
 
     // execFile must return a mock ChildProcess; call callback immediately
-    vi.mocked(childProcess.execFile).mockImplementation(
-      (_cmd: any, _args: any, _opts: any, callback?: any) => {
-        if (typeof callback === 'function') callback(null);
-        return {} as any;
-      }
-    );
+    mockExecFileSuccess();
   });
 
   describe('display parameter validation', () => {
     it('should accept valid display values like :0, :1, :99', () => {
       for (const display of [':0', ':1', ':99', ':999']) {
         vi.clearAllMocks();
-        vi.mocked(childProcess.execFile).mockImplementation(
-          (_cmd: any, _args: any, _opts: any, cb?: any) => {
-            if (typeof cb === 'function') cb(null);
-            return {} as any;
-          }
-        );
+        mockExecFileSuccess();
 
         const control = createDisplayControl({ dataBus: mockDataBus, display });
         expect(childProcess.execFile).toHaveBeenCalled();
@@ -108,7 +110,7 @@ describe('createDisplayControl', () => {
       expect(firstCall[0]).toBe('xset');
       expect(Array.isArray(firstCall[1])).toBe(true);
       // Options should include env with DISPLAY
-      const opts = firstCall[2] as any;
+      const opts = firstCall[2] as { env: Record<string, string> };
       expect(opts).toHaveProperty('env');
       expect(opts.env).toHaveProperty('DISPLAY', ':1');
 
@@ -120,12 +122,7 @@ describe('createDisplayControl', () => {
       // Turn screen off first
       mockDataBus.emit('presence.pir', { detected: false } as PresenceData);
       vi.clearAllMocks();
-      vi.mocked(childProcess.execFile).mockImplementation(
-        (_cmd: any, _args: any, _opts: any, cb?: any) => {
-          if (typeof cb === 'function') cb(null);
-          return {} as any;
-        }
-      );
+      mockExecFileSuccess();
 
       // Now motion detected — screen should turn on
       mockDataBus.emit('presence.pir', { detected: true } as PresenceData);
@@ -147,12 +144,7 @@ describe('createDisplayControl', () => {
       // Start off
       mockDataBus.emit('presence.pir', { detected: false } as PresenceData);
       vi.clearAllMocks();
-      vi.mocked(childProcess.execFile).mockImplementation(
-        (_cmd: any, _args: any, _opts: any, cb?: any) => {
-          if (typeof cb === 'function') cb(null);
-          return {} as any;
-        }
-      );
+      mockExecFileSuccess();
 
       mockDataBus.emit('presence.pir', { detected: true } as PresenceData);
 
@@ -172,12 +164,7 @@ describe('createDisplayControl', () => {
       // Trigger on first, so off can be toggled
       mockDataBus.emit('presence.pir', { detected: true } as PresenceData);
       vi.clearAllMocks();
-      vi.mocked(childProcess.execFile).mockImplementation(
-        (_cmd: any, _args: any, _opts: any, cb?: any) => {
-          if (typeof cb === 'function') cb(null);
-          return {} as any;
-        }
-      );
+      mockExecFileSuccess();
 
       mockDataBus.emit('presence.pir', { detected: false } as PresenceData);
 

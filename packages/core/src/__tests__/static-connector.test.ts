@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { StaticConnectorConfig } from '@lensing/types';
-import { createStaticConnector, type StaticConnector } from '../static-connector';
+import { createStaticConnector } from '../static-connector';
 
 describe('Static Connector', () => {
   const config: StaticConnectorConfig = {

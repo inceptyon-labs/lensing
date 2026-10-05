@@ -27,7 +27,6 @@
    * Used for accessibility attributes and event tracking.
    */
   let {
-    id,
     data,
     onUpdate,
   }: {

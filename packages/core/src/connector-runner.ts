@@ -75,7 +75,7 @@ export function createConnectorRunner(options: ConnectorRunnerOptions): Connecto
 
       // Resolve {{SECRET}} placeholders in URL and headers (JSON API only)
       let url = config.url;
-      let headers: Record<string, string> = { ...(config.headers ?? {}) };
+      const headers: Record<string, string> = { ...(config.headers ?? {}) };
       if (secretResolver && !isRss) {
         url = await resolvePlaceholders(url, pluginId, secretResolver);
         for (const [key, value] of Object.entries(headers)) {

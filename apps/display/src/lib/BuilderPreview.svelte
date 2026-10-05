@@ -68,7 +68,7 @@
         </button>
       {/if}
       <div role="group" aria-label="Preview size" style="display: flex; gap: var(--space-1, 4px);">
-        {#each SIZE_KEYS as size}
+        {#each SIZE_KEYS as size (size)}
           <button
             type="button"
             aria-pressed={currentSize === size ? 'true' : 'false'}

@@ -11,7 +11,11 @@
   $: schema = plugin.manifest.config_schema;
   // Show integration-category fields + uncategorized fields (backward compatibility)
   $: fields = schema
-    ? [...getIntegrationFields(schema), ...getWidgetFields(schema), ...schema.fields.filter((f) => !f.category)]
+    ? [
+        ...getIntegrationFields(schema),
+        ...getWidgetFields(schema),
+        ...schema.fields.filter((f) => !f.category),
+      ]
     : [];
 
   // Build local copy of config values — only re-init when the plugin identity changes
@@ -34,6 +38,7 @@
     }
     // Fetch models for ai-news on init
     if (plugin.plugin_id === 'ai-news' && values['aiProvider']) {
+      // eslint-disable-next-line svelte/infinite-reactive-loop -- block is guarded by initializedFor and runs once per plugin
       fetchAiModels(String(values['aiProvider']));
     }
   }
@@ -56,6 +61,7 @@
         // If current value is empty or not in the list, select first available
         const currentModel = String(values['aiModel'] ?? '');
         if (aiModelOptions.length > 0 && !aiModelOptions.some((o) => o.value === currentModel)) {
+          // eslint-disable-next-line svelte/infinite-reactive-loop -- only reached from the initializedFor-guarded block, which does not re-run
           values['aiModel'] = aiModelOptions[0].value;
         }
       }
@@ -142,6 +148,7 @@
           />
         {:else if field.type === 'select'}
           {@const isAiModelField = plugin.plugin_id === 'ai-news' && field.key === 'aiModel'}
+          {@const modelOptions = isAiModelField ? aiModelOptions : (field.options ?? [])}
           <select
             id="cfg-{field.key}"
             class="field-select"
@@ -153,7 +160,7 @@
             {:else if isAiModelField && aiModelOptions.length === 0}
               <option value="">No models available</option>
             {/if}
-            {#each isAiModelField ? aiModelOptions : (field.options ?? []) as opt (opt.value)}
+            {#each modelOptions as opt (opt.value)}
               <option value={opt.value}>{opt.label}</option>
             {/each}
           </select>

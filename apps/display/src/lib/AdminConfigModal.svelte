@@ -63,7 +63,7 @@
     <div class="modal-body">
       {#if plugin.manifest.config_schema?.setupGuide}
         <div class="setup-guide">
-          {#each plugin.manifest.config_schema.setupGuide.split('\n\n') as paragraph}
+          {#each plugin.manifest.config_schema.setupGuide.split('\n\n') as paragraph, i (i)}
             <p class="setup-guide__p">{paragraph}</p>
           {/each}
         </div>

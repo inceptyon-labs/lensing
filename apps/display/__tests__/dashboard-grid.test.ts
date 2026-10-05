@@ -161,7 +161,7 @@ describe('Default Layouts', () => {
 
   it('should keep all default layouts within 12-column grid', async () => {
     const { DEFAULT_WIDGET_LAYOUTS } = await import('../src/lib/grid/default-layouts');
-    for (const [id, layout] of Object.entries(DEFAULT_WIDGET_LAYOUTS)) {
+    for (const layout of Object.values(DEFAULT_WIDGET_LAYOUTS)) {
       expect(layout.x + layout.w).toBeLessThanOrEqual(12);
       expect(layout.x).toBeGreaterThanOrEqual(0);
       expect(layout.y).toBeGreaterThanOrEqual(0);

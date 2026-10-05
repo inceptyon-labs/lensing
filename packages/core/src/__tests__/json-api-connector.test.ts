@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { createJsonApiConnector, JsonApiConnector } from '../json-api-connector';
+import { createJsonApiConnector } from '../json-api-connector';
 import type { JsonApiConnectorConfig } from '@lensing/types';
-import type { ConnectorFetchFn } from '../connector-proxy';
 
 describe('JSON API Connector', () => {
   let mockFetch: ReturnType<typeof vi.fn>;

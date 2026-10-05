@@ -1,4 +1,4 @@
-import { randomBytes, createCipheriv, createDecipheriv, createHash, pbkdf2Sync } from 'crypto';
+import { randomBytes, createCipheriv, createDecipheriv, pbkdf2Sync } from 'crypto';
 
 /**
  * Secret encryption/decryption utility using AES-256-GCM.
@@ -70,7 +70,7 @@ export function decrypt(encrypted: string, key: Buffer): string {
     let decrypted = decipher.update(ciphertext);
     decrypted = Buffer.concat([decrypted, decipher.final()]);
     return decrypted.toString('utf8');
-  } catch (error) {
+  } catch {
     // Auth tag verification failed — indicates tampering or wrong key
     throw new Error(`Decryption failed: authentication tag verification failed`);
   }

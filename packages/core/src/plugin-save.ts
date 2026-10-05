@@ -4,7 +4,7 @@ import type { PluginManifest } from '@lensing/types';
 import { packagePlugin, type PackageInput } from './plugin-package';
 import { installPluginFromZip } from './plugin-install';
 
-export interface BuilderSaveInput extends PackageInput {}
+export type BuilderSaveInput = PackageInput;
 
 export interface SaveOptions {
   overwrite?: boolean;

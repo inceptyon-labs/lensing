@@ -41,6 +41,7 @@
       .filter((e) => isUpcoming(e, at))
       .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
 
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity -- local grouping helper, result is copied to an array
     const groups = new Map<string, CalendarEvent[]>();
     for (const evt of upcoming) {
       const label = getDayLabel(evt.start, at);

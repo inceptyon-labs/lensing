@@ -2,13 +2,11 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { createAgentService } from '../agent-service';
 import type {
   AgentServiceInstance,
-  AgentServiceOptions,
   LlmProvider,
   LlmResponse,
   DataBusInstance,
   SceneManagerInstance,
   ConditionRule,
-  AgentAlert,
 } from '@lensing/types';
 
 function createMockDataBus(): DataBusInstance {

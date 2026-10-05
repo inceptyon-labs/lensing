@@ -33,7 +33,8 @@
     oncancel,
   }: Props = $props();
 
-  // svelte-ignore state_referenced_locally — intentionally capturing initial prop values
+  // Intentionally capturing initial prop values
+  // svelte-ignore state_referenced_locally
   let localX = $state(x);
   // svelte-ignore state_referenced_locally
   let localY = $state(y);
@@ -63,7 +64,7 @@
 
 <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 <div class="modal-backdrop" onclick={oncancel}>
-  <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
   <div
     class="modal"
     role="dialog"
@@ -181,7 +182,7 @@
 
     {#if !validation.valid}
       <ul class="modal__errors" role="alert">
-        {#each validation.errors as error}
+        {#each validation.errors as error, i (i)}
           <li class="modal__error">{error}</li>
         {/each}
       </ul>

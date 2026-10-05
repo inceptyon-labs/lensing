@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import grapesjs from 'grapesjs';
+  import grapesjs, { type Editor } from 'grapesjs';
   import { registerWidgetBlocks, registerDataBlocks } from './grapes-blocks';
   import { configureStyleManager } from './grapes-style-manager';
   import {
@@ -19,21 +19,24 @@
   /** Called with the new size key whenever the canvas size changes */
   export let onSizeChange: ((size: CanvasSize) => void) | undefined = undefined;
 
-  // @ts-ignore - Svelte bind:this element typing
-  let container: any;
-  let editor: unknown | null = null;
+  let container: HTMLElement;
+  let editor: Editor | null = null;
   let activeSize: CanvasSize = DEFAULT_CANVAS_SIZE;
 
   function handleSizeChange(size: CanvasSize) {
     activeSize = size;
     const { width: w, height: h } = CANVAS_SIZES[size];
-    (editor as any)?.Canvas?.setDimensions?.({ width: w, height: h });
+    // setDimensions is not in the typed Canvas API; keep the optional call
+    (
+      editor?.Canvas as
+        | { setDimensions?: (dims: { width: number; height: number }) => void }
+        | undefined
+    )?.setDimensions?.({ width: w, height: h });
     onSizeChange?.(size);
   }
 
   onMount(() => {
-    // @ts-ignore - GrapesJS init typing
-    editor = grapesjs.init({
+    const ed = grapesjs.init({
       container,
       width: width.toString(),
       height: height.toString(),
@@ -67,40 +70,42 @@
       },
     });
 
-    registerWidgetBlocks(editor);
-    registerDataBlocks(editor, slots);
-    configureStyleManager(editor);
+    editor = ed;
+
+    registerWidgetBlocks(ed);
+    registerDataBlocks(ed, slots);
+    configureStyleManager(ed as unknown as Parameters<typeof configureStyleManager>[0]);
 
     if (onChange) {
       const notify = () => {
-        onChange!((editor as any)?.getHtml?.() ?? '', (editor as any)?.getCss?.() ?? '');
+        onChange!(ed.getHtml?.() ?? '', ed.getCss?.() ?? '');
       };
-      (editor as any).on('component:update', notify);
-      (editor as any).on('style:property:update', notify);
+      ed.on('component:update', notify);
+      ed.on('style:property:update', notify);
     }
   });
 
   onDestroy(() => {
     if (editor) {
-      (editor as any).destroy?.();
+      editor.destroy?.();
     }
   });
 
   export function getHtml(): string {
-    return (editor as any)?.getHtml?.() || '';
+    return editor?.getHtml?.() || '';
   }
 
   export function getCss(): string {
-    return (editor as any)?.getCss?.() || '';
+    return editor?.getCss?.() || '';
   }
 
   export function getProjectData(): Record<string, unknown> {
-    return ((editor as any)?.getProjectData?.() as Record<string, unknown>) || {};
+    return (editor?.getProjectData?.() as Record<string, unknown> | undefined) || {};
   }
 </script>
 
 <div role="group" aria-label="Canvas size">
-  {#each CANVAS_SIZE_KEYS as size}
+  {#each CANVAS_SIZE_KEYS as size (size)}
     <button
       type="button"
       aria-pressed={activeSize === size}

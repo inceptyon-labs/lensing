@@ -1,5 +1,4 @@
 import type { DataBusInstance, NotificationQueueInstance } from './index';
-import type { AiProviderId } from './index';
 
 /** A single AI-summarized news article */
 export interface AiNewsSummary {
@@ -92,18 +91,12 @@ export const AI_NEWS_CATEGORIES: AiNewsCategory[] = [
   {
     id: 'technology',
     label: 'Technology',
-    feeds: [
-      'https://hnrss.org/frontpage',
-      'https://feeds.arstechnica.com/arstechnica/index',
-    ],
+    feeds: ['https://hnrss.org/frontpage', 'https://feeds.arstechnica.com/arstechnica/index'],
   },
   {
     id: 'world',
     label: 'World',
-    feeds: [
-      'https://feeds.bbci.co.uk/news/world/rss.xml',
-      'https://www.theguardian.com/world/rss',
-    ],
+    feeds: ['https://feeds.bbci.co.uk/news/world/rss.xml', 'https://www.theguardian.com/world/rss'],
   },
   {
     id: 'business',

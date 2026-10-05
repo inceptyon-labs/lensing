@@ -201,6 +201,7 @@
           </div>
 
           {#if result.connector.url}
+            <!-- eslint-disable-next-line svelte/no-at-html-tags -- output escaped by highlightSecrets -->
             <span class="ai-assist__url">{@html highlightSecrets(result.connector.url)}</span>
           {/if}
 
@@ -213,6 +214,7 @@
                 {#each Object.entries(result.connector.headers) as [key, value] (key)}
                   <tr>
                     <td>{key}</td>
+                    <!-- eslint-disable-next-line svelte/no-at-html-tags -- output escaped by highlightSecrets -->
                     <td>{@html highlightSecrets(value)}</td>
                   </tr>
                 {/each}

@@ -57,8 +57,6 @@
       onFinish();
     }
   }
-
-  $: isPending = false;
 </script>
 
 <div class="wizard">
