@@ -4,7 +4,7 @@ import path from 'node:path';
 import os from 'node:os';
 import fs from 'node:fs';
 import { WebSocket } from 'ws';
-import { SYSTEM_MODULE_IDS } from '@lensing/types';
+import { MODULE_SCHEMAS, SYSTEM_MODULE_IDS } from '@lensing/types';
 describe('HostService (host-service.ts)', () => {
     let hostService = null;
     let tempDir;
@@ -259,7 +259,7 @@ describe('HostService (host-service.ts)', () => {
         expect(res.status).toBe(200);
         const plugins = (await res.json());
         const builtins = plugins.filter((p) => p.builtin);
-        expect(builtins.length).toBe(12);
+        expect(builtins.length).toBe(MODULE_SCHEMAS.length);
         const weather = builtins.find((p) => p.plugin_id === 'weather');
         expect(weather).toBeDefined();
         expect(weather.manifest.version).toBe('built-in');

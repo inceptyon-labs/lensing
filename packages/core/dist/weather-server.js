@@ -1,3 +1,4 @@
+import { WEATHER_ALERTS_CHANNEL, WEATHER_ALERTS_PLUGIN_ID } from '@lensing/types';
 // ── WMO Weather Code Mapping ──────────────────────────────────────────────────
 /** Map WMO weather interpretation codes to human-readable conditions */
 export const WMO_CODE_MAP = {
@@ -33,6 +34,81 @@ export const WMO_CODE_MAP = {
 function wmoToConditions(code) {
     return WMO_CODE_MAP[code] ?? 'Unknown';
 }
+/** Local wall-clock 'YYYY-MM-DDTHH:mm' to Unix ms, independent of host timezone */
+function localToUnixMs(time, utcOffsetSeconds) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(time);
+    if (!m)
+        return NaN;
+    const [y, mo, d, h, min] = m.slice(1).map(Number);
+    return Date.UTC(y, mo - 1, d, h, min) - utcOffsetSeconds * 1000;
+}
+function transformNowcast(om) {
+    const { minutely_15: m, hourly: h } = om;
+    if (!m || !h || !Array.isArray(m.time) || !Array.isArray(h.time))
+        return undefined;
+    if (!Array.isArray(m.precipitation) || !Array.isArray(h.uv_index))
+        return undefined;
+    const offset = om.utc_offset_seconds ?? 0;
+    return {
+        precipitation: m.time.map((t, i) => {
+            const prob = m.precipitation_probability?.[i];
+            return {
+                time: localToUnixMs(t, offset),
+                mm: m.precipitation[i],
+                ...(prob != null ? { probability: prob } : {}),
+            };
+        }),
+        uv: h.time.map((t, i) => ({ time: localToUnixMs(t, offset), index: h.uv_index[i] })),
+    };
+}
+// ── NWS alerts ────────────────────────────────────────────────────────────────
+const NWS_HEADERS = {
+    'User-Agent': 'Lensing dashboard (github.com/inceptyon-labs/lensing)',
+    Accept: 'application/geo+json',
+};
+const SEVERITY_RANK = {
+    Extreme: 0,
+    Severe: 1,
+    Moderate: 2,
+    Minor: 3,
+    Unknown: 4,
+};
+function parseTime(value) {
+    if (!value)
+        return null;
+    const t = Date.parse(value);
+    return Number.isNaN(t) ? null : t;
+}
+function transformNwsAlerts(raw, now) {
+    const features = raw?.features;
+    if (!Array.isArray(features))
+        throw new Error('NWS response missing features');
+    const alerts = [];
+    for (const f of features) {
+        const p = f.properties;
+        if (!p || p.messageType === 'Cancel')
+            continue;
+        const ends = parseTime(p.ends);
+        const expires = parseTime(p.expires);
+        const end = ends ?? expires;
+        if (end !== null && end <= now)
+            continue;
+        const event = p.event ?? 'Alert';
+        const severity = p.severity && p.severity in SEVERITY_RANK ? p.severity : 'Unknown';
+        alerts.push({
+            id: p.id ?? `${event}-${p.onset ?? ''}`,
+            event,
+            headline: p.headline ?? event,
+            severity,
+            urgency: p.urgency ?? 'Unknown',
+            onset: parseTime(p.onset),
+            ends,
+            expires: expires ?? ends ?? now,
+        });
+    }
+    return alerts.sort((a, b) => SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity] ||
+        (a.onset ?? Infinity) - (b.onset ?? Infinity));
+}
 function transformOpenMeteoCurrent(c) {
     return {
         temp: c.temperature_2m,
@@ -58,6 +134,8 @@ function buildOpenMeteoUrl(location, units) {
         `?latitude=${location.lat}&longitude=${location.lon}` +
         `&current=temperature_2m,apparent_temperature,weather_code,relative_humidity_2m` +
         `&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max` +
+        `&minutely_15=precipitation,precipitation_probability&forecast_minutely_15=24` +
+        `&hourly=uv_index&forecast_hours=24` +
         `&timezone=auto&forecast_days=5&temperature_unit=${tempUnit}`);
 }
 // ── Transform ─────────────────────────────────────────────────────────────────
@@ -100,6 +178,11 @@ export function createWeatherServer(options) {
     let location = options.location;
     let geocodeResolved = !locationQuery; // skip geocoding if no query
     const maxStale_ms = options.maxStale_ms ?? 3600000;
+    const alertsEnabled = options.alerts ?? true;
+    const alertsInterval_ms = options.alertsInterval_ms ?? 300_000;
+    let alertsTimer = null;
+    let alertsStarted = false;
+    let alertsStopped = false;
     let lastData = null;
     let lastFetchedAt = null;
     const updateListeners = [];
@@ -160,6 +243,57 @@ export function createWeatherServer(options) {
         geocodeResolved = true;
         return true;
     }
+    async function pollAlerts() {
+        if (closed || alertsStopped || !location)
+            return;
+        const point = `${location.lat.toFixed(4)},${location.lon.toFixed(4)}`;
+        const url = `https://api.weather.gov/alerts/active?point=${point}&status=actual`;
+        try {
+            const response = await fetchFn(url, { headers: NWS_HEADERS });
+            if (closed)
+                return;
+            if (!response.ok) {
+                if (response.status === 400 || response.status === 404) {
+                    alertsStopped = true;
+                    stopAlertsTimer();
+                    notifyError(`Weather alerts unavailable for this location (HTTP ${response.status})`);
+                }
+                else {
+                    notifyError(`Weather alerts error ${response.status ?? ''}: ${response.statusText ?? 'unknown'}`);
+                }
+                return;
+            }
+            const raw = await response.json();
+            if (closed)
+                return;
+            const data = {
+                alerts: transformNwsAlerts(raw, Date.now()),
+                lastUpdated: Date.now(),
+            };
+            dataBus?.publish(WEATHER_ALERTS_CHANNEL, WEATHER_ALERTS_PLUGIN_ID, data);
+        }
+        catch (err) {
+            if (closed)
+                return;
+            const message = err instanceof Error ? err.message : String(err);
+            notifyError(`Weather alerts fetch failed: ${message}`);
+        }
+    }
+    function stopAlertsTimer() {
+        if (alertsTimer !== null) {
+            clearInterval(alertsTimer);
+            alertsTimer = null;
+        }
+    }
+    function startAlerts() {
+        if (!alertsEnabled || alertsStarted || closed || !location)
+            return;
+        alertsStarted = true;
+        void pollAlerts();
+        alertsTimer = setInterval(() => void pollAlerts(), alertsInterval_ms);
+        if (typeof alertsTimer === 'object' && 'unref' in alertsTimer)
+            alertsTimer.unref();
+    }
     function buildUrl() {
         // location is guaranteed to be set by the time buildUrl is called
         // (either provided directly or resolved via geocoding)
@@ -179,9 +313,11 @@ export function createWeatherServer(options) {
                 notifyError('Weather response missing required fields: current or daily');
                 return null;
             }
+            const nowcast = transformNowcast(om);
             return {
                 current: transformOpenMeteoCurrent(om.current),
                 forecast: transformOpenMeteoForecast(om.daily),
+                ...(nowcast ? { nowcast } : {}),
                 lastUpdated: Date.now(),
             };
         }
@@ -213,7 +349,10 @@ export function createWeatherServer(options) {
         const startedAt = Date.now();
         let response;
         try {
-            response = await fetchFn(buildUrl());
+            const pending = fetchFn(buildUrl());
+            // Location is known: start alerts once the weather request is in flight
+            startAlerts();
+            response = await pending;
         }
         catch (err) {
             const message = err instanceof Error ? err.message : String(err);
@@ -261,6 +400,7 @@ export function createWeatherServer(options) {
         },
         close() {
             closed = true;
+            stopAlertsTimer();
         },
     };
 }

@@ -713,7 +713,8 @@ export type { ConfigExportV1, ConfigExport, ImportResult, ConfigMigration, Confi
 export { CURRENT_CONFIG_VERSION } from './config-transfer';
 export type { HassEntity, HomeAssistantData, HomeAssistantServerOptions, HomeAssistantServerInstance, WsLike, WsFactory, } from './home-assistant';
 export { DEFAULT_HA_MAX_STALE_MS, DEFAULT_HA_DOMAINS } from './home-assistant';
-export type { WeatherProvider, WeatherCurrent, WeatherForecastDay, WeatherData } from './weather';
+export type { WeatherProvider, WeatherCurrent, WeatherForecastDay, WeatherData, WeatherNowcast, WeatherAlert, WeatherAlertSeverity, WeatherAlertsData, } from './weather';
+export { WEATHER_ALERTS_PLUGIN_ID, WEATHER_ALERTS_CHANNEL } from './weather';
 export type { PresenceData, GpioWatcher, GpioWatcherFactory, PIRServerOptions, PIRServerInstance, } from './pir-sensor';
 export { DEFAULT_PIR_IDLE_TIMEOUT_MS, DEFAULT_PIR_GPIO_PIN } from './pir-sensor';
 export type { DisplayMethod, DisplayCapability, DisplayCapabilities, DisplaySettings, RotationValue, DisplayHardwareOptions, DisplayHardwareInstance, } from './display-settings';

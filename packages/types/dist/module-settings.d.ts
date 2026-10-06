@@ -1,6 +1,6 @@
 import type { ConfigField } from './index';
 /** Identifier for a built-in server module */
-export type ModuleId = 'weather' | 'crypto' | 'news' | 'sports' | 'calendar' | 'home-assistant' | 'allergies' | 'pir' | 'photo-slideshow' | 'ai-news' | 'word-of-day' | 'finance';
+export type ModuleId = 'weather' | 'crypto' | 'news' | 'sports' | 'calendar' | 'home-assistant' | 'allergies' | 'pir' | 'photo-slideshow' | 'ai-news' | 'word-of-day' | 'finance' | 'night-mode';
 /** All module IDs as a constant array */
 export declare const MODULE_IDS: readonly ModuleId[];
 /** Schema describing a built-in module's user-configurable settings */

@@ -1,10 +1,11 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { createWeatherServer, WMO_CODE_MAP } from '../weather-server';
 // Minimal valid OWM options for existing tests
 function validOptions(overrides = {}) {
     return {
         provider: 'openweathermap',
         apiKey: 'test-api-key',
+        alerts: false,
         location: { lat: 40.7128, lon: -74.006 },
         fetchFn: vi.fn().mockResolvedValue({
             ok: true,
@@ -25,6 +26,7 @@ function validOptions(overrides = {}) {
 function openMeteoOptions(overrides = {}) {
     return {
         provider: 'open-meteo',
+        alerts: false,
         location: { lat: 40.7128, lon: -74.006 },
         fetchFn: vi.fn().mockResolvedValue({
             ok: true,
@@ -771,6 +773,243 @@ describe('WeatherServer', () => {
             expect(fetchFn).toHaveBeenCalledWith(expect.stringContaining('geocoding-api.open-meteo.com'));
             const weatherUrl = fetchFn.mock.calls[1][0];
             expect(weatherUrl).toContain('40.7128');
+        });
+    });
+    describe('nowcast', () => {
+        const nowcastResponse = {
+            utc_offset_seconds: -14400,
+            current: {
+                temperature_2m: 72,
+                apparent_temperature: 70,
+                weather_code: 0,
+                relative_humidity_2m: 55,
+            },
+            daily: {
+                time: ['2026-10-06'],
+                temperature_2m_max: [75],
+                temperature_2m_min: [60],
+                weather_code: [2],
+            },
+            minutely_15: {
+                time: ['2026-10-06T18:15', '2026-10-06T18:30'],
+                precipitation: [1.9, 0],
+                precipitation_probability: [79, 10],
+            },
+            hourly: { time: ['2026-10-06T18:00'], uv_index: [0.25] },
+        };
+        it('should request nowcast params from Open-Meteo', async () => {
+            const fetchFn = openMeteoOptions().fetchFn;
+            const server = createWeatherServer(openMeteoOptions({ fetchFn }));
+            await server.refresh();
+            const url = fetchFn.mock.calls[0][0];
+            expect(url).toContain('minutely_15=precipitation,precipitation_probability');
+            expect(url).toContain('forecast_minutely_15=24');
+            expect(url).toContain('hourly=uv_index');
+            expect(url).toContain('forecast_hours=24');
+        });
+        it('should convert local times to Unix ms using utc_offset_seconds', async () => {
+            const fetchFn = vi
+                .fn()
+                .mockResolvedValue({ ok: true, json: () => Promise.resolve(nowcastResponse) });
+            const server = createWeatherServer(openMeteoOptions({ fetchFn }));
+            await server.refresh();
+            expect(server.getWeatherData()?.nowcast).toEqual({
+                precipitation: [
+                    { time: Date.UTC(2026, 9, 6, 22, 15), mm: 1.9, probability: 79 },
+                    { time: Date.UTC(2026, 9, 6, 22, 30), mm: 0, probability: 10 },
+                ],
+                uv: [{ time: Date.UTC(2026, 9, 6, 22, 0), index: 0.25 }],
+            });
+        });
+        it('should omit nowcast when a block is missing', async () => {
+            const partial = { ...nowcastResponse };
+            delete partial.hourly;
+            const fetchFn = vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve(partial) });
+            const server = createWeatherServer(openMeteoOptions({ fetchFn }));
+            await server.refresh();
+            expect(server.getWeatherData()).not.toBeNull();
+            expect(server.getWeatherData()?.nowcast).toBeUndefined();
+        });
+    });
+    describe('NWS alerts', () => {
+        const NOW = new Date('2026-10-06T12:00:00-04:00').getTime();
+        function nwsFeature(overrides = {}) {
+            return {
+                properties: {
+                    id: 'a1',
+                    event: 'Flood Watch',
+                    headline: 'Flood Watch issued',
+                    severity: 'Moderate',
+                    urgency: 'Expected',
+                    status: 'Actual',
+                    messageType: 'Alert',
+                    onset: '2026-10-06T14:00:00-04:00',
+                    expires: '2026-10-07T12:00:00-04:00',
+                    ends: null,
+                    areaDesc: 'Hillsborough',
+                    ...overrides,
+                },
+            };
+        }
+        function setup(alertsImpl, extra = {}) {
+            const publish = vi.fn();
+            const dataBus = { publish };
+            const base = openMeteoOptions().fetchFn;
+            const fetchFn = vi
+                .fn()
+                .mockImplementation((url, init) => url.includes('api.weather.gov') ? alertsImpl() : base(url, init));
+            const server = createWeatherServer(openMeteoOptions({
+                fetchFn,
+                dataBus,
+                location: { lat: 27.9506, lon: -82.4572 },
+                alerts: true,
+                ...extra,
+            }));
+            const errors = [];
+            server.onError((e) => errors.push(e));
+            const alertCalls = () => fetchFn.mock.calls.filter((c) => c[0].includes('api.weather.gov'));
+            const alertPublishes = () => publish.mock.calls.filter((c) => c[0] === 'weather.alerts');
+            return { server, fetchFn, publish, errors, alertCalls, alertPublishes };
+        }
+        const okFeatures = (features) => () => Promise.resolve({ ok: true, json: () => Promise.resolve({ features }) });
+        beforeEach(() => {
+            vi.useFakeTimers();
+            vi.setSystemTime(NOW);
+        });
+        afterEach(() => {
+            vi.useRealTimers();
+        });
+        it('should poll NWS after geocoding resolves, with a User-Agent header', async () => {
+            const publish = vi.fn();
+            const base = openMeteoOptions().fetchFn;
+            const fetchFn = vi.fn().mockImplementation((url, init) => {
+                if (url.includes('geocoding-api')) {
+                    return Promise.resolve({
+                        ok: true,
+                        json: () => Promise.resolve({ results: [{ latitude: 27.95061, longitude: -82.45719 }] }),
+                    });
+                }
+                if (url.includes('api.weather.gov'))
+                    return okFeatures([])();
+                return base(url, init);
+            });
+            const server = createWeatherServer({
+                locationQuery: '33602',
+                fetchFn,
+                dataBus: { publish },
+            });
+            await server.refresh();
+            await vi.advanceTimersByTimeAsync(0);
+            const call = fetchFn.mock.calls.find((c) => c[0].includes('api.weather.gov'));
+            expect(call?.[0]).toBe('https://api.weather.gov/alerts/active?point=27.9506,-82.4572&status=actual');
+            expect(call?.[1]).toEqual({
+                headers: {
+                    'User-Agent': 'Lensing dashboard (github.com/inceptyon-labs/lensing)',
+                    Accept: 'application/geo+json',
+                },
+            });
+            server.close();
+        });
+        it('should drop cancelled and expired alerts and sort by severity then onset', async () => {
+            const t = setup(okFeatures([
+                nwsFeature({ id: 'minor', severity: 'Minor', onset: '2026-10-06T13:00:00-04:00' }),
+                nwsFeature({ id: 'cancel', messageType: 'Cancel' }),
+                nwsFeature({ id: 'expired', expires: '2026-10-06T11:00:00-04:00' }),
+                nwsFeature({
+                    id: 'ended',
+                    expires: '2026-10-07T12:00:00-04:00',
+                    ends: '2026-10-06T11:30:00-04:00',
+                }),
+                nwsFeature({ id: 'weird', severity: 'Bogus' }),
+                nwsFeature({ id: 'severe-late', severity: 'Severe', onset: '2026-10-06T18:00:00-04:00' }),
+                nwsFeature({
+                    id: 'severe-early',
+                    severity: 'Severe',
+                    onset: '2026-10-06T14:00:00-04:00',
+                }),
+                nwsFeature({
+                    id: 'extreme',
+                    severity: 'Extreme',
+                    headline: null,
+                    event: 'Tornado Warning',
+                }),
+            ]));
+            await t.server.refresh();
+            await vi.advanceTimersByTimeAsync(0);
+            const data = t.alertPublishes()[0][2];
+            expect(data.alerts.map((a) => a.id)).toEqual([
+                'extreme',
+                'severe-early',
+                'severe-late',
+                'minor',
+                'weird',
+            ]);
+            expect(data.alerts[0].headline).toBe('Tornado Warning');
+            expect(data.alerts[4].severity).toBe('Unknown');
+            expect(data.alerts[1].onset).toBe(new Date('2026-10-06T14:00:00-04:00').getTime());
+            expect(data.alerts[1].ends).toBeNull();
+            t.server.close();
+        });
+        it('should publish on the alerts channel and plugin id, including an empty list', async () => {
+            const t = setup(okFeatures([]));
+            await t.server.refresh();
+            await vi.advanceTimersByTimeAsync(0);
+            expect(t.publish).toHaveBeenCalledWith('weather.alerts', 'weather-alerts', {
+                alerts: [],
+                lastUpdated: NOW,
+            });
+            t.server.close();
+        });
+        it('should repoll every alertsInterval_ms (default 5 min)', async () => {
+            const t = setup(okFeatures([]));
+            await t.server.refresh();
+            await vi.advanceTimersByTimeAsync(0);
+            expect(t.alertCalls()).toHaveLength(1);
+            await vi.advanceTimersByTimeAsync(299_000);
+            expect(t.alertCalls()).toHaveLength(1);
+            await vi.advanceTimersByTimeAsync(1_000);
+            expect(t.alertCalls()).toHaveLength(2);
+            await vi.advanceTimersByTimeAsync(300_000);
+            expect(t.alertCalls()).toHaveLength(3);
+            expect(t.alertPublishes()).toHaveLength(3);
+            t.server.close();
+        });
+        it('should keep previous alerts and publish nothing on failure', async () => {
+            let fail = false;
+            const t = setup(() => fail ? Promise.reject(new Error('boom')) : okFeatures([nwsFeature()])());
+            await t.server.refresh();
+            await vi.advanceTimersByTimeAsync(0);
+            expect(t.alertPublishes()).toHaveLength(1);
+            fail = true;
+            await vi.advanceTimersByTimeAsync(300_000);
+            expect(t.alertPublishes()).toHaveLength(1);
+            expect(t.errors.some((e) => e.includes('boom'))).toBe(true);
+            t.server.close();
+        });
+        it('should stop polling alerts after a 404', async () => {
+            const t = setup(() => Promise.resolve({ ok: false, status: 404, statusText: 'Not Found' }));
+            await t.server.refresh();
+            await vi.advanceTimersByTimeAsync(0);
+            await vi.advanceTimersByTimeAsync(900_000);
+            expect(t.alertCalls()).toHaveLength(1);
+            expect(t.errors.filter((e) => e.includes('alerts'))).toHaveLength(1);
+            expect(t.alertPublishes()).toHaveLength(0);
+            t.server.close();
+        });
+        it('should clear the interval on close and not publish afterwards', async () => {
+            const t = setup(okFeatures([]));
+            await t.server.refresh();
+            await vi.advanceTimersByTimeAsync(0);
+            t.server.close();
+            await vi.advanceTimersByTimeAsync(900_000);
+            expect(t.alertCalls()).toHaveLength(1);
+            expect(vi.getTimerCount()).toBe(0);
+        });
+        it('should not poll when alerts is false', async () => {
+            const t = setup(okFeatures([]), { alerts: false });
+            await t.server.refresh();
+            await vi.advanceTimersByTimeAsync(600_000);
+            expect(t.alertCalls()).toHaveLength(0);
         });
     });
     describe('exports', () => {

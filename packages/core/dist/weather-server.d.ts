@@ -1,4 +1,4 @@
-import type { DataBusInstance, WeatherProvider } from '@lensing/types';
+import type { DataBusInstance, WeatherNowcast, WeatherProvider } from '@lensing/types';
 /** Current weather conditions */
 export interface WeatherCurrent {
     temp: number;
@@ -21,10 +21,12 @@ export interface WeatherForecastDay {
 export interface WeatherData {
     current: WeatherCurrent;
     forecast: WeatherForecastDay[];
+    /** Open-Meteo only; times are Unix ms */
+    nowcast?: WeatherNowcast;
     lastUpdated: number;
 }
 /** Fetch function signature (matches global `fetch`) */
-export type FetchFn = (url: string) => Promise<{
+export type FetchFn = (url: string, init?: RequestInit) => Promise<{
     ok: boolean;
     status?: number;
     statusText?: string;
@@ -53,6 +55,10 @@ export interface WeatherServerOptions {
     refreshInterval_ms?: number;
     /** Injectable fetch function (defaults to global fetch) */
     fetchFn?: FetchFn;
+    /** Poll NWS active alerts for the location (default: true) */
+    alerts?: boolean;
+    /** NWS alerts poll interval in ms (default: 300000 = 5 min) */
+    alertsInterval_ms?: number;
     /** Optional data bus to publish weather data after each refresh */
     dataBus?: DataBusInstance;
 }

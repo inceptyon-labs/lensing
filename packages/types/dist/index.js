@@ -5,6 +5,7 @@ export { DEFAULT_AI_NEWS_MAX_ITEMS, DEFAULT_AI_NEWS_MAX_STALE_MS, AI_NEWS_CATEGO
 export { DEFAULT_SPORTS_MAX_STALE_MS, DEFAULT_SPORTS_LEAGUES } from './sports';
 export { CURRENT_CONFIG_VERSION } from './config-transfer';
 export { DEFAULT_HA_MAX_STALE_MS, DEFAULT_HA_DOMAINS } from './home-assistant';
+export { WEATHER_ALERTS_PLUGIN_ID, WEATHER_ALERTS_CHANNEL } from './weather';
 export { DEFAULT_PIR_IDLE_TIMEOUT_MS, DEFAULT_PIR_GPIO_PIN } from './pir-sensor';
 export { MODULE_IDS, MODULE_SCHEMAS, SYSTEM_MODULE_IDS, getIntegrationFields, getWidgetFields, moduleNeedsIntegration, } from './module-settings';
 /**

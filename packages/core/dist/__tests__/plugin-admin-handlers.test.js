@@ -48,7 +48,7 @@ describe('PluginAdminHandlers (plugin-admin-handlers.ts)', () => {
         // No third-party plugins
         expect(plugins.filter((p) => !p.builtin).length).toBe(0);
         // Built-in modules present
-        expect(plugins.filter((p) => p.builtin).length).toBe(12);
+        expect(plugins.filter((p) => p.builtin).length).toBe(MODULE_SCHEMAS.length);
         db.close();
     });
     it('should return plugin with defaults when no DB state exists', async () => {

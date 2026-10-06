@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { MODULE_SCHEMAS, MODULE_IDS, getIntegrationFields, getWidgetFields, moduleNeedsIntegration, } from '../module-settings';
 describe('Module Settings Schemas', () => {
-    it('should define exactly 12 modules', () => {
-        expect(MODULE_SCHEMAS).toHaveLength(12);
-        expect(MODULE_IDS).toHaveLength(12);
+    it('should define exactly 13 modules', () => {
+        expect(MODULE_SCHEMAS).toHaveLength(13);
+        expect(MODULE_IDS).toHaveLength(13);
     });
     it('should include photo-slideshow module with photoDirectory field', () => {
         const schema = MODULE_SCHEMAS.find((s) => s.id === 'photo-slideshow');
@@ -126,7 +126,13 @@ describe('Config field category helpers', () => {
         const crypto = MODULE_SCHEMAS.find((s) => s.id === 'crypto');
         expect(getIntegrationFields(crypto)).toHaveLength(0);
         expect(getWidgetFields(crypto)).toHaveLength(5);
-        expect(getWidgetFields(crypto).map((f) => f.key)).toEqual(['watchlist', 'show1h', 'show24h', 'show7d', 'showSparkline']);
+        expect(getWidgetFields(crypto).map((f) => f.key)).toEqual([
+            'watchlist',
+            'show1h',
+            'show24h',
+            'show7d',
+            'showSparkline',
+        ]);
     });
     it('calendar has both integration and widget fields', () => {
         const calendar = MODULE_SCHEMAS.find((s) => s.id === 'calendar');
@@ -134,6 +140,12 @@ describe('Config field category helpers', () => {
         const widget = getWidgetFields(calendar);
         expect(integration.map((f) => f.key)).toEqual(expect.arrayContaining(['serverUrl', 'username', 'password', 'calendarPath']));
         expect(widget.map((f) => f.key)).toEqual(expect.arrayContaining(['rangeDays']));
+    });
+    it('defines night mode as a system module with a 22:00-06:00 default window', () => {
+        const night = MODULE_SCHEMAS.find((s) => s.id === 'night-mode');
+        expect(night?.system).toBe(true);
+        const defaults = Object.fromEntries(night.fields.map((f) => [f.key, f.default]));
+        expect(defaults).toEqual({ enabled: true, startTime: '22:00', endTime: '06:00' });
     });
 });
 //# sourceMappingURL=module-settings.test.js.map

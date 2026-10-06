@@ -12,6 +12,7 @@ export const MODULE_IDS = [
     'ai-news',
     'word-of-day',
     'finance',
+    'night-mode',
 ];
 /** Settings schemas for all built-in modules */
 export const MODULE_SCHEMAS = [
@@ -349,6 +350,41 @@ export const MODULE_SCHEMAS = [
                 description: 'Milliseconds without motion before the display sleeps',
                 default: 300000,
                 min: 1000,
+                category: 'widget',
+            },
+        ],
+    },
+    {
+        id: 'night-mode',
+        name: 'Night Mode',
+        description: 'Dim clock and tomorrow view overnight',
+        system: true,
+        setupGuide: 'Between the start and end times the dashboard is replaced by a dim clock, ' +
+            "the day ahead's first events and its forecast. Weather alerts still show on top.\n\n" +
+            "Times are 24-hour HH:MM in the display's local time; the window may cross midnight.",
+        fields: [
+            {
+                key: 'enabled',
+                type: 'boolean',
+                label: 'Enabled',
+                description: 'Switch to the night view during the window below',
+                default: true,
+                category: 'widget',
+            },
+            {
+                key: 'startTime',
+                type: 'string',
+                label: 'Start',
+                description: '24-hour time, e.g. 22:00',
+                default: '22:00',
+                category: 'widget',
+            },
+            {
+                key: 'endTime',
+                type: 'string',
+                label: 'End',
+                description: '24-hour time, e.g. 06:00',
+                default: '06:00',
                 category: 'widget',
             },
         ],
