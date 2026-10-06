@@ -2,7 +2,7 @@ import type { CalendarEvent } from '@lensing/types';
 
 const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
 
-function localDateStr(d: Date): string {
+export function localDateStr(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
@@ -36,4 +36,17 @@ export function getDayLabel(isoStr: string, now: Date): string {
   const [y, m, d] = dateStr.split('-').map(Number);
   const display = new Date(y, m - 1, d);
   return display.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+}
+
+/** Events that fall on a local YYYY-MM-DD date, all-day first, then by start time. */
+export function eventsOnDate(events: CalendarEvent[], date: string): CalendarEvent[] {
+  return events
+    .filter((e) => {
+      if (e.allDay) return e.start.slice(0, 10) <= date && date < e.end.slice(0, 10);
+      return localDateStr(new Date(e.start)) === date;
+    })
+    .sort((a, b) => {
+      if (!!a.allDay !== !!b.allDay) return a.allDay ? -1 : 1;
+      return new Date(a.start).getTime() - new Date(b.start).getTime();
+    });
 }

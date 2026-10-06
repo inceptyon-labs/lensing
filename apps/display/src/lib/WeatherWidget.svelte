@@ -1,10 +1,26 @@
 <script lang="ts">
-  import type { WeatherCurrent, WeatherForecastDay } from '@lensing/types';
+  import { onMount } from 'svelte';
+  import type { WeatherCurrent, WeatherForecastDay, WeatherNowcast } from '@lensing/types';
+  import Umbrella from '@lucide/svelte/icons/umbrella';
+  import Sun from '@lucide/svelte/icons/sun';
   import WeatherIcon from './WeatherIcon.svelte';
+  import { nowcastHints } from './weather-nowcast';
 
   export let current: WeatherCurrent | null = null;
   export let forecast: WeatherForecastDay[] = [];
   export let compact: boolean = false;
+  export let nowcast: WeatherNowcast | undefined = undefined;
+
+  // Tick so hints roll forward as rain ends or the UV window closes
+  let now = new Date();
+  onMount(() => {
+    const timer = setInterval(() => {
+      now = new Date();
+    }, 60_000);
+    return () => clearInterval(timer);
+  });
+
+  $: hints = nowcastHints(nowcast, now);
 
   function formatTemp(temp: number): string {
     return `${Math.round(temp)}°`;
@@ -23,20 +39,37 @@
     </div>
   {:else if compact}
     <div class="weather-widget__compact-row">
-      <span class="weather-widget__compact-icon"><WeatherIcon conditions={current.conditions} size={32} /></span>
+      <span class="weather-widget__compact-icon"
+        ><WeatherIcon conditions={current.conditions} size={32} /></span
+      >
       <span class="weather-widget__compact-temp">{formatTemp(current.temp)}</span>
       <span class="weather-widget__compact-conditions">{current.conditions}</span>
     </div>
   {:else}
     <div class="weather-widget__current">
       <div class="weather-widget__hero">
-        <span class="weather-widget__icon"><WeatherIcon conditions={current.conditions} size={40} /></span>
+        <span class="weather-widget__icon"
+          ><WeatherIcon conditions={current.conditions} size={40} /></span
+        >
         <span class="weather-widget__temp">{formatTemp(current.temp)}</span>
         <div class="weather-widget__conditions-block">
           <span class="weather-widget__conditions">{current.conditions}</span>
           <span class="weather-widget__feels-like">Feels like {formatTemp(current.feelsLike)}</span>
         </div>
       </div>
+      {#if hints.length > 0}
+        <div class="weather-widget__hints">
+          {#each hints as hint (hint)}
+            <span
+              class="weather-widget__hint"
+              class:weather-widget__hint--uv={hint.startsWith('UV')}
+            >
+              {#if hint.startsWith('UV')}<Sun size={14} />{:else}<Umbrella size={14} />{/if}
+              {hint}
+            </span>
+          {/each}
+        </div>
+      {/if}
       <div class="weather-widget__details">
         <span class="weather-widget__detail">
           <span class="weather-widget__detail-label">Humidity</span>
@@ -50,10 +83,15 @@
         {#each forecast.slice(0, 5) as day (day.date)}
           <div class="weather-widget__forecast-row">
             <span class="weather-widget__forecast-day">{formatDate(day.date)}</span>
-            <span class="weather-widget__forecast-icon"><WeatherIcon conditions={day.conditions} size={16} /></span>
+            <span class="weather-widget__forecast-icon"
+              ><WeatherIcon conditions={day.conditions} size={16} /></span
+            >
             <span class="weather-widget__forecast-conditions">{day.conditions}</span>
             {#if day.precipChance != null}
-              <span class="weather-widget__forecast-rain" class:weather-widget__forecast-rain--high={day.precipChance >= 50}>
+              <span
+                class="weather-widget__forecast-rain"
+                class:weather-widget__forecast-rain--high={day.precipChance >= 50}
+              >
                 {day.precipChance}%
               </span>
             {/if}
@@ -124,6 +162,37 @@
   .weather-widget__feels-like {
     font-size: var(--text-sm, 0.875rem);
     color: var(--dim-light, hsl(220, 10%, 62%));
+  }
+
+  .weather-widget__hints {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2, 8px);
+  }
+
+  .weather-widget__hint {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2, 8px);
+    padding: var(--space-1, 4px) var(--space-3, 12px);
+    border: 1px solid hsl(210, 60%, 60%);
+    border-radius: 999px;
+    background: var(--event-horizon, hsl(240, 6%, 7%));
+    color: var(--starlight, hsl(220, 15%, 90%));
+    font-size: var(--text-sm, 0.875rem);
+  }
+
+  .weather-widget__hint :global(svg) {
+    color: hsl(210, 60%, 60%);
+    flex-shrink: 0;
+  }
+
+  .weather-widget__hint--uv {
+    border-color: var(--ember, hsl(28, 90%, 60%));
+  }
+
+  .weather-widget__hint--uv :global(svg) {
+    color: var(--ember, hsl(28, 90%, 60%));
   }
 
   .weather-widget__details {

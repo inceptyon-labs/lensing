@@ -108,7 +108,11 @@
       showSparkline={cfgBool(plugin.config['showSparkline'], true)}
     />
   {:else if pluginId === 'weather'}
-    <WeatherWidget current={weatherData?.current ?? null} forecast={weatherData?.forecast ?? []} />
+    <WeatherWidget
+      current={weatherData?.current ?? null}
+      forecast={weatherData?.forecast ?? []}
+      nowcast={weatherData?.nowcast}
+    />
   {:else if pluginId === 'calendar'}
     <CalendarWidget events={calendarData?.events ?? []} />
   {:else if pluginId === 'allergies'}

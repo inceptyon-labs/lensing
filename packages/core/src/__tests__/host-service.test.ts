@@ -6,7 +6,7 @@ import os from 'node:os';
 import fs from 'node:fs';
 import { WebSocket } from 'ws';
 import type { WsMessage, DataBusMessage, ModuleId } from '@lensing/types';
-import { SYSTEM_MODULE_IDS } from '@lensing/types';
+import { MODULE_SCHEMAS, SYSTEM_MODULE_IDS } from '@lensing/types';
 
 describe('HostService (host-service.ts)', () => {
   let hostService: HostServiceInstance | null = null;
@@ -336,7 +336,7 @@ describe('HostService (host-service.ts)', () => {
       manifest: { version: string };
     }>;
     const builtins = plugins.filter((p) => p.builtin);
-    expect(builtins.length).toBe(12);
+    expect(builtins.length).toBe(MODULE_SCHEMAS.length);
 
     const weather = builtins.find((p) => p.plugin_id === 'weather');
     expect(weather).toBeDefined();

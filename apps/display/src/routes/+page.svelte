@@ -7,6 +7,9 @@
   import { saveLayout, loadLayout } from '../lib/grid/layout-persistence';
   import { handlePluginData } from '../lib/stores/dataBusStore';
   import { createReconnectingSocket } from '../lib/ws-reconnect';
+  import WeatherAlertBanner from '../lib/WeatherAlertBanner.svelte';
+  import NightView from '../lib/NightView.svelte';
+  import { isNightTime, parseNightConfig } from '../lib/night-mode';
 
   let plugins: PluginAdminEntry[] = $state([]);
   let serverLayout: GridWidget[] | null = $state(null);
@@ -14,6 +17,15 @@
   const systemIds = new Set<string>(SYSTEM_MODULE_IDS);
   /** Plugins available for dashboard widgets (excludes system modules like PIR) */
   let widgetPlugins = $derived(plugins.filter((p) => !systemIds.has(p.plugin_id)));
+
+  // Night mode: re-evaluated every minute and whenever the plugin config changes
+  let clockTick = $state(new Date());
+  const nightConfig = $derived(
+    parseNightConfig(plugins.find((p) => p.plugin_id === 'night-mode')?.config)
+  );
+  const isNight = $derived(
+    nightConfig.enabled && isNightTime(clockTick, nightConfig.startTime, nightConfig.endTime)
+  );
 
   async function loadPlugins() {
     const res = await fetch('/plugins');
@@ -93,6 +105,13 @@
       socket.close();
     };
   });
+
+  $effect(() => {
+    const timer = setInterval(() => {
+      clockTick = new Date();
+    }, 60_000);
+    return () => clearInterval(timer);
+  });
 </script>
 
 <svelte:head>
@@ -108,3 +127,8 @@
   onconfigsaved={handleConfigSaved}
   adminHref="/admin"
 />
+
+{#if isNight}
+  <NightView />
+{/if}
+<WeatherAlertBanner dim={isNight} />
