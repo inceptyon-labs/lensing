@@ -62,6 +62,41 @@ describe('createDisplayHardware', () => {
       });
     });
 
+    it('treats a DDC monitor that is asleep (DPMS off) as available', () => {
+      const asleep = [
+        'Invalid display',
+        '   I2C bus:  /dev/i2c-2',
+        '   DRM connector:           card0-HDMI-A-1',
+        '   DDC communication failed',
+        '   DRM reports the monitor is in a DPMS sleep state (Off).',
+      ].join('\n');
+      const hw = createDisplayHardware({
+        execFn: makeExec({
+          'which ddcutil': { stdout: '/usr/bin/ddcutil', stderr: '', status: 0 },
+          'ddcutil detect': { stdout: asleep, stderr: '', status: 0 },
+        }),
+        fsMethods: makeFs(),
+      });
+
+      expect(hw.capabilities.brightness).toEqual({ available: true, method: 'ddcutil' });
+    });
+
+    it('reports brightness unavailable for an invalid display that is not asleep', () => {
+      const hw = createDisplayHardware({
+        execFn: makeExec({
+          'which ddcutil': { stdout: '/usr/bin/ddcutil', stderr: '', status: 0 },
+          'ddcutil detect': {
+            stdout: 'Invalid display\n   DDC communication failed',
+            stderr: '',
+            status: 0,
+          },
+        }),
+        fsMethods: makeFs(),
+      });
+
+      expect(hw.capabilities.brightness.available).toBe(false);
+    });
+
     it('reports brightness unavailable when nothing found', () => {
       const hw = createDisplayHardware({
         execFn: makeExec({}),
@@ -463,7 +498,7 @@ describe('createDisplayHardware', () => {
       expect(() => hw.setRotation(90)).toThrow('Rotation control not available');
     });
 
-    it('throws descriptive error when ddcutil getvcp fails', () => {
+    it('reports unknown brightness and contrast when the monitor does not answer', () => {
       const execFn = vi.fn().mockImplementation((cmd: string, args: string[]) => {
         const key = `${cmd} ${args.join(' ')}`;
         if (key === 'which ddcutil') return { stdout: '/usr/bin/ddcutil', stderr: '', status: 0 };
@@ -475,7 +510,9 @@ describe('createDisplayHardware', () => {
         return { stdout: '', stderr: 'not found', status: 1 };
       });
       const hw = createDisplayHardware({ execFn, fsMethods: makeFs() });
-      expect(() => hw.getBrightness()).toThrow('ddcutil getvcp failed');
+      // The monitor doesn't answer DDC while asleep; reads report "unknown" instead of failing
+      expect(hw.getBrightness()).toBeNull();
+      expect(hw.getContrast()).toBeNull();
     });
   });
 });

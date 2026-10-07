@@ -3,8 +3,9 @@
 title: Night mode dims the monitor backlight
 status: completed
 type: feature
+priority: normal
 created_at: 2026-10-07T01:25:51Z
-updated_at: 2026-10-07T01:25:51Z
+updated_at: 2026-10-07T01:29:06Z
 ---
 
 DDC/CI now enabled on the ASUS VA249HG, so night mode can dim the real backlight.
@@ -15,3 +16,7 @@ DDC/CI now enabled on the ASUS VA249HG, so night mode can dim the real backlight
 ## Summary of Changes
 
 createNightBrightness in core, wired in host-service when ddcutil/backlight brightness is available. Checks every minute; ddcutil fails while the monitor sleeps, so failures retry 3 s after PIR motion and otherwise at most every 10 min.
+
+## Follow-up fix
+
+The display-hardware probe marked brightness unavailable when the monitor was asleep at boot (ddcutil detect reports 'Invalid display ... DPMS sleep state'), so the controller never started. The probe now treats a sleeping DDC monitor as available, and getBrightness/getContrast return null instead of throwing when the monitor doesn't answer.

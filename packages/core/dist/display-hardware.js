@@ -35,6 +35,15 @@ const defaultFs = {
     readFileSync: (p, enc) => fs.readFileSync(p, enc),
     writeFileSync: (p, d) => fs.writeFileSync(p, d),
 };
+/**
+ * True when ddcutil sees a DDC display. A monitor in DPMS sleep (e.g. turned off by the
+ * PIR sensor at boot) shows as "Invalid display" with a DPMS note but still supports DDC.
+ */
+function ddcDisplayPresent(detect) {
+    if (detect.status === 0 && detect.stdout.includes('Display'))
+        return true;
+    return detect.stdout.includes('DPMS sleep state');
+}
 function probeBrightness(exec, fsMethods) {
     // Check rpi_backlight sysfs
     if (fsMethods.existsSync(BACKLIGHT_PATH)) {
@@ -44,7 +53,7 @@ function probeBrightness(exec, fsMethods) {
     const which = exec('which', ['ddcutil']);
     if (which.status === 0) {
         const detect = exec('ddcutil', ['detect']);
-        if (detect.status === 0 && detect.stdout.includes('Display')) {
+        if (ddcDisplayPresent(detect)) {
             return { available: true, method: 'ddcutil' };
         }
     }
@@ -54,7 +63,7 @@ function probeContrast(exec) {
     const which = exec('which', ['ddcutil']);
     if (which.status === 0) {
         const detect = exec('ddcutil', ['detect']);
-        if (detect.status === 0 && detect.stdout.includes('Display')) {
+        if (ddcDisplayPresent(detect)) {
             return { available: true, method: 'ddcutil' };
         }
     }
@@ -138,8 +147,9 @@ export function createDisplayHardware(options = {}) {
             }
             if (brightnessCap.method === 'ddcutil') {
                 const result = exec('ddcutil', ['getvcp', '10', '--brief']);
+                // Fails while the monitor is asleep (DPMS off): report unknown
                 if (result.status !== 0)
-                    throw new Error(`ddcutil getvcp failed: ${result.stderr}`);
+                    return null;
                 // Brief output: "VCP 10 C 75 100" (feature code, type, current, max)
                 const match = result.stdout.match(/VCP\s+10\s+C\s+(\d+)\s+(\d+)/);
                 if (!match)
@@ -169,7 +179,7 @@ export function createDisplayHardware(options = {}) {
                 return null;
             const result = exec('ddcutil', ['getvcp', '12', '--brief']);
             if (result.status !== 0)
-                throw new Error(`ddcutil getvcp failed: ${result.stderr}`);
+                return null;
             const match = result.stdout.match(/VCP\s+12\s+C\s+(\d+)\s+(\d+)/);
             if (!match)
                 throw new Error(`Unexpected ddcutil output: ${result.stdout}`);
