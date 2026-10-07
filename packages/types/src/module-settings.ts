@@ -428,6 +428,16 @@ export const MODULE_SCHEMAS: readonly ModuleSettingsSchema[] = [
         default: '06:00',
         category: 'widget',
       },
+      {
+        key: 'brightness',
+        type: 'number',
+        label: 'Night Brightness (%)',
+        description: 'Monitor backlight during night mode (needs DDC/CI enabled on the monitor)',
+        default: 10,
+        min: 0,
+        max: 100,
+        category: 'widget',
+      },
     ],
   },
   {

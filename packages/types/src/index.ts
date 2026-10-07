@@ -942,6 +942,8 @@ export type {
   WeatherAlertsData,
 } from './weather';
 export { WEATHER_ALERTS_PLUGIN_ID, WEATHER_ALERTS_CHANNEL } from './weather';
+export { isNightTime, parseNightConfig } from './night-mode';
+export type { NightConfig } from './night-mode';
 
 // ── PIR Sensor / Presence Detection ────────────────────────────────────────
 export type {

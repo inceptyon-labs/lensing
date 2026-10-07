@@ -172,6 +172,11 @@ describe('Config field category helpers', () => {
     const night = MODULE_SCHEMAS.find((s) => s.id === 'night-mode');
     expect(night?.system).toBe(true);
     const defaults = Object.fromEntries(night!.fields.map((f) => [f.key, f.default]));
-    expect(defaults).toEqual({ enabled: true, startTime: '22:00', endTime: '06:00' });
+    expect(defaults).toEqual({
+      enabled: true,
+      startTime: '22:00',
+      endTime: '06:00',
+      brightness: 10,
+    });
   });
 });
