@@ -13,9 +13,10 @@ import { createAiAssist } from './ai-assist';
 import { createSecretStore } from './secret-store';
 import { createConnectorRunner } from './connector-runner';
 import { createPluginScheduler } from './plugin-scheduler';
-import { clearSecretsForChangedUrls } from './module-settings';
+import { clearSecretsForChangedUrls, readModuleConfig } from './module-settings';
+import { createNightBrightness } from './night-brightness';
 import { validateSecretAccess } from './plugin-permissions';
-import { MODULE_SCHEMAS, SYSTEM_MODULE_IDS } from '@lensing/types';
+import { MODULE_SCHEMAS, SYSTEM_MODULE_IDS, parseNightConfig } from '@lensing/types';
 export function createHostService(options = {}) {
     const { port = 0, pluginsDir = './plugins', dbPath = ':memory:', logger, staticDir, gpioFactory, displayControl: enableDisplayControl, authToken, allowedHosts, bindAddress, } = options;
     let _db;
@@ -27,6 +28,7 @@ export function createHostService(options = {}) {
     let _port = 0;
     let _dataBus;
     let _displayControl;
+    let _nightBrightness;
     let _displayHardware;
     let _secretStore;
     let _connectorRunner;
@@ -319,6 +321,21 @@ export function createHostService(options = {}) {
                     log.error('Failed to restore display settings', err);
                 }
             }
+            // 12. Night mode backlight: dim during the night window, restore the saved level after
+            const nightSchema = MODULE_SCHEMAS.find((s) => s.id === 'night-mode');
+            if (_displayHardware?.capabilities.brightness.available && nightSchema) {
+                const hardware = _displayHardware;
+                _nightBrightness = createNightBrightness({
+                    dataBus,
+                    getConfig: () => parseNightConfig(readModuleConfig(_db, nightSchema).values),
+                    getDayBrightness: () => {
+                        const v = parseInt(_db.getSetting('display.brightness') ?? '', 10);
+                        return Number.isFinite(v) && v >= 0 && v <= 100 ? v : 100;
+                    },
+                    setBrightness: (v) => hardware.setBrightness(v),
+                    logger,
+                });
+            }
             log.info('Host service boot complete');
         }
         catch (err) {
@@ -342,6 +359,7 @@ export function createHostService(options = {}) {
             }
             try {
                 _displayControl?.close();
+                _nightBrightness?.close();
             }
             catch {
                 /* ignore cleanup errors */
@@ -389,6 +407,7 @@ export function createHostService(options = {}) {
                 }
                 _connectorRunner?.close();
                 _displayControl?.close();
+                _nightBrightness?.close();
                 _notificationQueue?.close();
                 await _ws?.close();
                 await _rest?.close();
@@ -421,6 +440,7 @@ export function createHostService(options = {}) {
             }
             _connectorRunner?.close();
             _displayControl?.close();
+            _nightBrightness?.close();
             _notificationQueue?.close();
             await _ws?.close();
             await _rest?.close();

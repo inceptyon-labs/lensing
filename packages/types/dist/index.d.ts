@@ -715,6 +715,8 @@ export type { HassEntity, HomeAssistantData, HomeAssistantServerOptions, HomeAss
 export { DEFAULT_HA_MAX_STALE_MS, DEFAULT_HA_DOMAINS } from './home-assistant';
 export type { WeatherProvider, WeatherCurrent, WeatherForecastDay, WeatherData, WeatherNowcast, WeatherAlert, WeatherAlertSeverity, WeatherAlertsData, } from './weather';
 export { WEATHER_ALERTS_PLUGIN_ID, WEATHER_ALERTS_CHANNEL } from './weather';
+export { isNightTime, parseNightConfig } from './night-mode';
+export type { NightConfig } from './night-mode';
 export type { PresenceData, GpioWatcher, GpioWatcherFactory, PIRServerOptions, PIRServerInstance, } from './pir-sensor';
 export { DEFAULT_PIR_IDLE_TIMEOUT_MS, DEFAULT_PIR_GPIO_PIN } from './pir-sensor';
 export type { DisplayMethod, DisplayCapability, DisplayCapabilities, DisplaySettings, RotationValue, DisplayHardwareOptions, DisplayHardwareInstance, } from './display-settings';
